@@ -1,8 +1,9 @@
-#ifndef __CONFIG_CPP
-#define __CONFIG_CPP
+#ifndef __CFG_CONFIG_CPP
+#define __CFG_CONFIG_CPP
 #include <vector>
 #include <array>
 #include <string>
+#include "../acl/common.hpp"
 #include "../util/endpoint.hpp"
 
 namespace cfg 
@@ -13,7 +14,7 @@ class StatSection
   std::string directory;
   bool seperateCredits;
 public:
-  StatSection(std::string keyword, std::string directory, 
+  StatSection(const std::string& keyword, const std::string& directory, 
     bool seperateCredits) : 
     keyword(keyword), directory(directory), seperateCredits(seperateCredits) {};
   ~StatSection();
@@ -23,10 +24,10 @@ class Right
 {
   std::string function; // could be enum
   std::string path;
-  std::string params;
+  acl::ACL acl;
 public:
-  Right(std::string function, std::string path, std::string params) :
-    function(function), path(path), params(params) {};
+  Right(const std::string& function, const std::string& path, 
+    const std::string& acl);
   ~Right();
 };
 
@@ -36,16 +37,23 @@ class Creditloss
   bool allowLeechers;
   std::string path;
 public:
-  Creditloss(int multiplier, bool allowLeechers, std::string path) :
+  Creditloss(int multiplier, bool allowLeechers, const std::string& path) :
     multiplier(multiplier), allowLeechers(allowLeechers), path(path) {};
   ~Creditloss();
 };
  
+class Creditcheck
+{
+  std::string path;
+  int ratio;
+  acl::ACL acl;
+public:
+  Creditcheck(const std::string& path, int ratio, const std::string& acl);
+  ~Creditcheck();
+};
+
 class Config 
 {
-  int shutdown;
-
-  std::string siteNameShort;
   std::string siteNameLong;
   std::string rootPath;
   std::string dataPath;
@@ -66,6 +74,7 @@ class Config
   std::vector<StatSection> statSections;
   std::vector<Right> rights;
   std::vector<Creditloss> creditloss;
+  std::vector<Creditcheck> creditcheck;
 
 
 public:
