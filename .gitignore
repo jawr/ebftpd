@@ -1,0 +1,16 @@
+*.o
+*.d
+ftpd
+*~
+version.hpp
+ftpd.exe
+.cproject
+.project
+*.gz
+*.bz2
+*.zip
+*.bak
+Copy of *
+*.gch
+*.txt
+
