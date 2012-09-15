@@ -1,0 +1,78 @@
+#ifndef __CONFIG_CPP
+#define __CONFIG_CPP
+#include <vector>
+#include <array>
+#include <string>
+#include "../util/endpoint.hpp"
+
+namespace cfg 
+{
+class StatSection
+{
+  std::string keyword;
+  std::string directory;
+  bool seperateCredits;
+public:
+  StatSection(std::string keyword, std::string directory, 
+    bool seperateCredits) : 
+    keyword(keyword), directory(directory), seperateCredits(seperateCredits) {};
+  ~StatSection();
+};
+
+class Right
+{
+  std::string function; // could be enum
+  std::string path;
+  std::string params;
+public:
+  Right(std::string function, std::string path, std::string params) :
+    function(function), path(path), params(params) {};
+  ~Right();
+};
+
+class Creditloss
+{
+  int multiplier;
+  bool allowLeechers;
+  std::string path;
+public:
+  Creditloss(int multiplier, bool allowLeechers, std::string path) :
+    multiplier(multiplier), allowLeechers(allowLeechers), path(path) {};
+  ~Creditloss();
+};
+ 
+class Config 
+{
+  int shutdown;
+
+  std::string siteNameShort;
+  std::string siteNameLong;
+  std::string rootPath;
+  std::string dataPath;
+
+  std::string loginPrompt;
+  std::string welcomeMsg;
+  std::string goodbyeMsg;
+  std::string newsfile;
+  std::string banner;
+  
+  std::vector<util::tcp::endpoint> activeAddr;
+  std::vector<util::tcp::endpoint> pasvAddr;
+  std::vector<util::tcp::endpoint> bouncers;
+  long pasvPortsStart, pasvPortsEnd;
+
+  std::vector<std::string> bannedUsers;
+
+  std::vector<StatSection> statSections;
+  std::vector<Right> rights;
+  std::vector<Creditloss> creditloss;
+
+
+public:
+  Config();
+  ~Config();  
+};
+
+}
+
+#endif 
