@@ -46,7 +46,7 @@ std::string HexEncode(const std::string& data)
 
 std::string HexDecode(const std::string& data)
 {
-  CryptoPP::HexEncoder decoder;
+  CryptoPP::HexDecoder decoder;
   std::string result;
   decoder.Attach(new CryptoPP::StringSink(result));
   decoder.Put((byte*) data.c_str(), data.length());
@@ -65,6 +65,16 @@ std::string HexDecode(const std::string& data)
 
 int main()
 {
+  {
+    std::string message = "test message";
+    std::string enc = util::passwd::HexEncode(message);
+    std::string dec = util::passwd::HexDecode(enc);
+    
+    std::cout << "message: " << message << " " << message.length() << std::endl;
+    std::cout << "encode: " << enc << " " << enc.length() << std::endl;
+    std::cout << "decode: " << dec << " " << dec.length() << std::endl;
+  }
+
   std::string salt = util::passwd::GenerateSalt();
   std::string password = "testpassword1234";
   
