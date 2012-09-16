@@ -1,4 +1,3 @@
-#undef __GNUC__
 #define __LOGGER_LOGGER_CPP
 #include <cassert>
 #include <iomanip>
@@ -79,6 +78,7 @@ Logger& Logger::Flush(bool newLine)
         out = &std::clog;
       }
     }
+
     std::istringstream iss(oss->str());
     std::string line;
     bool firstLine = true;
@@ -88,6 +88,7 @@ Logger& Logger::Flush(bool newLine)
       else firstLine = false;
       (*out) << timestamp << " " << line;
     }
+
     (*out) << (newLine ? "\n" : "") << std::flush;
   }
   
@@ -98,7 +99,7 @@ Logger& Logger::Flush(bool newLine)
 
 Logger& flush(Logger& logger)
 {
-	return logger.Flush(false);
+  return logger.Flush(false);
 }
 
 Logger& endl(Logger& logger)
@@ -126,10 +127,7 @@ void Test()
   for (int i = 0; i < 1000; ++i)
   {
     logger::ftpd << i << logger::endl;
-//    boost::this_thread::sleep(boost::posix_time::seconds(1));
   }
-  
-  logger::ftpd << logger::flush;
 }
 
 int main()
