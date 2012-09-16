@@ -57,7 +57,7 @@ std::string Logger::Timestamp()
 
 // this could be improved by moving printer out
 // into a worker thread
-Logger& Logger::Print(bool newLine)
+Logger& Logger::Flush(bool newLine)
 {
   std::string timestamp = Timestamp();
   
@@ -98,12 +98,12 @@ Logger& Logger::Print(bool newLine)
 
 Logger& flush(Logger& logger)
 {
-	return logger.Print(false);
+	return logger.Flush(false);
 }
 
 Logger& endl(Logger& logger)
 {
-  return logger.Print(true);
+  return logger.Flush(true);
 }
 
 void Initialise(const std::string& dataPath)

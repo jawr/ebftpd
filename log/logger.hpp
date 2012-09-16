@@ -12,6 +12,12 @@ namespace logger
 // adapted from:
 //
 // http://stackoverflow.com/questions/5528207/thread-safe-streams-and-stream-manipulators
+//
+// std::flush and std::endl are incompatible with the stream,
+// the provided logger::flush and logger::endl must be used instead.
+//
+// redirects automatically to std::clog if unable to open / write to log file
+// 
 
 class Logger : boost::noncopyable
 {
@@ -21,20 +27,17 @@ class Logger : boost::noncopyable
   boost::thread_specific_ptr<std::ostringstream> buffer;
 
   std::string Timestamp();
-  Logger& Print(bool newLine);
+  Logger& Flush(bool newLine);
   
 public:
   Logger() : out(0) { }
+  Logger(const std::string& path) : path(path), out(0) { }
   ~Logger();
 
   void SetPath(const std::string& path);
   
-  template <typename T>
-  Logger& operator<<(T data);
-  
-  //template <typename T>
+  template <typename T> Logger& operator<<(T data);
   Logger& operator<<(std::ostream& (*pf)(std::ostream&));
-  
   Logger& operator<<(Logger& (*pf)(Logger&));
   
   friend Logger& flush(Logger& logger);
