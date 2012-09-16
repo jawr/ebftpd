@@ -13,4 +13,6 @@ ftpd.exe
 Copy of *
 *.gch
 *.txt
+tmp
+logger
 
