@@ -13,18 +13,23 @@ class Status
   struct stat native;
   bool statOkay;
   
-  Status& Check();
+  Status& Reset();
   
 public:
   Status() : statOkay(false) { }
   Status(const std::string& path);
   
-  Status& Check(const std::string& path);
+  Status& Reset(const std::string& path);
   
   bool IsRegularFile();
   bool IsDirectory();
   bool IsLink();
   
+  bool IsExecutable();
+  bool IsReadable();
+  bool IsWriteable();
+  
+  const std::string& Path();
   off_t Size();
   
   const struct stat& Native();
