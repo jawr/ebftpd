@@ -13,6 +13,10 @@ Logger access;
 Logger siteop;
 Logger error;
 
+Logger::Logger() : out(&std::clog) { }
+Logger::Logger(const std::string& path) : path(path), out(&std::clog) { }
+
+
 void Logger::SetPath(const std::string& path)
 {
   this->path = path;
@@ -65,10 +69,9 @@ Logger& Logger::Flush(bool newLine)
   
   {
     boost::lock_guard<boost::mutex> lock(outMutex);
-    if (out == &std::clog) out = 0;
+    if (out == &std::clog && !path.empty()) out = 0;
     if (!out)
     {
-      assert(!path.empty() && "Log path must be set with Logger::SetPath()");
       std::ofstream* fout(new std::ofstream(path.c_str(), std::ios::app));
       if (*fout) out = fout;
       else
