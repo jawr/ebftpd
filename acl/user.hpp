@@ -10,7 +10,7 @@ namespace acl
 
 class User
 {
-  std::string username;
+  std::string name;
   std::string password;
   std::string salt;
   std::string flags;
@@ -20,17 +20,17 @@ class User
   boost::unordered_set<gid_t> secondaryGids;
   
 public:
-  User(const std::string& username, const std::string& password,
+  User(const std::string& name, const std::string& password,
        const std::string& flags);
        
-  const std::string& Username() const { return username; }
-  void Username(const std::string& username) { this->username = username; }
+  const std::string& Name() const { return name; }
+  void SetName(const std::string& name) { this->name = name; }
   
-  void Password(const std::string& password);
+  void SetPassword(const std::string& password);
   bool VerifyPassword(const std::string& password) const;
   
   const std::string& Flags() const { return flags; }
-  void Flags(const std::string& flags) { this->flags = flags; }
+  void SetFlags(const std::string& flags) { this->flags = flags; }
   void AddFlags(const std::string& flags);
   void DelFlags(const std::string& flags);
   
@@ -39,11 +39,13 @@ public:
      possibly set this on first save to db */
   
   gid_t PrimaryGID() const { return primaryGid; }
-  void PrimaryGID(gid_t primaryGid) { this->primaryGid = primaryGid; }
+  void SetPrimaryGID(gid_t primaryGid) { this->primaryGid = primaryGid; }
   
   const boost::unordered_set<gid_t> SecondaryGIDs() const { return secondaryGids; }
   void AddSecondaryGID(gid_t gid);
   void DelSecondaryGID(gid_t gid);
+  
+  bool CheckGID(gid_t gid);
 };
 
 }
