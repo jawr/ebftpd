@@ -6,9 +6,9 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #endif
-#include "owner.hpp"
-#include "status.hpp"
-#include "error.hpp"
+#include "fs/owner.hpp"
+#include "fs/status.hpp"
+#include "util/error.hpp"
 
 namespace fs
 {

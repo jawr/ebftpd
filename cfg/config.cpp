@@ -8,6 +8,8 @@
 #include "cfg/config.hpp"
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
+#include "util/string.hpp"
+#include "logger/logger.hpp"
 
 namespace cfg
 {
@@ -32,11 +34,11 @@ Config::Config(const std::string& config) : config(config), settings()
     } 
     catch (NoSetting &e) // handle properly
     {
-      std::cout << e.what() << " (" << config << ":" << i << ")" << std::endl;
+      ::logger::ftpd << e.what() << " (" << config << ":" << i << ")" << logger::endl;
     }
     catch (...)
     {
-      std::cout << "super error on line " << i << std::endl;
+      logger::ftpd << "super error on line " << i << logger::endl;
       throw;
     }
   }
@@ -89,7 +91,7 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
   else if (opt == "timezone")
     return new setting::Argument(toks.at(0));
   else if (opt == "color_mode")
-    return new setting::Bool(boost::lexical_cast<bool>(toks.at(0)));
+    return new setting::Bool(util::string::BoolLexicalCast(toks.at(0)));
   else if (opt == "sitename_long")
     return new setting::Argument(toks.at(0));
   else if (opt == "sitename_short")
@@ -107,8 +109,8 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
   else if (opt == "secure_ip")
     return new setting::SecureIP(
       boost::lexical_cast<int>(toks.at(0)),
-      boost::lexical_cast<bool>(toks.at(1)),
-      boost::lexical_cast<bool>(toks.at(2)),
+      util::string::BoolLexicalCast(toks.at(1)),
+      util::string::BoolLexicalCast(toks.at(2)),
       toks.at(3));
   else if (opt == "secure_pass") 
   {
@@ -156,12 +158,11 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
     return new setting::Argument(toks.at(0));
   else if (opt == "pasv_addr") 
   {
-    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end(); ++it) std::cout << *it << std::endl;
     if (toks.size() == 1)
       return new setting::PasvAddr(toks.at(0));
     else
       return new setting::PasvAddr(toks.at(0), 
-        boost::lexical_cast<bool>(toks.at(1)));
+        util::string::BoolLexicalCast(toks.at(1)));
   }
   // instead of transforming to ints keep as strings:
   // Exmp: pasv_ports 10000-11000 20 21 22 23 80 110 1600-1610 35000-35050
@@ -171,9 +172,9 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
     return new setting::Arguments(toks);
   else if (opt =="allow_fxp")
     return new setting::AllowFXP(
-      boost::lexical_cast<bool>(toks.at(0)),
-      boost::lexical_cast<bool>(toks.at(1)),
-      boost::lexical_cast<bool>(toks.at(2)),
+      util::string::BoolLexicalCast(toks.at(0)),
+      util::string::BoolLexicalCast(toks.at(1)),
+      util::string::BoolLexicalCast(toks.at(2)),
       toks.at(3));
   else if (opt == "welcome_msg" || opt == "goodbye_msg" || opt == "newsfile")
   {
@@ -209,7 +210,7 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
   // stats section
   else if (opt == "stat_section")
     return new setting::StatSection(toks.at(0), toks.at(1), 
-      boost::lexical_cast<bool>(toks.at(2)));
+      util::string::BoolLexicalCast(toks.at(2)));
   else if (opt == "path-filter")
   {
     std::string group = toks.at(0);
@@ -241,22 +242,24 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
     return new setting::ACLWithPath(path, toks);
   }
   else if (opt == "show_totals")
-    return new setting::IntWithArgs(boost::lexical_cast<int>(toks.at(0)), 
-      toks);
+  {
+    int maxLines = (toks.at(0) == "*") ? -1 : boost::lexical_cast<int>(toks.at(0));
+    return new setting::IntWithArgs(maxLines, toks);
+  }
   else if (opt == "dl_incomplete")
-    return new setting::Bool(boost::lexical_cast<bool>(toks.at(0)));
+    return new setting::Bool(util::string::BoolLexicalCast(toks.at(0)));
   else if (opt == "fild_dl_count")
-    return new setting::Bool(boost::lexical_cast<bool>(toks.at(0)));
+    return new setting::Bool(util::string::BoolLexicalCast(toks.at(0)));
   else if (opt == "dupe_check")
     return new setting::IntWithBool(boost::lexical_cast<int>(toks.at(0)),
-      boost::lexical_cast<bool>(toks.at(1)));
+      util::string::BoolLexicalCast(toks.at(1)));
   // built in scripts
-  else if (opt == "pre_check")
-    return new setting::Script(toks.at(0), setting::PRE, toks.at(1));
-  else if (opt == "pre_dir_check")
-    return new setting::Script(toks.at(0), setting::PRE, toks.at(1));
-  else if (opt == "post_check")
-    return new setting::Script(toks.at(0), setting::POST, toks.at(1));
+  else if (opt == "pre_check" || opt == "pre_dir_check" || opt == "post_check")
+  {
+    std::string path = toks.at(0);
+    toks.erase(toks.begin());
+    return new setting::ACLWithPath(path, toks);
+  }
   else if (opt == "idle_commands")
     return new setting::Arguments(toks);
   else if (opt == "total_users")
@@ -269,7 +272,7 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
     return new setting::Arguments(toks);
   else if (opt == "dir_names" || opt == "file_names")
   {
-    int caps = boost::lexical_cast<bool>(toks.at(0));
+    int caps = util::string::BoolLexicalCast(toks.at(0));
     std::string toLower = toks.at(1);
     boost::algorithm::to_lower(toLower);
     bool upperCase = (toLower == "lower") ?
@@ -308,7 +311,7 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
   else if (opt == "creditloss")
   {
     int multiplier = boost::lexical_cast<int>(toks.at(0));
-    bool leechers = boost::lexical_cast<bool>(toks.at(1));
+    bool leechers = util::string::BoolLexicalCast(toks.at(1));
     std::string path = toks.at(2);
     toks.erase(toks.begin(), toks.begin()+3);
     return new setting::CreditLoss(multiplier, leechers, path, toks);
@@ -346,3 +349,13 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
 }
 
 }
+
+#ifdef CONFIG_TEST
+int main()
+{
+  logger::Initialise("/tmp/logs");
+  cfg::Config("glftpd.conf");
+  return 0;
+}
+#endif
+  

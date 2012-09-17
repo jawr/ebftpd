@@ -1,5 +1,5 @@
-#ifndef __FS_ERROR_HPP
-#define __FS_ERROR_HPP
+#ifndef __UTIL_ERROR_HPP
+#define __UTIL_ERROR_HPP
 
 #include <string>
 #include <stdexcept>

@@ -2,7 +2,7 @@
 #define __FS_DIRECTORY_HPP
 
 #include <string>
-#include "error.hpp"
+#include "util/error.hpp"
 
 namespace ftp
 {
