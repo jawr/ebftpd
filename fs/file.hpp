@@ -5,7 +5,7 @@
 #include <string>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
-#include "error.hpp"
+#include "util/error.hpp"
 
 namespace ftp
 {
