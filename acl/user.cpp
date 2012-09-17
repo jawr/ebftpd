@@ -6,18 +6,18 @@
 namespace acl
 {
 
-User::User(const std::string& username,
+User::User(const std::string& name,
            const std::string& password,
            const std::string& flags) :
-  username(username),
+  name(name),
   uid(-1),
   primaryGid(-1)
 {
-  Password(password);
+  SetPassword(password);
   AddFlags(flags);
 }
 
-void User::Password(const std::string& password)
+void User::SetPassword(const std::string& password)
 {
   using namespace util::passwd;
   
@@ -52,6 +52,21 @@ void User::DelFlags(const std::string& flags)
     std::string::size_type pos = this->flags.find(*it);
     if (pos != std::string::npos) this->flags.erase(pos, 1);
   }  
+}
+
+void User::AddSecondaryGID(gid_t gid)
+{
+  secondaryGids.insert(gid);
+}
+
+void User::DelSecondaryGID(gid_t gid)
+{
+  secondaryGids.erase(gid);
+}
+
+bool User::CheckGID(gid_t gid)
+{
+  return primaryGid == gid || secondaryGids.find(gid) != secondaryGids.end();
 }
 
 } /* acl namespace */
