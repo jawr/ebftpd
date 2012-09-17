@@ -54,6 +54,16 @@ void User::DelFlags(const std::string& flags)
   }  
 }
 
+bool User::CheckFlags(const std::string& flags) const
+{
+  for (std::string::const_iterator it =
+       flags.begin(); it != flags.end(); ++it)
+  {
+    if (this->flags.find(*it) != std::string::npos) return true;
+  }
+  return false;
+}
+
 void User::AddSecondaryGID(gid_t gid)
 {
   secondaryGids.insert(gid);
