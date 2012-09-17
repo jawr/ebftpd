@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <cerrno>
 #include "status.hpp"
-#include "exception.hpp"
+#include "error.hpp"
 
 namespace fs
 {
