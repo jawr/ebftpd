@@ -4,6 +4,7 @@ LIBS = -lcrypto++ -lboost_thread -lboost_regex -lgnutls
 INCLUDE = -I.
 
 OBJECTS = \
+	acl/acl.o \
 	acl/user.o \
 	logger/logger.o \
 	util/verify.o \

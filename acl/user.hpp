@@ -33,6 +33,7 @@ public:
   void SetFlags(const std::string& flags) { this->flags = flags; }
   void AddFlags(const std::string& flags);
   void DelFlags(const std::string& flags);
+  bool CheckFlags(const std::string& flags) const;
   
   uid_t UID() const { return uid; }
   /* should never need to modify UID, can mongodb provide the id?
