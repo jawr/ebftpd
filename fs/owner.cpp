@@ -8,7 +8,7 @@
 #endif
 #include "owner.hpp"
 #include "status.hpp"
-#include "exception.hpp"
+#include "error.hpp"
 
 namespace fs
 {

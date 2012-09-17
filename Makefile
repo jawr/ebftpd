@@ -5,9 +5,11 @@ INCLUDE = -I.
 
 OBJECTS = \
 	main.o \
+	fs/error.o \
 	fs/owner.o \
 	fs/status.o \
-	fs/exception.o \
+	fs/file.o \
+	fs/directory.o \
 	acl/acl.o \
 	acl/user.o \
 	logger/logger.o \
@@ -24,6 +26,9 @@ OBJECTS = \
 
 all: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd
+
+strip:
+	@strip -s ftpd
 
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDE) $*.cpp -o $*.o
