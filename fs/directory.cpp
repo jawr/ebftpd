@@ -3,6 +3,7 @@
 #include <cassert>
 #include "directory.hpp"
 #include "status.hpp"
+#include "acl/user.hpp"
 
 namespace fs
 {
@@ -13,13 +14,13 @@ Error CreateDirectory(const std::string& path)
   else return Error::Success();
 }
 
-Error CreateDirectory(const User& user, const std::string& path)
+Error CreateDirectory(const acl::User& user, const std::string& path)
 {
   // check ACLS here
   return CreateDirectory(path);
 }
 
-Error CreateDirectory(const Client& client, const std::string& path)
+Error CreateDirectory(const ftp::Client& client, const std::string& path)
 {
   // take current workdir from client and resolve it against path
   // to get a an absolute path, then pass client->user and absolute
@@ -34,13 +35,13 @@ Error RemoveDirectory(const std::string& path)
   else return Error::Success();
 }
 
-Error RemoveDirectory(const User& user, const std::string& path)
+Error RemoveDirectory(const acl::User& user, const std::string& path)
 {
   // check ACLs here
   return RemoveDirectory(path);
 }
 
-Error RemoveDirectory(const Client& client, const std::string& path)
+Error RemoveDirectory(const ftp::Client& client, const std::string& path)
 {
   // take current workdir from client and resolve it against path
   // to get a an absolute path, then pass client->user and absolute
@@ -69,13 +70,13 @@ Error ChangeDirectory(const std::string& path)
   return Error::Success();
 }
 
-Error ChangeDirectory(const User& user, const std::string& path)
+Error ChangeDirectory(const acl::User& user, const std::string& path)
 {
   // check ACLs here
   return ChangeDirectory(path);
 }
 
-Error ChangeDirectory(const Client& client, const std::string& path)
+Error ChangeDirectory(const ftp::Client& client, const std::string& path)
 {
   // take current workdir from client and resolve it against path
   // to get a an absolute path, then pass client->user and absolute
