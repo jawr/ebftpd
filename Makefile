@@ -12,6 +12,9 @@ OBJECTS = \
 	fs/directory.o \
 	acl/acl.o \
 	acl/user.o \
+	acl/permission.o \
+	acl/repository.o \
+	acl/handler.o \
 	logger/logger.o \
 	util/verify.o \
 	util/passwd.o \
