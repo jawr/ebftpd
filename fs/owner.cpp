@@ -7,7 +7,8 @@
 #include <boost/archive/binary_iarchive.hpp>
 #endif
 #include "owner.hpp"
-#include "utility.hpp"
+#include "status.hpp"
+#include "exception.hpp"
 
 namespace fs
 {
@@ -44,14 +45,22 @@ bool OwnerFile::Exists(const std::string& name) const
   return entries.find(name) != entries.end();
 }
 
-const class Owner& OwnerFile::Owner(const std::string& name) const
+const class Owner& OwnerFile::GetOwner(const std::string& name) const
 {
-  return entries.at(name).Owner();
+  return entries.at(name).GetOwner();
 }
 
 bool OwnerFile::Load()
 {
-  if (!IsFile(ownerFile)) return true; /* doesn't exist, start fresh! */
+  try
+  {
+    Status status(ownerFile);
+    if (!status.IsRegularFile()) return false;
+  }
+  catch (const FileSystemError&)
+  {
+    return false;
+  }
   
   std::ifstream fin(ownerFile.c_str());
   if (!fin) return false;

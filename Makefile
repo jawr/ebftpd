@@ -1,9 +1,13 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG
-LIBS = -lcrypto++ -lboost_thread -lboost_regex -lgnutls
+LIBS = -lcrypto++ -lboost_thread -lboost_regex -lgnutls -lboost_serialization
 INCLUDE = -I.
 
 OBJECTS = \
+	main.o \
+	fs/owner.o \
+	fs/status.o \
+	fs/exception.o \
 	acl/acl.o \
 	acl/user.o \
 	logger/logger.o \
