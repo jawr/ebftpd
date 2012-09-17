@@ -7,7 +7,7 @@
 #include <boost/serialization/string.hpp>
 #include <boost/unordered_map.hpp>
 #include "boost/serialization/unordered_map.hpp"
-#include "types.hpp"
+#include "acl/types.hpp"
 
 namespace fs
 {
@@ -56,9 +56,9 @@ public:
     name(name), owner(owner) { }
     
   const std::string& Name() const { return name; }
-  const Owner& Owner() const { return owner; }
+  const Owner& GetOwner() const { return owner; }
   
-  void Chown(const class Owner& owner) { this->owner = owner; }
+  void Chown(const Owner& owner) { this->owner = owner; }
   void Rename(const std::string& name) { this->name = name; }
 
   friend class boost::serialization::access;
@@ -89,7 +89,7 @@ public:
   void Rename(const std::string& oldName, const std::string& newName);
   void Delete(const std::string& name);
   bool Exists(const std::string& name) const;
-  const class Owner& Owner(const std::string& name) const;
+  const Owner& GetOwner(const std::string& name) const;
   
   bool Load();
   bool Save();
