@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG
-LIBS = -lcrypto++ -lboost_thread -lboost_regex -lgnutls -lboost_serialization
+LIBS = -lcrypto++ -lboost_thread -lboost_regex -lgnutls -lboost_serialization -lboost_iostreams
 INCLUDE = -I.
 
 OBJECTS = \
