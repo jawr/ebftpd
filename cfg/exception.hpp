@@ -14,5 +14,11 @@ struct ConfigFileError : public ConfigError
   ConfigFileError() : ConfigError("Unable to open Config file.") {}
   ConfigFileError(const std::string& message) : ConfigError(message) {}
 };
+
+struct NoSetting : public ConfigError
+{
+  NoSetting() : ConfigError("Error parsing setting") {}
+  NoSetting(const std::string& message) : ConfigError(message) {}
+};
 }
 #endif
