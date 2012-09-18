@@ -1,14 +1,15 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG
 LIBS = -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
-LIBS += -lboost_iostreams -lboost_system -lpthread
+LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle
 INCLUDE = -I.
 
 OBJECTS = \
 	main.o \
 	cfg/config.o \
 	ftp/listener.o \
-  ftp/client.o \
+	ftp/client.o \
+	fs/filelock.o \
 	fs/owner.o \
 	fs/status.o \
 	fs/file.o \
