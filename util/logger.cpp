@@ -1,9 +1,9 @@
-#define __LOGGER_LOGGER_CPP
+#define __UTIL_LOGGER_CPP
 #include <cassert>
 #include <iomanip>
 #include <fstream>
 #include <ctime>
-#include "logger.hpp"
+#include "util/logger.hpp"
 
 namespace logger
 {
