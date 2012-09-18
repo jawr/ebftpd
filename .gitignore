@@ -14,5 +14,6 @@ Copy of *
 *.gch
 *.txt
 tmp
-logger/logger
+.state
+glftpd.conf
 

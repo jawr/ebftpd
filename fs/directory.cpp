@@ -4,60 +4,41 @@
 #include "directory.hpp"
 #include "status.hpp"
 #include "acl/user.hpp"
+#include "ftp/client.hpp"
+
+#include <iostream>
 
 namespace fs
 {
-
-Error CreateDirectory(const std::string& path)
+namespace
 {
-  if (mkdir(path.c_str(), 0777) < 0) return Error::Failure(errno);
+
+const Path dummySiteRoot = "/home/bioboy/ftpd/site";
+
+Error CreateDirectory(const Path& path)
+{
+  Path real = dummySiteRoot + path;
+  if (mkdir(real.CString(), 0777) < 0) return Error::Failure(errno);
   else return Error::Success();
 }
 
-Error CreateDirectory(const acl::User& user, const std::string& path)
+Error RemoveDirectory(const Path& path)
 {
-  // check ACLS here
-  return CreateDirectory(path);
-}
-
-Error CreateDirectory(const ftp::Client& client, const std::string& path)
-{
-  // take current workdir from client and resolve it against path
-  // to get a an absolute path, then pass client->user and absolute
-  // path below;
-  // return CreateDirectory(client->User(), absolutePath);
-  assert(false);
-}
-
-Error RemoveDirectory(const std::string& path)
-{
-  if (rmdir(path.c_str()) < 0) return Error::Failure(errno);
+  Path real = dummySiteRoot + path;
+  if (rmdir(path.CString()) < 0) return Error::Failure(errno);
   else return Error::Success();
-}
-
-Error RemoveDirectory(const acl::User& user, const std::string& path)
-{
-  // check ACLs here
-  return RemoveDirectory(path);
-}
-
-Error RemoveDirectory(const ftp::Client& client, const std::string& path)
-{
-  // take current workdir from client and resolve it against path
-  // to get a an absolute path, then pass client->user and absolute
-  // path below;
-  // return RemoveDirectory(client->User(), absolutePath);
-  assert(false);
 }
 
 // we don't literally change the the working dir of the process
 // as the ftpd is multithreaded and this would change work dir
 // of all threads, we instead just check that chdir is possible
-Error ChangeDirectory(const std::string& path)
+Error ChangeDirectory(const Path& path)
 {
+  Path real = dummySiteRoot + path;
+  
   try
   {
-    Status stat(path);
+    Status stat(real);
     if (!stat.IsDirectory()) return Error::Failure(ENOTDIR);
     if (!stat.IsExecutable()) return Error::Failure(EACCES);
   }
@@ -70,19 +51,33 @@ Error ChangeDirectory(const std::string& path)
   return Error::Success();
 }
 
-Error ChangeDirectory(const acl::User& user, const std::string& path)
-{
-  // check ACLs here
-  return ChangeDirectory(path);
 }
 
-Error ChangeDirectory(const ftp::Client& client, const std::string& path)
+Error CreateDirectory(const ftp::Client& client, const Path& path)
 {
-  // take current workdir from client and resolve it against path
-  // to get a an absolute path, then pass client->user and absolute
-  // path below;
-  // return ChangeDirectory(client->User(), absolutePath);
-  assert(false);
+  Path absolute = client.WorkDir() / path;
+  
+  // check ACLs here
+  
+  return CreateDirectory(absolute);
+}
+
+Error RemoveDirectory(const ftp::Client& client, const Path& path)
+{
+  Path absolute = client.WorkDir() / path;
+  
+  // check ACLs here
+  
+  return RemoveDirectory(absolute);
+}
+
+Error ChangeDirectory(const ftp::Client& client, const Path& path)
+{
+  Path absolute = client.WorkDir() / path;
+  
+  // check ACLs here
+  
+  return ChangeDirectory(absolute);
 }
 
 } /* fs namespace */
@@ -110,7 +105,14 @@ int main()
   e = ChangeDirectory("/tmp/notexist");
   if (!e) std::cout << "chdir failed: " << e.Message() << std::endl;
   else std::cout << "chdir okay" << std::endl;
-  
+
+  ftp::Client client;
+  std::cout << "mkdir: " << CreateDirectory(client, "/w000t").Message() << std::endl;
+  std::cout << "chdir: " << ChangeDirectory(client, "/w000t").Message() << std::endl;
+  std::cout << "chdir: " << ChangeDirectory(client, "/something").Message() << std::endl;
+  std::cout << "rmdir: " << RemoveDirectory(client, "/w000t").Message() << std::endl;
+  std::cout << "mkdir: " << CreateDirectory(client, "wow").Message() << std::endl;
+  std::cout << "rmdir: " << RemoveDirectory(client, "wow").Message() << std::endl;
 }
 
 #endif

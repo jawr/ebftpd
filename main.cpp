@@ -1,4 +1,4 @@
-#ifdef MAIN_TEST
+#ifndef TEST
 int main(int argc, char** argv)
 {
   (void) argc;
