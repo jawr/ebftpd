@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG
+CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG -DLISTENER_TEST
 LIBS = -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization -lboost_iostreams -lboost_system -lpthread
 INCLUDE = -I.
 
@@ -23,7 +23,8 @@ OBJECTS = \
 	util/resolver.o \
 	util/ssl.o \
 	util/tcpclient.o \
-	util/tcpserver.o 
+	util/tcpserver.o \
+  util/thread.o
 
 all: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd

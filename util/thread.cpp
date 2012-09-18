@@ -3,14 +3,9 @@
 #include "util/thread.hpp"
 namespace util
 {
-Thread::~Thread()
-{
-  thread.interrupt();
-  thread.join();
-}
 
 void Thread::Start()
-{
+{ 
   try
   {
     Run();
@@ -27,7 +22,7 @@ void Thread::Start()
 
 void Thread::Join()
 {
-  thread.join();
+  thread->join();
 }
 
 // end util namespace

@@ -1,44 +1,21 @@
 #include <boost/thread.hpp>
 #include "ftp/listener.hpp"
+#include <iostream>
 namespace ftp
 {
-Listener::Listener() : addr("localhost", 21)
+void Listener::Run()
 {
-  boost::thread(&Listener::Main, this);
-}
-
-Listener::Listener(const std::string& ip, uint16_t) : addr(ip, port)
-{
-  boost::thread(&Listener::Main, this);
-}
-  
-Listener::~Listener()
-{
-  thread.interrupt();
-  thread.join();
-}
-
-void Listener::Main()
-{
-  try
-  {
-    Listen();
-  }
-  catch(boost::thread_interrupted& interruption)
-  {
-    // interrupt, expected
-  }
-  catch (std::exception& e)
-  {
-    // handle
-  }
-}
-
-void Listener::Listen()
-{
-
+  std::cout << "Run" << std::endl;
 }
   
 }
 // end ftp namespace
+
+#ifdef LISTENER_TEST
+int main()
+{
+  ftp::Listener l;
+  l.Join();
+  return 0;
 }
+#endif
