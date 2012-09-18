@@ -9,6 +9,7 @@
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
 #include "util/string.hpp"
+#include "util/logger.hpp"
 
 namespace cfg
 {
@@ -33,11 +34,11 @@ Config::Config(const std::string& config) : config(config), settings()
     } 
     catch (NoSetting &e) // handle properly
     {
-      std::cout << e.what() << " (" << config << ":" << i << ")" << std::endl;
+      ::logger::ftpd << e.what() << " (" << config << ":" << i << ")" << logger::endl;
     }
     catch (...)
     {
-      std::cout << "super error on line " << i << std::endl;
+      logger::ftpd << "super error on line " << i << logger::endl;
       throw;
     }
   }
@@ -157,7 +158,6 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
     return new setting::Argument(toks.at(0));
   else if (opt == "pasv_addr") 
   {
-    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end(); ++it) std::cout << *it << std::endl;
     if (toks.size() == 1)
       return new setting::PasvAddr(toks.at(0));
     else
@@ -353,6 +353,7 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
 #ifdef CONFIG_TEST
 int main()
 {
+  logger::Initialise("/tmp/logs");
   cfg::Config("glftpd.conf");
   return 0;
 }
