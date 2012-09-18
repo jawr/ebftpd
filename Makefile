@@ -1,9 +1,15 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG
-LIBS = -lcrypto++ -lboost_thread -lboost_regex -lgnutls
+LIBS = -lcrypto++ -lboost_thread -lboost_regex -lgnutls -lboost_serialization -lboost_iostreams
 INCLUDE = -I.
 
 OBJECTS = \
+	main.o \
+	fs/error.o \
+	fs/owner.o \
+	fs/status.o \
+	fs/file.o \
+	fs/directory.o \
 	acl/acl.o \
 	acl/user.o \
 	logger/logger.o \
@@ -20,6 +26,9 @@ OBJECTS = \
 
 all: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd
+
+strip:
+	@strip -s ftpd
 
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDE) $*.cpp -o $*.o
