@@ -47,9 +47,9 @@ public:
 Logger& flush(Logger& logger);
 Logger& endl(Logger& logger);
 
-void Initialise();
+void Initialise(const std::string& dataPath);
 
-#ifndef __LOGGER_LOGGER_CPP
+#ifndef __UTIL_LOGGER_CPP
 
 extern Logger ftpd;
 extern Logger access;
