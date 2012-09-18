@@ -3,27 +3,28 @@
 
 #include <string>
 #include <stdexcept>
+#include <cerrno>
 
-namespace fs
+namespace util
 {
 
 std::string ErrnoToMessage(int errno_);
 
-class FileSystemError : public std::runtime_error
+class SystemError : public std::runtime_error
 {
   int errno_;
   bool validErrno;
 
 public:
-  FileSystemError() : 
+  SystemError() : 
     std::runtime_error("Unknown filesystem error"),
     errno_(-1), validErrno(false) { }
     
-  FileSystemError(const std::string& message) : 
+  SystemError(const std::string& message) : 
     std::runtime_error(message),
     errno_(-1), validErrno(false) { }
     
-  FileSystemError(int errno_);
+  SystemError(int errno_);
   
   int Errno() const { return errno_; }
   bool ValidErrno() const { return validErrno; }
@@ -57,6 +58,6 @@ public:
   static Error Failure(int errno_) { return Error(errno_); }
 };
 
-} /* fs namespace */
+} /* util namespace */
 
 #endif
