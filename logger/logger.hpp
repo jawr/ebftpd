@@ -30,8 +30,8 @@ class Logger : boost::noncopyable
   Logger& Flush(bool newLine);
   
 public:
-  Logger() : out(0) { }
-  Logger(const std::string& path) : path(path), out(0) { }
+  Logger();
+  Logger(const std::string& path);
   ~Logger();
 
   void SetPath(const std::string& path);
