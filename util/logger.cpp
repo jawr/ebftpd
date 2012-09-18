@@ -90,9 +90,16 @@ Logger& Logger::Flush(bool newLine)
       if (!firstLine) (*out) << "\n";
       else firstLine = false;
       (*out) << timestamp << " " << line;
+      #ifdef DEBUG
+      std::clog << timestamp << " " << line;
+      #endif
     }
 
     (*out) << (newLine ? "\n" : "") << std::flush;
+
+    #ifdef DEBUG
+    std::clog << (newLine ? "\n" : "") << std::flush;
+    #endif
   }
   
   oss->str("");
