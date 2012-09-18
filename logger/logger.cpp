@@ -1,4 +1,4 @@
-#define __UTIL_LOGGER_CPP
+#define __LOGGER_LOGGER_CPP
 #include "logger.hpp"
 
 namespace logger
@@ -11,10 +11,26 @@ util::logger::Logger error;
 
 void Initialise(const std::string& dataPath)
 {
-  ftpd.SetPath(dataPath + "/access.log");
+  ftpd.SetPath(dataPath + "/ftpd.log");
   access.SetPath(dataPath + "/access.log");
   siteop.SetPath(dataPath + "/siteop.log");
   error.SetPath(dataPath + "/error.log");
 }
 
 } /* logger namespace */
+
+#ifdef LOGGER_LOGGER_TEST
+
+int main()
+{
+  using namespace logger;
+  
+  
+  logger::Initialise("/tmp");
+  logger::ftpd << "test" << logger::endl;
+  logger::access << "test" << logger::endl;
+  logger::siteop << "test" << logger::endl;
+  logger::error << "test" << logger::endl;
+}
+
+#endif
