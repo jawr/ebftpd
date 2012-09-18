@@ -1,6 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG
-LIBS = -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization -lboost_iostreams -lboost_system -lpthread
+LIBS = -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
+LIBS += -lboost_iostreams -lboost_system -lpthread
 INCLUDE = -I.
 
 OBJECTS = \
@@ -38,7 +39,7 @@ all:
 	$(MAKE) $(MAKEFILE) clean; \
 	fi; \
 	echo "all" > .state
-	$(MAKE) $(MAKEFILE) compile
+	$(MAKE) $(MAKEFILE) ftpd
 
 test: 
 	@if [ -z $(TEST) ]; then \
@@ -49,17 +50,19 @@ test:
 	$(MAKE) $(MAKEFILE) clean; \
 	fi; \
 	echo "$(TEST)" > .state
-	$(MAKE) $(MAKEFILE) compile CXXFLAGS="$(CXXFLAGS) -DTEST -D$(TEST)"
+	$(MAKE) $(MAKEFILE) ftpd CXXFLAGS="$(CXXFLAGS) -DTEST -D$(TEST)"
 
-compile: $(OBJECTS)
+ftpd: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd
 	
-
 strip:
 	@strip -s ftpd
 
 %.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) $(INCLUDE) $*.cpp -o $*.o
+	$(CXX) -c $(CXXFLAGS) $(INCLUDE) -MD -o $@ $<
+
+DEPS = $(OBJECTS:.o=.d)
+-include $(DEPS)
 
 clean:
 	@rm -f *.o *.d */*.o */*.d
