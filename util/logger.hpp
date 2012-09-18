@@ -1,5 +1,5 @@
-#ifndef __LOGGER_LOGGER_HPP
-#define __LOGGER_LOGGER_HPP
+#ifndef __UTIL_LOGGER_HPP
+#define __UTIL_LOGGER_HPP
 
 #include <ostream>
 #include <boost/thread/mutex.hpp>
