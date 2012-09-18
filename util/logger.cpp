@@ -21,15 +21,6 @@ Logger::~Logger()
   if (out != &std::clog) delete out;
 }
 
-//template <typename T>
-//Logger& Logger::operator<<(T data)
-//{
-//  if (!buffer.get()) buffer.reset(new std::ostringstream);
-//  std::ostringstream* oss = buffer.get();
-//  (*oss) << data;
-//  return *this;
-//}
-
 Logger& Logger::operator<<(std::ostream& (*pf)(std::ostream&))
 {
   if (!buffer.get()) buffer.reset(new std::ostringstream);
