@@ -9,13 +9,19 @@ namespace acl
 
 bool ACL::Check(const User& user)
 {
+  if (finalResult) return *finalResult;
   for (boost::ptr_vector<Permission>::const_iterator it =
        perms.begin(); it != perms.end(); ++it)
   {
     boost::tribool result = it->Evaluate(user);
-    if (!boost::indeterminate(result)) return result;
+    if (!boost::indeterminate(result))
+    {
+      finalResult.reset(result);
+      return *finalResult;
+    }
   }
-  return false;
+  finalResult.reset(false);
+  return *finalResult;
 }
 
 void ACL::FromStringArg(const std::string& arg)
@@ -61,7 +67,6 @@ int main()
   std::cout << acl.Check(u) << std::endl;
   acl = acl::ACL::FromString("!6 =test -bioboy");
   std::cout << acl.Check(u) << std::endl;
-  
 }
 
 #endif
