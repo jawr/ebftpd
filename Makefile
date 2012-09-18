@@ -1,10 +1,11 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG -DLISTENER_TEST
+CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG -DCONFIG_TEST
 LIBS = -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization -lboost_iostreams -lboost_system -lpthread
 INCLUDE = -I.
 
 OBJECTS = \
 	main.o \
+  cfg/config.o \
   ftp/listener.o \
 	fs/owner.o \
 	fs/status.o \
