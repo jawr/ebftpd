@@ -5,109 +5,96 @@
 #include <fcntl.h>
 #include "fs/file.hpp"
 #include "acl/user.hpp"
+#include "fs/path.hpp"
+#include "ftp/client.hpp"
 
 namespace fs
 {
 
-Error DeleteFile(const std::string& path)
+namespace
 {
-  if (unlink(path.c_str()) < 0) return Error::Failure(errno);
-  else return Error::Success();
+const std::string dummySiteRoot = "/home/bioboy/ftpd/site";
+
 }
 
-Error DeleteFile(const acl::User& user, std::string& path)
+util::Error DeleteFile(const Path& path)
 {
+  Path real = dummySiteRoot + path;
+  if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
+  else return util::Error::Success();
+}
+
+util::Error DeleteFile(const ftp::Client& client, const Path& path)
+{
+  Path absolute = client.WorkDir() / path;
   // check ACLs
-  return DeleteFile(path);
-}
-
-Error DeleteFile(const ftp::Client& client, const std::string& path)
-{
-  assert(false && "not implemnted");
+  return DeleteFile(absolute);
 }
 
 // implement alternative rename for when not on same filesystem?
 // using copy / delete instead?
-Error RenameFile(const std::string& oldPath, const std::string& newPath)
+util::Error RenameFile(const Path& oldPath, const Path& newPath)
 {
-  if (rename(oldPath.c_str(), newPath.c_str()) < 0) return Error::Failure(errno);
-  else return Error::Success();
+  Path oldReal = dummySiteRoot + oldPath;
+  Path newReal = dummySiteRoot + newPath;
+  if (rename(oldReal.CString(), newReal.CString()) < 0) return util::Error::Failure(errno);
+  else return util::Error::Success();
 }
 
-Error RenameFile(const acl::User& user, const std::string& oldPath,
-                 const std::string& newPath)
+util::Error RenameFile(const ftp::Client& client, const Path& oldPath,
+                 const Path& newPath)
 {
+  Path oldAbsolute = client.WorkDir() / oldPath;
+  Path newAbsolute = client.WorkDir() / newPath;
   // check ACLs
-  return RenameFile(oldPath, newPath);
+  return RenameFile(oldAbsolute, newAbsolute);
 }
 
-Error RenameFile(const ftp::Client& client, const std::string& oldPath,
-                 const std::string& newPath)
+OutStreamPtr CreateFile(const Path& path)
 {
-  assert(false && "not implemented");
-}
-
-OutStreamPtr CreateFile(const std::string& path)
-{
-  using namespace boost::iostreams;
-  
-  int fd = open(path.c_str(), O_CREAT | O_WRONLY | O_EXCL, 0777);
-  if (fd < 0) throw FileSystemError(errno);
-  
+  Path real = dummySiteRoot + path;
+  int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, 0777);
+  if (fd < 0) throw util::SystemError(errno);
   return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
 }
 
-OutStreamPtr CreateFile(const acl::User& user, const std::string& path)
+OutStreamPtr CreateFile(const ftp::Client& client, const Path& path)
 {
+  Path absolute = client.WorkDir() / path; 
   // check ACLs
-  OutStreamPtr os(CreateFile(path));
+  OutStreamPtr os(CreateFile(absolute));
   // update owner file
   return os;
 }
 
-OutStreamPtr CreateFile(const ftp::Client& client, const std::string& path)
+OutStreamPtr AppendFile(const Path& path)
 {
-  assert(false && "not implemented");
-}
-
-OutStreamPtr AppendFile(const std::string& path)
-{
-  using namespace boost::iostreams;
-  
-  int fd = open(path.c_str(), O_WRONLY | O_APPEND);
-  if (fd < 0) throw FileSystemError(errno);
-  
+  Path real = dummySiteRoot + path;
+  int fd = open(real.CString(), O_WRONLY | O_APPEND);
+  if (fd < 0) throw util::SystemError(errno);
   return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
 }
 
-OutStreamPtr AppendFile(const acl::User& user, const std::string& path)
+OutStreamPtr AppendFile(const ftp::Client& client, const Path& path)
 {
+  Path absolute = client.WorkDir() / path;
   // check ACLs
-  return AppendFile(path);
+  return AppendFile(absolute);
 }
 
-OutStreamPtr AppendFile(const ftp::Client& client, const std::string& path)
+InStreamPtr OpenFile(const Path& path)
 {
-  assert(false && "not implemented");
-}
-
-InStreamPtr OpenFile(const std::string& path)
-{
-  int fd = open(path.c_str(), O_RDONLY);
-  if (fd < 0) throw FileSystemError(errno);
-  
+  Path real = dummySiteRoot + path;
+  int fd = open(real.CString(), O_RDONLY);
+  if (fd < 0) throw util::SystemError(errno);
   return InStreamPtr(new InStream(fd, boost::iostreams::close_handle));
 }
 
-InStreamPtr OpenFile(const acl::User& user, const std::string& path)
+InStreamPtr OpenFile(const ftp::Client& client, const Path& path)
 {
+  Path absolute = client.WorkDir() / path;
   // check ACLs
-  return OpenFile(path);
-}
-
-InStreamPtr OpenFile(const ftp::Client& client, const std::string& path)
-{
-  assert(false && "not implemented");
+  return OpenFile(absolute);
 }
 
 } /* fs namespace */
@@ -120,7 +107,7 @@ int main()
 {
   using namespace fs;
 
-  Error e = DeleteFile("/tmp/somefile");
+  util::Error e = DeleteFile("/tmp/somefile");
   std::cout << "delete: " << (e ? "true" : "false") << " " << e.Message() << " " << e.Errno() << std::endl;
   
   e = RenameFile("/tmp/one", "/tmp/two");
@@ -138,7 +125,7 @@ int main()
   {
     os = AppendFile("/tmp/notexist");
   }
-  catch (const FileSystemError& e)
+  catch (const util::SystemError& e)
   {
     std::cout << "append: " << e.what() << " " << e.Errno() << std::endl;
   }
