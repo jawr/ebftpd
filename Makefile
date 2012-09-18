@@ -13,7 +13,6 @@ OBJECTS = \
 	fs/directory.o \
 	acl/acl.o \
 	acl/user.o \
-	util/logger.o \
 	util/verify.o \
 	util/passwd.o \
 	util/descriptor.o \
@@ -21,6 +20,7 @@ OBJECTS = \
 	util/endpoint.o \
 	util/exception.o \
 	util/ip.o \
+	util/logger.o \
 	util/resolver.o \
 	util/ssl.o \
 	util/tcpclient.o \

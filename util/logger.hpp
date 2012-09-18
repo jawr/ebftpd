@@ -36,7 +36,13 @@ public:
 
   void SetPath(const std::string& path);
   
-  template <typename T> Logger& operator<<(T data);
+  template <typename T> Logger& operator<<(T data) {
+    if (!buffer.get()) buffer.reset(new std::ostringstream);                      
+    std::ostringstream* oss = buffer.get();                                       
+    (*oss) << data;                                                               
+    return *this;                                                                 
+  };
+
   Logger& operator<<(std::ostream& (*pf)(std::ostream&));
   Logger& operator<<(Logger& (*pf)(Logger&));
   
@@ -49,8 +55,8 @@ Logger& endl(Logger& logger);
 
 void Initialise(const std::string& dataPath);
 
-#ifndef __UTIL_LOGGER_CPP
 
+#ifndef __UTIL_LOGGER_CPP
 extern Logger ftpd;
 extern Logger access;
 extern Logger siteop;
