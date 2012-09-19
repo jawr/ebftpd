@@ -4,23 +4,25 @@
 #include <string>
 #include "acl/user.hpp"
 #include "util/tcpclient.hpp"
+#include "util/thread.hpp"
 
-namespace ftp
+namespace ftp 
 {
 
-class Client
+class Client : public util::Thread
 {
   std::string workDir;
   acl::User user;
   util::tcp::client socket;
   
 public:
-  Client() : workDir("/"), socket(), user("biohazard", "somepass", "1") { }
+  Client() : Thread(), workDir("/"), socket(), user("biohazard", "somepass", "1") { }
 
   const std::string& WorkDir() const { return workDir; };
   const acl::User& User() const { return user; }
 
   util::tcp::client& Socket() { return socket; };
+  void Run();
 };
 
 } /* ftp namespace */

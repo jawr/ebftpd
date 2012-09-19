@@ -8,6 +8,7 @@ OBJECTS = \
 	main.o \
 	cfg/config.o \
 	ftp/listener.o \
+  ftp/client.o \
 	fs/owner.o \
 	fs/status.o \
 	fs/file.o \

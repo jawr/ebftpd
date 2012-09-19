@@ -17,6 +17,7 @@ void Listener::Run()
     // global object.
     ftp::Client *client = new ftp::Client();
     server.accept(client->Socket());
+    client->Start();
     logger::ftpd << "Got client: " << client->Socket().remote_endpoint().ip() << logger::endl;
     clients.insert(client);
   }
