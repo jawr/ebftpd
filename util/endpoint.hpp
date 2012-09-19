@@ -69,6 +69,7 @@ namespace util
     {
       return _empty;
     }
+
   };
 
 }
