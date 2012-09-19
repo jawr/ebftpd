@@ -6,12 +6,12 @@ namespace util
 class Thread
 {
   boost::thread thread;
-  int[2] pipe;
+  int pipe[2];
 
   void Main();
 public:
-  Thread() {};
-  virtual ~Thread();
+  Thread() : pipe(), thread() {};
+  virtual ~Thread() {};
   void Start();
   void Stop();
   void Join();
