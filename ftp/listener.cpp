@@ -15,6 +15,7 @@ void Listener::Run()
 int main()
 {
   ftp::Listener l;
+  l.Start();
   l.Join();
   return 0;
 }

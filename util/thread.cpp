@@ -20,10 +20,6 @@ void Thread::Main()
   {
     // interrupted, expected
   }
-  catch (std::exception& e)
-  {
-    // handle?
-  }
 }
 
 void Thread::Stop()
