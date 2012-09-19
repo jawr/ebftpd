@@ -5,11 +5,15 @@ namespace util
 {
 class Thread
 {
-  boost::thread *thread;
+  boost::thread thread;
+  int[2] pipe;
+
+  void Main();
 public:
-  Thread() { thread = new boost::thread(&Thread::Start, this); };
-  ~Thread() { thread->interrupt(); thread->join(); };
+  Thread() {};
+  virtual ~Thread();
   void Start();
+  void Stop();
   void Join();
   virtual void Run() {};
 };
