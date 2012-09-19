@@ -85,14 +85,14 @@ Logger& Logger::Flush(bool newLine)
       else firstLine = false;
       (*out) << timestamp << " " << line;
       #ifdef DEBUG
-      std::clog << timestamp << " " << line;
+      //std::clog << timestamp << " " << line;
       #endif
     }
 
     (*out) << (newLine ? "\n" : "") << std::flush;
 
     #ifdef DEBUG
-    std::clog << (newLine ? "\n" : "") << std::flush;
+    //std::clog << (newLine ? "\n" : "") << std::flush;
     #endif
   }
   
