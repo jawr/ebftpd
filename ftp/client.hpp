@@ -9,20 +9,20 @@
 namespace ftp 
 {
 
-class Client : public util::Thread
+class Client : public util::ThreadConsumer
 {
   std::string workDir;
   acl::User user;
   util::tcp::client socket;
   
 public:
-  Client() : Thread(), workDir("/"), user("biohazard", "somepass", "1") { }
+  Client() : workDir("/"), user("biohazard", "somepass", "1") { }
 
   const std::string& WorkDir() const { return workDir; };
   const acl::User& User() const { return user; }
 
   util::tcp::client& Socket() { return socket; };
-  void Run() { };
+  void Run();
 };
 
 } /* ftp namespace */
