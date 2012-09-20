@@ -175,14 +175,14 @@ public:
   ~Ints() {};
 };
 
-class IntWithArgs : virtual public Setting
+class IntWithArguments : virtual public Setting
 {
   int first;
   std::vector<std::string> arguments;
 public:
-  IntWithArgs(int first, std::vector<std::string>& arguments) :
+  IntWithArguments(int first, std::vector<std::string>& arguments) :
     first(first), arguments(arguments) {};
-  ~IntWithArgs() {};
+  ~IntWithArguments() {};
 };
 
 class IntWithBool : virtual public Setting
@@ -194,15 +194,15 @@ public:
   ~IntWithBool() {};
 };
 
-class NukeDirStyle : virtual public Setting
+class NukedirStyle : virtual public Setting
 {
   std::string format;
   int method;
   int bytes;
 public:
-  NukeDirStyle(const std::string& format, int method, int bytes) :
+  NukedirStyle(const std::string& format, int method, int bytes) :
     format(format), method(method), bytes(bytes) {};
-  ~NukeDirStyle() {};
+  ~NukedirStyle() {};
 };
 
 class SecureIP : virtual public Setting
@@ -229,16 +229,16 @@ public:
   ~PasvAddr() {};
 };
 
-class AllowFXP : virtual public Setting
+class AllowFxp : virtual public Setting
 {
   bool downloads;
   bool uploads;
   bool logging;
   std::string acl;
 public:
-  AllowFXP(bool downloads, bool uploads, bool logging, const std::string& acl) :
+  AllowFxp(bool downloads, bool uploads, bool logging, const std::string& acl) :
     downloads(downloads), uploads(uploads), logging(logging), acl(acl) {};
-  ~AllowFXP() {};
+  ~AllowFxp() {};
 };
 
 class NameRules : virtual public Setting
@@ -265,15 +265,15 @@ public:
   ~CreditLoss() {};
 };
 
-class CreditCheck : virtual public Setting
+class Creditcheck : virtual public Setting
 {
   std::string path;
   int ratio;
   std::vector<std::string> acl;
 public:
-  CreditCheck(const std::string& path, int ratio, std::vector<std::string>& acl) :
+  Creditcheck(const std::string& path, int ratio, std::vector<std::string>& acl) :
     path(path), ratio(ratio), acl(acl) {};
-  ~CreditCheck() {};
+  ~Creditcheck() {};
 };
 
 class MsgPath : virtual public Setting
@@ -287,15 +287,15 @@ public:
   ~MsgPath() {};
 };
 
-class CScript : virtual public Setting
+class Cscript : virtual public Setting
 {
   std::string name;
   std::string command;
   std::string path;
 public:
-  CScript(const std::string& name, const std::string& command, 
+  Cscript(const std::string& name, const std::string& command, 
     const std::string& path) : name(name), command(command), path(path) {};
-  ~CScript() {};
+  ~Cscript() {};
 };
 
   
