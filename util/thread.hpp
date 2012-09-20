@@ -15,12 +15,12 @@ protected:
 
   void Main();
 public:
-  Thread() :  cond(), mtx(), pipe(), thread() {};
-  virtual ~Thread() {};
+  Thread() { pipe[0] = -1; pipe[1] = -1; };
+  virtual ~Thread();
   void Start();
   void Stop();
   void Join();
-  virtual void Run() {};
+  virtual void Run() = 0;
 };
 // end util namespace
 }

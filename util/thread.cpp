@@ -5,6 +5,12 @@
 namespace util
 {
 
+Thread::~Thread()
+{
+  if (pipe[0] >= 0) close(pipe[0]);
+  if (pipe[1] >= 0) close(pipe[1]);
+}
+
 void Thread::Start()
 { 
   thread = boost::thread(&Thread::Main, this);  
