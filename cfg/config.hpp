@@ -2,49 +2,54 @@
 #define __CFG_CONFIG_CPP
 #include <vector>
 #include <string>
-#include <tr1/unordered_map>
+#include <boost/unordered_map.hpp>
+#include <tr1/memory>
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
 #include "fs/path.hpp"
+
 
 namespace cfg
 {
 
 class Config
 { 
+  static int latestVersion;
+  int version;
+
   std::string config;
  
   void Parse(const std::string& line);
   void SetSetting(const std::string& setting, std::vector<std::string>& toks);
 
   // containers
-  std::tr1::unordered_map<std::string, std::vector<fs::Path> > MapPath;
-  std::tr1::unordered_map<std::string, std::vector<setting::ACL> > MapACL;
-  std::tr1::unordered_map<std::string, std::vector<setting::IntWithArguments> > MapIntWithArguments;
-  std::tr1::unordered_map<std::string, std::vector<std::string> > MapStrings;
-  std::tr1::unordered_map<std::string, std::vector<int> > MapInt;
-  std::tr1::unordered_map<std::string, std::vector<bool> > MapBool; 
-  std::tr1::unordered_map<std::string, std::vector<setting::SecureIP> > MapSecureIP;
-  std::tr1::unordered_map<std::string, std::vector<setting::SpeedLimit> > MapSpeedLimit;
-  std::tr1::unordered_map<std::string, std::vector<setting::PasvAddr> > MapPasvAddr;
-  std::tr1::unordered_map<std::string, std::vector<setting::AllowFxp> > MapAllowFxp;
-  std::tr1::unordered_map<std::string, std::vector<setting::ACLWithPath> > MapACLWithPath;
-  std::tr1::unordered_map<std::string, std::vector<setting::PathWithArgument> > MapPathWithArgument;
-  std::tr1::unordered_map<std::string, std::vector<setting::ACLWithArgument> > MapACLWithArgument;
-  std::tr1::unordered_map<std::string, std::vector<setting::StatSection> > MapStatSection;
-  std::tr1::unordered_map<std::string, std::vector<setting::PathFilter> > MapPathFilter;
-  std::tr1::unordered_map<std::string, std::vector<setting::ACLWithInt> > MapACLWithInt;
-  std::tr1::unordered_map<std::string, std::vector<setting::IntWithBool> > MapIntWithBool;
-  std::tr1::unordered_map<std::string, std::vector<setting::Requests> > MapRequests; 
-  std::tr1::unordered_map<std::string, std::vector<setting::Creditcheck> > MapCreditcheck;
-  std::tr1::unordered_map<std::string, std::vector<setting::NukedirStyle> > MapNukedirStyle;
-  std::tr1::unordered_map<std::string, std::vector<setting::MsgPath> > MapMsgPath;
+  boost::unordered_map<std::string, std::vector<fs::Path> > MapPath;
+  boost::unordered_map<std::string, std::vector<setting::ACL> > MapACL;
+  boost::unordered_map<std::string, std::vector<setting::IntWithArguments> > MapIntWithArguments;
+  boost::unordered_map<std::string, std::vector<std::string> > MapStrings;
+  boost::unordered_map<std::string, std::vector<int> > MapInt;
+  boost::unordered_map<std::string, std::vector<bool> > MapBool; 
+  boost::unordered_map<std::string, std::vector<setting::SecureIP> > MapSecureIP;
+  boost::unordered_map<std::string, std::vector<setting::SpeedLimit> > MapSpeedLimit;
+  boost::unordered_map<std::string, std::vector<setting::PasvAddr> > MapPasvAddr;
+  boost::unordered_map<std::string, std::vector<setting::AllowFxp> > MapAllowFxp;
+  boost::unordered_map<std::string, std::vector<setting::ACLWithPath> > MapACLWithPath;
+  boost::unordered_map<std::string, std::vector<setting::PathWithArgument> > MapPathWithArgument;
+  boost::unordered_map<std::string, std::vector<setting::ACLWithArgument> > MapACLWithArgument;
+  boost::unordered_map<std::string, std::vector<setting::StatSection> > MapStatSection;
+  boost::unordered_map<std::string, std::vector<setting::PathFilter> > MapPathFilter;
+  boost::unordered_map<std::string, std::vector<setting::ACLWithInt> > MapACLWithInt;
+  boost::unordered_map<std::string, std::vector<setting::IntWithBool> > MapIntWithBool;
+  boost::unordered_map<std::string, std::vector<setting::Requests> > MapRequests; 
+  boost::unordered_map<std::string, std::vector<setting::Creditcheck> > MapCreditcheck;
+  boost::unordered_map<std::string, std::vector<setting::NukedirStyle> > MapNukedirStyle;
+  boost::unordered_map<std::string, std::vector<setting::MsgPath> > MapMsgPath;
 
   // site commands
-  std::tr1::unordered_map<std::string, setting::SiteCmd> MapSiteCmd;
+  boost::unordered_map<std::string, setting::SiteCmd> MapSiteCmd;
 
   // custom commands
-  std::tr1::unordered_map<std::string, std::vector<setting::Cscript> > MapCscript;
+  boost::unordered_map<std::string, std::vector<setting::Cscript> > MapCscript;
   
 
    
@@ -52,6 +57,7 @@ public:
   Config(const std::string& configFile);
   ~Config() {};  
 
+  int Version() const { return version; };
 
   // getters
   // follows the following syntax:
@@ -150,10 +156,13 @@ public:
   const std::vector<setting::ACLWithPath>& Privpath();
   int MaxSitecmdLines();
   const std::vector<setting::Cscript>& Cscript();
-  // todo: site_cmd & corresponding permissions 
+  const std::vector<setting::SiteCmd>& SiteCmd();
 
 };
 
 }
+
+typedef std::tr1::shared_ptr<cfg::Config> ConfigPtr;
+int cfg::Config::latestVersion = 0;
 
 #endif 

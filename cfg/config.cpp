@@ -14,7 +14,7 @@
 namespace cfg
 {
 
-Config::Config(const std::string& config) : config(config), 
+Config::Config(const std::string& config) : config(config), version(),
 MapPath(), MapACL(), MapIntWithArguments(), MapStrings(), MapInt(), MapBool(),
 MapSecureIP(), MapSpeedLimit(), MapPasvAddr(), MapAllowFxp(), MapACLWithPath(),
 MapPathWithArgument(), MapACLWithArgument(), MapStatSection(), MapPathFilter(),
@@ -82,17 +82,14 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
    || opt == "nodupecheck")
   {
     
-    MapPath.insert(std::pair<std::string, setting::MapPath>(opt, toks.at(0)));
   }
 
   // ACL 
   else if (opt == "userrejectsecure")
   {
-    MapACL.insert(std::pair<std::string, setting::ACL>(opt, setting::ACL(toks)));
   }
   else if (opt == "userrejectinsecure")
   {
-    MapACL.insert(std::pair<std::string, setting::ACL>(opt, setting::ACL(toks)));
   }
   else if (opt == "denydiruncrypted")
   {
