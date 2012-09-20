@@ -5,7 +5,7 @@
 #include <vector>
 #include <utility>
 #include <boost/unordered_map.hpp>
-#include "acl.hpp"
+#include "acl/acl.hpp"
 
 namespace acl
 {

@@ -4,7 +4,7 @@
 #include <string>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/optional.hpp>
-#include "permission.hpp"
+#include "acl/permission.hpp"
 
 namespace acl
 {

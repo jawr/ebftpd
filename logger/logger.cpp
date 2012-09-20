@@ -1,5 +1,5 @@
 #define __LOGGER_LOGGER_CPP
-#include "logger.hpp"
+#include "logger/logger.hpp"
 
 namespace logger
 {
