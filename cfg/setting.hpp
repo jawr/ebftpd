@@ -2,6 +2,7 @@
 #define __CFG_SETTING_HPP
 #include <string>
 #include <vector>
+#include "fs/path.hpp"
 namespace cfg
 {
 class Setting {};
@@ -311,18 +312,18 @@ class SiteCmd : virtual public Setting
 public:
   // initalize with acl
   SiteCmd(const std::vector<std::string>& acl) : acl(acl), command(), method(EXEC),
-    file(), arguments() {};
+    file("/error/unconfigured"), arguments() {};
   // initalize with site_cmd 
   SiteCmd(const std::string& command, SiteCmdMethod method, 
-    const std::string& path, const std::vector<std::string>& arguments) :
-    acl(), command(command), method(method), path(path), arguments(arguments) {};
+    const std::string& file, const std::vector<std::string>& arguments) :
+    acl(), command(command), method(method), file(file), arguments(arguments) {};
   // set alternative
   void SetSiteCmd(const std::string& command, SiteCmdMethod method, 
-    const std::string& path, const std::vector<std::string>& arguments)
+    const std::string& file, const std::vector<std::string>& arguments)
   {
     this->command = command;
     this->method  = method;
-    this->path = fs::Path(path);
+    this->file = fs::Path(file);
     this->arguments = arguments;
   };
   void SetACL(const std::vector<std::string>& acl)
