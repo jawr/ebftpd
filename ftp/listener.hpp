@@ -10,16 +10,15 @@
 #include "util/tcpclient.hpp"
 namespace ftp
 {
-class Listener : public util::Thread
+class Listener : public util::ThreadConsumer
 {
   util::endpoint addr;
   util::tcp::server server;
   std::tr1::unordered_set<ftp::Client*> clients;
   
 public:
-  Listener() : Thread(), addr("127.0.0.1", 21), server(), clients() {};
-  Listener(const std::string& ip, uint16_t port) : 
-    Thread(), addr(ip, port), server() {};
+  Listener() : addr("127.0.0.1", 21), server(), clients() {};
+  Listener(const std::string& ip, uint16_t port) : addr(ip, port), server() {};
   ~Listener() {};
   void Run();
   void Listen();
