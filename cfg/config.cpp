@@ -66,25 +66,33 @@ void Config::Parse(const std::string& line) {
     
 
   // parse string
+  boost::algorithm::to_lower(opt);
   SetSetting(opt, toks);
   // push onto setting's vector
-  boost::algorithm::to_lower(opt);
   
 }
 
 void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
 {
-  if (opt == "DSA_CERT_FILE")
+
+  // Path
+  if (opt == "DSA_CERT_FILE" || opt == "rootpath" || opt == "datapath"
+   || opt == "pwd_path" || opt == "grp_path" || opt == "botscript_path"
+   || opt == "calc_crc" || opt == "min_homedir" || opt == "banner"
+   || opt == "nodupecheck")
   {
-    //return new setting::Path(toks.at(0));
+    
+    MapPath.insert(std::pair<std::string, setting::MapPath>(opt, toks.at(0)));
   }
+
+  // ACL 
   else if (opt == "userrejectsecure")
   {
-    //return new setting::ACL(toks);
+    MapACL.insert(std::pair<std::string, setting::ACL>(opt, setting::ACL(toks)));
   }
   else if (opt == "userrejectinsecure")
   {
-    //return new setting::ACL(toks);
+    MapACL.insert(std::pair<std::string, setting::ACL>(opt, setting::ACL(toks)));
   }
   else if (opt == "denydiruncrypted")
   {
