@@ -19,7 +19,7 @@ MapPath(), MapACL(), MapIntWithArguments(), MapStrings(), MapInt(), MapBool(),
 MapSecureIP(), MapSpeedLimit(), MapPasvAddr(), MapAllowFxp(), MapACLWithPath(),
 MapPathWithArgument(), MapACLWithArgument(), MapStatSection(), MapPathFilter(),
 MapACLWithInt(), MapIntWithBool(), MapRequests(), MapCreditcheck(), 
-MapNukedirStyle(), MapMsgPath(), MapCscript()
+MapNukedirStyle(), MapMsgPath(), MapSiteCmd(), MapCscript()
 {
   std::string line;
   std::ifstream io(config.c_str(), std::ifstream::in);
