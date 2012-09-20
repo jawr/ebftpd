@@ -2,6 +2,7 @@
 #define __CFG_SETTING_HPP
 #include <string>
 #include <vector>
+#include "fs/path.hpp"
 namespace cfg
 {
 class Setting {};
@@ -9,34 +10,10 @@ class Setting {};
 namespace setting
 {
 
-class Bool : virtual public Setting
-{
-  bool argument;
-public:
-  Bool(bool argument) : argument(argument) {};
-  ~Bool() {};
-};
-
-class Arguments : virtual public Setting
-{
-  std::vector<std::string> arguments;
-public:
-  Arguments(const std::vector<std::string>& arguments) :
-    arguments(arguments) {};
-  ~Arguments() {};
-};
-
-class Argument : virtual public Setting
-{
-  std::string argument;
-public:
-  Argument(const std::string& argument) : argument(argument) {};
-  ~Argument() {};
-};
-
+// Path settings
 class Path : virtual public Setting
 {
-  std::string path;
+  fs::Path path;
 public:
   Path(const std::string& path) : path(path) {};
   ~Path() {};
@@ -44,7 +21,7 @@ public:
 
 class PathWithArgument : virtual public Setting
 {
-  std::string path;
+  fs::Path path;
   std::string argument;
 public:
   PathWithArgument(const std::string& path, const std::string& argument) :
@@ -52,6 +29,7 @@ public:
   ~PathWithArgument() {};
 };
 
+// ACL settings
 class ACLWithInt : virtual public Setting
 {
   std::vector<std::string> acl;
@@ -61,7 +39,6 @@ public:
     argument(argument) {};
   ~ACLWithInt() {};
 };
-
 
 class ACLWithArgument : virtual public Setting
 {
@@ -75,7 +52,7 @@ public:
 
 class ACLWithPath : virtual public Setting
 {
-  std::string path;
+  fs::Path path;
   std::vector<std::string> acl;
 public:
   ACLWithPath(const std::string& path, 
@@ -91,19 +68,11 @@ public:
   ~ACL() {};
 };
 
-class Range : virtual public Setting
-{
-  int start;
-  int end;
-public:
-  Range(int start, int end) : start(start), end(end) {};
-  ~Range() {};
-};
-
+// Misc
 class StatSection : virtual public Setting
 {
   std::string keyword;
-  std::string path;
+  fs::Path path;
   bool seperateCredits;
 public:
   StatSection(const std::string& keyword, const std::string& path,
@@ -115,7 +84,7 @@ public:
 class PathFilter : virtual public Setting
 {
   std::string group;
-  std::string messageFile;
+  fs::Path messageFile;
   std::vector<std::string> filters;
 public:
   PathFilter(const std::string& group, const std::string& messageFile,
@@ -130,7 +99,7 @@ class Script : virtual public Setting
 {
   std::string script;
   When when;
-  std::string path;
+  fs::Path path;
 public:
   Script(const std::string& script, When when, const std::string& path) :
     script(script), when(when), path(path) {};
@@ -139,7 +108,7 @@ public:
 
 class SpeedLimit : virtual public Setting
 {
-  std::string path;
+  fs::Path path;
   int upload;
   int download;
   std::string acl;
@@ -152,27 +121,11 @@ public:
 
 class Requests : virtual public Setting
 {
-  std::string path;
+  fs::Path path;
   int lines;
 public:
   Requests(const std::string& path, int lines) : path(path), lines(lines) {};
   ~Requests() {};
-};
-
-class Int : virtual public Setting
-{
-  int argument;
-public:
-  Int(int argument): argument(argument) {};
-  ~Int() {};
-};
-
-class Ints : virtual public Setting
-{
-  std::vector<int> ints;
-public:
-  Ints(std::vector<int>& ints) : ints(ints) {};
-  ~Ints() {};
 };
 
 class IntWithArguments : virtual public Setting
@@ -241,22 +194,11 @@ public:
   ~AllowFxp() {};
 };
 
-class NameRules : virtual public Setting
-{
-  int caps;
-  bool upperCase;
-  std::vector<std::string> conversions;
-public:
-  NameRules(int caps, bool upperCase, std::vector<std::string>& conversions) :
-    caps(caps), upperCase(upperCase), conversions(conversions) {};
-  ~NameRules() {};
-};
-
 class CreditLoss : virtual public Setting
 {
   int multiplier;
   bool leechers;
-  std::string path;
+  fs::Path path;
   std::vector<std::string> acl;
 public:
   CreditLoss(int multiplier, bool leechers, const std::string& path, 
@@ -267,7 +209,7 @@ public:
 
 class Creditcheck : virtual public Setting
 {
-  std::string path;
+  fs::Path path;
   int ratio;
   std::vector<std::string> acl;
 public:
@@ -278,7 +220,7 @@ public:
 
 class MsgPath : virtual public Setting
 {
-  std::string path;
+  fs::Path path;
   std::string filename;
   std::vector<std::string> acl;
 public:
@@ -291,7 +233,7 @@ class Cscript : virtual public Setting
 {
   std::string name;
   std::string command;
-  std::string path;
+  fs::Path path;
 public:
   Cscript(const std::string& name, const std::string& command, 
     const std::string& path) : name(name), command(command), path(path) {};
