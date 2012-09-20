@@ -473,7 +473,20 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   {
     //return new setting::CScript(toks.at(0), toks.at(1), toks.at(2)); 
   }
-    
+  else if (opt == "site_cmd")
+  {
+  }
+  // check if we have a site_cmd permission
+  if (opt.at(0) == '-')
+  {
+    std::string opt_ = opt;
+    opt_.erase(opt_.begin());
+  } 
+  else if (opt.find("custom-") != std::string::npos)
+  {
+    std::string opt_ = opt;
+    opt_.replace(0, 7, "");
+  }
   // todo: 
   //  site_cmd and their corresponding permissions
   
