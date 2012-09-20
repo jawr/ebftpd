@@ -24,9 +24,9 @@ typedef boost::iostreams::stream<
         
 typedef std::tr1::shared_ptr<InStream> InStreamPtr;
         
-Error DeleteFile(const ftp::Client& client, const std::string& path);
-Error RenameFile(const ftp::Client& client, const std::string& oldPath,
-                 const std::string& newPath);
+util::Error DeleteFile(const ftp::Client& client, const std::string& path);
+util::Error RenameFile(const ftp::Client& client, const std::string& oldPath,
+                       const std::string& newPath);
 OutStreamPtr CreateFile(const ftp::Client& client, const std::string& path);
 OutStreamPtr AppendFile(const ftp::Client& client, const std::string& path);
 InStreamPtr OpenFile(const ftp::Client& client, const std::string& path);

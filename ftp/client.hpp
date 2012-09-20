@@ -16,13 +16,13 @@ class Client : public util::Thread
   util::tcp::client socket;
   
 public:
-  Client() : Thread(), workDir("/"), socket(), user("biohazard", "somepass", "1") { }
+  Client() : Thread(), workDir("/"), user("biohazard", "somepass", "1") { }
 
   const std::string& WorkDir() const { return workDir; };
   const acl::User& User() const { return user; }
 
   util::tcp::client& Socket() { return socket; };
-  void Run();
+  void Run() { };
 };
 
 } /* ftp namespace */

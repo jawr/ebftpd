@@ -13,9 +13,9 @@ class Client;
 namespace fs
 {
 
-Error CreateDirectory(const ftp::Client& client, const Path& path);
-Error RemoveDirectory(const ftp::Client& client, const Path& path);
-Error ChangeDirectory(const ftp::Client& client, const Path& path);
+util::Error CreateDirectory(const ftp::Client& client, const Path& path);
+util::Error RemoveDirectory(const ftp::Client& client, const Path& path);
+util::Error ChangeDirectory(const ftp::Client& client, const Path& path);
 
 } /* fs namespace */
 

@@ -1,7 +1,7 @@
 #include <cstring>
 #include "util/error.hpp"
 
-namespace fs
+namespace util
 {
 
 Error Error::successError(true);
@@ -13,7 +13,7 @@ std::string ErrnoToMessage(int errno_)
   return strerror_r(errno_, buffer, sizeof(buffer));
 }
 
-FileSystemError::FileSystemError(int errno_) :
+SystemError::SystemError(int errno_) :
   std::runtime_error(ErrnoToMessage(errno_)),
   errno_(errno_),
   validErrno(true)
@@ -23,14 +23,14 @@ FileSystemError::FileSystemError(int errno_) :
 } /* fs namespace */
 
 
-#ifdef FS_ERROR_TEST
+#ifdef UTIL_ERROR_TEST
 
 #include <cerrno>
 #include <iostream>
 
 int main()
 {
-  using namespace fs;
+  using namespace util;
   
   Error e = Error::Success();
   

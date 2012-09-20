@@ -18,7 +18,7 @@ Status& Status::Reset()
   if (path.empty()) throw std::logic_error("no path set");
   if (!statOkay)
   {
-    if (stat(path.c_str(), &native) < 0) throw FileSystemError(errno);
+    if (stat(path.c_str(), &native) < 0) throw util::SystemError(errno);
     statOkay = true;
   }
   return *this;
@@ -117,7 +117,7 @@ int main()
   {
     fs::Status stat("/home/notexist");
   }
-  catch (fs::FileSystemError& e)
+  catch (fs::util::SystemError& e)
   {
     if (e.ValidErrno()) std::cout << "errno: " << e.Errno() << " ";
     std::cout << e.what() << std::endl;
