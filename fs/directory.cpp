@@ -1,8 +1,8 @@
 #include <sys/stat.h>
 #include <cerrno>
 #include <cassert>
-#include "directory.hpp"
-#include "status.hpp"
+#include "fs/directory.hpp"
+#include "fs/status.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
 

@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <iterator>
 #include "util/passwd.hpp"
-#include "user.hpp"
+#include "acl/user.hpp"
 
 namespace acl
 {

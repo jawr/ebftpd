@@ -3,7 +3,7 @@
 
 #include <string>
 #include <boost/unordered_set.hpp>
-#include "types.hpp"
+#include "acl/types.hpp"
 
 namespace acl
 {
