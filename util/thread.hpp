@@ -8,20 +8,36 @@ namespace util
 class Thread
 {
   boost::thread thread;
-  int pipe[2];
+  void Main();
+public:
+  Thread() : thread() {};
+  virtual ~Thread() {};
+  void Start();
+  void Join();
+  virtual void Run() = 0;
+  virtual void Stop();
+};
+
+class ThreadConsumer : public Thread
+{
 protected:
   boost::condition cond;
   boost::mutex mtx;
 
-  void Main();
 public:
-  Thread() { pipe[0] = -1; pipe[1] = -1; };
-  virtual ~Thread();
-  void Start();
+  ThreadConsumer() :  cond(), mtx() {};
+  virtual ~ThreadConsumer() {};
   void Stop();
-  void Join();
-  virtual void Run() = 0;
 };
+
+class ThreadSelect : public Thread
+{
+protected:
+  int pipe[2];
+public:
+  ThreadSelect() { pipe[0] = -1; pipe[1] = -1; };
+  virtual ~ThreadSelect() {};
+  void Stop();
 // end util namespace
 }
 #endif
