@@ -39,7 +39,13 @@ class Config
   std::tr1::unordered_map<std::string, std::vector<setting::Creditcheck> > MapCreditcheck;
   std::tr1::unordered_map<std::string, std::vector<setting::NukedirStyle> > MapNukedirStyle;
   std::tr1::unordered_map<std::string, std::vector<setting::MsgPath> > MapMsgPath;
+
+  // site commands
+  std::tr1::unordered_map<std::string, setting::SiteCmd> MapSiteCmd;
+
+  // custom commands
   std::tr1::unordered_map<std::string, std::vector<setting::Cscript> > MapCscript;
+  
 
    
 public:

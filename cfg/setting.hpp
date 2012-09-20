@@ -301,6 +301,38 @@ public:
   
 enum SiteCmdMethod { EXEC, TEXT, IS };
 
+class SiteCmd : virtual public Setting
+{
+  std::string command;
+  SiteCmdMethod method;
+  fs::Path file;
+  std::vector<std::string> arguments;
+  std::vector<std::string> acl;
+public:
+  // initalize with acl
+  SiteCmd(const std::vector<std::string>& acl) : acl(acl), command(), method(EXEC),
+    file(), arguments() {};
+  // initalize with site_cmd 
+  SiteCmd(const std::string& command, SiteCmdMethod method, 
+    const std::string& path, const std::vector<std::string>& arguments) :
+    acl(), command(command), method(method), path(path), arguments(arguments) {};
+  // set alternative
+  void SetSiteCmd(const std::string& command, SiteCmdMethod method, 
+    const std::string& path, const std::vector<std::string>& arguments)
+  {
+    this->command = command;
+    this->method  = method;
+    this->path = fs::Path(path);
+    this->arguments = arguments;
+  };
+  void SetACL(const std::vector<std::string>& acl)
+  {
+    this->acl = acl;
+  };
+  ~SiteCmd() {};
+};
+  
+
   
 } // end setting
 } // end cfg
