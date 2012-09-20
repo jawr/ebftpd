@@ -62,6 +62,10 @@ void Config::Parse(const std::string& line) {
 
   // parse string
   Setting *s = GetSetting(opt, toks);
+  // push onto setting's vector
+  boost::algorithm::to_lower(opt);
+  
+  settings[opt].push_back(s);
   
 }
 
@@ -348,12 +352,11 @@ Setting *Config::GetSetting(const std::string& opt, std::vector<std::string>& to
   throw NoSetting("Unable to find setting '" + opt + "'");
 }
 
-}
+
 
 #ifdef CONFIG_TEST
 int main()
 {
-  logger::Initialise("/tmp/logs");
   cfg::Config("glftpd.conf");
   return 0;
 }
