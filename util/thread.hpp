@@ -7,15 +7,16 @@ namespace util
 {
 class Thread
 {
-  boost::thread thread;
   void Main();
+protected:
+  boost::thread thread;
 public:
   Thread() : thread() {};
   virtual ~Thread() {};
   void Start();
   void Join();
   virtual void Run() = 0;
-  virtual void Stop();
+  virtual void Stop() = 0;
 };
 
 class ThreadConsumer : public Thread
@@ -25,9 +26,10 @@ protected:
   boost::mutex mtx;
 
 public:
-  ThreadConsumer() :  cond(), mtx() {};
+  ThreadConsumer() : cond(), mtx() {};
   virtual ~ThreadConsumer() {};
   void Stop();
+  virtual void Run() {};
 };
 
 class ThreadSelect : public Thread
@@ -36,8 +38,11 @@ protected:
   int pipe[2];
 public:
   ThreadSelect() { pipe[0] = -1; pipe[1] = -1; };
-  virtual ~ThreadSelect() {};
+  virtual ~ThreadSelect();
   void Stop();
+  virtual void Run() {};
+};
+
 // end util namespace
 }
 #endif

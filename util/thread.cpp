@@ -5,7 +5,7 @@
 namespace util
 {
 
-Thread::~Thread()
+ThreadSelect::~ThreadSelect()
 {
   if (pipe[0] >= 0) close(pipe[0]);
   if (pipe[1] >= 0) close(pipe[1]);
@@ -30,7 +30,7 @@ void Thread::Main()
 
 void ThreadConsumer::Stop()
 {
-  thread.intterup();
+  thread.interrupt();
   thread.join();
 }
 
