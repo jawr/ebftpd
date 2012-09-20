@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include <sys/file.h>
+#include <unistd.h>
 #include "fs/filelock.hpp"
 #include "util/error.hpp"
 
