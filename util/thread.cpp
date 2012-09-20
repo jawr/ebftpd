@@ -28,7 +28,13 @@ void Thread::Main()
   }
 }
 
-void Thread::Stop()
+void ThreadConsumer::Stop()
+{
+  thread.intterup();
+  thread.join();
+}
+
+void ThreadSelect::Stop()
 {
   thread.interrupt();
   write(pipe[1], "1", 1);
