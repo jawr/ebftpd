@@ -19,7 +19,7 @@ MapPath(), MapACL(), MapIntWithArguments(), MapStrings(), MapInt(), MapBool(),
 MapSecureIP(), MapSpeedLimit(), MapPasvAddr(), MapAllowFxp(), MapACLWithPath(),
 MapPathWithArgument(), MapACLWithArgument(), MapStatSection(), MapPathFilter(),
 MapACLWithInt(), MapIntWithBool(), MapRequests(), MapCreditcheck(), 
-MapNukedirStyle(), MapMsgPath(), MapCscript()
+MapNukedirStyle(), MapMsgPath(), MapSiteCmd(), MapCscript()
 {
   std::string line;
   std::ifstream io(config.c_str(), std::ifstream::in);
@@ -66,25 +66,33 @@ void Config::Parse(const std::string& line) {
     
 
   // parse string
+  boost::algorithm::to_lower(opt);
   SetSetting(opt, toks);
   // push onto setting's vector
-  boost::algorithm::to_lower(opt);
   
 }
 
 void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
 {
-  if (opt == "DSA_CERT_FILE")
+
+  // Path
+  if (opt == "DSA_CERT_FILE" || opt == "rootpath" || opt == "datapath"
+   || opt == "pwd_path" || opt == "grp_path" || opt == "botscript_path"
+   || opt == "calc_crc" || opt == "min_homedir" || opt == "banner"
+   || opt == "nodupecheck")
   {
-    //return new setting::Path(toks.at(0));
+    
+    MapPath.insert(std::pair<std::string, setting::MapPath>(opt, toks.at(0)));
   }
+
+  // ACL 
   else if (opt == "userrejectsecure")
   {
-    //return new setting::ACL(toks);
+    MapACL.insert(std::pair<std::string, setting::ACL>(opt, setting::ACL(toks)));
   }
   else if (opt == "userrejectinsecure")
   {
-    //return new setting::ACL(toks);
+    MapACL.insert(std::pair<std::string, setting::ACL>(opt, setting::ACL(toks)));
   }
   else if (opt == "denydiruncrypted")
   {
@@ -473,7 +481,20 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   {
     //return new setting::CScript(toks.at(0), toks.at(1), toks.at(2)); 
   }
-    
+  else if (opt == "site_cmd")
+  {
+  }
+  // check if we have a site_cmd permission
+  if (opt.at(0) == '-')
+  {
+    std::string opt_ = opt;
+    opt_.erase(opt_.begin());
+  } 
+  else if (opt.find("custom-") != std::string::npos)
+  {
+    std::string opt_ = opt;
+    opt_.replace(0, 7, "");
+  }
   // todo: 
   //  site_cmd and their corresponding permissions
   
