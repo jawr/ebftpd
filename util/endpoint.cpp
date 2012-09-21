@@ -130,4 +130,8 @@ namespace util
     return _hostname;
   }
 
+  std::ostream& operator<<(std::ostream& os, const endpoint& ep)
+  {
+    return (os << ep.ip() << ":" << ep.port());
+  }
 }
