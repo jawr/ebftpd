@@ -7,6 +7,7 @@
 #include "util/tcpclient.hpp"
 #include "util/thread.hpp"
 #include "util/error.hpp"
+#include "fs/path.hpp"
 
 namespace ftp 
 {
@@ -24,7 +25,7 @@ class Client : public util::ThreadSelect
 {
 
   mutable boost::mutex mutex;
-  std::string workDir;
+  fs::Path workDir;
   acl::User user;
   util::tcp::client socket;
   ClientState state;
@@ -32,7 +33,8 @@ class Client : public util::ThreadSelect
   char buffer[BUFSIZ];
   std::string commandLine;
   int passwordAttemps;
-
+  fs::Path renameFrom;
+  
   static const int maxPasswordAttemps = 3;
   
   void SendReply(int code, bool part, const std::string& message);
@@ -46,7 +48,7 @@ public:
   Client() : workDir("/"), user("root", "password", "1"),
      state(LoggedOut), lastCode(0)   { }
 
-  const std::string& WorkDir() const { return workDir; };
+  const fs::Path& WorkDir() const { return workDir; };
   const acl::User& User() const { return user; }
   void Run();
   
@@ -64,6 +66,9 @@ public:
   void SetWaitingPassword();
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
+  void SetWorkDir(const std::string& workDir);
+  void SetRenameFrom(const fs::Path& path) { this->renameFrom = path; }
+  const fs::Path& RenameFrom() const { return renameFrom; }
 };
 
 } /* ftp namespace */

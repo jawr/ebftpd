@@ -4,27 +4,25 @@
 namespace fs
 {
 
-Path::Path(const std::string& path)
+Path::Path(const std::string& path) :
+  path(path)
 {
-  this->path = util::path::Expand(path);
 }
 
-Path::Path(const char* path)
+Path::Path(const char* path) :
+  path(path)
 {
-  this->path = util::path::Expand(path);
 }
 
 Path& Path::Join(const std::string& path)
 {
   this->path = util::path::Join(this->path, path);
-  this->path = util::path::Expand(this->path);
   return *this;
 }
 
 Path& Path::Append(const std::string& path)
 {
   this->path = util::path::Append(this->path, path);
-  this->path = util::path::Expand(this->path);
   return *this;
 }
 
@@ -41,6 +39,11 @@ Path Path::Basename() const
 std::string Path::Extension() const
 {
   return util::path::Extension(path);
+}
+
+Path Path::Expand() const
+{
+  return util::path::Expand(path);
 }
 
 Path operator/(const Path& lhs, const std::string& rhs)
