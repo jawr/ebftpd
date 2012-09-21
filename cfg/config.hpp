@@ -26,7 +26,8 @@ class Config
   boost::unordered_map<std::string, std::vector<fs::Path> > MapPath;
   boost::unordered_map<std::string, std::vector<setting::ACL> > MapACL;
   boost::unordered_map<std::string, std::vector<setting::IntWithArguments> > MapIntWithArguments;
-  boost::unordered_map<std::string, std::vector<std::string> > MapStrings;
+  boost::unordered_map<std::string, std::vector<std::string> > MapString;
+  boost::unordered_map<std::string, std::vector<std::vector<std::string> > > MapVectorString;
   boost::unordered_map<std::string, std::vector<int> > MapInt;
   boost::unordered_map<std::string, std::vector<bool> > MapBool; 
   boost::unordered_map<std::string, std::vector<setting::SecureIP> > MapSecureIP;
@@ -42,17 +43,30 @@ class Config
   boost::unordered_map<std::string, std::vector<setting::IntWithBool> > MapIntWithBool;
   boost::unordered_map<std::string, std::vector<setting::Requests> > MapRequests; 
   boost::unordered_map<std::string, std::vector<setting::Creditcheck> > MapCreditcheck;
+  boost::unordered_map<std::string, std::vector<setting::Creditloss> > MapCreditloss;
   boost::unordered_map<std::string, std::vector<setting::NukedirStyle> > MapNukedirStyle;
   boost::unordered_map<std::string, std::vector<setting::MsgPath> > MapMsgPath;
 
   // site commands
-  boost::unordered_map<std::string, setting::SiteCmd> MapSiteCmd;
+  boost::unordered_map<std::string, std::vector<setting::SiteCmd> > MapSiteCmd;
 
   // custom commands
   boost::unordered_map<std::string, std::vector<setting::Cscript> > MapCscript;
-  
 
-   
+
+  template <typename T> void InsertSetting(
+    boost::unordered_map<std::string, std::vector<T> >& map, T set, const std::string& opt)
+  {
+    if (map.find(opt) == map.end())
+    {
+      std::vector<T> vec;
+      vec.push_back(set);
+      map.insert(std::make_pair(opt, vec));
+    }
+    else
+      map.at(opt).push_back(set);
+  };
+
 public:
   Config(const std::string& configFile);
   ~Config() {};  
@@ -157,6 +171,8 @@ public:
   int MaxSitecmdLines();
   const std::vector<setting::Cscript>& Cscript();
   const std::vector<setting::SiteCmd>& SiteCmd();
+  int Oneliners();
+  int MultiplierMax();
 
 };
 
