@@ -252,12 +252,13 @@ class SiteCmd : virtual public Setting
   std::vector<std::string> acl;
 public:
   // initalize with acl
-  SiteCmd(const std::vector<std::string>& acl) : acl(acl), command(), method(EXEC),
-    file("/error/unconfigured"), arguments() {};
+  SiteCmd(const std::vector<std::string>& acl) :
+    command(), method(EXEC), file("/error/unconfigured"),
+    arguments(), acl(acl) {};
   // initalize with site_cmd 
   SiteCmd(const std::string& command, SiteCmdMethod method, 
     const std::string& file, const std::vector<std::string>& arguments) :
-    acl(), command(command), method(method), file(file), arguments(arguments) {};
+    command(command), method(method), file(file), arguments(arguments), acl()  {};
   // set alternative
   void SetSiteCmd(const std::string& command, SiteCmdMethod method, 
     const std::string& file, const std::vector<std::string>& arguments)
