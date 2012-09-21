@@ -19,6 +19,7 @@ public:
     requiredState(requiredState) { }
   virtual BaseT *Create(ftp::Client& client, const Args& args) = 0;
   ftp::ClientState RequiredState() const { return requiredState; }
+  virtual ~CreatorBase() {};
 };
 
 template <class CommandT>
