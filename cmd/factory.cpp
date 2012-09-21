@@ -8,66 +8,66 @@ Factory Factory::factory;
 
 Factory::Factory()
 {
-  Register("ABOR", new Creator<ABORCommand>());
-  Register("ACCT", new Creator<ACCTCommand>());
-  Register("ADAT", new Creator<ADATCommand>());
-  Register("ALLO", new Creator<ALLOCommand>());
-  Register("APPE", new Creator<APPECommand>());
-  Register("AUTH", new Creator<AUTHCommand>());
-  Register("CCC", new Creator<CCCCommand>());
-  Register("CDUP", new Creator<CDUPCommand>());
-  Register("CONF", new Creator<CONFCommand>());
-  Register("CWD", new Creator<CWDCommand>());
-  Register("DELE", new Creator<DELECommand>());
-  Register("ENC", new Creator<ENCCommand>());
-  Register("EPRT", new Creator<EPRTCommand>());
-  Register("EPSV", new Creator<EPSVCommand>());
-  Register("FEAT", new Creator<FEATCommand>());
-  Register("HELP", new Creator<HELPCommand>());
-  Register("LANG", new Creator<LANGCommand>());
-  Register("LIST", new Creator<LISTCommand>());
-  Register("LPRT", new Creator<LPRTCommand>());
-  Register("LPSV", new Creator<LPSVCommand>());
-  Register("MDTM", new Creator<MDTMCommand>());
-  Register("MIC", new Creator<MICCommand>());
-  Register("MKD", new Creator<MKDCommand>());
-  Register("MLSD", new Creator<MLSDCommand>());
-  Register("MLST", new Creator<MLSTCommand>());
-  Register("MODE", new Creator<MODECommand>());
-  Register("NLST", new Creator<NLSTCommand>());
-  Register("NOOP", new Creator<NOOPCommand>());
-  Register("OPTS", new Creator<OPTSCommand>());
-  Register("PASS", new Creator<PASSCommand>());
-  Register("PASV", new Creator<PASVCommand>());
-  Register("PBSZ", new Creator<PBSZCommand>());
-  Register("PORT", new Creator<PORTCommand>());
-  Register("PROT", new Creator<PROTCommand>());
-  Register("PWD", new Creator<PWDCommand>());
-  Register("QUIT", new Creator<QUITCommand>());
-  Register("REIN", new Creator<REINCommand>());
-  Register("REST", new Creator<RESTCommand>());
-  Register("RETR", new Creator<RETRCommand>());
-  Register("RMD", new Creator<RMDCommand>());
-  Register("RNFR", new Creator<RNFRCommand>());
-  Register("RNTO", new Creator<RNTOCommand>());
-  Register("SITE", new Creator<SITECommand>());
-  Register("SIZE", new Creator<SIZECommand>());
-  Register("SMNT", new Creator<SMNTCommand>());
-  Register("STAT", new Creator<STATCommand>());
-  Register("STOR", new Creator<STORCommand>());
-  Register("STOU", new Creator<STOUCommand>());
-  Register("STRU", new Creator<STRUCommand>());
-  Register("SYST", new Creator<SYSTCommand>());
-  Register("TYPE", new Creator<TYPECommand>());
-  Register("USER", new Creator<USERCommand>());
-  Register("XCUP", new Creator<XCUPCommand>());
-  Register("XMKD", new Creator<XMKDCommand>());
-  Register("XPWD", new Creator<XPWDCommand>());
-  Register("XRCP", new Creator<XRCPCommand>());
-  Register("XRMD", new Creator<XRMDCommand>());
-  Register("XRSQ", new Creator<XRSQCommand>());
-  Register("XSEM", new Creator<XSEMCommand>());
-  Register("XSEN", new Creator<XSENCommand>());
+  Register("ABOR", new Creator<ABORCommand>(ftp::AnyState));
+  Register("ACCT", new Creator<ACCTCommand>(ftp::LoggedIn));
+  Register("ADAT", new Creator<ADATCommand>(ftp::LoggedIn));
+  Register("ALLO", new Creator<ALLOCommand>(ftp::LoggedIn));
+  Register("APPE", new Creator<APPECommand>(ftp::LoggedIn));
+  Register("AUTH", new Creator<AUTHCommand>(ftp::LoggedOut));
+  Register("CCC", new Creator<CCCCommand>(ftp::LoggedIn));
+  Register("CDUP", new Creator<CDUPCommand>(ftp::LoggedIn));
+  Register("CONF", new Creator<CONFCommand>(ftp::LoggedIn));
+  Register("CWD", new Creator<CWDCommand>(ftp::LoggedIn));
+  Register("DELE", new Creator<DELECommand>(ftp::LoggedIn));
+  Register("ENC", new Creator<ENCCommand>(ftp::LoggedIn));
+  Register("EPRT", new Creator<EPRTCommand>(ftp::LoggedIn));
+  Register("EPSV", new Creator<EPSVCommand>(ftp::LoggedIn));
+  Register("FEAT", new Creator<FEATCommand>(ftp::AnyState));
+  Register("HELP", new Creator<HELPCommand>(ftp::AnyState));
+  Register("LANG", new Creator<LANGCommand>(ftp::LoggedIn));
+  Register("LIST", new Creator<LISTCommand>(ftp::LoggedIn));
+  Register("LPRT", new Creator<LPRTCommand>(ftp::LoggedIn));
+  Register("LPSV", new Creator<LPSVCommand>(ftp::LoggedIn));
+  Register("MDTM", new Creator<MDTMCommand>(ftp::LoggedIn));
+  Register("MIC", new Creator<MICCommand>(ftp::LoggedIn));
+  Register("MKD", new Creator<MKDCommand>(ftp::LoggedIn));
+  Register("MLSD", new Creator<MLSDCommand>(ftp::LoggedIn));
+  Register("MLST", new Creator<MLSTCommand>(ftp::LoggedIn));
+  Register("MODE", new Creator<MODECommand>(ftp::LoggedIn));
+  Register("NLST", new Creator<NLSTCommand>(ftp::LoggedIn));
+  Register("NOOP", new Creator<NOOPCommand>(ftp::AnyState));
+  Register("OPTS", new Creator<OPTSCommand>(ftp::LoggedIn));
+  Register("PASS", new Creator<PASSCommand>(ftp::WaitingPassword));
+  Register("PASV", new Creator<PASVCommand>(ftp::LoggedIn));
+  Register("PBSZ", new Creator<PBSZCommand>(ftp::LoggedIn));
+  Register("PORT", new Creator<PORTCommand>(ftp::LoggedIn));
+  Register("PROT", new Creator<PROTCommand>(ftp::LoggedIn));
+  Register("PWD", new Creator<PWDCommand>(ftp::LoggedIn));
+  Register("QUIT", new Creator<QUITCommand>(ftp::AnyState));
+  Register("REIN", new Creator<REINCommand>(ftp::LoggedIn));
+  Register("REST", new Creator<RESTCommand>(ftp::LoggedIn));
+  Register("RETR", new Creator<RETRCommand>(ftp::LoggedIn));
+  Register("RMD", new Creator<RMDCommand>(ftp::LoggedIn));
+  Register("RNFR", new Creator<RNFRCommand>(ftp::LoggedIn));
+  Register("RNTO", new Creator<RNTOCommand>(ftp::LoggedIn));
+  Register("SITE", new Creator<SITECommand>(ftp::LoggedIn));
+  Register("SIZE", new Creator<SIZECommand>(ftp::LoggedIn));
+  Register("SMNT", new Creator<SMNTCommand>(ftp::LoggedIn));
+  Register("STAT", new Creator<STATCommand>(ftp::LoggedIn));
+  Register("STOR", new Creator<STORCommand>(ftp::LoggedIn));
+  Register("STOU", new Creator<STOUCommand>(ftp::LoggedIn));
+  Register("STRU", new Creator<STRUCommand>(ftp::LoggedIn));
+  Register("SYST", new Creator<SYSTCommand>(ftp::LoggedIn));
+  Register("TYPE", new Creator<TYPECommand>(ftp::LoggedIn));
+  Register("USER", new Creator<USERCommand>(ftp::LoggedOut));
+  Register("XCUP", new Creator<XCUPCommand>(ftp::LoggedIn));
+  Register("XMKD", new Creator<XMKDCommand>(ftp::LoggedIn));
+  Register("XPWD", new Creator<XPWDCommand>(ftp::LoggedIn));
+  Register("XRCP", new Creator<XRCPCommand>(ftp::LoggedIn));
+  Register("XRMD", new Creator<XRMDCommand>(ftp::LoggedIn));
+  Register("XRSQ", new Creator<XRSQCommand>(ftp::LoggedIn));
+  Register("XSEM", new Creator<XSEMCommand>(ftp::LoggedIn));
+  Register("XSEN", new Creator<XSENCommand>(ftp::LoggedIn));
 }
 
 Factory::~Factory()
@@ -85,10 +85,12 @@ void Factory::Register(const std::string& command,
   creators.insert(std::make_pair(command, creator));
 }  
 
-Command* Factory::Create(ftp::Client& client, const Args& args)
+Command* Factory::Create(ftp::Client& client, const Args& args,
+                         ftp::ClientState& requiredState)
 {
   typename CreatorsMap::const_iterator it = factory.creators.find(args[0]);
   if (it == factory.creators.end()) return 0;
+  requiredState = it->second->RequiredState();
   return it->second->Create(client, args);
 }
 

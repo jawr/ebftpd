@@ -168,9 +168,18 @@ void PASSCommand::Execute()
     return;    
   }
   
-  if (!client.User().VerifyPassword(args[1]))
+  if (!client.VerifyPassword(args[1]))
   {
-    client.Reply(530, "Login incorrect.");
+    if (client.PasswordAttemptsExceeded())
+    {
+      client.Reply(530, "Password attempts exceeded, disconnecting.");
+      client.SetFinished();
+    }
+    else
+    {
+      client.Reply(530, "Login incorrect.");
+      client.SetLoggedOut();
+    }
     return;
   }
   
