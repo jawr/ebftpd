@@ -21,6 +21,7 @@ OBJECTS = \
 	acl/permission.o \
 	acl/repository.o \
 	acl/handler.o \
+	acl/flags.o \
 	logger/logger.o \
 	util/path.o \
 	util/verify.o \
