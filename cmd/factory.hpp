@@ -30,7 +30,6 @@ public:
   }
 };
 
-//template <class CommandT = Command>
 class Factory
 {
   typedef std::tr1::unordered_map<std::string,
@@ -39,26 +38,16 @@ class Factory
   CreatorsMap creators;
    
   Factory();
+  ~Factory();
   
-  void Register(const std::string& command, CreatorBase<Command>* creator)
-  {
-    creators.insert(std::make_pair(command, creator));
-  }  
+  void Register(const std::string& command, CreatorBase<Command>* creator);
   
   static Factory factory;
   
 public:
-  static Command* Create(ftp::Client& client, const Args& args)
-  {
-    typename CreatorsMap::const_iterator it = factory.creators.find(args[0]);
-    if (it == factory.creators.end()) return 0;
-    return it->second->Create(client, args);
-  }
-  
-  friend void InitialiseFactory();
+  static Command* Create(ftp::Client& client, const Args& args);
 };
 
-void InitialiseFactory();
 
 } /* cmd namespace */
 

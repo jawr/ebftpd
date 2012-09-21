@@ -33,7 +33,7 @@ void Listener::HandleClients()
        it != clients.end();)
   {
     ftp::Client& client = *it;
-    if (client.Finished())
+    if (client.IsFinished())
     {
       client.Join();
       clients.erase(it++);

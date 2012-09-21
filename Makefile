@@ -7,6 +7,7 @@ INCLUDE = -I.
 OBJECTS = \
 	main.o \
 	cmd/factory.o \
+	cmd/command.o \
 	cfg/config.o \
 	cfg/get.o \
 	ftp/listener.o \
