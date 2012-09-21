@@ -37,6 +37,7 @@ void Listener::HandleClients()
     {
       client.Join();
       clients.erase(it++);
+      logger::ftpd << "Client finished" << logger::endl;
     }
     else ++it;
   }
