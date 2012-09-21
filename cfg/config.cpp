@@ -79,17 +79,14 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
    || opt == "nodupecheck")
   {
     
-    MapPath.insert(std::pair<std::string, fs::Path>(opt, toks.at(0)));
   }
 
   // ACL 
   else if (opt == "userrejectsecure")
   {
-    MapACL.insert(std::pair<std::string, setting::ACL>(opt, setting::ACL(toks)));
   }
   else if (opt == "userrejectinsecure")
   {
-    MapACL.insert(std::pair<std::string, setting::ACL>(opt, setting::ACL(toks)));
   }
   else if (opt == "denydiruncrypted")
   {
