@@ -64,6 +64,11 @@ bool User::CheckFlags(const std::string& flags) const
   return false;
 }
 
+bool User::CheckFlag(Flag flag) const
+{
+  return this->flags.find(flag) != std::string::npos;
+}
+
 void User::AddSecondaryGID(gid_t gid)
 {
   secondaryGids.insert(gid);

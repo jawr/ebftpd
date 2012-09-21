@@ -4,6 +4,7 @@
 #include <string>
 #include <boost/unordered_set.hpp>
 #include "acl/types.hpp"
+#include "acl/flags.hpp"
 
 namespace acl
 {
@@ -34,6 +35,8 @@ public:
   void AddFlags(const std::string& flags);
   void DelFlags(const std::string& flags);
   bool CheckFlags(const std::string& flags) const;
+  bool CheckFlag(Flag flag) const;
+  bool Deleted() const { return CheckFlag(FlagDeleted); }
   
   uid_t UID() const { return uid; }
   /* should never need to modify UID, can mongodb provide the id?
