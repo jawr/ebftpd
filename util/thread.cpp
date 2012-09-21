@@ -2,8 +2,16 @@
 #include <exception>
 #include <boost/thread/thread.hpp>
 #include "util/thread.hpp"
+#include "util/error.hpp"
+
 namespace util
 {
+
+ThreadSelect::ThreadSelect()
+{
+  if (pipe(interruptPipe) < 0) throw SystemError(errno);
+}
+
 
 ThreadSelect::~ThreadSelect()
 {
