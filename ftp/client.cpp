@@ -1,9 +1,13 @@
+#include <boost/bind.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include "ftp/client.hpp"
 #include "logger/logger.hpp"
 #include "util/tcpserver.hpp"
 #include "util/exception.hpp"
 #include "util/verify.hpp"
 #include "util/error.hpp"
+#include "util/scopeguard.hpp"
 
 namespace ftp
 {
@@ -14,6 +18,12 @@ bool Client::Finished() const
   return finished;
 }
 
+void Client::SetFinished()
+{
+  boost::lock_guard<boost::mutex> lock(mutex);
+  finished = true;
+}
+
 bool Client::Accept(util::tcp::server& server)
 {
   try
@@ -22,7 +32,7 @@ bool Client::Accept(util::tcp::server& server)
   }
   catch(const util::network_error& e)
   {
-    finished = true;
+    SetFinished();
     logger::error << "Error while acceting new client: " << e.what() << logger::endl;
     return false;
   }
@@ -69,14 +79,18 @@ void Client::DisplayWelcome()
 void Client::NextCommand()
 {
   fd_set readSet;
+  FD_ZERO(&readSet);
   FD_SET(socket.socket(), &readSet);
   FD_SET(interruptPipe[0], &readSet);
+  
   struct timeval tv;
   tv.tv_sec = 1800;
   tv.tv_usec = 0;
+  
   int max = std::max(socket.socket(), interruptPipe[0]);
   
   int n = select(max + 1, &readSet, NULL, NULL, &tv);
+  if (!n) throw util::timeout_error();
   if (n < 0)
   {
     util::Error e = util::Error::Failure(errno);
@@ -94,22 +108,37 @@ void Client::NextCommand()
   verify(false); // should never get here!!
 }
 
+void Client::ExecuteCommand()
+{
+  std::vector<std::string> args;
+  boost::split(args, command, boost::is_any_of(" "),
+               boost::token_compress_on);
+  if (args.empty()) throw util::network_protocol_error();
+  Reply(500, "Commands not implemented yet!");
+}
+
 void Client::Handle()
 {
-  while (true)
+  while (!Finished())
   {
     NextCommand();
-    // do something with command!
+    ExecuteCommand();
   }
 }
 
 void Client::Run()
 {
-  logger::ftpd << "Servicing client connected from "
-               << socket.remote_endpoint() << logger::endl;
+  using util::scope_guard;
+  using util::make_guard;
+  using boost::bind;
+  
+  scope_guard finishedGuard = make_guard(bind(&Client::SetFinished, this));
   
   try
   {
+    logger::ftpd << "Servicing client connected from "
+                 << socket.remote_endpoint() << logger::endl;
+  
     DisplayWelcome();
     Handle();
   }
@@ -119,7 +148,6 @@ void Client::Run()
                   << " lost connection: " << e.what() << logger::endl;
   }
   
-  boost::lock_guard<boost::mutex> lock(mutex);
-  finished = true;
+  (void) finishedGuard; /* silence unused variable warning */
 }
 }

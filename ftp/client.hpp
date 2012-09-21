@@ -25,10 +25,11 @@ class Client : public util::ThreadSelect
   void SendReply(int code, bool part, const std::string& message);
   void DisplayWelcome();
   void NextCommand();
+  void ExecuteCommand();
   void Handle();
   
 public:
-  Client() : workDir("/"), user("biohazard", "somepass", "1"), lastCode(0)   { }
+  Client() : workDir("/"), user("root", "password", "1"), lastCode(0)   { }
 
   const std::string& WorkDir() const { return workDir; };
   const acl::User& User() const { return user; }
@@ -41,6 +42,7 @@ public:
 
   bool Accept(util::tcp::server& server);
   bool Finished() const;
+  void SetFinished();
 };
 
 } /* ftp namespace */
