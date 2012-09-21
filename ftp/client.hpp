@@ -11,30 +11,36 @@
 namespace ftp 
 {
 
+enum ClientState
+{
+  LoggedOut,
+  WaitingPassword,
+  LoggedIn,
+  Finished,
+  AnyState
+};
+
 class Client : public util::ThreadSelect
 {
-  enum State
-  {
-    LoggedOut,
-    WaitingPassword,
-    LoggedIn,
-    Finished
-  };
 
   mutable boost::mutex mutex;
   std::string workDir;
   acl::User user;
   util::tcp::client socket;
-  State state;
+  ClientState state;
   int lastCode;
   char buffer[BUFSIZ];
   std::string commandLine;
+  int passwordAttemps;
 
+  static const int maxPasswordAttemps = 3;
+  
   void SendReply(int code, bool part, const std::string& message);
   void DisplayWelcome();
   void NextCommand();
   void ExecuteCommand();
   void Handle();
+  bool CheckState(ClientState reqdState);
   
 public:
   Client() : workDir("/"), user("root", "password", "1"),
@@ -54,7 +60,10 @@ public:
   bool IsFinished() const;
   void SetFinished();
   void SetLoggedIn();
+  void SetLoggedOut();
   void SetWaitingPassword();
+  bool VerifyPassword(const std::string& password);
+  bool PasswordAttemptsExceeded() const;
 };
 
 } /* ftp namespace */
