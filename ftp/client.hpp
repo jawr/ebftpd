@@ -13,14 +13,22 @@ namespace ftp
 
 class Client : public util::ThreadSelect
 {
+  enum State
+  {
+    LoggedOut,
+    WaitingPassword,
+    LoggedIn,
+    Finished
+  };
+
   mutable boost::mutex mutex;
   std::string workDir;
   acl::User user;
   util::tcp::client socket;
-  bool finished;
+  State state;
   int lastCode;
   char buffer[BUFSIZ];
-  std::string command;
+  std::string commandLine;
 
   void SendReply(int code, bool part, const std::string& message);
   void DisplayWelcome();
@@ -29,7 +37,8 @@ class Client : public util::ThreadSelect
   void Handle();
   
 public:
-  Client() : workDir("/"), user("root", "password", "1"), lastCode(0)   { }
+  Client() : workDir("/"), user("root", "password", "1"),
+     state(LoggedOut), lastCode(0)   { }
 
   const std::string& WorkDir() const { return workDir; };
   const acl::User& User() const { return user; }
@@ -39,10 +48,13 @@ public:
   void PartReply(const std::string& message);
   void Reply(int code, const std::string& message);
   void Reply(const std::string& message);
+  void MultiReply(int code, const std::string& messages);
 
   bool Accept(util::tcp::server& server);
-  bool Finished() const;
+  bool IsFinished() const;
   void SetFinished();
+  void SetLoggedIn();
+  void SetWaitingPassword();
 };
 
 } /* ftp namespace */

@@ -8,20 +8,33 @@
 #include "util/verify.hpp"
 #include "util/error.hpp"
 #include "util/scopeguard.hpp"
+#include "cmd/factory.hpp"
 
 namespace ftp
 {
 
-bool Client::Finished() const
+bool Client::IsFinished() const
 {
   boost::lock_guard<boost::mutex> lock(mutex);
-  return finished;
+  return state == Finished;
+}
+
+void Client::SetLoggedIn()
+{
+  boost::lock_guard<boost::mutex> lock(mutex);
+  state = LoggedIn;
+}
+
+void Client::SetWaitingPassword()
+{
+  boost::lock_guard<boost::mutex> lock(mutex);
+  state = WaitingPassword;
 }
 
 void Client::SetFinished()
 {
   boost::lock_guard<boost::mutex> lock(mutex);
-  finished = true;
+  state = Finished;
 }
 
 bool Client::Accept(util::tcp::server& server)
@@ -42,9 +55,10 @@ bool Client::Accept(util::tcp::server& server)
 void Client::SendReply(int code, bool part, const std::string& message)
 {
   std::ostringstream reply;
-  reply << std::setw(3) << code << (part ? '-' : ' ')  << message << "\r\n";
+  reply << std::setw(3) << code << (part ? "-" : " ") << message << "\r\n";
   const std::string& str = reply.str();
   socket.write(str.c_str(), str.length());
+  lastCode = code;
 }
 
 void Client::PartReply(int code, const std::string& message)
@@ -69,6 +83,20 @@ void Client::Reply(const std::string& message)
 {
   verify(lastCode != 0);
   Reply(lastCode, message);
+}
+
+void Client::MultiReply(int code, const std::string& messages)
+{
+  std::vector<std::string> splitMessages;
+  boost::split(splitMessages, messages, boost::is_any_of("\n"));
+  assert(!splitMessages.empty());
+  std::vector<std::string>::const_iterator end = splitMessages.end() - 1;
+  for (std::vector<std::string>::const_iterator it =
+       splitMessages.begin(); it != end; ++it)
+  {
+    PartReply(code, *it);
+  }
+  Reply(splitMessages.back());
 }
 
 void Client::DisplayWelcome()
@@ -100,7 +128,7 @@ void Client::NextCommand()
   if (FD_ISSET(socket.socket(), &readSet))
   {
     socket.getline(buffer, sizeof(buffer), true);
-    command = buffer;
+    commandLine = buffer;
     return;
   }
 
@@ -111,15 +139,17 @@ void Client::NextCommand()
 void Client::ExecuteCommand()
 {
   std::vector<std::string> args;
-  boost::split(args, command, boost::is_any_of(" "),
+  boost::split(args, commandLine, boost::is_any_of(" "),
                boost::token_compress_on);
   if (args.empty()) throw util::network_protocol_error();
-  Reply(500, "Commands not implemented yet!");
+  std::auto_ptr<cmd::Command> command(cmd::Factory::Create(*this, args));
+  if (!command.get()) Reply(500, "Command not understood");
+  else command->Execute();
 }
 
 void Client::Handle()
 {
-  while (!Finished())
+  while (!IsFinished())
   {
     NextCommand();
     ExecuteCommand();
