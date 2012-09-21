@@ -7,6 +7,7 @@ INCLUDE = -I.
 OBJECTS = \
 	main.o \
 	cfg/config.o \
+	cfg/get.o \
 	ftp/listener.o \
 	ftp/client.o \
 	fs/filelock.o \
