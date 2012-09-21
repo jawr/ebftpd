@@ -147,6 +147,10 @@ void Client::Run()
     logger::error << "Client from " << socket.remote_endpoint()
                   << " lost connection: " << e.what() << logger::endl;
   }
+  catch (const std::exception& e)
+  {
+    logger::error << e.what() << logger::endl;
+  }
   
   (void) finishedGuard; /* silence unused variable warning */
 }
