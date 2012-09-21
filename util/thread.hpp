@@ -35,9 +35,9 @@ public:
 class ThreadSelect : public Thread
 {
 protected:
-  int pipe[2];
+  int interruptPipe[2];
 public:
-  ThreadSelect() { pipe[0] = -1; pipe[1] = -1; };
+  ThreadSelect() { interruptPipe[0] = -1; interruptPipe[1] = -1; };
   virtual ~ThreadSelect();
   void Stop();
   virtual void Run() {};

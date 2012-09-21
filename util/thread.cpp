@@ -7,8 +7,8 @@ namespace util
 
 ThreadSelect::~ThreadSelect()
 {
-  if (pipe[0] >= 0) close(pipe[0]);
-  if (pipe[1] >= 0) close(pipe[1]);
+  if (interruptPipe[0] >= 0) close(interruptPipe[0]);
+  if (interruptPipe[1] >= 0) close(interruptPipe[1]);
 }
 
 void Thread::Start()
@@ -37,7 +37,7 @@ void ThreadConsumer::Stop()
 void ThreadSelect::Stop()
 {
   thread.interrupt();
-  write(pipe[1], "1", 1);
+  write(interruptPipe[1], "1", 1);
   thread.join();
 }
 
