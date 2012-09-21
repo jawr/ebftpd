@@ -2,6 +2,7 @@
 #define __NET_ENDPOINT_HPP
 
 #include <string>
+#include <ostream>
 #include <netinet/in.h>
 #include "ip.hpp"
 
@@ -72,6 +73,8 @@ namespace util
 
   };
 
+  std::ostream& operator<<(std::ostream& os, const endpoint& ep);
+  
 }
 
 #endif
