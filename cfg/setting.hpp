@@ -111,10 +111,10 @@ class SpeedLimit : virtual public Setting
   fs::Path path;
   int upload;
   int download;
-  std::string acl;
+  std::vector<std::string> acl;
 public:
   SpeedLimit(const std::string& path, int upload, int download, 
-    const std::string& acl) : path(path), upload(upload), download(download),
+    const std::vector<std::string>& acl) : path(path), upload(upload), download(download),
     acl(acl) {};
   ~SpeedLimit() {};
 };
@@ -163,10 +163,10 @@ class SecureIP : virtual public Setting
   int fields;
   bool allowHostnames;
   bool needIdent;
-  std::string acl;
+  std::vector<std::string> acl;
 public:
   SecureIP(int fields, bool allowHostnames, bool needIdent,
-    const std::string& acl) :
+    const std::vector<std::string>& acl) :
       fields(fields), allowHostnames(allowHostnames), needIdent(needIdent),
       acl(acl) {};
   ~SecureIP() {};
@@ -180,6 +180,7 @@ public:
   PasvAddr(const std::string addr, bool primary=false) : addr(addr), 
     primary(primary) {};
   ~PasvAddr() {};
+  void SetPrimary() { primary = true; };
 };
 
 class AllowFxp : virtual public Setting
@@ -187,24 +188,24 @@ class AllowFxp : virtual public Setting
   bool downloads;
   bool uploads;
   bool logging;
-  std::string acl;
+  std::vector<std::string> acl;
 public:
-  AllowFxp(bool downloads, bool uploads, bool logging, const std::string& acl) :
+  AllowFxp(bool downloads, bool uploads, bool logging, const std::vector<std::string>& acl) :
     downloads(downloads), uploads(uploads), logging(logging), acl(acl) {};
   ~AllowFxp() {};
 };
 
-class CreditLoss : virtual public Setting
+class Creditloss : virtual public Setting
 {
   int multiplier;
   bool leechers;
   fs::Path path;
   std::vector<std::string> acl;
 public:
-  CreditLoss(int multiplier, bool leechers, const std::string& path, 
+  Creditloss(int multiplier, bool leechers, const std::string& path, 
     std::vector<std::string>& acl) : multiplier(multiplier), leechers(leechers),
       path(path), acl(acl) {};
-  ~CreditLoss() {};
+  ~Creditloss() {};
 };
 
 class Creditcheck : virtual public Setting

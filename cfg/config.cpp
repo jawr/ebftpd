@@ -72,427 +72,267 @@ void Config::Parse(const std::string& line) {
 void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
 {
 
+  // http://www.glftpd.dk/files/docs/glftpd.docs
+
   // Path
-  if (opt == "DSA_CERT_FILE" || opt == "rootpath" || opt == "datapath"
+  if (opt == "dsa_cert_file" || opt == "rootpath" || opt == "datapath"
    || opt == "pwd_path" || opt == "grp_path" || opt == "botscript_path"
    || opt == "calc_crc" || opt == "min_homedir" || opt == "banner"
-   || opt == "nodupecheck")
+   || opt == "nodupecheck" || opt == "rsa_cert_file")
   {
-    
+      fs::Path path(toks.at(0));
+      InsertSetting<fs::Path>(MapPath, path, opt);
   }
 
   // ACL 
-  else if (opt == "userrejectsecure")
+  else if (opt == "userrejectsecure" || opt == "userrejectinsecure" 
+   || opt == "denydiruncrypted" || opt == "denydatauncrypted"
+   || opt == "shutdown")
   {
+    setting::ACL acl(toks);
+    InsertSetting<setting::ACL>(MapACL, acl, opt);  
   }
-  else if (opt == "userrejectinsecure")
+
+  // IntWithArguments 
+  else if (opt == "ascii_downloads" || opt == "show_totals")
   {
+    int i = (toks.at(0) == "*") ? -1 : boost::lexical_cast<int>(toks.at(0));
+    toks.erase(toks.begin());
+    setting::IntWithArguments set(i, toks);
+    InsertSetting<setting::IntWithArguments>(MapIntWithArguments, set, opt);
   }
-  else if (opt == "denydiruncrypted")
+
+  // int  
+  else if (opt == "free_space" || opt == "timezone" || opt == "sim_xfers"
+   || opt == "mmap_amount" || opt == "dl_sendfile" || opt == "ul_buffered_force"
+   || opt == "max_users" || opt == "total_users" || opt == "lastonline"
+   || opt == "empty_nuke" || opt == "max_sitecmd_lines" || opt == "oneliners"
+   || opt == "multiplier_max")
   {
-    //return new setting::ACL(toks);
+    InsertSetting<int>(MapInt, boost::lexical_cast<int>(toks.at(0)), opt);
   }
-  else if (opt == "denydatauncrypted")
+
+  // Strings
+  else if (opt == "use_dir_size" || opt == "sitename_long" || opt == "sitename_short"
+   || opt == "login_prompt" || opt == "tagline" || opt == "email")
   {
-    //return new setting::ACL(toks);
+    InsertSetting<std::string>(MapString, toks.at(0), opt);
   }
-  // http://www.glftpd.dk/files/docs/glftpd.docs
-  else if (opt == "ascii_downloads")
+
+  // VectorStrings
+  else if (opt == "master" || opt == "bouncer_ip" 
+   || opt == "xdupe" || opt == "valid_ip" || opt == "active_addr"
+   || opt == "pasv_ports" || opt == "active_ports" || opt == "cdpath" 
+   || opt == "ignore_type" || opt == "banned_users" || opt == "idle_commands"
+   || opt == "lslong" || opt == "hidden_files" || opt == "noretrieve" 
+   || opt == "hideuser" || opt == "privgroup")
   {
-    //return new setting::IntWithArgs(
-    //  boost::lexical_cast<int>(toks.at(0)), toks);
+    InsertSetting<std::vector<std::string> >(MapVectorString, toks, opt);
   }
-  else if (opt == "shutdown")
+
+  // Bool
+  else if (opt == "color_mode" || opt == "dl_incomplete" 
+   || opt == "file_dl_count")
   {
-    //return new setting::ACL(toks);
+    InsertSetting<bool>(MapBool, util::string::BoolLexicalCast(toks.at(0)), opt); 
   }
-  else if (opt == "free_space")
-  {
-    //return new setting::Int(boost::lexical_cast<int>(toks.at(0)));
-  }
-  else if (opt == "use_dir_size")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "timezone")
-  {
-    //return new setting::Argument(toks.at(0));
-  }
-  else if (opt == "color_mode")
-  {
-    //return new setting::Bool(util::string::BoolLexicalCast(toks.at(0)));
-  }
-  else if (opt == "sitename_long")
-  {
-    //return new setting::Argument(toks.at(0));
-  }
-  else if (opt == "sitename_short")
-  {
-    //return new setting::Argument(toks.at(0));
-  }
-  else if (opt == "login_prompt")
-  {
-    //return new setting::Argument(toks.at(0));
-  }
-  else if (opt == "rootpath")
-  {
-    //return new setting::Path(toks.at(0));
-  }
-  else if (opt == "datapath")
-  {
-    //return new setting::Path(toks.at(0));
-  }
-  else if (opt == "reload_config")
-  {
-    //return new setting::Path(toks.at(0));
-  }
-  else if (opt == "master")
-  {
-    //return new setting::Arguments(toks);
-  }
+
+  // SecureIP
   else if (opt == "secure_ip")
   {
-    //return new setting::SecureIP(
-    //  boost::lexical_cast<int>(toks.at(0)),
-    //  util::string::BoolLexicalCast(toks.at(1)),
-    //  util::string::BoolLexicalCast(toks.at(2)),
-    //  toks.at(3));
+    int fields = boost::lexical_cast<int>(toks.at(0));
+    bool allowHostnames = util::string::BoolLexicalCast(toks.at(1));
+    bool needIdent = util::string::BoolLexicalCast(toks.at(2));
+    toks.erase(toks.begin(), toks.begin()+3);
+    setting::SecureIP set(fields, allowHostnames, needIdent, toks);
+    InsertSetting<setting::SecureIP>(MapSecureIP, set, opt);
   }
-  else if (opt == "secure_pass") 
+
+  // ACLWithPath
+  else if (opt == "secure_pass" || opt == "welcome_msg" || opt == "goodbye_msg"
+   || opt == "newsfile" || opt == "delete" || opt == "deleteown" 
+   || opt == "overwrite" || opt == "resume" || opt == "rename" 
+   || opt == "renameown" || opt == "filemove" || opt == "makedir" 
+   || opt == "upload" || opt == "download" || opt == "nuke" || opt == "dirlog"
+   || opt == "hideinwho" || opt == "nostats" || opt == "show_diz"
+   || opt == "pre_check" || opt == "pre_dir_check" || opt == "post_check"
+   || opt == "privpath")
   {
     std::string path = toks.at(0);
     toks.erase(toks.begin());
-    //return new setting::ACLWithPath(path, toks);
+    setting::ACLWithPath set(path, toks);
+    InsertSetting<setting::ACLWithPath>(MapACLWithPath, set, opt);
   }
-  else if (opt == "datapath")
-  {
-    //return new setting::Path(toks.at(0));
-  }
-  else if (opt == "pwd_path")
-  {
-    //return new setting::Path(toks.at(0));
-  }
-  else if (opt == "grp_path")
-  {
-    //return new setting::Path(toks.at(0));
-  }
-  else if (opt == "botscript_path")
-  {
-    //return new setting::Path(toks.at(0));
-  }
-  else if (opt == "bouncer_ip")
-  {
-    //return new setting::Arguments(toks);
-  }
+
+  // SpeedLimit
   else if (opt == "speed_limit")
   {
-    //return new setting::SpeedLimit(toks.at(0), 
-      //boost::lexical_cast<int>(toks.at(1)), 
-      //boost::lexical_cast<int>(toks.at(2)), toks.at(3));
+    std::string path = toks.at(0);
+    int upload = boost::lexical_cast<int>(toks.at(1));
+    int download = boost::lexical_cast<int>(toks.at(2));
+    toks.erase(toks.begin(), toks.begin()+3);
+    setting::SpeedLimit set(path, upload, download, toks);
+    InsertSetting<setting::SpeedLimit>(MapSpeedLimit, set, opt); 
   }
-  else if (opt =="sim_xfers")
-  {
-    std::vector<int> ints;
-    std::vector<std::string>::iterator it;
-    for (it = toks.begin(); it != toks.end(); ++it)
-      ints.push_back(boost::lexical_cast<int>(*it));
-    //return new setting::Ints(ints);
-  }
-  else if (opt == "calc_crc")
-  {
-    //return new setting::Path(toks.at(0));
-  }
-  else if (opt == "xdupe")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "mmap_amount")
-  {
-    //return new setting::Int(boost::lexical_cast<int>(toks.at(0)));
-  }
-  else if (opt == "dl_sendfile")
-  {
-    //return new setting::Int(boost::lexical_cast<int>(toks.at(0)));
-  }
-  else if (opt == "ul_buffered_force")
-  {
-    //return new setting::Int(boost::lexical_cast<int>(toks.at(0)));
-  }
-  else if (opt == "min_homedir")
-  {
-    //return new setting::Path(toks.at(0));
-  }
-  else if (opt == "valid_ip")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "active_addr")
-  {
-    //return new setting::Argument(toks.at(0));
-  }
+
+  // PasvAddr
   else if (opt == "pasv_addr") 
   {
-    if (toks.size() == 1)
-    {
-      //return new setting::PasvAddr(toks.at(0));
-    }
-    else
-    {
-      //return new setting::PasvAddr(toks.at(0), 
-      //  util::string::BoolLexicalCast(toks.at(1)));
-    }
+    setting::PasvAddr set(toks.at(0));
+    if (toks.size() > 1)
+      set.SetPrimary();
+    InsertSetting<setting::PasvAddr>(MapPasvAddr, set, opt);
   }
-  // instead of transforming to ints keep as strings:
-  // Exmp: pasv_ports 10000-11000 20 21 22 23 80 110 1600-1610 35000-35050
-  else if (opt == "pasv_ports")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "active_ports")
-  {
-    //return new setting::Arguments(toks);
-  }
+
+  // AllowFxp
   else if (opt =="allow_fxp")
   {
-    //return new setting::AllowFXP(
-    //  util::string::BoolLexicalCast(toks.at(0)),
-    //  util::string::BoolLexicalCast(toks.at(1)),
-    //  util::string::BoolLexicalCast(toks.at(2)),
-     // toks.at(3));
+    bool downloads = util::string::BoolLexicalCast(toks.at(0));
+    bool uploads   = util::string::BoolLexicalCast(toks.at(1)); 
+    bool logging   = util::string::BoolLexicalCast(toks.at(2));
+    toks.erase(toks.begin(), toks.begin()+3);
+    setting::AllowFxp set(downloads, uploads, logging, toks);
+    InsertSetting<setting::AllowFxp>(MapAllowFxp, set, opt);
   }
-  else if (opt == "welcome_msg" || opt == "goodbye_msg" || opt == "newsfile")
-  {
-    std::string path = toks.at(0);
-    toks.erase(toks.begin());
-    //return new setting::ACLWithPath(path, toks);
-  }
-  else if (opt == "banner")
-  {
-    //return new setting::Path(toks.at(0));
-  }
+
+  // PathWithArgument
   else if (opt == "alais")
   {
-    //return new setting::PathWithArgument(toks.at(1), toks.at(0));
+    setting::PathWithArgument set(toks.at(0), toks.at(1));
+    InsertSetting<setting::PathWithArgument>(MapPathWithArgument, set, opt);
   }
-  else if (opt == "cdpath")
-  {
-    //return new setting::Argument(toks.at(0));
-  }
-  else if (opt == "ignore_type")
-  {
-    //return new setting::Arguments(toks);
-  }
-  // rights section
-  else if (opt == "delete" || opt == "deleteown" || opt == "overwrite" 
-    || opt == "resume" || opt == "rename" || opt == "renameown" 
-    || opt == "filemove" || opt == "makedir" || opt == "upload"
-    || opt == "download" || opt == "nuke" || opt == "dirlog"
-    || opt == "hideinwho" || opt == "nostats")
-  {
-    std::string path = toks.at(0);
-    toks.erase(toks.begin());
-    //return new setting::ACLWithPath(path, toks);
-  }
+
+  // ACLWithArgument
   else if (opt == "freefile") 
   {
     std::string argument = toks.at(0);
     toks.erase(toks.begin());
-    //return new setting::ACLWithArgument(argument, toks);
+    setting::ACLWithArgument set(argument, toks);
+    InsertSetting<setting::ACLWithArgument>(MapACLWithArgument, set, opt);
   }
-  // stats section
+
+  // StatSection
   else if (opt == "stat_section")
   {
-    //return new setting::StatSection(toks.at(0), toks.at(1), 
-     // util::string::BoolLexicalCast(toks.at(2)));
+    setting::StatSection set(toks.at(0), toks.at(1), 
+     util::string::BoolLexicalCast(toks.at(2)));
+    InsertSetting<setting::StatSection>(MapStatSection, set, opt);
   }
+
+  // PathFilter
   else if (opt == "path-filter")
   {
     std::string group = toks.at(0);
     std::string messageFile = toks.at(1);
     toks.erase(toks.begin(), toks.begin()+2);
-    //return new setting::PathFilter(group, messageFile, toks);
+    setting::PathFilter set(group, messageFile, toks);
+    InsertSetting<setting::PathFilter>(MapPathFilter, set, opt);
   }
-  else if (opt == "max_users")
-  {
-    std::vector<int> ints;
-    std::vector<std::string>::iterator it;
-    for (it = toks.begin(); it != toks.end(); ++it)
-      ints.push_back(boost::lexical_cast<int>(*it));
-    //return new setting::Ints(ints);
-  }
+
+  // ACLWithInt
   else if (opt == "max_ustats" || opt == "max_gstats")
   {
     int num = boost::lexical_cast<int>(toks.at(0));
     toks.erase(toks.begin());
-    //return new setting::ACLWithInt(num, toks);
+    setting::ACLWithInt set(num, toks);
+    InsertSetting<setting::ACLWithInt>(MapACLWithInt, set, opt);
   }
-  else if (opt == "banned_users")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "show_diz")
-  {
-    std::string path = toks.at(0);
-    toks.erase(toks.begin());
-    if (toks.size() == 0) toks.push_back(std::string("*"));
-    //return new setting::ACLWithPath(path, toks);
-  }
-  else if (opt == "show_totals")
-  {
-    int maxLines = (toks.at(0) == "*") ? -1 : boost::lexical_cast<int>(toks.at(0));
-    //return new setting::IntWithArgs(maxLines, toks);
-  }
-  else if (opt == "dl_incomplete")
-  {
-    //return new setting::Bool(util::string::BoolLexicalCast(toks.at(0)));
-  }
-  else if (opt == "fild_dl_count")
-  {
-    //return new setting::Bool(util::string::BoolLexicalCast(toks.at(0)));
-  }
+
+
+  // IntWithBool
   else if (opt == "dupe_check")
   {
-    //return new setting::IntWithBool(boost::lexical_cast<int>(toks.at(0)),
-    //  util::string::BoolLexicalCast(toks.at(1)));
+    int first = boost::lexical_cast<int>(toks.at(0));
+    bool enabled = util::string::BoolLexicalCast(toks.at(1));
+    setting::IntWithBool set(first, enabled);
+    InsertSetting<setting::IntWithBool>(MapIntWithBool, set, opt);
   }
-  // built in scripts
-  else if (opt == "pre_check" || opt == "pre_dir_check" || opt == "post_check")
-  {
-    std::string path = toks.at(0);
-    toks.erase(toks.begin());
-    //return new setting::ACLWithPath(path, toks);
-  }
-  else if (opt == "idle_commands")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "total_users")
-  {
-    //return new setting::Int(boost::lexical_cast<int>(toks.at(0)));
-  }
-  else if (opt == "lslong")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "hidden_files")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "noretrieve")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "dir_names" || opt == "file_names")
-  {
-    int caps = util::string::BoolLexicalCast(toks.at(0));
-    std::string toLower = toks.at(1);
-    boost::algorithm::to_lower(toLower);
-    bool upperCase = (toLower == "lower") ?
-      false : true;
-    toks.erase(toks.begin(), toks.begin()+2);
-    //return new setting::NameRules(caps, upperCase, toks);
-  }
-  else if (opt == "tagline")
-  {
-    //return new setting::Argument(toks.at(0));
-  }
-  else if (opt == "email")
-  {
-    //return new setting::Argument(toks.at(0));
-  }
-  else if (opt == "multiplier_max" || opt == "oneliners")
-  {
-    //return new setting::Int(boost::lexical_cast<int>(toks.at(0)));
-  }
+
+  // Requests
   else if (opt == "requests")
   {
-    //return new setting::Requests(toks.at(0), 
-      //boost::lexical_cast<int>(toks.at(1)));
+    setting::Requests set(toks.at(0), boost::lexical_cast<int>(toks.at(1)));
+    InsertSetting<setting::Requests>(MapRequests, set, opt);
   }
-  else if (opt == "lastonline")
-  {
-    std::vector<int> ints;
-    std::vector<std::string>::iterator it;
-    for (it = toks.begin(); it != toks.end(); ++it)
-      ints.push_back(boost::lexical_cast<int>(*it));
-    //return new setting::Ints(ints);
-  }
-  else if (opt == "empty_nuke")
-  {
-    //return new setting::Int(boost::lexical_cast<int>(toks.at(0)));
-  }
-  else if (opt == "nodupecheck")
-  {
-    //return new setting::Path(toks.at(0));
-  }
+
+  // Creditcheck
   else if (opt == "creditcheck")
   {
     std::string path = toks.at(0);
     int ratio = boost::lexical_cast<int>(toks.at(1));
     toks.erase(toks.begin(), toks.begin()+2);
-    //return new setting::CreditCheck(path, ratio, toks);
+    setting::Creditcheck set(path, ratio, toks);
+    InsertSetting<setting::Creditcheck>(MapCreditcheck, set, opt);
   }
+  
+  // Creditloss
   else if (opt == "creditloss")
   {
     int multiplier = boost::lexical_cast<int>(toks.at(0));
     bool leechers = util::string::BoolLexicalCast(toks.at(1));
     std::string path = toks.at(2);
     toks.erase(toks.begin(), toks.begin()+3);
-    //return new setting::CreditLoss(multiplier, leechers, path, toks);
+    setting::Creditloss set(multiplier, leechers, path, toks);
+    InsertSetting<setting::Creditloss>(MapCreditloss, set, opt);
   }
+
+  // NukedirStyle
   else if (opt == "nukedir_style")
   {
-    //return new setting::NukeDirStyle(toks.at(0), 
-    //  boost::lexical_cast<int>(toks.at(1)),
-    //  boost::lexical_cast<int>(toks.at(2)));
+    setting::NukedirStyle set(toks.at(0), 
+      boost::lexical_cast<int>(toks.at(1)),
+      boost::lexical_cast<int>(toks.at(2)));
+    InsertSetting<setting::NukedirStyle>(MapNukedirStyle, set, opt);
   }
-  else if (opt == "hideuser")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "privgroup")
-  {
-    //return new setting::Arguments(toks);
-  }
-  else if (opt == "msgpath")
+
+  // MsgPath
+  else if (opt == "msg_path")
   {
     std::string path = toks.at(0);
     std::string filename = toks.at(1);
     toks.erase(toks.begin(), toks.begin()+2);
-    //return new setting::MsgPath(path, filename, toks);
+    setting::MsgPath set(path, filename, toks);
+    InsertSetting<setting::MsgPath>(MapMsgPath, set, opt);
   }
-  else if (opt == "privpath")
+
+  // Cscript
+  else if (opt == "cscript")
   {
-    std::string path = toks.at(0);
-    toks.erase(toks.begin());
-    //return new setting::ACLWithPath(path, toks);
+    setting::Cscript set(toks.at(0), toks.at(1), toks.at(2)); 
+    InsertSetting<setting::Cscript>(MapCscript, set, opt);
   }
-  else if (opt == "max_sitecmd_lines")
-  {
-    //return new setting::Int(boost::lexical_cast<int>(toks.at(0)));
-  }
-  else if (opt == "csript")
-  {
-    //return new setting::CScript(toks.at(0), toks.at(1), toks.at(2)); 
-  }
+
+  // SiteCmd
   else if (opt == "site_cmd")
   {
+    std::string command = toks.at(0);
+    std::string method = toks.at(1);
+    boost::algorithm::to_lower(method);
+    setting::SiteCmdMethod method_ = setting::EXEC;
+    if (method == "text") method_  = setting::TEXT;
+    else if (method == "is") method_ = setting::IS;
+    std::string path = toks.at(2);
+    toks.erase(toks.begin(), toks.begin()+3);
+
+    setting::SiteCmd set(command, method_, path, toks);
+    InsertSetting<setting::SiteCmd>(MapSiteCmd, set, opt);
   }
+
   // check if we have a site_cmd permission
-  if (opt.at(0) == '-')
+  else if (opt.at(0) == '-')
   {
     std::string opt_ = opt;
     opt_.erase(opt_.begin());
+    
   } 
   else if (opt.find("custom-") != std::string::npos)
   {
     std::string opt_ = opt;
     opt_.replace(0, 7, "");
   }
-  // todo: 
-  //  site_cmd and their corresponding permissions
-  
-  throw NoSetting("Unable to find setting '" + opt + "'");
+   
+  else
+    throw NoSetting("Unable to find setting '" + opt + "'");
 }
 
 }
