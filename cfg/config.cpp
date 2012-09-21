@@ -14,7 +14,9 @@
 namespace cfg
 {
 
-Config::Config(const std::string& config) : version(0), config(config)
+int Config::latestVersion = 0;
+
+Config::Config(const std::string& config) : version(++latestVersion), config(config)
 {
   std::string line;
   std::ifstream io(config.c_str(), std::ifstream::in);
