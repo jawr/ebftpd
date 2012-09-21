@@ -3,6 +3,7 @@
 #include <ostream>
 #include <tr1/unordered_set>
 #include <boost/thread.hpp>
+#include <boost/ptr_container/ptr_list.hpp>
 #include "util/endpoint.hpp"
 #include "ftp/client.hpp"
 #include "util/thread.hpp"
@@ -10,19 +11,24 @@
 #include "util/tcpclient.hpp"
 namespace ftp
 {
-class Listener : public util::ThreadConsumer
+class Listener : public util::ThreadSelect
 {
+  typedef boost::ptr_list<Client> ClientList;
+
   util::endpoint addr;
   util::tcp::server server;
-  std::tr1::unordered_set<ftp::Client*> clients;
+  boost::ptr_list<Client> clients;
+  
+  void AcceptClients();
+  void AcceptClient();
+  void HandleClients();
   
 public:
   Listener() : addr("127.0.0.1", 21), server(), clients() {};
   Listener(const std::string& ip, uint16_t port) : addr(ip, port), server() {};
   ~Listener() {};
   void Run();
-  void Listen();
-
+  bool Initialise();
 };
 }
 #endif
