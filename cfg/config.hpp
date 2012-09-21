@@ -160,9 +160,9 @@ public:
 
 };
 
+typedef std::tr1::shared_ptr<cfg::Config> ConfigPtr;
+
 }
 
-typedef std::tr1::shared_ptr<cfg::Config> ConfigPtr;
-int cfg::Config::latestVersion = 0;
 
 #endif 
