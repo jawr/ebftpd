@@ -3,10 +3,17 @@
 #include "fs/status.hpp"
 #include "util/error.hpp"
 
+#include <iostream>
+
 namespace fs
 {
 
-Status::Status(const std::string& path) :
+Status::Status() :
+  statOkay(false)
+{
+}
+
+Status::Status(const fs::Path& path) :
   path(path),
   statOkay(false)
 {
@@ -15,16 +22,16 @@ Status::Status(const std::string& path) :
 
 Status& Status::Reset()
 {
-  if (path.empty()) throw std::logic_error("no path set");
+  if (path.Empty()) throw std::logic_error("no path set");
   if (!statOkay)
   {
-    if (stat(path.c_str(), &native) < 0) throw util::SystemError(errno);
+    if (stat(path.CString(), &native) < 0) throw util::SystemError(errno);
     statOkay = true;
   }
   return *this;
 }
 
-Status& Status::Reset(const std::string& path)
+Status& Status::Reset(const fs::Path& path)
 {
   statOkay = false;
   this->path = path;
@@ -74,7 +81,7 @@ bool Status::IsReadable()
          (getegid() == native.st_gid && (native.st_mode & S_IRGRP));
 }
 
-const std::string& Status::Path()
+const fs::Path& Status::Path()
 {
   Reset();
   return path;

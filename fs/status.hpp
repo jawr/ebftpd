@@ -1,25 +1,25 @@
 #ifndef __FS_STATUS_HPP
 #define __FS_STATUS_HPP
 
-#include <string>
 #include <sys/stat.h>
+#include "fs/path.hpp"
 
 namespace fs
 {
 
 class Status
 {
-  std::string path;
+  fs::Path path;
   struct stat native;
   bool statOkay;
   
   Status& Reset();
   
 public:
-  Status() : statOkay(false) { }
-  Status(const std::string& path);
+  Status(const fs::Path& path);
+  Status();
   
-  Status& Reset(const std::string& path);
+  Status& Reset(const fs::Path& path);
   
   bool IsRegularFile();
   bool IsDirectory();
@@ -29,7 +29,7 @@ public:
   bool IsReadable();
   bool IsWriteable();
   
-  const std::string& Path();
+  const fs::Path& Path();
   off_t Size();
   
   const struct stat& Native();
