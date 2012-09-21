@@ -153,6 +153,16 @@ namespace util
     }
   };
 
+    
+  class network_protocol_error : public network_error
+  {
+  public:
+    network_protocol_error() :
+      network_error("protocol error")
+    {
+    }
+  };
+
   namespace proxy
   {
 
@@ -182,7 +192,6 @@ namespace util
       {
       }
     };
-
   }
 }
 
