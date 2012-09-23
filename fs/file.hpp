@@ -6,6 +6,7 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include "util/error.hpp"
+#include "fs/path.hpp"
 
 namespace ftp
 {
@@ -14,6 +15,7 @@ class Client;
 
 namespace fs
 {
+
 typedef boost::iostreams::stream<
         boost::iostreams::file_descriptor_sink> OutStream;
         
@@ -24,12 +26,12 @@ typedef boost::iostreams::stream<
         
 typedef std::tr1::shared_ptr<InStream> InStreamPtr;
         
-util::Error DeleteFile(const ftp::Client& client, const std::string& path);
-util::Error RenameFile(const ftp::Client& client, const std::string& oldPath,
-                       const std::string& newPath);
-OutStreamPtr CreateFile(const ftp::Client& client, const std::string& path);
-OutStreamPtr AppendFile(const ftp::Client& client, const std::string& path);
-InStreamPtr OpenFile(const ftp::Client& client, const std::string& path);
+util::Error DeleteFile(ftp::Client& client, const Path& path);
+util::Error RenameFile(ftp::Client& client, const Path& oldPath,
+                       const Path& newPath);
+OutStreamPtr CreateFile(ftp::Client& client, const Path& path);
+OutStreamPtr AppendFile(ftp::Client& client, const Path& path);
+InStreamPtr OpenFile(ftp::Client& client, const Path& path);
 
 } /* fs namespace */
 

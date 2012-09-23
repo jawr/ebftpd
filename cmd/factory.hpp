@@ -4,11 +4,7 @@
 #include <tr1/memory>
 #include <tr1/unordered_map>
 #include "cmd/command.hpp"
-
-namespace ftp
-{
-class Client; 
-}
+#include "ftp/client.hpp"
 
 namespace cmd
 {
@@ -16,14 +12,20 @@ namespace cmd
 template <class BaseT>
 class CreatorBase
 {
+  ftp::ClientState requiredState;
+  
 public:  
+  CreatorBase(ftp::ClientState requiredState) :
+    requiredState(requiredState) { }
   virtual BaseT *Create(ftp::Client& client, const Args& args) = 0;
+  ftp::ClientState RequiredState() const { return requiredState; }
 };
 
 template <class CommandT>
 class Creator : public CreatorBase<Command>
 {
-public:  
+public:
+  Creator(ftp::ClientState requiredState) : CreatorBase(requiredState) { }
   Command *Create(ftp::Client& client, const Args& args)
   {
     return new CommandT(client, args);
@@ -45,9 +47,9 @@ class Factory
   static Factory factory;
   
 public:
-  static Command* Create(ftp::Client& client, const Args& args);
+  static Command* Create(ftp::Client& client, const Args& args,
+                         ftp::ClientState& requiredState);
 };
-
 
 } /* cmd namespace */
 

@@ -1,5 +1,10 @@
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
+#include "fs/directory.hpp"
+#include "fs/file.hpp"
+#include "util/error.hpp"
+#include "fs/status.hpp"
+#include "fs/path.hpp"
 
 namespace cmd
 {
@@ -41,7 +46,15 @@ void CCCCommand::Execute()
 
 void CDUPCommand::Execute()
 {
-  client.Reply(502, "CDUP Command not implemented."); 
+  if (args.size() != 1)
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+  
+  util::Error e = fs::ChangeDirectory(client,  "..");
+  if (!e) client.Reply(550, "CDUP failed: " + e.Message());
+  else client.Reply(502, "CDUP command successful."); 
 }
 
 void CONFCommand::Execute()
@@ -51,12 +64,28 @@ void CONFCommand::Execute()
 
 void CWDCommand::Execute()
 {
-  client.Reply(502, "CWD Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+  
+  util::Error e = fs::ChangeDirectory(client,  args[1]);
+  if (!e) client.Reply(550, "CWD failed: " + e.Message());
+  else client.Reply(502, "CWD command successful."); 
 }
 
 void DELECommand::Execute()
 {
-  client.Reply(502, "DELE Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+  
+  util::Error e = fs::DeleteFile(client,  args[1]);
+  if (!e) client.Reply(550, "DELE failed: " + e.Message());
+  else client.Reply(502, "DELE command successful."); 
 }
 
 void ENCCommand::Execute()
@@ -127,7 +156,15 @@ void MICCommand::Execute()
 
 void MKDCommand::Execute()
 {
-  client.Reply(502, "MKD Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+  
+  util::Error e = fs::CreateDirectory(client,  args[1]);
+  if (!e) client.Reply(550, "MKD failed: " + e.Message());
+  else client.Reply(502, "MKD command successful."); 
 }
 
 void MLSDCommand::Execute()
@@ -168,9 +205,18 @@ void PASSCommand::Execute()
     return;    
   }
   
-  if (!client.User().VerifyPassword(args[1]))
+  if (!client.VerifyPassword(args[1]))
   {
-    client.Reply(530, "Login incorrect.");
+    if (client.PasswordAttemptsExceeded())
+    {
+      client.Reply(530, "Password attempts exceeded, disconnecting.");
+      client.SetFinished();
+    }
+    else
+    {
+      client.Reply(530, "Login incorrect.");
+      client.SetLoggedOut();
+    }
     return;
   }
   
@@ -200,7 +246,7 @@ void PROTCommand::Execute()
 
 void PWDCommand::Execute()
 {
-  client.Reply(502, "PWD Command not implemented."); 
+  client.Reply(257, "\"" + client.WorkDir() + "\" is your working directory.");
 }
 
 void QUITCommand::Execute()
@@ -226,17 +272,52 @@ void RETRCommand::Execute()
 
 void RMDCommand::Execute()
 {
-  client.Reply(502, "RMD Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+  
+  util::Error e = fs::RemoveDirectory(client,  args[1]);
+  if (!e) client.Reply(550, "RMD failed: " + e.Message());
+  else client.Reply(502, "RMD command successful."); 
 }
 
 void RNFRCommand::Execute()
 {
-  client.Reply(502, "RNFR Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+
+  fs::Path absolute = (client.WorkDir() / args[1]).Expand();
+  
+  try
+  {
+    fs::Status status(absolute);
+  }
+  catch (const util::SystemError& e)
+  {
+    client.Reply(550, "RNFR failed: " + e.Message());
+    return;
+  }
+  client.PartReply(350, std::string(absolute));
+  client.SetRenameFrom(absolute);
+  client.Reply(350, "File exists, ready for destination name."); 
 }
 
 void RNTOCommand::Execute()
 {
-  client.Reply(502, "RNTO Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+  
+  util::Error e = fs::RenameFile(client, client.RenameFrom(), args[1]);
+  if (!e) client.Reply(550, "RNTO failed: " + e.Message());
+  else client.Reply(250, "RNTO command successful.");
 }
 
 void SITECommand::Execute()

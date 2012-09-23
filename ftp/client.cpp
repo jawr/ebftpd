@@ -31,10 +31,44 @@ void Client::SetWaitingPassword()
   state = WaitingPassword;
 }
 
+void Client::SetLoggedOut()
+{
+  boost::lock_guard<boost::mutex> lock(mutex);
+  state = LoggedOut;
+}
+
 void Client::SetFinished()
 {
   boost::lock_guard<boost::mutex> lock(mutex);
   state = Finished;
+}
+
+bool Client::CheckState(ClientState reqdState)
+{
+  if (state == reqdState || reqdState == AnyState) return true;
+  if (state == LoggedIn) Reply(530, "Already logged in.");
+  else if (state == WaitingPassword) Reply(503, "Expecting PASS comamnd.");
+  else if (state == LoggedOut &&
+           reqdState == WaitingPassword) Reply(503, "Expecting USER command first.");
+  else if (state == LoggedOut) Reply(503, "Not logged in.");
+  assert(state != Finished);
+  return false;
+}
+
+bool Client::VerifyPassword(const std::string& password)
+{
+  ++passwordAttemps;
+  return user.VerifyPassword(password);
+}
+
+bool Client::PasswordAttemptsExceeded() const
+{
+  return passwordAttemps >= maxPasswordAttemps;
+}
+
+void Client::SetWorkDir(const std::string& workDir)
+{
+  this->workDir = workDir;
 }
 
 bool Client::Accept(util::tcp::server& server)
@@ -142,8 +176,11 @@ void Client::ExecuteCommand()
   boost::split(args, commandLine, boost::is_any_of(" "),
                boost::token_compress_on);
   if (args.empty()) throw util::network_protocol_error();
-  std::auto_ptr<cmd::Command> command(cmd::Factory::Create(*this, args));
+  ftp::ClientState reqdState;
+  std::auto_ptr<cmd::Command>
+    command(cmd::Factory::Create(*this, args, reqdState));
   if (!command.get()) Reply(500, "Command not understood");
+  else if (!CheckState(reqdState));
   else command->Execute();
 }
 

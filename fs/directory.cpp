@@ -7,6 +7,7 @@
 #include "ftp/client.hpp"
 
 #include <iostream>
+#include "logger/logger.hpp"
 
 namespace fs
 {
@@ -25,7 +26,8 @@ util::Error CreateDirectory(const Path& path)
 util::Error RemoveDirectory(const Path& path)
 {
   Path real = dummySiteRoot + path;
-  if (rmdir(path.CString()) < 0) return util::Error::Failure(errno);
+  logger::ftpd << "real: " << real << logger::endl;
+  if (rmdir(real.CString()) < 0) return util::Error::Failure(errno);
   else return util::Error::Success();
 }
 
@@ -53,31 +55,34 @@ util::Error ChangeDirectory(const Path& path)
 
 }
 
-util::Error CreateDirectory(const ftp::Client& client, const Path& path)
+util::Error CreateDirectory(ftp::Client& client, const Path& path)
 {
-  Path absolute = client.WorkDir() / path;
+  Path absolute = (client.WorkDir() / path).Expand();
   
   // check ACLs here
   
   return CreateDirectory(absolute);
 }
 
-util::Error RemoveDirectory(const ftp::Client& client, const Path& path)
+util::Error RemoveDirectory(ftp::Client& client, const Path& path)
 {
-  Path absolute = client.WorkDir() / path;
+  std::cout << client.WorkDir() << " " << path << std::endl;
+  Path absolute = (client.WorkDir() / path).Expand();
   
   // check ACLs here
-  
+  logger::ftpd << "absolute: " << absolute << logger::endl;
   return RemoveDirectory(absolute);
 }
 
-util::Error ChangeDirectory(const ftp::Client& client, const Path& path)
+util::Error ChangeDirectory(ftp::Client& client, const Path& path)
 {
-  Path absolute = client.WorkDir() / path;
+  Path absolute = (client.WorkDir() / path).Expand();
   
   // check ACLs here
   
-  return ChangeDirectory(absolute);
+  util::Error e = ChangeDirectory(absolute);
+  if (e) client.SetWorkDir(absolute);
+  return e;
 }
 
 } /* fs namespace */
