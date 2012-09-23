@@ -89,8 +89,8 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
    || opt == "denydiruncrypted" || opt == "denydatauncrypted"
    || opt == "shutdown" || opt == "hideuser")
   {
-    setting::ACL acl(toks);
-    InsertSetting<setting::ACL>(MapACL, acl, opt);  
+    ACL acl(toks);
+    InsertSetting<ACL>(MapACL, acl, opt);  
   }
 
   // IntWithArguments 
@@ -98,8 +98,8 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   {
     int i = (toks.at(0) == "*") ? -1 : boost::lexical_cast<int>(toks.at(0));
     toks.erase(toks.begin());
-    setting::IntWithArguments set(i, toks);
-    InsertSetting<setting::IntWithArguments>(MapIntWithArguments, set, opt);
+    IntWithArguments set(i, toks);
+    InsertSetting<IntWithArguments>(MapIntWithArguments, set, opt);
   }
 
   // int  
@@ -154,8 +154,8 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     bool allowHostnames = util::string::BoolLexicalCast(toks.at(1));
     bool needIdent = util::string::BoolLexicalCast(toks.at(2));
     toks.erase(toks.begin(), toks.begin()+3);
-    setting::SecureIP set(fields, allowHostnames, needIdent, toks);
-    InsertSetting<setting::SecureIP>(MapSecureIP, set, opt);
+    SecureIP set(fields, allowHostnames, needIdent, toks);
+    InsertSetting<SecureIP>(MapSecureIP, set, opt);
   }
 
   // ACLWithPath
@@ -170,8 +170,8 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   {
     std::string path = toks.at(0);
     toks.erase(toks.begin());
-    setting::ACLWithPath set(path, toks);
-    InsertSetting<setting::ACLWithPath>(MapACLWithPath, set, opt);
+    ACLWithPath set(path, toks);
+    InsertSetting<ACLWithPath>(MapACLWithPath, set, opt);
   }
 
   // SpeedLimit
@@ -181,17 +181,17 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     int upload = boost::lexical_cast<int>(toks.at(1));
     int download = boost::lexical_cast<int>(toks.at(2));
     toks.erase(toks.begin(), toks.begin()+3);
-    setting::SpeedLimit set(path, upload, download, toks);
-    InsertSetting<setting::SpeedLimit>(MapSpeedLimit, set, opt); 
+    SpeedLimit set(path, upload, download, toks);
+    InsertSetting<SpeedLimit>(MapSpeedLimit, set, opt); 
   }
 
   // PasvAddr
   else if (opt == "pasv_addr") 
   {
-    setting::PasvAddr set(toks.at(0));
+    PasvAddr set(toks.at(0));
     if (toks.size() > 1)
       set.SetPrimary();
-    InsertSetting<setting::PasvAddr>(MapPasvAddr, set, opt);
+    InsertSetting<PasvAddr>(MapPasvAddr, set, opt);
   }
 
   // AllowFxp
@@ -201,15 +201,15 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     bool uploads   = util::string::BoolLexicalCast(toks.at(1)); 
     bool logging   = util::string::BoolLexicalCast(toks.at(2));
     toks.erase(toks.begin(), toks.begin()+3);
-    setting::AllowFxp set(downloads, uploads, logging, toks);
-    InsertSetting<setting::AllowFxp>(MapAllowFxp, set, opt);
+    AllowFxp set(downloads, uploads, logging, toks);
+    InsertSetting<AllowFxp>(MapAllowFxp, set, opt);
   }
 
   // PathWithArgument
   else if (opt == "alais")
   {
-    setting::PathWithArgument set(toks.at(0), toks.at(1));
-    InsertSetting<setting::PathWithArgument>(MapPathWithArgument, set, opt);
+    PathWithArgument set(toks.at(0), toks.at(1));
+    InsertSetting<PathWithArgument>(MapPathWithArgument, set, opt);
   }
 
   // ACLWithArgument
@@ -217,16 +217,16 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   {
     std::string argument = toks.at(0);
     toks.erase(toks.begin());
-    setting::ACLWithArgument set(argument, toks);
-    InsertSetting<setting::ACLWithArgument>(MapACLWithArgument, set, opt);
+    ACLWithArgument set(argument, toks);
+    InsertSetting<ACLWithArgument>(MapACLWithArgument, set, opt);
   }
 
   // StatSection
   else if (opt == "stat_section")
   {
-    setting::StatSection set(toks.at(0), toks.at(1), 
+    StatSection set(toks.at(0), toks.at(1), 
      util::string::BoolLexicalCast(toks.at(2)));
-    InsertSetting<setting::StatSection>(MapStatSection, set, opt);
+    InsertSetting<StatSection>(MapStatSection, set, opt);
   }
 
   // PathFilter
@@ -235,8 +235,8 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     std::string group = toks.at(0);
     std::string messageFile = toks.at(1);
     toks.erase(toks.begin(), toks.begin()+2);
-    setting::PathFilter set(group, messageFile, toks);
-    InsertSetting<setting::PathFilter>(MapPathFilter, set, opt);
+    PathFilter set(group, messageFile, toks);
+    InsertSetting<PathFilter>(MapPathFilter, set, opt);
   }
 
   // ACLWithInt
@@ -244,8 +244,8 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   {
     int num = boost::lexical_cast<int>(toks.at(0));
     toks.erase(toks.begin());
-    setting::ACLWithInt set(num, toks);
-    InsertSetting<setting::ACLWithInt>(MapACLWithInt, set, opt);
+    ACLWithInt set(num, toks);
+    InsertSetting<ACLWithInt>(MapACLWithInt, set, opt);
   }
 
 
@@ -254,15 +254,15 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   {
     int first = boost::lexical_cast<int>(toks.at(0));
     bool enabled = util::string::BoolLexicalCast(toks.at(1));
-    setting::IntWithBool set(first, enabled);
-    InsertSetting<setting::IntWithBool>(MapIntWithBool, set, opt);
+    IntWithBool set(first, enabled);
+    InsertSetting<IntWithBool>(MapIntWithBool, set, opt);
   }
 
   // Requests
   else if (opt == "requests")
   {
-    setting::Requests set(toks.at(0), boost::lexical_cast<int>(toks.at(1)));
-    InsertSetting<setting::Requests>(MapRequests, set, opt);
+    Requests set(toks.at(0), boost::lexical_cast<int>(toks.at(1)));
+    InsertSetting<Requests>(MapRequests, set, opt);
   }
 
   // Creditcheck
@@ -271,8 +271,8 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     std::string path = toks.at(0);
     int ratio = boost::lexical_cast<int>(toks.at(1));
     toks.erase(toks.begin(), toks.begin()+2);
-    setting::Creditcheck set(path, ratio, toks);
-    InsertSetting<setting::Creditcheck>(MapCreditcheck, set, opt);
+    Creditcheck set(path, ratio, toks);
+    InsertSetting<Creditcheck>(MapCreditcheck, set, opt);
   }
   
   // Creditloss
@@ -282,17 +282,17 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     bool leechers = util::string::BoolLexicalCast(toks.at(1));
     std::string path = toks.at(2);
     toks.erase(toks.begin(), toks.begin()+3);
-    setting::Creditloss set(multiplier, leechers, path, toks);
-    InsertSetting<setting::Creditloss>(MapCreditloss, set, opt);
+    Creditloss set(multiplier, leechers, path, toks);
+    InsertSetting<Creditloss>(MapCreditloss, set, opt);
   }
 
   // NukedirStyle
   else if (opt == "nukedir_style")
   {
-    setting::NukedirStyle set(toks.at(0), 
+    NukedirStyle set(toks.at(0), 
       boost::lexical_cast<int>(toks.at(1)),
       boost::lexical_cast<int>(toks.at(2)));
-    InsertSetting<setting::NukedirStyle>(MapNukedirStyle, set, opt);
+    InsertSetting<NukedirStyle>(MapNukedirStyle, set, opt);
   }
 
   // MsgPath
@@ -301,15 +301,15 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     std::string path = toks.at(0);
     std::string filename = toks.at(1);
     toks.erase(toks.begin(), toks.begin()+2);
-    setting::MsgPath set(path, filename, toks);
-    InsertSetting<setting::MsgPath>(MapMsgPath, set, opt);
+    MsgPath set(path, filename, toks);
+    InsertSetting<MsgPath>(MapMsgPath, set, opt);
   }
 
   // Cscript
   else if (opt == "cscript")
   {
-    setting::Cscript set(toks.at(0), toks.at(1), toks.at(2)); 
-    InsertSetting<setting::Cscript>(MapCscript, set, opt);
+    Cscript set(toks.at(0), toks.at(1), toks.at(2)); 
+    InsertSetting<Cscript>(MapCscript, set, opt);
   }
 
   // SiteCmd
@@ -318,14 +318,14 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     std::string command = toks.at(0);
     std::string method = toks.at(1);
     boost::algorithm::to_lower(method);
-    setting::SiteCmdMethod method_ = setting::EXEC;
-    if (method == "text") method_  = setting::TEXT;
-    else if (method == "is") method_ = setting::IS;
+    SiteCmdMethod method_ = EXEC;
+    if (method == "text") method_  = TEXT;
+    else if (method == "is") method_ = IS;
     std::string path = toks.at(2);
     toks.erase(toks.begin(), toks.begin()+3);
 
-    setting::SiteCmd set(command, method_, path, toks);
-    InsertSetting<setting::SiteCmd>(MapSiteCmd, set, opt);
+    SiteCmd set(command, method_, path, toks);
+    InsertSetting<SiteCmd>(MapSiteCmd, set, opt);
   }
 
   // check if we have a site_cmd permission
@@ -357,9 +357,9 @@ int main()
 {
   cfg::Config c("glftpd.conf");
   logger::ftpd << c.DSACertFile() << logger::endl; 
-  const std::vector<cfg::setting::ACLWithPath>& downloads = c.Download();
+  const std::vector<cfg::ACLWithPath>& downloads = c.Download();
   logger::ftpd << "download:" << logger::endl;
-  for (std::vector<cfg::setting::ACLWithPath>::const_iterator it = downloads.begin();
+  for (std::vector<cfg::ACLWithPath>::const_iterator it = downloads.begin();
     it != downloads.end(); ++it)
     logger::ftpd << (*it).Path() << logger::endl;
   return 0;
