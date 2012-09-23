@@ -63,6 +63,7 @@ class ACL : virtual public Setting
   std::vector<std::string> acl;
 public:
   ACL(std::vector<std::string>& acl) : acl(acl) {};
+  ACL(const std::string& acl) { acl.push_back(acl); };
   ~ACL() {};
 };
 
@@ -131,6 +132,7 @@ class IntWithArguments : virtual public Setting
   int first;
   std::vector<std::string> arguments;
 public:
+  IntWithArguments(int first) : first(first), arguments() {};
   IntWithArguments(int first, std::vector<std::string>& arguments) :
     first(first), arguments(arguments) {};
   ~IntWithArguments() {};

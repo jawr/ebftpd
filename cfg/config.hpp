@@ -21,7 +21,7 @@ class Config
  
   void Parse(const std::string& line);
   void SetSetting(const std::string& setting, std::vector<std::string>& toks);
-  void SetDefaults();
+  bool SetDefaults();
 
   // containers
   boost::unordered_map<std::string, std::vector<fs::Path> > MapPath;
@@ -80,7 +80,7 @@ public:
   //  userrejectsecure -> Userrejectsecure
   //  ascii_downloads  -> AsciiDownloads 
   const fs::Path& RSACertFile() const { return MapPath.at("rsa_cert_file").back(); };
-  const fs::Path& DSACertFile() const { return MapPath.at("dsa_cert_file").back(); };
+  //const fs::Path& DSACertFile() const { return MapPath.at("dsa_cert_file").back(); };
   const ACL& Userrejectsecure() const { return MapACL.at("userrejectsecure").back(); };
   const ACL& Userrejectinsecure() const { return MapACL.at("userrejectinsecure").back(); };
   const ACL& Denydiruncrypted() const { return MapACL.at("denydiruncrypted").back(); };
