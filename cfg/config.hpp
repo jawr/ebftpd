@@ -79,6 +79,7 @@ public:
   // follows the following syntax:
   //  userrejectsecure -> Userrejectsecure
   //  ascii_downloads  -> AsciiDownloads 
+  const fs::Path& RSACertFile() const { return MapPath.at("rsa_cert_file").back(); };
   const fs::Path& DSACertFile() const { return MapPath.at("dsa_cert_file").back(); };
   const ACL& Userrejectsecure() const { return MapACL.at("userrejectsecure").back(); };
   const ACL& Userrejectinsecure() const { return MapACL.at("userrejectinsecure").back(); };
