@@ -174,7 +174,7 @@ public:
   const std::vector<CscriptOpt>& Cscript() const { return MapCscript.at("cscript"); };
   const std::vector<SiteCmdOpt>& SiteCmd() const { return MapSiteCmd.at("site_cmd"); };
   int Oneliners() const { return MapInt.at("oneliners").back(); };
-  int MultiplierMax() const { return MapInt.at("MultiplierMax").back(); };
+  int MultiplierMax() const { return MapInt.at("multiplier_max").back(); };
 
 };
 
