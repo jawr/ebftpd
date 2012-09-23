@@ -7,9 +7,6 @@ namespace cfg
 {
 class Setting {};
 
-namespace setting
-{
-
 // Path settings
 class Path : virtual public Setting
 {
@@ -279,6 +276,5 @@ public:
   
 
   
-} // end setting
 } // end cfg
 #endif
