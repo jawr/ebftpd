@@ -32,28 +32,28 @@ class Config
   boost::unordered_map<std::string, std::vector<int> > MapInt;
   boost::unordered_map<std::string, std::vector<std::vector<int> > > MapVectorInt;
   boost::unordered_map<std::string, std::vector<bool> > MapBool; 
-  boost::unordered_map<std::string, std::vector<SecureIP> > MapSecureIP;
-  boost::unordered_map<std::string, std::vector<SpeedLimit> > MapSpeedLimit;
-  boost::unordered_map<std::string, std::vector<PasvAddr> > MapPasvAddr;
-  boost::unordered_map<std::string, std::vector<AllowFxp> > MapAllowFxp;
+  boost::unordered_map<std::string, std::vector<SecureIpOpt> > MapSecureIp;
+  boost::unordered_map<std::string, std::vector<SpeedLimitOpt> > MapSpeedLimit;
+  boost::unordered_map<std::string, std::vector<PasvAddrOpt> > MapPasvAddr;
+  boost::unordered_map<std::string, std::vector<AllowFxpOpt> > MapAllowFxp;
   boost::unordered_map<std::string, std::vector<ACLWithPath> > MapACLWithPath;
   boost::unordered_map<std::string, std::vector<PathWithArgument> > MapPathWithArgument;
   boost::unordered_map<std::string, std::vector<ACLWithArgument> > MapACLWithArgument;
-  boost::unordered_map<std::string, std::vector<StatSection> > MapStatSection;
-  boost::unordered_map<std::string, std::vector<PathFilter> > MapPathFilter;
+  boost::unordered_map<std::string, std::vector<StatSectionOpt> > MapStatSection;
+  boost::unordered_map<std::string, std::vector<PathFilterOpt> > MapPathFilter;
   boost::unordered_map<std::string, std::vector<ACLWithInt> > MapACLWithInt;
   boost::unordered_map<std::string, std::vector<IntWithBool> > MapIntWithBool;
-  boost::unordered_map<std::string, std::vector<Requests> > MapRequests; 
-  boost::unordered_map<std::string, std::vector<Creditcheck> > MapCreditcheck;
-  boost::unordered_map<std::string, std::vector<Creditloss> > MapCreditloss;
-  boost::unordered_map<std::string, std::vector<NukedirStyle> > MapNukedirStyle;
-  boost::unordered_map<std::string, std::vector<MsgPath> > MapMsgPath;
+  boost::unordered_map<std::string, std::vector<RequestsOpt> > MapRequests; 
+  boost::unordered_map<std::string, std::vector<CreditcheckOpt> > MapCreditcheck;
+  boost::unordered_map<std::string, std::vector<CreditlossOpt> > MapCreditloss;
+  boost::unordered_map<std::string, std::vector<NukedirStyleOpt> > MapNukedirStyle;
+  boost::unordered_map<std::string, std::vector<MsgPathOpt> > MapMsgPath;
 
   // site commands
-  boost::unordered_map<std::string, std::vector<SiteCmd> > MapSiteCmd;
+  boost::unordered_map<std::string, std::vector<SiteCmdOpt> > MapSiteCmd;
 
   // custom commands
-  boost::unordered_map<std::string, std::vector<Cscript> > MapCscript;
+  boost::unordered_map<std::string, std::vector<CscriptOpt> > MapCscript;
 
 
   template <typename T> void InsertSetting(
@@ -97,13 +97,13 @@ public:
   const fs::Path& Datapath() const { return MapPath.at("datapath").back(); };
   const fs::Path& ReloadConfig() const { return MapPath.at("reload_config").back(); }; // needed?
   const std::vector<std::string>& Master() const { return MapVectorString.at("master").back(); };
-  const std::vector<SecureIP>& SecureIp() const { return MapSecureIP.at("secure_ip"); };
+  const std::vector<SecureIpOpt>& SecureIp() const { return MapSecureIp.at("secure_ip"); };
   const std::vector<ACLWithPath>& SecurePass() const { return MapACLWithPath.at("secure_pass"); };
   const fs::Path& PwdPath() const { return MapPath.at("pwd_path").back(); };
   const fs::Path& GrpPath() const { return MapPath.at("grp_path").back(); };
   const fs::Path& BotscriptPath() const { return MapPath.at("botscript_path").back(); };
   const std::vector<std::string>& BouncerIp() const { return MapVectorString.at("bouncer_ip").back(); };
-  const std::vector<SpeedLimit>& SpeedLimit() const { return MapSpeedLimit.at("speed_limit"); };
+  const std::vector<SpeedLimitOpt>& SpeedLimit() const { return MapSpeedLimit.at("speed_limit"); };
   const std::vector<int>& SimXfers() const { return MapVectorInt.at("sim_xfers").back(); };
   const fs::Path& CalcCrc() const { return MapPath.at("calc_crc").back(); };
   const std::vector<std::string>& Xdupe() const { return MapVectorString.at("xdupe").back(); };
@@ -113,10 +113,10 @@ public:
   const fs::Path& MinHomedir() const { return MapPath.at("min_homedir").back(); };
   const std::vector<std::vector<std::string> >& ValidIp() const { return MapVectorString.at("valid_ip"); };
   const std::vector<std::vector<std::string> >& ActiveAddr() const { return MapVectorString.at("active_addr"); };
-  const std::vector<PasvAddr>& PasvAddr() const { return MapPasvAddr.at("pasv_addr"); };
+  const std::vector<PasvAddrOpt>& PasvAddr() const { return MapPasvAddr.at("pasv_addr"); };
   const std::vector<std::vector<std::string> >& PasvPorts() const { return MapVectorString.at("pasv_ports"); };
   const std::vector<std::vector<std::string> >& ActivePorts() const { return MapVectorString.at("active_ports"); };
-  const AllowFxp& AllowFxp() const { return MapAllowFxp.at("allow_fxp").back(); };
+  const AllowFxpOpt& AllowFxp() const { return MapAllowFxp.at("allow_fxp").back(); };
   const std::vector<ACLWithPath>& WelcomeMsg() const { return MapACLWithPath.at("welcome_msg"); };
   const std::vector<ACLWithPath>& GoodbyeMsg() const { return MapACLWithPath.at("goodbye_msg"); };
   const std::vector<ACLWithPath>& Newsfile() const { return MapACLWithPath.at("newsfile"); };
@@ -139,8 +139,8 @@ public:
   const std::vector<ACLWithPath>& Hideinwho() const { return MapACLWithPath.at("hideinwho"); };   
   const std::vector<ACLWithPath>& Nostats() const { return MapACLWithPath.at("nostats"); };   
   const std::vector<ACLWithArgument>& Freefile() const { return MapACLWithArgument.at("freefile"); };
-  const std::vector<StatSection>& StatSection() const { return MapStatSection.at("stat_section"); };
-  const std::vector<PathFilter>& PathFilter() const { return MapPathFilter.at("path_filter"); };
+  const std::vector<StatSectionOpt>& StatSection() const { return MapStatSection.at("stat_section"); };
+  const std::vector<PathFilterOpt>& PathFilter() const { return MapPathFilter.at("path_filter"); };
   const std::vector<int>& MaxUsers() const { return MapVectorInt.at("max_users").back(); };
   const ACLWithInt& MaxUstats() const { return MapACLWithInt.at("max_ustats").back(); }; 
   const ACLWithInt& MaxGstats() const { return MapACLWithInt.at("mac_gstats").back(); }; 
@@ -160,19 +160,19 @@ public:
   const std::vector<std::string>& Noretrieve() const { return MapVectorString.at("noretrieve").back(); };
   const std::string& Tagline() const { return MapString.at("tagline").back(); };
   const std::string& Email() const { return MapString.at("email").back(); };
-  const Requests& Requests() const { return MapRequests.at("requests").back(); };
+  const RequestsOpt& Requests() const { return MapRequests.at("requests").back(); };
   const std::vector<int>& Lastonline() const { return MapVectorInt.at("lastonline").back(); };
   int EmptyNuke() const { return MapInt.at("empty_nuke").back(); };
   const fs::Path& Nodupecheck() const { return MapPath.at("nodupecheck").back(); };
-  const std::vector<Creditcheck>& Creditcheck() const { return MapCreditcheck.at("creditcheck"); };
-  const NukedirStyle& NukedirStyle() const { return MapNukedirStyle.at("nukedir_style").back(); };
+  const std::vector<CreditcheckOpt>& Creditcheck() const { return MapCreditcheck.at("creditcheck"); };
+  const NukedirStyleOpt& NukedirStyle() const { return MapNukedirStyle.at("nukedir_style").back(); };
   const ACL& Hideuser() const { return MapACL.at("hideuser").back(); };
   const std::vector<std::vector<std::string> >& Privgroup() const { return MapVectorString.at("privgroup"); };
-  const std::vector<MsgPath>& MsgPath() const { return MapMsgPath.at("msg_path"); };
+  const std::vector<MsgPathOpt>& MsgPath() const { return MapMsgPath.at("msg_path"); };
   const std::vector<ACLWithPath>& Privpath() const { return MapACLWithPath.at("privpath"); };
   int MaxSitecmdLines() const { return MapInt.at("max_sitecmd_lines").back(); };
-  const std::vector<Cscript>& Cscript() const { return MapCscript.at("cscript"); };
-  const std::vector<SiteCmd>& SiteCmd() const { return MapSiteCmd.at("site_cmd"); };
+  const std::vector<CscriptOpt>& Cscript() const { return MapCscript.at("cscript"); };
+  const std::vector<SiteCmdOpt>& SiteCmd() const { return MapSiteCmd.at("site_cmd"); };
   int Oneliners() const { return MapInt.at("oneliners").back(); };
   int MultiplierMax() const { return MapInt.at("MultiplierMax").back(); };
 

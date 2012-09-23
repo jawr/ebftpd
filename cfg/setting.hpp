@@ -67,28 +67,28 @@ public:
 };
 
 // Misc
-class StatSection : virtual public Setting
+class StatSectionOpt : virtual public Setting
 {
   std::string keyword;
   fs::Path path;
   bool seperateCredits;
 public:
-  StatSection(const std::string& keyword, const std::string& path,
+  StatSectionOpt(const std::string& keyword, const std::string& path,
      bool seperateCredits) : keyword(keyword), path(path), 
       seperateCredits(seperateCredits) {};
-  ~StatSection() {};
+  ~StatSectionOpt() {};
 };
 
-class PathFilter : virtual public Setting
+class PathFilterOpt : virtual public Setting
 {
   std::string group;
   fs::Path messageFile;
   std::vector<std::string> filters;
 public:
-  PathFilter(const std::string& group, const std::string& messageFile,
+  PathFilterOpt(const std::string& group, const std::string& messageFile,
     const std::vector<std::string>& filters) : 
       group(group), messageFile(messageFile), filters(filters) {};
-  ~PathFilter() {};
+  ~PathFilterOpt() {};
 };
 
 enum When { PRE, POST };
@@ -104,26 +104,26 @@ public:
   ~Script() {};
 };
 
-class SpeedLimit : virtual public Setting
+class SpeedLimitOpt : virtual public Setting
 {
   fs::Path path;
   int upload;
   int download;
   std::vector<std::string> acl;
 public:
-  SpeedLimit(const std::string& path, int upload, int download, 
+  SpeedLimitOpt(const std::string& path, int upload, int download, 
     const std::vector<std::string>& acl) : path(path), upload(upload), download(download),
     acl(acl) {};
-  ~SpeedLimit() {};
+  ~SpeedLimitOpt() {};
 };
 
-class Requests : virtual public Setting
+class RequestsOpt : virtual public Setting
 {
   fs::Path path;
   int lines;
 public:
-  Requests(const std::string& path, int lines) : path(path), lines(lines) {};
-  ~Requests() {};
+  RequestsOpt(const std::string& path, int lines) : path(path), lines(lines) {};
+  ~RequestsOpt() {};
 };
 
 class IntWithArguments : virtual public Setting
@@ -145,104 +145,104 @@ public:
   ~IntWithBool() {};
 };
 
-class NukedirStyle : virtual public Setting
+class NukedirStyleOpt : virtual public Setting
 {
   std::string format;
   int method;
   int bytes;
 public:
-  NukedirStyle(const std::string& format, int method, int bytes) :
+  NukedirStyleOpt(const std::string& format, int method, int bytes) :
     format(format), method(method), bytes(bytes) {};
-  ~NukedirStyle() {};
+  ~NukedirStyleOpt() {};
 };
 
-class SecureIP : virtual public Setting
+class SecureIpOpt : virtual public Setting
 {
   int fields;
   bool allowHostnames;
   bool needIdent;
   std::vector<std::string> acl;
 public:
-  SecureIP(int fields, bool allowHostnames, bool needIdent,
+  SecureIpOpt(int fields, bool allowHostnames, bool needIdent,
     const std::vector<std::string>& acl) :
       fields(fields), allowHostnames(allowHostnames), needIdent(needIdent),
       acl(acl) {};
-  ~SecureIP() {};
+  ~SecureIpOpt() {};
 };
 
-class PasvAddr : virtual public Setting
+class PasvAddrOpt : virtual public Setting
 {
   std::string addr;
   bool primary;
 public:
-  PasvAddr(const std::string addr, bool primary=false) : addr(addr), 
+  PasvAddrOpt(const std::string addr, bool primary=false) : addr(addr), 
     primary(primary) {};
-  ~PasvAddr() {};
+  ~PasvAddrOpt() {};
   void SetPrimary() { primary = true; };
 };
 
-class AllowFxp : virtual public Setting
+class AllowFxpOpt : virtual public Setting
 {
   bool downloads;
   bool uploads;
   bool logging;
   std::vector<std::string> acl;
 public:
-  AllowFxp(bool downloads, bool uploads, bool logging, const std::vector<std::string>& acl) :
+  AllowFxpOpt(bool downloads, bool uploads, bool logging, const std::vector<std::string>& acl) :
     downloads(downloads), uploads(uploads), logging(logging), acl(acl) {};
-  ~AllowFxp() {};
+  ~AllowFxpOpt() {};
 };
 
-class Creditloss : virtual public Setting
+class CreditlossOpt : virtual public Setting
 {
   int multiplier;
   bool leechers;
   fs::Path path;
   std::vector<std::string> acl;
 public:
-  Creditloss(int multiplier, bool leechers, const std::string& path, 
+  CreditlossOpt(int multiplier, bool leechers, const std::string& path, 
     std::vector<std::string>& acl) : multiplier(multiplier), leechers(leechers),
       path(path), acl(acl) {};
-  ~Creditloss() {};
+  ~CreditlossOpt() {};
 };
 
-class Creditcheck : virtual public Setting
+class CreditcheckOpt : virtual public Setting
 {
   fs::Path path;
   int ratio;
   std::vector<std::string> acl;
 public:
-  Creditcheck(const std::string& path, int ratio, std::vector<std::string>& acl) :
+  CreditcheckOpt(const std::string& path, int ratio, std::vector<std::string>& acl) :
     path(path), ratio(ratio), acl(acl) {};
-  ~Creditcheck() {};
+  ~CreditcheckOpt() {};
 };
 
-class MsgPath : virtual public Setting
+class MsgPathOpt : virtual public Setting
 {
   fs::Path path;
   std::string filename;
   std::vector<std::string> acl;
 public:
-  MsgPath(const std::string& path, const std::string& filename, 
+  MsgPathOpt(const std::string& path, const std::string& filename, 
     std::vector<std::string>& acl) : path(path), filename(filename), acl(acl) {};
-  ~MsgPath() {};
+  ~MsgPathOpt() {};
 };
 
-class Cscript : virtual public Setting
+class CscriptOpt : virtual public Setting
 {
   std::string name;
   std::string command;
   fs::Path path;
 public:
-  Cscript(const std::string& name, const std::string& command, 
+  CscriptOpt(const std::string& name, const std::string& command, 
     const std::string& path) : name(name), command(command), path(path) {};
-  ~Cscript() {};
+  ~CscriptOpt() {};
 };
 
   
 enum SiteCmdMethod { EXEC, TEXT, IS };
 
-class SiteCmd : virtual public Setting
+class SiteCmdOpt : virtual public Setting
 {
   std::string command;
   SiteCmdMethod method;
@@ -251,11 +251,11 @@ class SiteCmd : virtual public Setting
   std::vector<std::string> acl;
 public:
   // initalize with acl
-  SiteCmd(const std::vector<std::string>& acl) :
+  SiteCmdOpt(const std::vector<std::string>& acl) :
     command(), method(EXEC), file("/error/unconfigured"),
     arguments(), acl(acl) {};
   // initalize with site_cmd 
-  SiteCmd(const std::string& command, SiteCmdMethod method, 
+  SiteCmdOpt(const std::string& command, SiteCmdMethod method, 
     const std::string& file, const std::vector<std::string>& arguments) :
     command(command), method(method), file(file), arguments(arguments), acl()  {};
   // set alternative
@@ -271,7 +271,7 @@ public:
   {
     this->acl = acl;
   };
-  ~SiteCmd() {};
+  ~SiteCmdOpt() {};
 };
   
 
