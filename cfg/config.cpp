@@ -87,7 +87,7 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   // ACL 
   else if (opt == "userrejectsecure" || opt == "userrejectinsecure" 
    || opt == "denydiruncrypted" || opt == "denydatauncrypted"
-   || opt == "shutdown")
+   || opt == "shutdown" || opt == "hideuser")
   {
     setting::ACL acl(toks);
     InsertSetting<setting::ACL>(MapACL, acl, opt);  
@@ -103,18 +103,28 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   }
 
   // int  
-  else if (opt == "free_space" || opt == "timezone" || opt == "sim_xfers"
+  else if (opt == "free_space" || opt == "timezone"
    || opt == "mmap_amount" || opt == "dl_sendfile" || opt == "ul_buffered_force"
-   || opt == "max_users" || opt == "total_users" || opt == "lastonline"
+   || opt == "total_users" 
    || opt == "empty_nuke" || opt == "max_sitecmd_lines" || opt == "oneliners"
    || opt == "multiplier_max")
   {
     InsertSetting<int>(MapInt, boost::lexical_cast<int>(toks.at(0)), opt);
   }
 
+  // vectorint
+  else if (opt == "sim_xfers" || opt == "max_users" || opt == "lastonline")
+  {
+    std::vector<int> set;
+    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
+      ++it)
+      set.push_back(boost::lexical_cast<int>(*it)); 
+    InsertSetting<std::vector<int> >(MapVectorInt, set, opt);
+  }
+
   // Strings
   else if (opt == "use_dir_size" || opt == "sitename_long" || opt == "sitename_short"
-   || opt == "login_prompt" || opt == "tagline" || opt == "email")
+   || opt == "login_prompt" || opt == "tagline" || opt == "email" || opt == "cdpath")
   {
     InsertSetting<std::string>(MapString, toks.at(0), opt);
   }
@@ -122,10 +132,10 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   // VectorStrings
   else if (opt == "master" || opt == "bouncer_ip" 
    || opt == "xdupe" || opt == "valid_ip" || opt == "active_addr"
-   || opt == "pasv_ports" || opt == "active_ports" || opt == "cdpath" 
+   || opt == "pasv_ports" || opt == "active_ports"
    || opt == "ignore_type" || opt == "banned_users" || opt == "idle_commands"
    || opt == "lslong" || opt == "hidden_files" || opt == "noretrieve" 
-   || opt == "hideuser" || opt == "privgroup")
+   || opt == "privgroup")
   {
     InsertSetting<std::vector<std::string> >(MapVectorString, toks, opt);
   }
@@ -347,6 +357,11 @@ int main()
 {
   cfg::Config c("glftpd.conf");
   logger::ftpd << c.DSACertFile() << logger::endl; 
+  const std::vector<cfg::setting::ACLWithPath>& downloads = c.Download();
+  logger::ftpd << "download:" << logger::endl;
+  for (std::vector<cfg::setting::ACLWithPath>::const_iterator it = downloads.begin();
+    it != downloads.end(); ++it)
+    logger::ftpd << (*it).Path() << logger::endl;
   return 0;
 }
 #endif
