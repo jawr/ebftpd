@@ -345,10 +345,108 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     throw NoSetting("Unable to find setting '" + opt + "'");
 }
 
-void Config::SetDefaults()
+bool Config::SetDefaults()
 {
+  // first check for things that have to exist
+  std::string check = "RSA_Cert_file";
   try
   {
+    RSACertFile();
+    check = "sitename_long";
+    SitenameLong();
+    check = "sitename_short";
+    SitenameShort();
+    check = "master";
+    Master();
+    check = "rootpath";
+    Rootpath();
+    check = "datapath";
+    Datapath();
+    check = "pwd_path";
+    PwdPath();
+    check = "grp_path";
+    GrpPath();
+  }
+  catch (const std::out_of_range& e) {
+    logger::ftpd << "Error, missing setting: " << check << logger::endl;
+    return false;
+  }
+
+  // slight style lapse for compactness
+  try {
+    Userrejectsecure();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<ACL>(MapACL, ACL("!*"), "userrejectsecure");
+  }
+  try {
+    Userrejectinsecure();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<ACL>(MapACL, ACL("!*"), "userrejectinsecure");
+  }
+  try {
+    Denydiruncrypted();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<ACL>(MapACL, ACL("!*"), "denydiruncrypted");
+  }
+  try {
+    Denydatauncrypted();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<ACL>(MapACL, ACL("!*"), "denydatauncrypted");
+  }
+  try {
+    AsciiDownloads();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<IntWithArguments>(MapIntWithArguments, 
+      IntWithArguments(0), "ascii_downloads");
+  }
+  try {
+    Shutdown();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<ACL>(MapACL, ACL("*"), "shutdown");
+  }
+  try {
+    FreeSpace();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<int>(MapInt, (20), "free_space");
+  }
+  try {
+    UseDirSize();
+  } catch (const std::out_of_range& e) {
+    logger::ftpd << "SET DEFAULT USEDIRSIZE" << logger::ftpd;
+    MapVectorString["use_dir_size"];
+  }
+  try {
+    Timezone();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<int>(MapInt, (0), "timezone");
+  }
+  try {
+    ColorMode();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<bool>(MapBool, (false), "color_mode");
+  }
+  try {
+    LoginPrompt();
+  } catch (const std::out_of_range& e) {
+    InsertSetting<std::string>(MapString, ("FTPD v0.0001"), "login_prompt");
+  }
+  try {
+    ReloadConfig();
+  } catch (const std::out_of_range& e) {
+    MapString["reload_config"];
+  }
+  try {
+    SecureIp();
+  } catch (const std::out_of_range& e) {
+    MapVectorString["secure_ip"];
+  }
+  try {
+    SecurePass();
+  } catch (const std::out_of_range& e) {
+    MapVectorString["secure_pass"];
+  }
+
+  
      
 }
 
@@ -358,7 +456,7 @@ void Config::SetDefaults()
 int main()
 {
   cfg::Config c("glftpd.conf");
-  logger::ftpd << c.DSACertFile() << logger::endl; 
+  logger::ftpd << c.RSACertFile() << logger::endl; 
   const std::vector<cfg::ACLWithPath>& downloads = c.Download();
   logger::ftpd << "download:" << logger::endl;
   for (std::vector<cfg::ACLWithPath>::const_iterator it = downloads.begin();
