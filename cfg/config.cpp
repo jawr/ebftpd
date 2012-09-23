@@ -335,12 +335,18 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
     throw NoSetting("Unable to find setting '" + opt + "'");
 }
 
+void Config::SetDefaults()
+{
+
 }
 
-#ifdef CONFIG_TEST
+}
+
+#ifdef CFG_CONFIG_TEST
 int main()
 {
-  cfg::Config("glftpd.conf");
+  cfg::Config c("glftpd.conf");
+  logger::ftpd << c.DSACertFile() << logger::endl; 
   return 0;
 }
 #endif
