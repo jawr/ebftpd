@@ -78,7 +78,7 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
   if (opt == "dsa_cert_file" || opt == "rootpath" || opt == "datapath"
    || opt == "pwd_path" || opt == "grp_path" || opt == "botscript_path"
    || opt == "calc_crc" || opt == "min_homedir" || opt == "banner"
-   || opt == "nodupecheck" || opt == "rsa_cert_file")
+   || opt == "nodupecheck" || opt == "rsa_cert_file" || opt == "rsa_cert_file")
   {
       fs::Path path(toks.at(0));
       InsertSetting<fs::Path>(MapPath, path, opt);
@@ -347,7 +347,9 @@ void Config::SetSetting(const std::string& opt, std::vector<std::string>& toks)
 
 void Config::SetDefaults()
 {
-
+  try
+  {
+     
 }
 
 }
@@ -362,6 +364,7 @@ int main()
   for (std::vector<cfg::ACLWithPath>::const_iterator it = downloads.begin();
     it != downloads.end(); ++it)
     logger::ftpd << (*it).Path() << logger::endl;
+  const std::vector<std::string>& cmds = c.IdleCommands();
   return 0;
 }
 #endif
