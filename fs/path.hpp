@@ -14,6 +14,7 @@ protected:
   std::string path;
   
 public:
+  Path() { }
   Path(const std::string& path);
   Path(const char* path);
  
@@ -23,6 +24,7 @@ public:
   Path Dirname() const;
   Path Basename() const;
   std::string Extension() const;
+  Path Expand() const;
   
   Path& operator/=(const std::string& rhs) { return Join(rhs); }
   Path& operator+=(const std::string& rhs) { return Append(rhs); }
@@ -30,6 +32,7 @@ public:
   operator std::string() const { return path; }
   
   bool Absolute() const { return !path.empty() && path[0] == '/'; }
+  bool Empty() const { return path.empty(); }
   
   const char* CString() const { return path.c_str(); }
 };

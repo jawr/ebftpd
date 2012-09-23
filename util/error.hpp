@@ -28,6 +28,7 @@ public:
   
   int Errno() const { return errno_; }
   bool ValidErrno() const { return validErrno; }
+  std::string Message() const { return what(); }
 };
 
 class Error

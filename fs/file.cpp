@@ -24,9 +24,9 @@ util::Error DeleteFile(const Path& path)
   else return util::Error::Success();
 }
 
-util::Error DeleteFile(const ftp::Client& client, const Path& path)
+util::Error DeleteFile(ftp::Client& client, const Path& path)
 {
-  Path absolute = client.WorkDir() / path;
+  Path absolute = (client.WorkDir() / path).Expand();
   // check ACLs
   return DeleteFile(absolute);
 }
@@ -37,15 +37,16 @@ util::Error RenameFile(const Path& oldPath, const Path& newPath)
 {
   Path oldReal = dummySiteRoot + oldPath;
   Path newReal = dummySiteRoot + newPath;
+
   if (rename(oldReal.CString(), newReal.CString()) < 0) return util::Error::Failure(errno);
   else return util::Error::Success();
 }
 
-util::Error RenameFile(const ftp::Client& client, const Path& oldPath,
+util::Error RenameFile(ftp::Client& client, const Path& oldPath,
                  const Path& newPath)
 {
-  Path oldAbsolute = client.WorkDir() / oldPath;
-  Path newAbsolute = client.WorkDir() / newPath;
+  Path oldAbsolute = (client.WorkDir() / oldPath).Expand();
+  Path newAbsolute = (client.WorkDir() / newPath).Expand();
   // check ACLs
   return RenameFile(oldAbsolute, newAbsolute);
 }
@@ -58,9 +59,9 @@ OutStreamPtr CreateFile(const Path& path)
   return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
 }
 
-OutStreamPtr CreateFile(const ftp::Client& client, const Path& path)
+OutStreamPtr CreateFile(ftp::Client& client, const Path& path)
 {
-  Path absolute = client.WorkDir() / path; 
+  Path absolute = (client.WorkDir() / path).Expand();
   // check ACLs
   OutStreamPtr os(CreateFile(absolute));
   // update owner file
@@ -75,9 +76,9 @@ OutStreamPtr AppendFile(const Path& path)
   return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
 }
 
-OutStreamPtr AppendFile(const ftp::Client& client, const Path& path)
+OutStreamPtr AppendFile(ftp::Client& client, const Path& path)
 {
-  Path absolute = client.WorkDir() / path;
+  Path absolute = (client.WorkDir() / path).Expand();
   // check ACLs
   return AppendFile(absolute);
 }
@@ -90,9 +91,9 @@ InStreamPtr OpenFile(const Path& path)
   return InStreamPtr(new InStream(fd, boost::iostreams::close_handle));
 }
 
-InStreamPtr OpenFile(const ftp::Client& client, const Path& path)
+InStreamPtr OpenFile(ftp::Client& client, const Path& path)
 {
-  Path absolute = client.WorkDir() / path;
+  Path absolute = (client.WorkDir() / path).Expand();
   // check ACLs
   return OpenFile(absolute);
 }

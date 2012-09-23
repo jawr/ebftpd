@@ -71,6 +71,6 @@ DEPS = $(OBJECTS:.o=.d)
 -include $(DEPS)
 
 clean:
-	@rm -f *.o *.d */*.o */*.d
+	@rm -f *.o *.d *.gch */*.o */*.d */*.gch
 	@rm -f ftpd
 	@rm -f .state
