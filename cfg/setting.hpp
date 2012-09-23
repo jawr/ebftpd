@@ -58,6 +58,7 @@ public:
   ACLWithPath(const std::string& path, 
     std::vector<std::string>& acl) : path(path), acl(acl) {};
   ~ACLWithPath() {};
+  const fs::Path& Path() const { return path; };
 };
 
 class ACL : virtual public Setting
