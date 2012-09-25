@@ -45,7 +45,8 @@ void Resolver::Resolve()
     std::cout << charService << std::endl;
   }
 
-  struct addrinfo hints = {};
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
   hints.ai_family = PF_UNSPEC;
   hints.ai_flags = AI_PASSIVE;
   hints.ai_socktype = socketType;

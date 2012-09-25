@@ -61,7 +61,7 @@ class Resolver : boost::noncopyable
   const_iterator end() const { return results.end(); }
   /* No exceptions */
   
-  static const int32_t AnyPort() { return 0; }
+  static int32_t AnyPort() { return 0; }
   /* No exceptions */
 };
 

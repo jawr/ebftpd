@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -g -ggdb -DDEBUG
 LIBS = -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
-LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle
+LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle -lssl
 INCLUDE = -I.
 
 OBJECTS = \
@@ -38,7 +38,17 @@ OBJECTS = \
 	util/ssl.o \
 	util/tcpclient.o \
 	util/tcpserver.o \
-	util/thread.o
+	util/thread.o \
+	util/net/endpoint.o \
+	util/net/error.o \
+	util/net/ipaddress.o \
+	util/net/resolver.o \
+	util/net/tcplistener.o \
+	util/net/tcpsocket.o \
+	util/net/test.o \
+	util/net/tlscontext.o \
+	util/net/tlserror.o \
+	util/net/tlssocket.o
 
 all: 
 	@if [ -f .state ] && [ `cat .state` != 'all' ]; then \
