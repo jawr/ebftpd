@@ -1,5 +1,6 @@
-#include "factory.hpp"
+#include "cmd/factory.hpp"
 #include "cmd/command.hpp"
+#include <boost/algorithm/string.hpp>
 
 namespace cmd
 {
@@ -88,7 +89,9 @@ void Factory::Register(const std::string& command,
 Command* Factory::Create(ftp::Client& client, const std::string& argStr, const Args& args,
                          ftp::ClientState& reqdState)
 {
-  typename CreatorsMap::const_iterator it = factory.creators.find(args[0]);
+  std::string cmd = args[0];
+  boost::to_upper(cmd);
+  typename CreatorsMap::const_iterator it = factory.creators.find(cmd);
   if (it == factory.creators.end()) return 0;
   reqdState = it->second->ReqdState();
   return it->second->Create(client, argStr, args);
