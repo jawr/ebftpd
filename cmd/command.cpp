@@ -43,13 +43,13 @@ void AUTHCommand::Execute()
     return;
   }
   
-  //if (argStr != "TLS")
-  //{
+  if (argStr != "TLS")
+  {
     client.Reply(504, "AUTH " + argStr + " is unsupported.");
     return;
-  //}
+  }
   
-  client.Reply(502, "AUTH TLS successful."); 
+  client.Reply(234, "AUTH TLS successful."); 
   client.NegotiateTLS();  
 }
 
@@ -245,7 +245,14 @@ void PASVCommand::Execute()
 
 void PBSZCommand::Execute()
 {
-  client.Reply(502, "PBSZ Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+  
+  // implement this properly later?
+  client.Reply(200, "PBSZ command successful."); 
 }
 
 void PORTCommand::Execute()
@@ -391,7 +398,19 @@ void SYSTCommand::Execute()
 
 void TYPECommand::Execute()
 {
-  client.Reply(502, "TYPE Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+  
+  if (args[1] != "I" && args[1] != "A")
+  {
+    client.Reply(501, "TYPE " + args[1] + " not supported.");
+    return;
+  }
+  
+  client.Reply(200, "TYPE command successful."); 
 }
 
 void USERCommand::Execute()

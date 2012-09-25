@@ -60,6 +60,8 @@ private:
   State WaitStateTimeout(State state, const util::TimePair* duration);
   
 public:
+  ~TCPSocket();
+
   TCPSocket(const util::TimePair& timeout = defaultTimeout);
   /* No exceptions */
   
@@ -114,6 +116,12 @@ public:
 
   State Pending(State state);
   /* Throws NetworkSystemError */
+  
+  const Endpoint& RemoteEndpoint() const { return remoteEndpoint; }
+  /* No exceptions */
+  
+  const Endpoint& LocalEndpoint() const { return localEndpoint; }
+  /* No exceptions */
 };
 
 } /* net namespace */

@@ -22,6 +22,8 @@ public:
     Server,
     Client
   };
+  
+  ~TLSSocket();
 
   TLSSocket();
   /* No exceptions */

@@ -13,6 +13,11 @@ namespace util { namespace net
 
 const TimePair TCPSocket::defaultTimeout = TimePair(60, 0);
 
+TCPSocket::~TCPSocket()
+{
+  Close();
+}
+
 TCPSocket::TCPSocket(const util::TimePair& timeout) :
   socket(-1),
   timeout(timeout),

@@ -4,7 +4,7 @@
 #include <string>
 #include <boost/thread/mutex.hpp>
 #include "acl/user.hpp"
-#include "util/tcpclient.hpp"
+#include "util/net/tcpsocket.hpp"
 #include "util/thread.hpp"
 #include "util/error.hpp"
 #include "fs/path.hpp"
@@ -27,9 +27,9 @@ class Client : public util::ThreadSelect
   mutable boost::mutex mutex;
   fs::Path workDir;
   acl::User user;
-  util::tcp::client control;
+  util::net::TCPSocket control;
 //  util::tcp::server dataListen;
-  util::tcp::client data;
+  util::net::TCPSocket data;
   ClientState state;
   int lastCode;
   char buffer[BUFSIZ];
@@ -49,7 +49,9 @@ class Client : public util::ThreadSelect
 public:
   Client() : workDir("/"), user("root", "password", "1"),
      state(LoggedOut), lastCode(0)   { }
-
+  
+  ~Client();
+     
   const fs::Path& WorkDir() const { return workDir; };
   const acl::User& User() const { return user; }
   void Run();
@@ -60,7 +62,7 @@ public:
   void Reply(const std::string& message);
   void MultiReply(int code, const std::string& messages);
 
-  bool Accept(util::tcp::server& server);
+  bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;
   void SetFinished();
   void SetLoggedIn();

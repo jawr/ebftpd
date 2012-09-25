@@ -1,18 +1,24 @@
+#include <iomanip>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include "ftp/client.hpp"
 #include "logger/logger.hpp"
-#include "util/tcpserver.hpp"
-#include "util/exception.hpp"
 #include "util/verify.hpp"
 #include "util/error.hpp"
 #include "util/scopeguard.hpp"
+#include "util/net/tcplistener.hpp"
 #include "cmd/factory.hpp"
 
 namespace ftp
 {
+
+Client::~Client()
+{
+  control.Close();
+  data.Close();
+}
 
 bool Client::IsFinished() const
 {
@@ -72,16 +78,16 @@ void Client::SetWorkDir(const std::string& workDir)
   this->workDir = workDir;
 }
 
-bool Client::Accept(util::tcp::server& server)
+bool Client::Accept(util::net::TCPListener& server)
 {
   try
   {
-    server.accept(control);
+    server.Accept(control);
   }
-  catch(const util::network_error& e)
+  catch(const util::net::NetworkError& e)
   {
     SetFinished();
-    logger::error << "Error while acceting new client: " << e.what() << logger::endl;
+    logger::error << "Error while acceting new client: " << e.Message() << logger::endl;
     return false;
   }
   return true;
@@ -92,7 +98,7 @@ void Client::SendReply(int code, bool part, const std::string& message)
   std::ostringstream reply;
   reply << std::setw(3) << code << (part ? "-" : " ") << message << "\r\n";
   const std::string& str = reply.str();
-  control.write(str.c_str(), str.length());
+  control.Write(str.c_str(), str.length());
   lastCode = code;
 }
 
@@ -141,34 +147,29 @@ void Client::DisplayWelcome()
 
 void Client::NegotiateTLS()
 {
-  control.negotiate_ssl(util::ssl::do_accept);
+  control.HandshakeTLS(util::net::TLSSocket::Server);
 }
 
 void Client::NextCommand()
 {
   fd_set readSet;
   FD_ZERO(&readSet);
-  FD_SET(control.socket(), &readSet);
+  FD_SET(control.Socket(), &readSet);
   FD_SET(interruptPipe[0], &readSet);
   
   struct timeval tv;
   tv.tv_sec = 1800;
   tv.tv_usec = 0;
   
-  int max = std::max(control.socket(), interruptPipe[0]);
+  int max = std::max(control.Socket(), interruptPipe[0]);
   
   int n = select(max + 1, &readSet, NULL, NULL, &tv);
-  if (!n) throw util::timeout_error();
-  if (n < 0)
-  {
-    util::Error e = util::Error::Failure(errno);
-    throw util::unknown_network_error(e.Message().c_str());
-  }
+  if (!n) throw util::net::NetworkSystemError(ETIMEDOUT);
+  if (n < 0) throw util::net::NetworkSystemError(errno);
   
-  if (FD_ISSET(control.socket(), &readSet))
+  if (FD_ISSET(control.Socket(), &readSet))
   {
-    control.getline(buffer, sizeof(buffer), true);
-    commandLine = buffer;
+    control.Getline(commandLine, true);
     return;
   }
 
@@ -181,7 +182,7 @@ void Client::ExecuteCommand()
   std::vector<std::string> args;
   boost::split(args, commandLine, boost::is_any_of(" "),
                boost::token_compress_on);
-  if (args.empty()) throw util::network_protocol_error();
+  if (args.empty()) throw util::net::NetworkError("FTP protocal violation");
   
   std::string argStr;
   if (args[0].length() < commandLine.length())
@@ -218,15 +219,15 @@ void Client::Run()
   try
   {
     logger::ftpd << "Servicing client connected from "
-                 << control.remote_endpoint() << logger::endl;
+                 << control.RemoteEndpoint() << logger::endl;
   
     DisplayWelcome();
     Handle();
   }
-  catch (const util::network_error& e)
+  catch (const util::net::NetworkError& e)
   {
-    logger::error << "Client from " << control.remote_endpoint()
-                  << " lost connection: " << e.what() << logger::endl;
+    logger::error << "Client from " << control.RemoteEndpoint()
+                  << " lost connection: " << e.Message() << logger::endl;
   }
   catch (const std::exception& e)
   {
