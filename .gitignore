@@ -16,4 +16,5 @@ Copy of *
 tmp
 .state
 glftpd.conf
+*.pem
 
