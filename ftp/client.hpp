@@ -8,6 +8,7 @@
 #include "util/thread.hpp"
 #include "util/error.hpp"
 #include "fs/path.hpp"
+#include "cmd/dirlist.hpp"
 
 namespace ftp 
 {
@@ -77,6 +78,10 @@ public:
   
   void DataListen();
   void DataConnect();
+  
+  friend cmd::DirectoryList::DirectoryList(
+              ftp::Client& client, const fs::Path& path, 
+              const ListOptions& options, bool dataOutput);
 };
 
 } /* ftp namespace */

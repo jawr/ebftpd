@@ -1,3 +1,4 @@
+#include <cstring>
 #include "fs/path.hpp"
 #include "util/path.hpp"
 
@@ -46,12 +47,34 @@ Path Path::Expand() const
   return util::path::Expand(path);
 }
 
+
+// these should be changed to a c++ solution
+bool Path::operator<(const Path& rhs) const
+{
+  return strcasecmp(path.c_str(), rhs.path.c_str()) < 0;
+}
+
+bool Path::operator>(const Path& rhs) const
+{
+  return strcasecmp(path.c_str(), rhs.path.c_str()) > 0;
+}
+
 Path operator/(const Path& lhs, const std::string& rhs)
 {
   return Path(lhs) /= rhs;
 }
 
 Path operator+(const Path& lhs, const std::string& rhs)
+{
+  return Path(lhs) += rhs;
+}
+
+Path operator/(const Path& lhs, const char* rhs)
+{
+  return Path(lhs) /= rhs;
+}
+
+Path operator+(const Path& lhs, const char* rhs)
 {
   return Path(lhs) += rhs;
 }
@@ -67,13 +90,6 @@ std::istream& operator>>(std::istream& is, Path& path)
   is >> temp;
   path = temp;
   return is;
-}
-
-Path PreparePath(const Path& siteRoot, const Path& workDir, const Path& path)
-{
-  Path result(siteRoot);
-  if (!path.Absolute()) result /= workDir;
-  return result /= path;
 }
 
 } /* fs namespace */

@@ -1,4 +1,5 @@
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 #include "fs/directory.hpp"
@@ -6,6 +7,7 @@
 #include "util/error.hpp"
 #include "fs/status.hpp"
 #include "fs/path.hpp"
+#include "cmd/dirlist.hpp"
 
 namespace cmd
 {
@@ -373,7 +375,30 @@ void SMNTCommand::Execute()
 
 void STATCommand::Execute()
 {
-  client.Reply(502, "STAT Command not implemented."); 
+  if (args.size() == 1)
+  {
+    client.PartReply(211, "FTPD status:");
+    client.PartReply("< Insert status info here >");
+    client.Reply("End of status.");
+    return;
+  }
+
+  std::string options;
+  std::string::size_type optOffset = 0;
+  if (args[1][0] == '-')
+  {
+    options = args[1].substr(1);
+    optOffset += args[1].length();
+  }
+  
+  std::string path(argStr, optOffset);
+  boost::trim(path);
+  
+  client.PartReply(213, "Status of " + (path.empty() ? "." : path) + ":");
+  DirectoryList dirList(client, path, ListOptions(options, "l"), false);
+  dirList.Execute();
+  
+  client.Reply("End of status.");
 }
 
 void STORCommand::Execute()

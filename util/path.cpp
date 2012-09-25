@@ -55,7 +55,7 @@ std::string Join(const std::string& path1, const std::string& path2)
   else if (path2.empty()) return path1;
   if (path2[0] == '/') return path2;
   std::string result(path1);
-  result += '/';
+  if (result[result.length()-1] != '/') result += '/';
   result += path2;
   return result;
 }
