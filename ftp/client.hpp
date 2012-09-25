@@ -9,6 +9,7 @@
 #include "util/error.hpp"
 #include "fs/path.hpp"
 #include "cmd/dirlist.hpp"
+#include "ftp/replycodes.hpp"
 
 namespace ftp 
 {
@@ -32,7 +33,7 @@ class Client : public util::ThreadSelect
 //  util::tcp::server dataListen;
   util::net::TCPSocket data;
   ClientState state;
-  int lastCode;
+  ReplyCode lastCode;
   char buffer[BUFSIZ];
   std::string commandLine;
   int passwordAttemps;
@@ -40,7 +41,7 @@ class Client : public util::ThreadSelect
   
   static const int maxPasswordAttemps = 3;
   
-  void SendReply(int code, bool part, const std::string& message);
+  void SendReply(ReplyCode code, bool part, const std::string& message);
   void DisplayWelcome();
   void NextCommand();
   void ExecuteCommand();
@@ -49,7 +50,7 @@ class Client : public util::ThreadSelect
   
 public:
   Client() : workDir("/"), user("root", "password", "1"),
-     state(LoggedOut), lastCode(0)   { }
+     state(LoggedOut), lastCode(CodeNotSet)   { }
   
   ~Client();
      
@@ -57,11 +58,11 @@ public:
   const acl::User& User() const { return user; }
   void Run();
   
-  void PartReply(int code, const std::string& message);
+  void PartReply(ReplyCode code, const std::string& message);
   void PartReply(const std::string& message);
-  void Reply(int code, const std::string& message);
+  void Reply(ReplyCode code, const std::string& message);
   void Reply(const std::string& message);
-  void MultiReply(int code, const std::string& messages);
+  void MultiReply(ReplyCode code, const std::string& messages);
 
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;
