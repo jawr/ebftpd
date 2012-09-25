@@ -25,6 +25,8 @@ protected:
 public:
   Command(ftp::Client& client, const std::string argStr, const Args& args) :
     client(client), argStr(argStr), args(args) { }
+
+  virtual ~Command() { }
     
   virtual void Execute() = 0;
 };

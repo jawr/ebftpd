@@ -20,6 +20,8 @@ protected:
 public:
   Permission(bool negate) : negate(negate) { }
   
+  virtual ~Permission() { }
+  
   virtual boost::tribool Evaluate(const User& user) const = 0;
 };
 

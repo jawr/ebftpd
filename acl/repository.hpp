@@ -13,6 +13,7 @@ namespace acl
 class Repository
 {
 public:
+  virtual ~Repository() { }
   virtual void Insert(const std::string& id, const ACL& acl) = 0;
   virtual bool Lookup(const std::string& id, ACL& acl) = 0;
 };

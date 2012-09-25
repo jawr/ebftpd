@@ -18,9 +18,14 @@ public:
 
 class TLSProtocolError : public TLSError
 {
+  struct Buffer
+  {
+    char buffer[120];
+  };
+
   unsigned long error;
   
-  static boost::thread_specific_ptr<char> buffer;
+  static boost::thread_specific_ptr<Buffer> buffer;
   static char* GetErrorString(unsigned long error);
 
 public:

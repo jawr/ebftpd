@@ -23,7 +23,7 @@ protected:
   static std::auto_ptr<TLSServerContext> server;
   static std::auto_ptr<TLSClientContext> client;
 
-  ~TLSContext();
+  virtual ~TLSContext();
   
   TLSContext(const std::string& certificate,
              const std::string& ciphers);

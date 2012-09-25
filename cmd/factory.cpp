@@ -91,7 +91,7 @@ Command* Factory::Create(ftp::Client& client, const std::string& argStr, const A
 {
   std::string cmd = args[0];
   boost::to_upper(cmd);
-  typename CreatorsMap::const_iterator it = factory.creators.find(cmd);
+  CreatorsMap::const_iterator it = factory.creators.find(cmd);
   if (it == factory.creators.end()) return 0;
   reqdState = it->second->ReqdState();
   return it->second->Create(client, argStr, args);
