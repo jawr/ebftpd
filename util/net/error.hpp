@@ -13,7 +13,7 @@ public:
   NetworkError(const char* message) : std::runtime_error(message) { }
 };
 
-class NetworkSystemError : public util::SystemError, public NetworkError
+class NetworkSystemError : public util::SystemError, public virtual NetworkError
 {
 public:
   NetworkSystemError(int errno_);

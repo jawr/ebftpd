@@ -15,8 +15,9 @@ class CreatorBase
   ftp::ClientState reqdState;
   
 public:  
-  CreatorBase(ftp::ClientState reqdState) :
-    reqdState(reqdState) { }
+  CreatorBase(ftp::ClientState reqdState) : reqdState(reqdState) { }
+  virtual ~CreatorBase() { }
+  
   virtual BaseT *Create(ftp::Client& client, const std::string& argStr,
                         const Args& args) = 0;
   ftp::ClientState ReqdState() const { return reqdState; }
