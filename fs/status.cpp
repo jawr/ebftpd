@@ -9,12 +9,16 @@ namespace fs
 {
 
 Status::Status() :
+  linkDirectory(false),
+  linkRegularFile(false),
   statOkay(false)
 {
 }
 
 Status::Status(const fs::Path& path) :
   path(path),
+  linkDirectory(false),
+  linkRegularFile(false),
   statOkay(false)
 {
   Reset();
@@ -25,7 +29,14 @@ Status& Status::Reset()
   if (path.Empty()) throw std::logic_error("no path set");
   if (!statOkay)
   {
-    if (stat(path.CString(), &native) < 0) throw util::SystemError(errno);
+    if (lstat(path.CString(), &native) < 0) throw util::SystemError(errno);
+    if (IsSymLink())
+    {
+      struct stat st;
+      if (!stat(path.CString(), &st) < 0) throw util::SystemError(errno);
+      if (S_ISDIR(st.st_mode)) linkDirectory = true;
+      else if (S_ISREG(st.st_mode)) linkRegularFile = true;
+    }
     statOkay = true;
   }
   return *this;
@@ -41,15 +52,15 @@ Status& Status::Reset(const fs::Path& path)
 
 bool Status::IsRegularFile() const
 {
-  return S_ISREG(native.st_mode);
+  return S_ISREG(native.st_mode) || linkRegularFile;
 }
 
 bool Status::IsDirectory() const
 {
-  return S_ISDIR(native.st_mode);
+  return S_ISDIR(native.st_mode) || linkDirectory;
 }
 
-bool Status::IsLink() const
+bool Status::IsSymLink() const
 {
   return S_ISLNK(native.st_mode);
 }
@@ -104,7 +115,7 @@ int main()
     std::cout << "isfile: " << stat.Reset("/home/bioboy").IsRegularFile() << std::endl;
     
     std::cout << "isdir: " << stat.IsDirectory() << std::endl;
-    std::cout << "islink: " << stat.IsLink() << std::endl;
+    std::cout << "islink: " << stat.IsSymLink() << std::endl;
     std::cout << "size: " << stat.Size() << std::endl;
     std::cout << "isexec: " << stat.IsExecutable() << std::endl;
     std::cout << "isread: " << stat.IsReadable() << std::endl;

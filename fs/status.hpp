@@ -11,6 +11,8 @@ class Status
 {
   fs::Path path;
   struct stat native;
+  bool linkDirectory;
+  bool linkRegularFile;
   bool statOkay;
   
   Status& Reset();
@@ -23,7 +25,7 @@ public:
   
   bool IsRegularFile() const;
   bool IsDirectory() const;
-  bool IsLink() const;
+  bool IsSymLink() const;
   
   bool IsExecutable() const;
   bool IsReadable() const;
