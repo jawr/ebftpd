@@ -1,4 +1,5 @@
 #include <tr1/memory>
+#include <cstring>
 #include <dirent.h>
 #include "fs/direnumerator.hpp"
 #include "fs/status.hpp"
@@ -7,21 +8,29 @@
 namespace fs
 {
 
+namespace
+{
+const Path dummySiteRoot = "/home/bioboy/ftpd/site";
+}
+
 DirEnumerator::DirEnumerator() :
-  client(0)
+  client(0),
+  totalBytes(0)
 {
 }
 
 DirEnumerator::DirEnumerator(const fs::Path& path) :
   client(0),
-  path(path)
+  path(path),
+  totalBytes(0)
 {
   Readdir();
 }
 
 DirEnumerator::DirEnumerator(ftp::Client& client, const fs::Path& path) :
   client(&client),
-  path(path)
+  path(path),
+  totalBytes(0)
 {
   Readdir();
 }
@@ -41,8 +50,15 @@ void DirEnumerator::Readdir(ftp::Client& client, const fs::Path& path)
 
 void DirEnumerator::Readdir()
 {
-  std::tr1::shared_ptr<DIR> dp(opendir(path.CString()), closedir);
-  if (!dp.get()) return;
+  Path real(path);
+  if (client)
+  {
+    Path absolute = (client->WorkDir() / path).Expand();
+    real = dummySiteRoot + absolute;
+  }
+
+  std::tr1::shared_ptr<DIR> dp(opendir(real.CString()), closedir);
+  if (!dp.get()) throw util::SystemError(errno);
   
   struct dirent de;
   struct dirent* dep;
@@ -50,8 +66,10 @@ void DirEnumerator::Readdir()
   {
     readdir_r(dp.get(), &de, &dep);
     if (!dep) break;
+
+     if (!strcmp(de.d_name, ".") || !strcmp(de.d_name, "..")) continue;
     
-    fs::Path fullPath(path);
+    fs::Path fullPath(real);
     fullPath /= de.d_name;
     
     
@@ -64,6 +82,7 @@ void DirEnumerator::Readdir()
     try
     {
       fs::Status status(fullPath);
+      totalBytes += status.Size();
       entries.push_back(new DirEntry(de.d_name, status));
     }
     catch (const util::SystemError&)

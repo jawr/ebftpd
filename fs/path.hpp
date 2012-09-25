@@ -32,8 +32,8 @@ public:
   Path& operator/=(const char* rhs) { return Join(rhs); }
   Path& operator+=(const char* rhs) { return Append(rhs); }
 
-  bool operator<(const Path& rhs) const { return path < rhs.path; }
-  bool operator>(const Path& rhs) const { return path > rhs.path; }
+  bool operator<(const Path& rhs) const;
+  bool operator>(const Path& rhs) const;
   
   operator std::string() { return path; }
   operator std::string() const { return path; }
