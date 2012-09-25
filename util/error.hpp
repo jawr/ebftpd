@@ -10,25 +10,23 @@ namespace util
 
 std::string ErrnoToMessage(int errno_);
 
-class SystemError : public std::runtime_error
+class RuntimeError : private virtual std::runtime_error
 {
+public:
+  RuntimeError() : std::runtime_error("Runtime error") { }
+  RuntimeError(const char* message) : std::runtime_error(message) { }
+  std::string Message() const { return what(); }
+};
+
+class SystemError : public virtual RuntimeError
+{
+protected:
   int errno_;
-  bool validErrno;
 
 public:
-  SystemError() : 
-    std::runtime_error("Unknown filesystem error"),
-    errno_(-1), validErrno(false) { }
-    
-  SystemError(const std::string& message) : 
-    std::runtime_error(message),
-    errno_(-1), validErrno(false) { }
-    
   SystemError(int errno_);
   
   int Errno() const { return errno_; }
-  bool ValidErrno() const { return validErrno; }
-  std::string Message() const { return what(); }
 };
 
 class Error
@@ -40,11 +38,10 @@ class Error
 
   Error(bool success) : success(success), errno_(0), validErrno(false),
     message(success ? "Success" : "Failure") { }
+  Error(const std::string& message) : success(false), 
+    errno_(0), validErrno(false), message(message) { }
   Error(int errno_) : success(false), errno_(errno_),
     validErrno(true), message(ErrnoToMessage(errno_)) { }
-  
-  static Error successError;
-  static Error failureError;
   
 public:
 
@@ -54,8 +51,9 @@ public:
   bool ValidErrno() const { return validErrno; }
   const std::string& Message() const { return message; }
 
-  static Error Success() { return successError; }
-  static Error Failure() { return failureError; }
+  static Error Success() { return Error(true); }
+  static Error Failure(const std::string message = "Unknown error")
+  { return Error(message); }
   static Error Failure(int errno_) { return Error(errno_); }
 };
 

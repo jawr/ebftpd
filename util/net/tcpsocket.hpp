@@ -1,0 +1,122 @@
+#ifndef __UTIL_NET_TCPSOCKET_HPP
+#define __UTIL_NET_TCPSOCKET_HPP
+
+#include <memory>
+#include <cstdio>
+#include <sys/types.h>
+#include <boost/thread/mutex.hpp>
+#include <boost/noncopyable.hpp>
+#include "util/timepair.hpp"
+#include "util/net/endpoint.hpp"
+#include "util/net/tlssocket.hpp"
+
+namespace util { namespace net
+{
+
+class TCPListener;
+
+class TCPSocket : private boost::noncopyable
+{
+public:
+  class State
+  {
+    bool readable;
+    bool writeable;
+    
+  public:
+    State(bool readable, bool writeable) :
+      readable(readable), writeable(writeable) { }
+      
+    operator bool() const { return readable || writeable; }
+      
+    bool Readable() const { return readable; }
+    bool WriteAble() const { return writeable; }
+    
+    friend class TCPSocket;
+  };
+  
+private:
+  static const util::TimePair defaultTimeout;
+  static const size_t defaultBufferSize = BUFSIZ;
+
+  int socket;
+  boost::mutex socketMutex;
+  std::auto_ptr<TLSSocket> tls;
+  util::TimePair timeout;
+  Endpoint localEndpoint;
+  Endpoint remoteEndpoint;
+
+  char getcharBuffer[defaultBufferSize];
+  char* getcharBufferPos;
+  size_t getcharBufferLen;
+  
+  
+  char GetcharBuffered();
+  void SetTimeout();
+  
+  void PopulateLocalEndpoint();
+  void PopulateRemoteEndpoint();
+
+  State WaitStateTimeout(State state, const util::TimePair* duration);
+  
+public:
+  TCPSocket(const util::TimePair& timeout = defaultTimeout);
+  /* No exceptions */
+  
+  TCPSocket(const Endpoint& endpoint,
+            const util::TimePair& timeout = defaultTimeout);
+  /* Thwos NetworkSystemError */
+  
+  void Connect(const Endpoint& endpoint);
+  /* Throws NetworkSystemError */
+
+  void Accept(TCPListener& listener);
+  /* Throws NetworkSystemError */
+  
+  void HandshakeTLS(TLSSocket::HandshakeRole role);
+  /* Same as TLSSocket::Handshake() */
+  
+  size_t Read(char* buffer, size_t bufferSize);
+  /* (No TLS) Throws NetworkSystemError, EndOfStream */
+  /* (With TLS) Same as TLSSocket::Read() */
+  
+  void Write(const char* buffer, size_t bufferLen);
+  /* (No TLS) Throws NetworkSystemError */
+  /* (With TLS) Same as TLSSocket::Write() */
+  
+  void Getline(char* buffer, size_t bufferSize, bool stripCRLF = true);
+  /* (No TLS) Throws NetworkSystemError, BufferSizeExceeded */
+  /* (With TLS) Same as TLSSocket::Read(), BufferSizeExceeded */
+
+  void Getline(std::string& buffer, bool stripCRLF);
+  /* (No TLS) Throws NetworkSystemError */
+  /* (With TLS) Same as TLSSocket::Read() */
+
+  void SetTimeout(const util::TimePair& timeout);
+  /* Throws NetworkSystemError */
+
+  const util::TimePair& Timeout() const { return timeout; }
+  
+  void Close();
+  /* No exceptions */
+  
+  void Shutdown();
+  /* No exceptions */
+  
+  int Socket() const { return socket; }
+  /* No exceptions */
+  
+  State WaitStateTimeout(State state, const util::TimePair& duration);
+  /* Throws NetworkSystemError */
+
+  State WaitState(State state);
+  /* Throws NetworkSystemError */
+
+  State Pending(State state);
+  /* Throws NetworkSystemError */
+};
+
+} /* net namespace */
+} /* util namespace */
+
+#endif

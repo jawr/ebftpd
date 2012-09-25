@@ -24,7 +24,7 @@ class Listener : public util::ThreadSelect
   void HandleClients();
   
 public:
-  Listener() : addr("127.0.0.1", 21), server(), clients() {};
+  Listener() : addr("0.0.0.0", 21), server(), clients() {};
   Listener(const std::string& ip, uint16_t port) : addr(ip, port), server() {};
   ~Listener() {};
   void Run();

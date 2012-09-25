@@ -85,13 +85,13 @@ void Factory::Register(const std::string& command,
   creators.insert(std::make_pair(command, creator));
 }  
 
-Command* Factory::Create(ftp::Client& client, const Args& args,
-                         ftp::ClientState& requiredState)
+Command* Factory::Create(ftp::Client& client, const std::string& argStr, const Args& args,
+                         ftp::ClientState& reqdState)
 {
   typename CreatorsMap::const_iterator it = factory.creators.find(args[0]);
   if (it == factory.creators.end()) return 0;
-  requiredState = it->second->RequiredState();
-  return it->second->Create(client, args);
+  reqdState = it->second->ReqdState();
+  return it->second->Create(client, argStr, args);
 }
 
 

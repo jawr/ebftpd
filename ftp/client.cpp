@@ -1,6 +1,7 @@
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include "ftp/client.hpp"
 #include "logger/logger.hpp"
 #include "util/tcpserver.hpp"
@@ -75,7 +76,7 @@ bool Client::Accept(util::tcp::server& server)
 {
   try
   {
-    server.accept(socket);
+    server.accept(control);
   }
   catch(const util::network_error& e)
   {
@@ -91,7 +92,7 @@ void Client::SendReply(int code, bool part, const std::string& message)
   std::ostringstream reply;
   reply << std::setw(3) << code << (part ? "-" : " ") << message << "\r\n";
   const std::string& str = reply.str();
-  socket.write(str.c_str(), str.length());
+  control.write(str.c_str(), str.length());
   lastCode = code;
 }
 
@@ -138,18 +139,23 @@ void Client::DisplayWelcome()
   Reply(220, "Welcome to eyeoh and biohazard's ftpd!");
 }
 
+void Client::NegotiateTLS()
+{
+  control.negotiate_ssl(util::ssl::do_accept);
+}
+
 void Client::NextCommand()
 {
   fd_set readSet;
   FD_ZERO(&readSet);
-  FD_SET(socket.socket(), &readSet);
+  FD_SET(control.socket(), &readSet);
   FD_SET(interruptPipe[0], &readSet);
   
   struct timeval tv;
   tv.tv_sec = 1800;
   tv.tv_usec = 0;
   
-  int max = std::max(socket.socket(), interruptPipe[0]);
+  int max = std::max(control.socket(), interruptPipe[0]);
   
   int n = select(max + 1, &readSet, NULL, NULL, &tv);
   if (!n) throw util::timeout_error();
@@ -159,9 +165,9 @@ void Client::NextCommand()
     throw util::unknown_network_error(e.Message().c_str());
   }
   
-  if (FD_ISSET(socket.socket(), &readSet))
+  if (FD_ISSET(control.socket(), &readSet))
   {
-    socket.getline(buffer, sizeof(buffer), true);
+    control.getline(buffer, sizeof(buffer), true);
     commandLine = buffer;
     return;
   }
@@ -176,9 +182,17 @@ void Client::ExecuteCommand()
   boost::split(args, commandLine, boost::is_any_of(" "),
                boost::token_compress_on);
   if (args.empty()) throw util::network_protocol_error();
+  
+  std::string argStr;
+  if (args[0].length() < commandLine.length())
+  {
+    argStr = commandLine.substr(args[0].length() + 1);
+    boost::trim(argStr);
+  }
+  
   ftp::ClientState reqdState;
   std::auto_ptr<cmd::Command>
-    command(cmd::Factory::Create(*this, args, reqdState));
+    command(cmd::Factory::Create(*this, argStr, args, reqdState));
   if (!command.get()) Reply(500, "Command not understood");
   else if (!CheckState(reqdState));
   else command->Execute();
@@ -204,14 +218,14 @@ void Client::Run()
   try
   {
     logger::ftpd << "Servicing client connected from "
-                 << socket.remote_endpoint() << logger::endl;
+                 << control.remote_endpoint() << logger::endl;
   
     DisplayWelcome();
     Handle();
   }
   catch (const util::network_error& e)
   {
-    logger::error << "Client from " << socket.remote_endpoint()
+    logger::error << "Client from " << control.remote_endpoint()
                   << " lost connection: " << e.what() << logger::endl;
   }
   catch (const std::exception& e)
@@ -221,4 +235,15 @@ void Client::Run()
   
   (void) finishedGuard; /* silence unused variable warning */
 }
+
+void Client::DataListen()
+{
+  
 }
+
+void Client::DataConnect()
+{
+}
+
+
+} /* ftp namespace */

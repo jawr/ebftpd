@@ -4,9 +4,6 @@
 namespace util
 {
 
-Error Error::successError(true);
-Error Error::failureError(false);
-
 std::string ErrnoToMessage(int errno_)
 {
   char buffer[256];
@@ -15,8 +12,7 @@ std::string ErrnoToMessage(int errno_)
 
 SystemError::SystemError(int errno_) :
   std::runtime_error(ErrnoToMessage(errno_)),
-  errno_(errno_),
-  validErrno(true)
+  errno_(errno_)
 {
 }
 

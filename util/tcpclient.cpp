@@ -189,9 +189,9 @@ namespace util
       connect(_timeout);
     }
 
-    void client::negotiate_ssl(util::ssl::session_data* data)
+    void client::negotiate_ssl(util::ssl::handshake_type type, util::ssl::session_data* data)
     {
-      _ssl_conn.negotiate(_socket, _timeout, data);
+      _ssl_conn.negotiate(_socket, _timeout, type, data);
       _ssl_negotiated = true;
     }
 
