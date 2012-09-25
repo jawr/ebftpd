@@ -10,6 +10,13 @@
 namespace util { namespace net
 {
 
+TCPListener::~TCPListener()
+{
+  Close();
+  if (interruptPipe[0] >= 0) close(interruptPipe[0]);
+  if (interruptPipe[1] >= 0) close(interruptPipe[1]);
+}
+
 TCPListener::TCPListener(const util::net::Endpoint& endpoint, int backlog) :
   endpoint(endpoint),
   socket(-1),
@@ -45,7 +52,7 @@ void TCPListener::Listen()
     int errno_ = errno;
     ::close(socket);
     socket = -1;
-    throw util::net::NetworkSystemError(errno);
+    throw util::net::NetworkSystemError(errno_);
   }
   
   if (listen(socket, backlog) < 0)
@@ -53,7 +60,7 @@ void TCPListener::Listen()
     int errno_ = errno;
     ::close(socket);
     socket = -1;
-    throw util::net::NetworkSystemError(errno);
+    throw util::net::NetworkSystemError(errno_);
   }
   
   if (getsockname(socket, addr, &addrLen) < 0)
@@ -61,7 +68,7 @@ void TCPListener::Listen()
     int errno_ = errno;
     ::close(socket);
     socket = -1;
-    throw util::net::NetworkSystemError(errno);
+    throw util::net::NetworkSystemError(errno_);
   }
   
   endpoint = util::net::Endpoint(*addr, addrLen);
@@ -128,6 +135,14 @@ bool TCPListener::Pending() const
   return WaitPendingTimeout(&duration);
 }
 
+void TCPListener::Close()
+{
+  if (socket >= 0)
+  {
+    close(socket);
+    socket = -1;
+  }
+}
 
 } /* net namespace */
 } /* util namespace */
