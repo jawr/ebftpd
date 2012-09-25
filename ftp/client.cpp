@@ -73,7 +73,7 @@ bool Client::PasswordAttemptsExceeded() const
   return passwordAttemps >= maxPasswordAttemps;
 }
 
-void Client::SetWorkDir(const std::string& workDir)
+void Client::SetWorkDir(const fs::Path& workDir)
 {
   this->workDir = workDir;
 }

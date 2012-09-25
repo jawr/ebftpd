@@ -269,7 +269,7 @@ void PROTCommand::Execute()
 
 void PWDCommand::Execute()
 {
-  client.Reply(257, "\"" + client.WorkDir() + "\" is your working directory.");
+  client.Reply(257, "\"" + client.WorkDir().ToString() + "\" is your working directory.");
 }
 
 void QUITCommand::Execute()
@@ -394,7 +394,9 @@ void STATCommand::Execute()
   std::string path(argStr, optOffset);
   boost::trim(path);
   
-  client.PartReply(213, "Status of " + (path.empty() ? "." : path) + ":");
+  if (path.empty()) path = ".";
+  
+  client.PartReply(213, "Status of " + path + ":");
   DirectoryList dirList(client, path, ListOptions(options, "l"), false);
   dirList.Execute();
   

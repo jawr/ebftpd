@@ -71,7 +71,7 @@ public:
   void SetWaitingPassword();
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
-  void SetWorkDir(const std::string& workDir);
+  void SetWorkDir(const fs::Path& workDir);
   void SetRenameFrom(const fs::Path& path) { this->renameFrom = path; }
   const fs::Path& RenameFrom() const { return renameFrom; }
   void NegotiateTLS();
