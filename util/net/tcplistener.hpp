@@ -18,28 +18,42 @@ class TCPListener
   int interruptPipe[2];
   
   bool WaitPendingTimeout(const TimePair* duration) const;
+  void Listen();
   
 public:
   static const int maximumBacklog = SOMAXCONN;
 
   ~TCPListener();
   
-	TCPListener(const Endpoint& endpoint, int backlog = maximumBacklog);
-              
 	TCPListener(int backlog = maximumBacklog);
+  /* Throws NetworkSystemError */
   
-  void Listen();
+	TCPListener(const Endpoint& endpoint, int backlog = maximumBacklog);
+  /* Throws NetworkSystemError, InvalidIPAddressError */
+                
   void Listen(const Endpoint& endpoint);
+  /* Throws NetworkSystemError, InvalidIPAddressError */
   
   void Accept(TCPSocket& socket);
+  /* Throws NetworkSystemError, InvalidIPAddressError */
   
   bool WaitPendingTimeout(const TimePair& duration) const;
+  /* Throws NetworkSystemError */
+
   bool WaitPending() const;
+  /* Throws NetworkSystemError */
+
   bool Pending() const;
+  /* Throws NetworkSystemError */
+
   void Close();
+  /* No exceptions */
   
   int Socket() const { return socket; }
+  /* No exceptions */
+
   const util::net::Endpoint& Endpoint() const { return endpoint; }
+  /* No exceptions */
 };
   
 } /* net namespace */
