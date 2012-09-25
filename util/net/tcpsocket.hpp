@@ -70,10 +70,10 @@ public:
   /* Thwos NetworkSystemError */
   
   void Connect(const Endpoint& endpoint);
-  /* Throws NetworkSystemError */
+  /* Throws NetworkSystemError, InvalidIPAddressError */
 
   void Accept(TCPListener& listener);
-  /* Throws NetworkSystemError */
+  /* Throws NetworkSystemError, InvalidIPAddressError */
   
   void HandshakeTLS(TLSSocket::HandshakeRole role);
   /* Same as TLSSocket::Handshake() */
