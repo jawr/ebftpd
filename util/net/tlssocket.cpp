@@ -7,6 +7,11 @@
 namespace util { namespace net
 {
 
+TLSSocket::~TLSSocket()
+{
+  Close();
+}
+
 TLSSocket::TLSSocket() :
   session(0)
 {
@@ -67,7 +72,6 @@ void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role)
     if (role == Client) result = SSL_connect(session);
     else result = SSL_accept(session);
     boost::this_thread::interruption_point();
-    std::cout << "result: " << result << std::endl;
     if (result == 1) break;
     else EvaluateResult(result);
   }

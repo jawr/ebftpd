@@ -11,6 +11,11 @@ namespace util { namespace net
 std::auto_ptr<TLSClientContext> TLSContext::client;
 std::auto_ptr<TLSServerContext> TLSContext::server;
 
+TLSContext::~TLSContext()
+{
+  if (context) SSL_CTX_free(context);
+}
+
 TLSContext::TLSContext(const std::string& certificate, const std::string& ciphers) :
   context(0),
   certificate(certificate),

@@ -28,16 +28,8 @@ OBJECTS = \
 	util/path.o \
 	util/verify.o \
 	util/passwd.o \
-	util/descriptor.o \
 	util/error.o \
-	util/endpoint.o \
-	util/exception.o \
-	util/ip.o \
 	util/logger.o \
-	util/resolver.o \
-	util/ssl.o \
-	util/tcpclient.o \
-	util/tcpserver.o \
 	util/thread.o \
 	util/net/endpoint.o \
 	util/net/error.o \
