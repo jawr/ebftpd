@@ -181,19 +181,24 @@ void DirectoryList::Output(const std::string& message) const
 #endif
 }
 
-void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks) const
+void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks, int depth) const
 {
+  if (maxRecursionDepth != -1 && depth > maxRecursionDepth) return;
+
   fs::DirEnumerator dirEnum;
   try
   {
-    Readdir(path.Empty() ? "." : path, dirEnum);
+    Readdir(path, dirEnum);
   }
-  catch (const util::SystemError&)
+  catch (const util::SystemError& e)
   {
+    std::cout << "Failed " << path << " " << e.Message() << std::endl;
     // silent failure - gives empty directory list
     return;
   }
 
+  if (depth > 1) Output("\r\n");
+  
   std::ostringstream message;
   if (options.Recursive() || !this->masks.empty())
   {
@@ -253,7 +258,9 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
     for (fs::DirEnumerator::const_iterator it =
          dirEnum.begin(); it != dirEnum.end(); ++it)
     {
-      if (!it->Status().IsDirectory()) continue;
+      if (!it->Status().IsDirectory() ||
+           it->Status().IsSymLink()) continue;
+           
       const std::string& pathStr = it->Path();      
       if (pathStr[0] == '.' && !options.All()) continue;
       if (!mask.empty() && fnmatch(mask.c_str(), pathStr.c_str(), 0)) continue;
@@ -261,8 +268,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
       fs::Path fullPath(path);
       fullPath /= it->Path();
    
-      Output("\r\n");
-      ListPath(fullPath, masks);
+      ListPath(fullPath, masks, depth + 1);
     }
   }
 }
@@ -278,7 +284,7 @@ std::string DirectoryList::Permissions(const fs::Status& status)
   std::string perms(10, '-');
   
   if (status.IsDirectory()) perms[0] = 'd';
-  else if (status.IsLink()) perms[0] = 'l';
+  else if (status.IsSymLink()) perms[0] = 'l';
   
   const struct stat& native = status.Native();
   

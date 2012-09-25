@@ -1,9 +1,12 @@
+#include <cassert>
 #include <tr1/memory>
 #include <cstring>
 #include <dirent.h>
 #include "fs/direnumerator.hpp"
 #include "fs/status.hpp"
 #include "ftp/client.hpp"
+
+#include <iostream>
 
 namespace fs
 {

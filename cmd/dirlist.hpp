@@ -54,8 +54,10 @@ class DirectoryList
   fs::Path parent;
   std::queue<std::string> masks;
   
+  static const int maxRecursionDepth = -1; // -1 unlimited
+  
   void SplitPath();
-  void ListPath(const fs::Path& path, std::queue<std::string> masks) const;
+  void ListPath(const fs::Path& path, std::queue<std::string> masks, int depth = 1) const;
   void Readdir(const fs::Path& path, fs::DirEnumerator& dirEnum) const;
   void Output(const std::string& message) const;
   

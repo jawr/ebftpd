@@ -69,7 +69,6 @@ util::Error CreateDirectory(ftp::Client& client, const Path& path)
 
 util::Error RemoveDirectory(ftp::Client& client, const Path& path)
 {
-  std::cout << client.WorkDir() << " " << path << std::endl;
   Path absolute = (client.WorkDir() / path).Expand();
   
   // check ACLs here
@@ -80,7 +79,6 @@ util::Error RemoveDirectory(ftp::Client& client, const Path& path)
 util::Error ChangeDirectory(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
-  
   // check ACLs here
   
   util::Error e = ChangeDirectory(absolute);
