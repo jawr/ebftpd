@@ -3,6 +3,7 @@
 
 #include <string>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/cstdint.hpp>
 #include "fs/path.hpp"
 #include "fs/status.hpp"
 
@@ -31,6 +32,7 @@ class DirEnumerator
 {
   ftp::Client* client;
   fs::Path path;
+  uintmax_t totalBytes;
   
   boost::ptr_vector<DirEntry> entries;
   
@@ -47,6 +49,8 @@ public:
   
   void Readdir(const fs::Path& path);
   void Readdir(ftp::Client& client, const fs::Path& path);
+
+  uintmax_t TotalBytes() const { return totalBytes; }
   
   const_iterator begin() const { return entries.begin(); }
   const_iterator end() const { return entries.end(); }
