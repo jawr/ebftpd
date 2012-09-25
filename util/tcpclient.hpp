@@ -52,7 +52,8 @@ namespace util
       void connect(const util::endpoint& _endpoint, time_t _timeout);
       void connect(const util::endpoint& _endpoint);
 
-      void negotiate_ssl(util::ssl::session_data* data = 0);
+      void negotiate_ssl(util::ssl::handshake_type type = util::ssl::do_connect,
+                         util::ssl::session_data* data = 0);
 
       size_t read(char* buffer, size_t buffer_size, time_t _timeout);
       size_t read(char* buffer, size_t buffer_size)

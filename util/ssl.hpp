@@ -19,6 +19,12 @@ namespace util
   namespace ssl
   {
     class client;
+
+    enum handshake_type
+    {
+      do_accept,
+      do_connect
+    };
     
     struct session_data
     {
@@ -47,10 +53,10 @@ namespace util
       client(int sock, time_t timeout = default_timeout);
       client(util::tcp::client& tcp, time_t timeout = default_timeout);
 
-      void negotiate(int sock, session_data* data = 0);
-      void negotiate(int sock, time_t timeout, session_data* = 0);
-      void negotiate(util::tcp::client& tcp, session_data* data = 0);
-      void negotiate(util::tcp::client& tcp, time_t timeout, session_data* data = 0);
+      void negotiate(int sock, handshake_type type = do_connect, session_data* data = 0);
+      void negotiate(int sock, time_t timeout, handshake_type type = do_connect, session_data* = 0);
+      void negotiate(util::tcp::client& tcp, handshake_type type = do_connect, session_data* data = 0);
+      void negotiate(util::tcp::client& tcp, time_t timeout, handshake_type type = do_connect, session_data* data = 0);
 
       size_t read(char* buffer, size_t buffer_size);
       size_t read(char* buffer, size_t buffer_size, time_t timeout);

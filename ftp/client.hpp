@@ -27,7 +27,9 @@ class Client : public util::ThreadSelect
   mutable boost::mutex mutex;
   fs::Path workDir;
   acl::User user;
-  util::tcp::client socket;
+  util::tcp::client control;
+//  util::tcp::server dataListen;
+  util::tcp::client data;
   ClientState state;
   int lastCode;
   char buffer[BUFSIZ];
@@ -69,6 +71,10 @@ public:
   void SetWorkDir(const std::string& workDir);
   void SetRenameFrom(const fs::Path& path) { this->renameFrom = path; }
   const fs::Path& RenameFrom() const { return renameFrom; }
+  void NegotiateTLS();
+  
+  void DataListen();
+  void DataConnect();
 };
 
 } /* ftp namespace */

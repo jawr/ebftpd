@@ -46,8 +46,11 @@ util::Error ChangeDirectory(const Path& path)
   }
   catch (const util::SystemError& e)
   {
-    if (e.ValidErrno()) return util::Error::Failure(e.Errno());
-    else return util::Error::Failure();
+    return util::Error::Failure(e.Errno());
+  }
+  catch (const util::RuntimeError& e)
+  {
+    return util::Error::Failure();
   }
   
   return util::Error::Success();

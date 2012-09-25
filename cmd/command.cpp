@@ -1,3 +1,4 @@
+#include <boost/lexical_cast.hpp>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 #include "fs/directory.hpp"
@@ -36,7 +37,20 @@ void APPECommand::Execute()
 
 void AUTHCommand::Execute()
 {
-  client.Reply(502, "AUTH Command not implemented."); 
+  if (argStr.empty())
+  {
+    client.Reply(500, "Wrong number of arguments.");
+    return;
+  }
+  
+  //if (argStr != "TLS")
+  //{
+    client.Reply(504, "AUTH " + argStr + " is unsupported.");
+    return;
+  //}
+  
+  client.Reply(502, "AUTH TLS successful."); 
+  client.NegotiateTLS();  
 }
 
 void CCCCommand::Execute()
@@ -46,7 +60,7 @@ void CCCCommand::Execute()
 
 void CDUPCommand::Execute()
 {
-  if (args.size() != 1)
+  if (!argStr.empty())
   {
     client.Reply(500, "Wrong number of arguments.");
     return;
@@ -64,26 +78,26 @@ void CONFCommand::Execute()
 
 void CWDCommand::Execute()
 {
-  if (args.size() != 2)
+  if (argStr.empty())
   {
     client.Reply(500, "Wrong number of arguments.");
     return;
   }
   
-  util::Error e = fs::ChangeDirectory(client,  args[1]);
+  util::Error e = fs::ChangeDirectory(client,  argStr);
   if (!e) client.Reply(550, "CWD failed: " + e.Message());
   else client.Reply(502, "CWD command successful."); 
 }
 
 void DELECommand::Execute()
 {
-  if (args.size() != 2)
+  if (argStr.empty())
   {
     client.Reply(500, "Wrong number of arguments.");
     return;
   }
   
-  util::Error e = fs::DeleteFile(client,  args[1]);
+  util::Error e = fs::DeleteFile(client,  argStr);
   if (!e) client.Reply(550, "DELE failed: " + e.Message());
   else client.Reply(502, "DELE command successful."); 
 }
@@ -156,13 +170,13 @@ void MICCommand::Execute()
 
 void MKDCommand::Execute()
 {
-  if (args.size() != 2)
+  if (argStr.empty())
   {
     client.Reply(500, "Wrong number of arguments.");
     return;
   }
   
-  util::Error e = fs::CreateDirectory(client,  args[1]);
+  util::Error e = fs::CreateDirectory(client,  argStr);
   if (!e) client.Reply(550, "MKD failed: " + e.Message());
   else client.Reply(502, "MKD command successful."); 
 }
@@ -199,13 +213,13 @@ void OPTSCommand::Execute()
 
 void PASSCommand::Execute()
 {
-  if (args.size() != 2)
+  if (argStr.empty())
   {
     client.Reply(500, "Wrong number of arguments.");
     return;    
   }
   
-  if (!client.VerifyPassword(args[1]))
+  if (!client.VerifyPassword(argStr))
   {
     if (client.PasswordAttemptsExceeded())
     {
@@ -272,26 +286,26 @@ void RETRCommand::Execute()
 
 void RMDCommand::Execute()
 {
-  if (args.size() != 2)
+  if (argStr.empty())
   {
     client.Reply(500, "Wrong number of arguments.");
     return;
   }
   
-  util::Error e = fs::RemoveDirectory(client,  args[1]);
+  util::Error e = fs::RemoveDirectory(client,  argStr);
   if (!e) client.Reply(550, "RMD failed: " + e.Message());
   else client.Reply(502, "RMD command successful."); 
 }
 
 void RNFRCommand::Execute()
 {
-  if (args.size() != 2)
+  if (argStr.empty())
   {
     client.Reply(500, "Wrong number of arguments.");
     return;
   }
 
-  fs::Path absolute = (client.WorkDir() / args[1]).Expand();
+  fs::Path absolute = (client.WorkDir() / argStr).Expand();
   
   try
   {
@@ -309,13 +323,13 @@ void RNFRCommand::Execute()
 
 void RNTOCommand::Execute()
 {
-  if (args.size() != 2)
+  if (argStr.empty())
   {
     client.Reply(500, "Wrong number of arguments.");
     return;
   }
   
-  util::Error e = fs::RenameFile(client, client.RenameFrom(), args[1]);
+  util::Error e = fs::RenameFile(client, client.RenameFrom(), argStr);
   if (!e) client.Reply(550, "RNTO failed: " + e.Message());
   else client.Reply(250, "RNTO command successful.");
 }
@@ -327,7 +341,22 @@ void SITECommand::Execute()
 
 void SIZECommand::Execute()
 {
-  client.Reply(502, "SIZE Command not implemented."); 
+  fs::Path absolute = (client.WorkDir() / argStr).Expand();
+  
+  // check ACLs
+  
+  fs::Status status;
+  try
+  {
+    status.Reset(absolute);
+  }
+  catch (const util::SystemError& e)
+  {
+    client.Reply(550, "SIZE failed: " + e.Message());
+    return;
+  }
+  
+  client.Reply(213, boost::lexical_cast<std::string>(status.Size())); 
 }
 
 void SMNTCommand::Execute()
@@ -367,19 +396,19 @@ void TYPECommand::Execute()
 
 void USERCommand::Execute()
 {
-  if (args.size() != 2)
+  if (argStr.empty())
   {
     client.Reply(500, "Wrong number of arguments.");
     return;
   }
   
-  if (args[1] != client.User().Name())
+  if (argStr != client.User().Name())
   {
-    client.Reply(530, "User " + args[1] + " access denied.");
+    client.Reply(530, "User " + argStr + " access denied.");
     return;
   }
   
-  client.Reply(331, "Password required for " + args[1] + "."); 
+  client.Reply(331, "Password required for " + argStr + "."); 
   client.SetWaitingPassword();
 }
 

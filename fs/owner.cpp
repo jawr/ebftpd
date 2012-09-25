@@ -61,7 +61,7 @@ bool OwnerFile::InnerLoad(FileLockPtr& lock)
   }
   catch (const util::SystemError& e)
   {
-    return e.ValidErrno() && e.Errno() == ENOENT;
+    return e.Errno() == ENOENT;
   }
   
   std::ifstream fin(ownerFile.c_str());

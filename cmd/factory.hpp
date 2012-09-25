@@ -12,23 +12,25 @@ namespace cmd
 template <class BaseT>
 class CreatorBase
 {
-  ftp::ClientState requiredState;
+  ftp::ClientState reqdState;
   
 public:  
-  CreatorBase(ftp::ClientState requiredState) :
-    requiredState(requiredState) { }
-  virtual BaseT *Create(ftp::Client& client, const Args& args) = 0;
-  ftp::ClientState RequiredState() const { return requiredState; }
+  CreatorBase(ftp::ClientState reqdState) :
+    reqdState(reqdState) { }
+  virtual BaseT *Create(ftp::Client& client, const std::string& argStr,
+                        const Args& args) = 0;
+  ftp::ClientState ReqdState() const { return reqdState; }
 };
 
 template <class CommandT>
 class Creator : public CreatorBase<Command>
 {
 public:
-  Creator(ftp::ClientState requiredState) : CreatorBase(requiredState) { }
-  Command *Create(ftp::Client& client, const Args& args)
+  Creator(ftp::ClientState reqdState) : CreatorBase(reqdState) { }
+  Command *Create(ftp::Client& client, const std::string& argStr,
+                  const Args& args)
   {
-    return new CommandT(client, args);
+    return new CommandT(client, argStr, args);
   }
 };
 
@@ -47,8 +49,8 @@ class Factory
   static Factory factory;
   
 public:
-  static Command* Create(ftp::Client& client, const Args& args,
-                         ftp::ClientState& requiredState);
+  static Command* Create(ftp::Client& client, const std::string& argStr,
+                         const Args& args, ftp::ClientState& reqdState);
 };
 
 } /* cmd namespace */

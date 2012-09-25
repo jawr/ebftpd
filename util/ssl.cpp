@@ -52,13 +52,11 @@ namespace util
       negotiate(tcp);
     }
 
-    void client::negotiate(int sock, time_t timeout, session_data* data)
+    void client::negotiate(int sock, time_t timeout, handshake_type type, session_data* data)
     {
       assert(this->sock == -1);
-
-      gnutls_init(&ssl, GNUTLS_CLIENT);
+      gnutls_init(&ssl, type == do_connect ? GNUTLS_CLIENT : GNUTLS_SERVER);
       gnutls_priority_set_direct(ssl, "PERFORMANCE:+COMP-NULL", NULL);
-      gnutls_credentials_set(ssl, GNUTLS_CRD_CERTIFICATE, ctx.credentials());
       gnutls_transport_set_ptr(ssl, (gnutls_transport_ptr_t) sock);
       
       if (data && data->session) gnutls_session_set_data(ssl, data->session, data->size);
@@ -76,6 +74,7 @@ namespace util
         else if (ret != GNUTLS_E_AGAIN)
         {
           gnutls_deinit(ssl);
+          std::cout << gnutls_strerror(ret) << std::endl;
           throw util::unknown_network_error();
         }
 
@@ -109,19 +108,20 @@ namespace util
       this->sock = sock;
     }
 
-    void client::negotiate(int sock, session_data* data)
+    void client::negotiate(int sock, handshake_type type, session_data* data)
     {
-      negotiate(sock, timeout, data);
+      negotiate(sock, timeout, type, data);
     }
 
-    void client::negotiate(util::tcp::client& tcp, time_t timeout, session_data* data)
+    void client::negotiate(util::tcp::client& tcp, time_t timeout,
+                           handshake_type type, session_data* data)
     {
-      negotiate(tcp.socket(), timeout, data);
+      negotiate(tcp.socket(), timeout, type, data);
     }
 
-    void client::negotiate(util::tcp::client& tcp, session_data* data)
+    void client::negotiate(util::tcp::client& tcp, handshake_type type, session_data* data)
     {
-      negotiate(tcp, timeout, data);
+      negotiate(tcp, timeout, type, data);
     }
 
     size_t client::read(char* buffer, size_t buffer_size)

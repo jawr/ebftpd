@@ -19,11 +19,12 @@ class Command
 {
 protected:
   ftp::Client& client;
+  std::string argStr;
   Args args;
   
 public:
-  Command(ftp::Client& client, const Args& args) :
-    client(client), args(args) { }
+  Command(ftp::Client& client, const std::string argStr, const Args& args) :
+    client(client), argStr(argStr), args(args) { }
     
   virtual void Execute() = 0;
 };
@@ -31,8 +32,8 @@ public:
 class ABORCommand : public Command
 {
 public:
-  ABORCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  ABORCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -40,8 +41,8 @@ public:
 class ACCTCommand : public Command
 {
 public:
-  ACCTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  ACCTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -49,8 +50,8 @@ public:
 class ADATCommand : public Command
 {
 public:
-  ADATCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  ADATCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -58,8 +59,8 @@ public:
 class ALLOCommand : public Command
 {
 public:
-  ALLOCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  ALLOCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -67,8 +68,8 @@ public:
 class APPECommand : public Command
 {
 public:
-  APPECommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  APPECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -76,8 +77,8 @@ public:
 class AUTHCommand : public Command
 {
 public:
-  AUTHCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  AUTHCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -85,8 +86,8 @@ public:
 class CCCCommand : public Command
 {
 public:
-  CCCCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  CCCCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -94,8 +95,8 @@ public:
 class CDUPCommand : public Command
 {
 public:
-  CDUPCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  CDUPCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -103,8 +104,8 @@ public:
 class CONFCommand : public Command
 {
 public:
-  CONFCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  CONFCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -112,8 +113,8 @@ public:
 class CWDCommand : public Command
 {
 public:
-  CWDCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  CWDCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -121,8 +122,8 @@ public:
 class DELECommand : public Command
 {
 public:
-  DELECommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  DELECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -130,8 +131,8 @@ public:
 class ENCCommand : public Command
 {
 public:
-  ENCCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  ENCCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -139,8 +140,8 @@ public:
 class EPRTCommand : public Command
 {
 public:
-  EPRTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  EPRTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -148,8 +149,8 @@ public:
 class EPSVCommand : public Command
 {
 public:
-  EPSVCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  EPSVCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -157,8 +158,8 @@ public:
 class FEATCommand : public Command
 {
 public:
-  FEATCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  FEATCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -166,8 +167,8 @@ public:
 class HELPCommand : public Command
 {
 public:
-  HELPCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  HELPCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -175,8 +176,8 @@ public:
 class LANGCommand : public Command
 {
 public:
-  LANGCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  LANGCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -184,8 +185,8 @@ public:
 class LISTCommand : public Command
 {
 public:
-  LISTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  LISTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -193,8 +194,8 @@ public:
 class LPRTCommand : public Command
 {
 public:
-  LPRTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  LPRTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -202,8 +203,8 @@ public:
 class LPSVCommand : public Command
 {
 public:
-  LPSVCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  LPSVCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -211,8 +212,8 @@ public:
 class MDTMCommand : public Command
 {
 public:
-  MDTMCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  MDTMCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -220,8 +221,8 @@ public:
 class MICCommand : public Command
 {
 public:
-  MICCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  MICCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -229,8 +230,8 @@ public:
 class MKDCommand : public Command
 {
 public:
-  MKDCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  MKDCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -238,8 +239,8 @@ public:
 class MLSDCommand : public Command
 {
 public:
-  MLSDCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  MLSDCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -247,8 +248,8 @@ public:
 class MLSTCommand : public Command
 {
 public:
-  MLSTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  MLSTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -256,8 +257,8 @@ public:
 class MODECommand : public Command
 {
 public:
-  MODECommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  MODECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -265,8 +266,8 @@ public:
 class NLSTCommand : public Command
 {
 public:
-  NLSTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  NLSTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -274,8 +275,8 @@ public:
 class NOOPCommand : public Command
 {
 public:
-  NOOPCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  NOOPCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -283,8 +284,8 @@ public:
 class OPTSCommand : public Command
 {
 public:
-  OPTSCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  OPTSCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -292,8 +293,8 @@ public:
 class PASSCommand : public Command
 {
 public:
-  PASSCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  PASSCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -301,8 +302,8 @@ public:
 class PASVCommand : public Command
 {
 public:
-  PASVCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  PASVCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -310,8 +311,8 @@ public:
 class PBSZCommand : public Command
 {
 public:
-  PBSZCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  PBSZCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -319,8 +320,8 @@ public:
 class PORTCommand : public Command
 {
 public:
-  PORTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  PORTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -328,8 +329,8 @@ public:
 class PROTCommand : public Command
 {
 public:
-  PROTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  PROTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -337,8 +338,8 @@ public:
 class PWDCommand : public Command
 {
 public:
-  PWDCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  PWDCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -346,8 +347,8 @@ public:
 class QUITCommand : public Command
 {
 public:
-  QUITCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  QUITCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -355,8 +356,8 @@ public:
 class REINCommand : public Command
 {
 public:
-  REINCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  REINCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -364,8 +365,8 @@ public:
 class RESTCommand : public Command
 {
 public:
-  RESTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  RESTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -373,8 +374,8 @@ public:
 class RETRCommand : public Command
 {
 public:
-  RETRCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  RETRCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -382,8 +383,8 @@ public:
 class RMDCommand : public Command
 {
 public:
-  RMDCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  RMDCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -391,8 +392,8 @@ public:
 class RNFRCommand : public Command
 {
 public:
-  RNFRCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  RNFRCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -400,8 +401,8 @@ public:
 class RNTOCommand : public Command
 {
 public:
-  RNTOCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  RNTOCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -409,8 +410,8 @@ public:
 class SITECommand : public Command
 {
 public:
-  SITECommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  SITECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -418,8 +419,8 @@ public:
 class SIZECommand : public Command
 {
 public:
-  SIZECommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  SIZECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -427,8 +428,8 @@ public:
 class SMNTCommand : public Command
 {
 public:
-  SMNTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  SMNTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -436,8 +437,8 @@ public:
 class STATCommand : public Command
 {
 public:
-  STATCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  STATCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -445,8 +446,8 @@ public:
 class STORCommand : public Command
 {
 public:
-  STORCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  STORCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -454,8 +455,8 @@ public:
 class STOUCommand : public Command
 {
 public:
-  STOUCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  STOUCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -463,8 +464,8 @@ public:
 class STRUCommand : public Command
 {
 public:
-  STRUCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  STRUCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -472,8 +473,8 @@ public:
 class SYSTCommand : public Command
 {
 public:
-  SYSTCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  SYSTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -481,8 +482,8 @@ public:
 class TYPECommand : public Command
 {
 public:
-  TYPECommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  TYPECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -490,8 +491,8 @@ public:
 class USERCommand : public Command
 {
 public:
-  USERCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  USERCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -499,8 +500,8 @@ public:
 class XCUPCommand : public Command
 {
 public:
-  XCUPCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  XCUPCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -508,8 +509,8 @@ public:
 class XMKDCommand : public Command
 {
 public:
-  XMKDCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  XMKDCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -517,8 +518,8 @@ public:
 class XPWDCommand : public Command
 {
 public:
-  XPWDCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  XPWDCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -526,8 +527,8 @@ public:
 class XRCPCommand : public Command
 {
 public:
-  XRCPCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  XRCPCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -535,8 +536,8 @@ public:
 class XRMDCommand : public Command
 {
 public:
-  XRMDCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  XRMDCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -544,8 +545,8 @@ public:
 class XRSQCommand : public Command
 {
 public:
-  XRSQCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  XRSQCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -553,8 +554,8 @@ public:
 class XSEMCommand : public Command
 {
 public:
-  XSEMCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  XSEMCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
@@ -562,8 +563,8 @@ public:
 class XSENCommand : public Command
 {
 public:
-  XSENCommand(ftp::Client& client, const Args& args) :
-    Command(client, args) { }
+  XSENCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, argStr, args) { }
 
   void Execute();
 };
