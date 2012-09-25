@@ -21,18 +21,18 @@ public:
   
   Status& Reset(const fs::Path& path);
   
-  bool IsRegularFile();
-  bool IsDirectory();
-  bool IsLink();
+  bool IsRegularFile() const;
+  bool IsDirectory() const;
+  bool IsLink() const;
   
-  bool IsExecutable();
-  bool IsReadable();
-  bool IsWriteable();
+  bool IsExecutable() const;
+  bool IsReadable() const;
+  bool IsWriteable() const;
   
-  const fs::Path& Path();
-  off_t Size();
+  const fs::Path& Path() const;
+  off_t Size() const;
   
-  const struct stat& Native();
+  const struct stat& Native() const;
 };
 
 } /* fs namespace */

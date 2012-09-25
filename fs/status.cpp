@@ -39,63 +39,54 @@ Status& Status::Reset(const fs::Path& path)
   return *this;
 }
 
-bool Status::IsRegularFile()
+bool Status::IsRegularFile() const
 {
-  Reset();
   return S_ISREG(native.st_mode);
 }
 
-bool Status::IsDirectory()
+bool Status::IsDirectory() const
 {
-  Reset();
   return S_ISDIR(native.st_mode);
 }
 
-bool Status::IsLink()
+bool Status::IsLink() const
 {
-  Reset();
   return S_ISLNK(native.st_mode);
 }
 
-bool Status::IsExecutable()
+bool Status::IsExecutable() const
 {
-  Reset();
   return native.st_mode & S_IXOTH ||
          (geteuid() == native.st_uid && (native.st_mode & S_IXUSR)) ||
          (getegid() == native.st_gid && (native.st_mode & S_IXGRP));
 }
 
-bool Status::IsWriteable()
+bool Status::IsWriteable() const
 {
-  Reset();
   return native.st_mode & S_IWOTH ||
          (geteuid() == native.st_uid && (native.st_mode & S_IWUSR)) ||
          (getegid() == native.st_gid && (native.st_mode & S_IWGRP));
 }
 
-bool Status::IsReadable()
+bool Status::IsReadable() const
 {
-  Reset();
   return native.st_mode & S_IROTH ||
          (geteuid() == native.st_uid && (native.st_mode & S_IRUSR)) ||
          (getegid() == native.st_gid && (native.st_mode & S_IRGRP));
 }
 
-const fs::Path& Status::Path()
+const fs::Path& Status::Path() const
 {
-  Reset();
   return path;
 }
 
-off_t Status::Size()
+off_t Status::Size() const
 {
-  Reset();
   return native.st_size;
 }
 
-const struct stat& Status::Native()
+const struct stat& Status::Native() const
 {
-  Reset();
   return native;
 }
 
