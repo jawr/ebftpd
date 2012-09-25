@@ -56,6 +56,16 @@ Path operator+(const Path& lhs, const std::string& rhs)
   return Path(lhs) += rhs;
 }
 
+Path operator/(const Path& lhs, const char* rhs)
+{
+  return Path(lhs) /= rhs;
+}
+
+Path operator+(const Path& lhs, const char* rhs)
+{
+  return Path(lhs) += rhs;
+}
+
 std::ostream& operator<<(std::ostream& os, const Path& path)
 {
   return (os << std::string(path));
