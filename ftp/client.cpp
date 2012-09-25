@@ -53,11 +53,14 @@ void Client::SetFinished()
 bool Client::CheckState(ClientState reqdState)
 {
   if (state == reqdState || reqdState == AnyState) return true;
-  if (state == LoggedIn) Reply(530, "Already logged in.");
-  else if (state == WaitingPassword) Reply(503, "Expecting PASS comamnd.");
-  else if (state == LoggedOut &&
-           reqdState == WaitingPassword) Reply(503, "Expecting USER command first.");
-  else if (state == LoggedOut) Reply(503, "Not logged in.");
+  if (state == LoggedIn)
+    Reply(ftp::NotLoggedIn, "Already logged in.");
+  else if (state == WaitingPassword)
+    Reply(ftp::BadCommandSequence, "Expecting PASS comamnd.");
+  else if (state == LoggedOut && reqdState == WaitingPassword)
+    Reply(ftp::BadCommandSequence, "Expecting USER command first.");
+  else if (state == LoggedOut)
+    Reply(ftp::NotLoggedIn, "Not logged in.");
   assert(state != Finished);
   return false;
 }
@@ -93,7 +96,7 @@ bool Client::Accept(util::net::TCPListener& server)
   return true;
 }
 
-void Client::SendReply(int code, bool part, const std::string& message)
+void Client::SendReply(ReplyCode code, bool part, const std::string& message)
 {
   std::ostringstream reply;
   reply << std::setw(3) << code << (part ? "-" : " ") << message << "\r\n";
@@ -102,31 +105,31 @@ void Client::SendReply(int code, bool part, const std::string& message)
   lastCode = code;
 }
 
-void Client::PartReply(int code, const std::string& message)
+void Client::PartReply(ReplyCode code, const std::string& message)
 {
   SendReply(code, true, message);
 }
 
 void Client::PartReply(const std::string& message)
 {
-  verify(lastCode != 0);
+  verify(lastCode != CodeNotSet);
   PartReply(lastCode, message);
 }
 
-void Client::Reply(int code, const std::string& message)
+void Client::Reply(ReplyCode code, const std::string& message)
 {
   std::ostringstream reply;
   SendReply(code, false, message);
-  lastCode = 0;
+  lastCode = CodeNotSet;
 }
 
 void Client::Reply(const std::string& message)
 {
-  verify(lastCode != 0);
+  verify(lastCode != CodeNotSet);
   Reply(lastCode, message);
 }
 
-void Client::MultiReply(int code, const std::string& messages)
+void Client::MultiReply(ReplyCode code, const std::string& messages)
 {
   std::vector<std::string> splitMessages;
   boost::split(splitMessages, messages, boost::is_any_of("\n"));
@@ -142,7 +145,7 @@ void Client::MultiReply(int code, const std::string& messages)
 
 void Client::DisplayWelcome()
 {
-  Reply(220, "Welcome to eyeoh and biohazard's ftpd!");
+  Reply(ftp::ServiceReady, "Welcome to eyeoh and biohazard's ftpd!");
 }
 
 void Client::NegotiateTLS()
@@ -194,7 +197,7 @@ void Client::ExecuteCommand()
   ftp::ClientState reqdState;
   std::auto_ptr<cmd::Command>
     command(cmd::Factory::Create(*this, argStr, args, reqdState));
-  if (!command.get()) Reply(500, "Command not understood");
+  if (!command.get()) Reply(ftp::CommandUnrecognised, "Command not understood");
   else if (!CheckState(reqdState));
   else command->Execute();
 }

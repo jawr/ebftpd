@@ -14,114 +14,115 @@ namespace cmd
 
 void ABORCommand::Execute()
 {
-  client.Reply(226, "ABOR command successful."); 
+  client.Reply(ftp::DataClosedOkay, "ABOR command successful."); 
 }
 
 void ACCTCommand::Execute()
 {
-  client.Reply(502, "ACCT Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "ACCT Command not implemented."); 
 }
 
 void ADATCommand::Execute()
 {
-  client.Reply(502, "ADAT Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "ADAT Command not implemented."); 
 }
 
 void ALLOCommand::Execute()
 {
-  client.Reply(502, "ALLO Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "ALLO Command not implemented."); 
 }
 
 void APPECommand::Execute()
 {
-  client.Reply(502, "APPE Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "APPE Command not implemented."); 
 }
 
 void AUTHCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
-  if (argStr != "TLS")
+  if (argStr != "TLS" && argStr != "SSL")
   {
-    client.Reply(504, "AUTH " + argStr + " is unsupported.");
+    client.Reply(ftp::ParameterNotImplemented,
+                 "AUTH " + argStr + " is unsupported.");
     return;
   }
   
-  client.Reply(234, "AUTH TLS successful."); 
+  client.Reply(ftp::SecurityExchangeOkay, "AUTH TLS successful."); 
   client.NegotiateTLS();  
 }
 
 void CCCCommand::Execute()
 {
-  client.Reply(502, "CCC Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "CCC Command not implemented."); 
 }
 
 void CDUPCommand::Execute()
 {
   if (!argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::ChangeDirectory(client,  "..");
-  if (!e) client.Reply(550, "CDUP failed: " + e.Message());
-  else client.Reply(502, "CDUP command successful."); 
+  if (!e) client.Reply(ftp::ActionNotOkay, "CDUP failed: " + e.Message());
+  else client.Reply(ftp::FileActionOkay, "CDUP command successful."); 
 }
 
 void CONFCommand::Execute()
 {
-  client.Reply(502, "CONF Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "CONF Command not implemented."); 
 }
 
 void CWDCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::ChangeDirectory(client,  argStr);
-  if (!e) client.Reply(550, "CWD failed: " + e.Message());
-  else client.Reply(502, "CWD command successful."); 
+  if (!e) client.Reply(ftp::ActionNotOkay, "CWD failed: " + e.Message());
+  else client.Reply(ftp::FileActionOkay, "CWD command successful."); 
 }
 
 void DELECommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::DeleteFile(client,  argStr);
-  if (!e) client.Reply(550, "DELE failed: " + e.Message());
-  else client.Reply(502, "DELE command successful."); 
+  if (!e) client.Reply(ftp::ActionNotOkay, "DELE failed: " + e.Message());
+  else client.Reply(ftp::FileActionOkay, "DELE command successful."); 
 }
 
 void ENCCommand::Execute()
 {
-  client.Reply(502, "ENC Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "ENC Command not implemented."); 
 }
 
 void EPRTCommand::Execute()
 {
-  client.Reply(502, "EPRT Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "EPRT Command not implemented."); 
 }
 
 void EPSVCommand::Execute()
 {
-  client.Reply(502, "EPSV Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "EPSV Command not implemented."); 
 }
 
 void FEATCommand::Execute()
 {
-  client.Reply(502, "FEAT Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "FEAT Command not implemented."); 
 }
 
 void HELPCommand::Execute()
@@ -137,87 +138,87 @@ void HELPCommand::Execute()
     "------------------------------------------------------------------------\n"
     "End of list.";
     
-  client.MultiReply(214, reply);
+  client.MultiReply(ftp::HelpMessage, reply);
 }
 
 void LANGCommand::Execute()
 {
-  client.Reply(502, "LANG Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "LANG Command not implemented."); 
 }
 
 void LISTCommand::Execute()
 {
-  client.Reply(502, "LIST Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "LIST Command not implemented."); 
 }
 
 void LPRTCommand::Execute()
 {
-  client.Reply(502, "LPRT Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "LPRT Command not implemented."); 
 }
 
 void LPSVCommand::Execute()
 {
-  client.Reply(502, "LPSV Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "LPSV Command not implemented."); 
 }
 
 void MDTMCommand::Execute()
 {
-  client.Reply(502, "MDTM Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "MDTM Command not implemented."); 
 }
 
 void MICCommand::Execute()
 {
-  client.Reply(502, "MIC Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "MIC Command not implemented."); 
 }
 
 void MKDCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::CreateDirectory(client,  argStr);
-  if (!e) client.Reply(550, "MKD failed: " + e.Message());
-  else client.Reply(502, "MKD command successful."); 
+  if (!e) client.Reply(ftp::ActionNotOkay, "MKD failed: " + e.Message());
+  else client.Reply(ftp::PathCreated, "MKD command successful."); 
 }
 
 void MLSDCommand::Execute()
 {
-  client.Reply(502, "MLSD Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "MLSD Command not implemented."); 
 }
 
 void MLSTCommand::Execute()
 {
-  client.Reply(502, "MLST Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "MLST Command not implemented."); 
 }
 
 void MODECommand::Execute()
 {
-  client.Reply(502, "MODE Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "MODE Command not implemented."); 
 }
 
 void NLSTCommand::Execute()
 {
-  client.Reply(502, "NLST Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "NLST Command not implemented."); 
 }
 
 void NOOPCommand::Execute()
 {
-  client.Reply(502, "NOOP Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "NOOP Command not implemented."); 
 }
 
 void OPTSCommand::Execute()
 {
-  client.Reply(502, "OPTS Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "OPTS Command not implemented."); 
 }
 
 void PASSCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;    
   }
   
@@ -225,92 +226,93 @@ void PASSCommand::Execute()
   {
     if (client.PasswordAttemptsExceeded())
     {
-      client.Reply(530, "Password attempts exceeded, disconnecting.");
+      client.Reply(ftp::NotLoggedIn,
+                  "Password attempts exceeded, disconnecting.");
       client.SetFinished();
     }
     else
     {
-      client.Reply(530, "Login incorrect.");
+      client.Reply(ftp::NotLoggedIn, "Login incorrect.");
       client.SetLoggedOut();
     }
     return;
   }
   
-  client.Reply(230, "User " + client.User().Name() + " logged in.");
+  client.Reply(ftp::UserLoggedIn, "User " + client.User().Name() + " logged in.");
   client.SetLoggedIn();
 }
 
 void PASVCommand::Execute()
 {
-  client.Reply(502, "PASV Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "PASV Command not implemented."); 
 }
 
 void PBSZCommand::Execute()
 {
   if (args.size() != 2)
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   // implement this properly later?
-  client.Reply(200, "PBSZ command successful."); 
+  client.Reply(ftp::CommandOkay, "PBSZ command successful."); 
 }
 
 void PORTCommand::Execute()
 {
-  client.Reply(502, "PORT Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "PORT Command not implemented."); 
 }
 
 void PROTCommand::Execute()
 {
-  client.Reply(502, "PROT Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "PROT Command not implemented."); 
 }
 
 void PWDCommand::Execute()
 {
-  client.Reply(257, "\"" + client.WorkDir().ToString() + "\" is your working directory.");
+  client.Reply(ftp::PathCreated, "\"" + client.WorkDir().ToString() + "\" is your working directory.");
 }
 
 void QUITCommand::Execute()
 {
-  client.Reply(220, "Bye bye"); 
+  client.Reply(ftp::ClosingControl, "Bye bye"); 
   client.SetFinished();
 }
 
 void REINCommand::Execute()
 {
-  client.Reply(502, "REIN Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "REIN Command not implemented."); 
 }
 
 void RESTCommand::Execute()
 {
-  client.Reply(502, "REST Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "REST Command not implemented."); 
 }
 
 void RETRCommand::Execute()
 {
-  client.Reply(502, "RETR Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "RETR Command not implemented."); 
 }
 
 void RMDCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::RemoveDirectory(client,  argStr);
-  if (!e) client.Reply(550, "RMD failed: " + e.Message());
-  else client.Reply(502, "RMD command successful."); 
+  if (!e) client.Reply(ftp::ActionNotOkay, "RMD failed: " + e.Message());
+  else client.Reply(ftp::FileActionOkay, "RMD command successful."); 
 }
 
 void RNFRCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
 
@@ -322,30 +324,30 @@ void RNFRCommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    client.Reply(550, "RNFR failed: " + e.Message());
+    client.Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
     return;
   }
-  client.PartReply(350, std::string(absolute));
+  client.PartReply(ftp::PendingMoreInfo, std::string(absolute));
   client.SetRenameFrom(absolute);
-  client.Reply(350, "File exists, ready for destination name."); 
+  client.Reply("File exists, ready for destination name."); 
 }
 
 void RNTOCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::RenameFile(client, client.RenameFrom(), argStr);
-  if (!e) client.Reply(550, "RNTO failed: " + e.Message());
-  else client.Reply(250, "RNTO command successful.");
+  if (!e) client.Reply(ftp::ActionNotOkay, "RNTO failed: " + e.Message());
+  else client.Reply(ftp::FileActionOkay, "RNTO command successful.");
 }
 
 void SITECommand::Execute()
 {
-  client.Reply(502, "SITE Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "SITE Command not implemented."); 
 }
 
 void SIZECommand::Execute()
@@ -361,23 +363,23 @@ void SIZECommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    client.Reply(550, "SIZE failed: " + e.Message());
+    client.Reply(ftp::ActionNotOkay, "SIZE failed: " + e.Message());
     return;
   }
   
-  client.Reply(213, boost::lexical_cast<std::string>(status.Size())); 
+  client.Reply(ftp::FileStatus, boost::lexical_cast<std::string>(status.Size())); 
 }
 
 void SMNTCommand::Execute()
 {
-  client.Reply(502, "SMNT Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "SMNT Command not implemented."); 
 }
 
 void STATCommand::Execute()
 {
   if (args.size() == 1)
   {
-    client.PartReply(211, "FTPD status:");
+    client.PartReply(ftp::SystemStatus, "FTPD status:");
     client.PartReply("< Insert status info here >");
     client.Reply("End of status.");
     return;
@@ -396,7 +398,7 @@ void STATCommand::Execute()
   
   if (path.empty()) path = ".";
   
-  client.PartReply(213, "Status of " + path + ":");
+  client.PartReply(ftp::DirectoryStatus, "Status of " + path + ":");
   DirectoryList dirList(client, path, ListOptions(options, "l"), false);
   dirList.Execute();
   
@@ -405,97 +407,98 @@ void STATCommand::Execute()
 
 void STORCommand::Execute()
 {
-  client.Reply(502, "STOR Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "STOR Command not implemented."); 
 }
 
 void STOUCommand::Execute()
 {
-  client.Reply(502, "STOU Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "STOU Command not implemented."); 
 }
 
 void STRUCommand::Execute()
 {
-  client.Reply(502, "STRU Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "STRU Command not implemented."); 
 }
 
 void SYSTCommand::Execute()
 {
-  client.Reply(502, "SYST Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "SYST Command not implemented."); 
 }
 
 void TYPECommand::Execute()
 {
   if (args.size() != 2)
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   if (args[1] != "I" && args[1] != "A")
   {
-    client.Reply(501, "TYPE " + args[1] + " not supported.");
+    client.Reply(ftp::ParameterNotImplemented,
+                 "TYPE " + args[1] + " not supported.");
     return;
   }
   
-  client.Reply(200, "TYPE command successful."); 
+  client.Reply(ftp::CommandOkay, "TYPE command successful."); 
 }
 
 void USERCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(500, "Wrong number of arguments.");
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   if (argStr != client.User().Name())
   {
-    client.Reply(530, "User " + argStr + " access denied.");
+    client.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
     return;
   }
   
-  client.Reply(331, "Password required for " + argStr + "."); 
+  client.Reply(ftp::NeedPassword, "Password required for " + argStr + "."); 
   client.SetWaitingPassword();
 }
 
 void XCUPCommand::Execute()
 {
-  client.Reply(502, "XCUP Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "XCUP Command not implemented."); 
 }
 
 void XMKDCommand::Execute()
 {
-  client.Reply(502, "XMKD Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "XMKD Command not implemented."); 
 }
 
 void XPWDCommand::Execute()
 {
-  client.Reply(502, "XPWD Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "XPWD Command not implemented."); 
 }
 
 void XRCPCommand::Execute()
 {
-  client.Reply(502, "XRCP Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "XRCP Command not implemented."); 
 }
 
 void XRMDCommand::Execute()
 {
-  client.Reply(502, "XRMD Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "XRMD Command not implemented."); 
 }
 
 void XRSQCommand::Execute()
 {
-  client.Reply(502, "XRSQ Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "XRSQ Command not implemented."); 
 }
 
 void XSEMCommand::Execute()
 {
-  client.Reply(502, "XSEM Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "XSEM Command not implemented."); 
 }
 
 void XSENCommand::Execute()
 {
-  client.Reply(502, "XSEN Command not implemented."); 
+  client.Reply(ftp::NotImplemented, "XSEN Command not implemented."); 
 }
 
 } /* cmd namespace */
