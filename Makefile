@@ -8,10 +8,12 @@ OBJECTS = \
 	main.o \
 	cmd/factory.o \
 	cmd/command.o \
+	cmd/dirlist.o \
 	cfg/config.o \
 	cfg/get.o \
 	ftp/listener.o \
 	ftp/client.o \
+	fs/direnumerator.o \
 	fs/filelock.o \
 	fs/owner.o \
 	fs/status.o \
