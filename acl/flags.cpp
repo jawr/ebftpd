@@ -1,5 +1,5 @@
 #define __ACL_FLAGS_CPP
-#include "flags.hpp"
+#include "acl/flags.hpp"
 
 namespace acl
 {
