@@ -40,7 +40,16 @@ void Resolver::Resolve()
   const char* charService = 0;
   if (port >= 0)
   {
-    std::string service = boost::lexical_cast<std::string>(port);
+    std::string service;
+    try
+    {
+      service = boost::lexical_cast<std::string>(port);
+    }
+    catch (const boost::bad_lexical_cast&)
+    {
+      throw NetworkError("Invalid port number");
+    }
+    
     charService = service.c_str();
     std::cout << charService << std::endl;
   }

@@ -22,6 +22,8 @@ class TCPListener
 public:
   static const int maximumBacklog = SOMAXCONN;
 
+  ~TCPListener();
+  
 	TCPListener(const Endpoint& endpoint, int backlog = maximumBacklog);
               
 	TCPListener(int backlog = maximumBacklog);
@@ -34,11 +36,10 @@ public:
   bool WaitPendingTimeout(const TimePair& duration) const;
   bool WaitPending() const;
   bool Pending() const;
+  void Close();
   
   int Socket() const { return socket; }
-  const util::net::Endpoint& Endpoint() const
-  { return endpoint; }
-  
+  const util::net::Endpoint& Endpoint() const { return endpoint; }
 };
   
 } /* net namespace */

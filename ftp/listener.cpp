@@ -5,7 +5,7 @@
 #include "ftp/listener.hpp"
 #include "ftp/client.hpp"
 #include "logger/logger.hpp"
-#include "util/exception.hpp"
+#include "util/net/tlscontext.hpp"
 
 namespace ftp
 {
@@ -14,11 +14,11 @@ bool Listener::Initialise()
 {
   try
   {
-    server.listen(addr);
+    server.Listen(addr);
   }
-  catch (const util::network_error& e)
+  catch (const util::net::NetworkError& e)
   {
-    logger::error << "Unable to listen for clients on " << addr << ": " << e.what() << logger::endl;
+    logger::error << "Unable to listen for clients on " << addr << ": " << e.Message() << logger::endl;
     return false;
   }
   
@@ -57,9 +57,9 @@ void Listener::AcceptClients()
 {
   fd_set readSet;
   FD_ZERO(&readSet);
-  FD_SET(server.socket(), &readSet);
+  FD_SET(server.Socket(), &readSet);
   FD_SET(interruptPipe[0], &readSet);
-  int max = std::max(server.socket(), interruptPipe[0]);
+  int max = std::max(server.Socket(), interruptPipe[0]);
   
   struct timeval tv;
   tv.tv_sec = 0;
@@ -72,7 +72,7 @@ void Listener::AcceptClients()
     // ensure we don't poll rapidly on repeated select failures
     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
   }
-  else if (FD_ISSET(server.socket(), &readSet)) AcceptClient();
+  else if (FD_ISSET(server.Socket(), &readSet)) AcceptClient();
   else if (FD_ISSET(interruptPipe[0], &readSet))
   {
     boost::this_thread::interruption_point();
@@ -100,6 +100,7 @@ void Listener::Run()
 
 int main()
 {
+  util::net::TLSServerContext::Initialise("server.pem");
   ftp::Listener l("127.0.0.1", 1234);
   if (!l.Initialise()) return 1;
   l.Start();
