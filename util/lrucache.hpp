@@ -1,5 +1,5 @@
-#ifndef __UTIL_MRUCACHE_HPP
-#define __UTIL_MRUCACHE_HPP
+#ifndef __UTIL_LRUCACHE_HPP
+#define __UTIL_LRUCACHE_HPP
 
 #include <cassert>
 #include <iterator>
@@ -10,10 +10,10 @@ namespace util
 {
 
 template <typename KeyType, typename ValueType>
-class MRUCache;
+class LRUCache;
 
 template <typename KeyType, typename ValueType>
-class MRUCache
+class LRUCache
 {
   struct Entry;
   
@@ -26,12 +26,12 @@ class MRUCache
   
   struct Entry
   {
-    MRUCache& cache;
+    LRUCache& cache;
     std::pair<KeyType, ValueType> pair;
     Entry* next;
     Entry* prev;
     
-    Entry(MRUCache& cache, const KeyType& key, const ValueType& value) :
+    Entry(LRUCache& cache, const KeyType& key, const ValueType& value) :
       cache(cache), pair(std::make_pair(key, value)), next(0), prev(0)
     {
       Entry* temp = cache.first;
@@ -135,13 +135,13 @@ public:
     const std::pair<KeyType, ValueType>* operator->() const { return &entry->pair; }
   };
 
-  MRUCache(uint16_t capacity) :
+  LRUCache(uint16_t capacity) :
     first(0), last(0), capacity(capacity)
   {
     if (!capacity) throw std::logic_error("Capacity must be larger than zero");
   }
   
-  ~MRUCache()
+  ~LRUCache()
   {
     while (!entries.empty())
     {

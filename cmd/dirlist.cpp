@@ -116,7 +116,8 @@ DirectoryList::DirectoryList(ftp::Client& client, const fs::Path& path,
 {
 }
 
-void DirectoryList::SplitPath()
+void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
+                              std::queue<std::string>& masks)
 {  
   typedef boost::tokenizer<boost::char_separator<char> >  tokenizer;
   static const char* wildcardChars = "*?[]";
@@ -200,7 +201,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
   if (depth > 1) Output("\r\n");
   
   std::ostringstream message;
-  if (options.Recursive() || !this->masks.empty())
+  if (options.Recursive() || !masks.empty() || depth > 1)
   {
     message << path << ":\r\n";
     Output(message.str());
@@ -235,10 +236,10 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
       if (options.LongFormat())
       {
         message << Permissions(it->Status()) << " "
-                << 1 << " "
-                << std::left << std::setw(10) << it->Owner().UID() << " "
-                << std::left << std::setw(10) << it->Owner().GID() << " "
-                << std::right << std::setw(10) << it->Status().Size() << " "
+                << std::setw(3) << it->Status().Native().st_nlink << " "
+                << std::left << std::setw(8) << it->Owner().UID() << " "
+                << std::left << std::setw(8) << it->Owner().GID() << " "
+                << std::right << std::setw(8) << it->Status().Size() << " "
                 << Timestamp(it->Status()) << " "
                 << it->Path();
         if (options.SlashDirs() && it->Status().IsDirectory()) message << "/";
@@ -277,7 +278,9 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
 
 void DirectoryList::Execute()
 {
-  SplitPath();
+  fs::Path parent;
+  std::queue<std::string> masks;
+  SplitPath(path, parent, masks);
   ListPath(parent, masks);
 }
 
