@@ -1,3 +1,4 @@
+#include <sstream>
 #include "util/net/endpoint.hpp"
 
 namespace util { namespace net
@@ -12,6 +13,30 @@ Endpoint::Endpoint() :
 }
 
 Endpoint::Endpoint(const std::string& addr, int32_t port) :
+  ip(addr),
+  addrLen(0),
+  port(port)
+{
+  memset(&this->addr, 0, sizeof(this->addr));
+  if (ip.Family() == IPAddress::IPv4)
+  {
+    addr4 = static_cast<struct sockaddr_in*>(static_cast<void*>(&this->addr));
+    memcpy(&addr4->sin_addr, ip.Addr(), ip.Length());
+    addrLen = sizeof(struct sockaddr_in);
+    addr4->sin_family = AF_INET;
+    addr4->sin_port = htons(port);
+  }
+  else if (ip.Family() == IPAddress::IPv6)
+  {
+    addr6 = static_cast<struct sockaddr_in6*>(static_cast<void*>(&this->addr));
+    memcpy(&addr6->sin6_addr, ip.Addr(), ip.Length());
+    addrLen = sizeof(struct sockaddr_in6);
+    addr6->sin6_family = AF_INET6;
+    addr6->sin6_family = htons(port);
+  }
+}
+
+Endpoint::Endpoint(const IPAddress& addr, int32_t port) :
   ip(addr),
   addrLen(0),
   port(port)
@@ -66,12 +91,19 @@ bool Endpoint::Equals(const Endpoint& ep) const
   return ip == ep.ip && port == ep.port;
 }
 
+std::string Endpoint::ToString() const
+{
+  std::ostringstream os;
+  if (ip.Family() == IPAddress::IPv6)
+    os << "[" << ip << "]" << ":" << port;
+  else
+    os << ip << ":" << port;
+  return os.str();
+}
+
 std::ostream& operator<<(std::ostream& os, const Endpoint& ep)
 {
-  if (ep.Family() == IPAddress::IPv6)
-    return (os << "[" << ep.IP() << "]" << ":" << ep.Port());
-  else
-    return (os << ep.IP() << ":" << ep.Port());
+  return (os << ep.ToString());
 }
 
 } /* net namespace */

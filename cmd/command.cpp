@@ -1,6 +1,9 @@
 #include <ctime>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 #include "fs/directory.hpp"
@@ -9,6 +12,8 @@
 #include "fs/status.hpp"
 #include "fs/path.hpp"
 #include "cmd/dirlist.hpp"
+
+#include <iostream>
 
 namespace cmd
 {
@@ -307,7 +312,77 @@ void PBSZCommand::Execute()
 
 void PORTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "PORT Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+
+  std::vector<std::string> octets;
+  boost::split(octets, args[1], boost::is_any_of(","));
+  if (octets.size() != 6)
+  {
+    std::cout << "octet num" << std::endl;
+    client.Reply(ftp::SyntaxError, "Invalid port string.");
+    return;
+  }
+
+  int16_t intOctets[6];
+  try
+  {
+    for (unsigned i = 0; i < octets.size(); ++i)
+      intOctets[i] = boost::lexical_cast<int16_t>(octets[i]);
+  }
+  catch (const boost::bad_lexical_cast& e)
+  {
+    std::cout << octets[4] << " " << octets[5] << " " << e.what() << std::endl;
+    client.Reply(ftp::SyntaxError, "Invalid port string.");
+    return;
+  }
+  
+  for (unsigned i = 0; i < octets.size(); ++i)
+  {
+    if (intOctets[i] < 0 || intOctets[i] > 255)
+    {
+      client.Reply(ftp::SyntaxError, "Invalid port string.");
+      return;
+    }
+  }
+  
+  int32_t port = intOctets[4] * 256 + intOctets[5];
+
+  std::ostringstream ip;
+  ip << intOctets[0] << "."
+     << intOctets[1] << "."
+     << intOctets[2] << "."
+     << intOctets[3];
+  
+  util::net::Endpoint ep;
+  try
+  {
+    ep = util::net::Endpoint(ip.str(), port);
+  }
+  catch (const util::net::InvalidIPAddressError&)
+  {
+    std::cout << ip << std::endl;
+    client.Reply(ftp::SyntaxError, "Invalid port string.");
+    return;
+  }
+  
+  
+  
+  try
+  {
+    client.DataConnect(ep);
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    client.Reply(ftp::CantOpenDataConnection,
+                 "Unable to open data connection to " + ep.ToString());
+    return;
+  }
+  
+  client.Reply(ftp::CommandOkay, "PORT command successful.");
 }
 
 void PROTCommand::Execute()

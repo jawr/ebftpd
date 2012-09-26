@@ -28,6 +28,9 @@ public:
 
   Endpoint(const std::string& addr, int32_t port);
   /* Throws InvalidIPAddressError */
+  
+  Endpoint(const IPAddress& addr, int32_t port);
+  /* No exceptions */
 
   Endpoint(const struct sockaddr& addr, socklen_t addrLen);
   /* Throws InvalidIPAddressError */
@@ -55,10 +58,11 @@ public:
 
   bool operator!=(const Endpoint& lhs) const { return !Equals(lhs); }
   /*  No exceptions */
-
   
   static int32_t AnyPort() { return 0; }
   /*  No exceptions */
+  
+  std::string ToString() const;
 };
 
 std::ostream& operator<<(std::ostream& os, const Endpoint& ep);

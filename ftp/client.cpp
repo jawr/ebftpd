@@ -245,8 +245,9 @@ void Client::DataListen()
   
 }
 
-void Client::DataConnect()
+void Client::DataConnect(const util::net::Endpoint& ep)
 {
+  data.Connect(ep);
 }
 
 
