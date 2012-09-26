@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
+#include <boost/bind.hpp>
 #include "util/net/tlscontext.hpp"
 #include "util/net/tlserror.hpp"
 
@@ -10,10 +11,12 @@ namespace util { namespace net
 
 std::auto_ptr<TLSClientContext> TLSContext::client;
 std::auto_ptr<TLSServerContext> TLSContext::server;
+boost::mutex* TLSContext::mutexes = new boost::mutex[CRYPTO_num_locks()];
 
 TLSContext::~TLSContext()
 {
   if (context) SSL_CTX_free(context);
+  delete [] mutexes;
 }
 
 TLSContext::TLSContext(const std::string& certificate, const std::string& ciphers) :
@@ -25,11 +28,17 @@ TLSContext::TLSContext(const std::string& certificate, const std::string& cipher
 
 void TLSContext::Initialise()
 {
+  InitialiseThreadSafety();
   InitialiseOpenSSL();
   CreateContext();
   LoadCertificate();
   InitialiseSessionCaching();
   SelectCiphers();
+}
+void TLSContext::InitialiseThreadSafety()
+{
+  CRYPTO_set_id_callback(ThreadIdCallback);
+  CRYPTO_set_locking_callback(MutexLockCallback);
 }
 
 void TLSContext::InitialiseOpenSSL()
@@ -53,7 +62,8 @@ void TLSContext::LoadCertificate()
   if (!certificate.empty())
   {
     if (SSL_CTX_use_certificate_chain_file(context, certificate.c_str()) != 1 ||
-        SSL_CTX_use_PrivateKey_file(context, certificate.c_str(), SSL_FILETYPE_PEM) != 1 ||
+        SSL_CTX_use_PrivateKey_file(
+          context, certificate.c_str(), SSL_FILETYPE_PEM) != 1 ||
         SSL_CTX_check_private_key(context) != 1) throw TLSProtocolError();
   }
 }
@@ -64,6 +74,20 @@ void TLSContext::SelectCiphers()
     throw TLSError("No valid ciphers selected");
 }
 
+unsigned long TLSContext::ThreadIdCallback()
+{
+  return pthread_self();
+}
+
+void TLSContext::MutexLockCallback(int mode, int n, const char* file, int line)
+{
+  if (mode & CRYPTO_LOCK) mutexes[n].lock();
+  else mutexes[n].unlock();
+  
+  (void) file;
+  (void) line;
+}
+
 TLSClientContext::TLSClientContext(const std::string& certificate,
                                    const std::string& ciphers) :
   TLSContext(certificate, ciphers)
@@ -72,7 +96,7 @@ TLSClientContext::TLSClientContext(const std::string& certificate,
 
 void TLSClientContext::CreateContext()
 {
-  context = SSL_CTX_new(SSLv23_client_method());
+  context = SSL_CTX_new(TLSv1_client_method());
   if (!context) throw TLSProtocolError();
   SSL_CTX_set_options(context,/* SSL_OP_NO_SSLv2 | */SSL_OP_ALL);
 }

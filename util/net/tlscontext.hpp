@@ -6,6 +6,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
+#include <openssl/crypto.h>
+#include <boost/thread/mutex.hpp>
 
 namespace util { namespace net
 {
@@ -22,7 +24,9 @@ protected:
     
   static std::auto_ptr<TLSServerContext> server;
   static std::auto_ptr<TLSClientContext> client;
-
+  static boost::mutex* mutexes;
+  
+  
   virtual ~TLSContext();
   
   TLSContext(const std::string& certificate,
@@ -34,6 +38,10 @@ protected:
   void LoadCertificate();
   virtual void InitialiseSessionCaching() = 0;
   void SelectCiphers();
+  void InitialiseThreadSafety();
+  
+  static unsigned long ThreadIdCallback();
+  static void MutexLockCallback(int mode, int n, const char * file, int line);
 };
 
 class TLSClientContext : public TLSContext
