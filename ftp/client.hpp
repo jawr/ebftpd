@@ -5,6 +5,7 @@
 #include <boost/thread/mutex.hpp>
 #include "acl/user.hpp"
 #include "util/net/tcpsocket.hpp"
+#include "util/net/tcplistener.hpp"
 #include "util/thread.hpp"
 #include "util/error.hpp"
 #include "fs/path.hpp"
@@ -30,9 +31,10 @@ class Client : public util::ThreadSelect
   fs::Path workDir;
   acl::User user;
   util::net::TCPSocket control;
-//  util::tcp::server dataListen;
+  util::net::TCPListener dataListen;
   util::net::TCPSocket data;
   bool dataProtected;
+  bool passiveMode;
   ClientState state;
   ReplyCode lastCode;
   char buffer[BUFSIZ];
@@ -51,7 +53,8 @@ class Client : public util::ThreadSelect
   
 public:
   Client() : workDir("/"), user("root", "password", "1"),
-     control(15), data(15), dataProtected(false), state(LoggedOut), lastCode(CodeNotSet)   { }
+     control(15), data(15), dataProtected(false), passiveMode(false),
+     state(LoggedOut), lastCode(CodeNotSet)   { }
   
   ~Client();
      
@@ -81,8 +84,10 @@ public:
   bool DataProtected() const { return dataProtected; }
   void SetDataProtected(bool dataProtected) { this->dataProtected = dataProtected; }
   
-  void DataListen();
+  void DataListen(util::net::Endpoint& ep);
   void DataConnect(const util::net::Endpoint& ep);
+  void DataAccept();
+  void DataClose() { data.Close(); }
   
   friend cmd::DirectoryList::DirectoryList(
               ftp::Client& client, const fs::Path& path, 
