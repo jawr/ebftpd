@@ -240,14 +240,30 @@ void Client::Run()
   (void) finishedGuard; /* silence unused variable warning */
 }
 
-void Client::DataListen()
+void Client::DataListen(util::net::Endpoint& ep)
 {
-  
+  data.Close();
+  dataListen.Listen(util::net::Endpoint(control.LocalEndpoint().IP(),
+                    util::net::Endpoint::AnyPort()));
+  ep = dataListen.Endpoint();
+  passiveMode = true;
 }
 
 void Client::DataConnect(const util::net::Endpoint& ep)
 {
+  data.Close();
+  dataListen.Close();
+  passiveMode = false;
   data.Connect(ep);
+}
+
+void Client::DataAccept()
+{
+  if (passiveMode)
+  {
+    dataListen.Accept(data);
+    dataListen.Close();
+  }
 }
 
 

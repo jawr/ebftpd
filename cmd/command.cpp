@@ -4,6 +4,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 #include "fs/directory.hpp"
@@ -154,7 +155,49 @@ void LANGCommand::Execute()
 
 void LISTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "LIST Command not implemented."); 
+  client.Reply(ftp::TransferStatusOkay,
+               "Opening data connection for directory listing.");
+
+  try
+  {
+    client.DataAccept();
+  }
+  catch (const util::net::NetworkError&e )
+  {
+    client.Reply(ftp::CantOpenDataConnection,
+                 "Unable to accept data connection: " + e.Message());
+    return;
+  }
+  
+  std::string options;
+  std::string path(".");
+  if (args.size() >= 2)
+  {
+    std::string::size_type optOffset = 0;
+    if (args[1][0] == '-')
+    {
+      options = args[1].substr(1);
+      optOffset += args[1].length();
+    }
+    
+    std::string path(argStr, optOffset);
+    boost::trim(path);
+  }
+  
+  DirectoryList dirList(client, path, ListOptions(options, "l"), true);
+
+  try
+  {
+    dirList.Execute();    
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    client.Reply(ftp::DataCloseAborted,
+                "Error whiling writing to data connection: " + e.Message());
+  }
+  
+  client.DataClose();
+  client.Reply(ftp::DataClosedOkay, "End of directory listing."); 
 }
 
 void LPRTCommand::Execute()
@@ -250,7 +293,49 @@ void MODECommand::Execute()
 
 void NLSTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "NLST Command not implemented."); 
+  client.Reply(ftp::TransferStatusOkay,
+               "Opening data connection for directory listing.");
+
+  try
+  {
+    client.DataAccept();
+  }
+  catch (const util::net::NetworkError&e )
+  {
+    client.Reply(ftp::CantOpenDataConnection,
+                 "Unable to accept data connection: " + e.Message());
+    return;
+  }
+  
+  std::string options;
+  std::string path(".");
+  if (args.size() >= 2)
+  {
+    std::string::size_type optOffset = 0;
+    if (args[1][0] == '-')
+    {
+      options = args[1].substr(1);
+      optOffset += args[1].length();
+    }
+    
+    std::string path(argStr, optOffset);
+    boost::trim(path);
+  }
+  
+  DirectoryList dirList(client, path, ListOptions(options, ""), true);
+
+  try
+  {
+    dirList.Execute();    
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    client.Reply(ftp::DataCloseAborted,
+                "Error whiling writing to data connection: " + e.Message());
+  }
+  
+  client.DataClose();
+  client.Reply(ftp::DataClosedOkay, "End of directory listing."); 
 }
 
 void NOOPCommand::Execute()
@@ -293,7 +378,30 @@ void PASSCommand::Execute()
 
 void PASVCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "PASV Command not implemented."); 
+  if (!argStr.empty())
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+  
+  util::net::Endpoint ep;
+  try
+  {
+    client.DataListen(ep);
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    client.Reply(ftp::CantOpenDataConnection,
+                 "Unable to listen for data connection.");
+    return;
+  }
+  
+  std::ostringstream hostString;
+  hostString << boost::replace_all_copy(ep.IP().ToString(), ".", ",")
+             << "," << ((ep.Port() >> 8) & 255)
+             << "," << (ep.Port() & 255);
+  
+  client.Reply(ftp::PassiveMode, "Entering passive mode (" + hostString.str() + ")");
 }
 
 void PBSZCommand::Execute()
@@ -349,7 +457,7 @@ void PORTCommand::Execute()
     }
   }
   
-  int32_t port = intOctets[4] * 256 + intOctets[5];
+  int32_t port = (intOctets[4] << 8) | intOctets[5];
 
   std::ostringstream ip;
   ip << intOctets[0] << "."
@@ -368,8 +476,6 @@ void PORTCommand::Execute()
     client.Reply(ftp::SyntaxError, "Invalid port string.");
     return;
   }
-  
-  
   
   try
   {
