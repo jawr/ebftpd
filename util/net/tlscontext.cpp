@@ -66,6 +66,19 @@ void TLSContext::LoadCertificate()
           context, certificate.c_str(), SSL_FILETYPE_PEM) != 1 ||
         SSL_CTX_check_private_key(context) != 1) throw TLSProtocolError();
   }
+  
+  SSL_CTX_set_tmp_rsa_callback(context, TempRSACallback);
+}
+
+RSA* TLSContext::GenerateRSA(int keyLength)
+{
+  return RSA_generate_key(keyLength, RSA_F4, NULL, NULL);
+}
+
+RSA* TLSContext::TempRSACallback(SSL* session, int isExport, int keyLength)
+{
+  if (isExport || keyLength >= 1024) return GenerateRSA(1024);
+  else return GenerateRSA(512);
 }
 
 void TLSContext::SelectCiphers()
@@ -98,7 +111,7 @@ void TLSClientContext::CreateContext()
 {
   context = SSL_CTX_new(TLSv1_client_method());
   if (!context) throw TLSProtocolError();
-  SSL_CTX_set_options(context,/* SSL_OP_NO_SSLv2 | */SSL_OP_ALL);
+  SSL_CTX_set_options(context, SSL_OP_ALL);
 }
 
 void TLSClientContext::Initialise(const std::string& certificate,
@@ -132,7 +145,7 @@ TLSServerContext::TLSServerContext(const std::string& certificate,
 
 void TLSServerContext::CreateContext()
 {
-  context = SSL_CTX_new(SSLv23_server_method());
+  context = SSL_CTX_new(TLSv1_server_method());
   if (!context) throw TLSProtocolError();
   SSL_CTX_set_options(context, SSL_OP_NO_SSLv2 | SSL_OP_ALL);
 }

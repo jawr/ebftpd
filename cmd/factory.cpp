@@ -40,9 +40,9 @@ Factory::Factory()
   Register("OPTS", new Creator<OPTSCommand>(ftp::LoggedIn));
   Register("PASS", new Creator<PASSCommand>(ftp::WaitingPassword));
   Register("PASV", new Creator<PASVCommand>(ftp::LoggedIn));
-  Register("PBSZ", new Creator<PBSZCommand>(ftp::LoggedIn));
+  Register("PBSZ", new Creator<PBSZCommand>(ftp::NotBeforeAuth));
   Register("PORT", new Creator<PORTCommand>(ftp::LoggedIn));
-  Register("PROT", new Creator<PROTCommand>(ftp::LoggedIn));
+  Register("PROT", new Creator<PROTCommand>(ftp::NotBeforeAuth));
   Register("PWD", new Creator<PWDCommand>(ftp::LoggedIn));
   Register("QUIT", new Creator<QUITCommand>(ftp::AnyState));
   Register("REIN", new Creator<REINCommand>(ftp::LoggedIn));

@@ -21,6 +21,7 @@ enum ClientState
   WaitingPassword,
   LoggedIn,
   Finished,
+  NotBeforeAuth,
   AnyState
 };
 
@@ -31,16 +32,18 @@ class Client : public util::ThreadSelect
   fs::Path workDir;
   acl::User user;
   util::net::TCPSocket control;
+  ClientState state;
+  ReplyCode lastCode;
+  std::string commandLine;
+  int passwordAttemps;
+  fs::Path renameFrom;
+
+  // data connections
   util::net::TCPListener dataListen;
   util::net::TCPSocket data;
   bool dataProtected;
   bool passiveMode;
-  ClientState state;
-  ReplyCode lastCode;
-  char buffer[BUFSIZ];
-  std::string commandLine;
-  int passwordAttemps;
-  fs::Path renameFrom;
+  util::net::Endpoint portEndpoint;
   
   static const int maxPasswordAttemps = 3;
   
@@ -53,8 +56,9 @@ class Client : public util::ThreadSelect
   
 public:
   Client() : workDir("/"), user("root", "password", "1"),
-     control(15), data(15), dataProtected(false), passiveMode(false),
-     state(LoggedOut), lastCode(CodeNotSet)   { }
+     control(15), state(LoggedOut), lastCode(CodeNotSet),
+     passwordAttemps(0), data(15), dataProtected(false),
+     passiveMode(false) { }
   
   ~Client();
      
@@ -84,9 +88,8 @@ public:
   bool DataProtected() const { return dataProtected; }
   void SetDataProtected(bool dataProtected) { this->dataProtected = dataProtected; }
   
-  void DataListen(util::net::Endpoint& ep);
-  void DataConnect(const util::net::Endpoint& ep);
-  void DataAccept();
+  void DataInitialise(util::net::Endpoint& ep, bool passiveMode);
+  void DataOpen();
   void DataClose() { data.Close(); }
   
   friend cmd::DirectoryList::DirectoryList(

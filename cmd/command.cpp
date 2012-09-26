@@ -52,7 +52,7 @@ void AUTHCommand::Execute()
     return;
   }
   
-  if (argStr != "TLS" && argStr != "SSL")
+  if (argStr != "TLS")
   {
     client.Reply(ftp::ParameterNotImplemented,
                  "AUTH " + argStr + " is unsupported.");
@@ -160,7 +160,7 @@ void LISTCommand::Execute()
 
   try
   {
-    client.DataAccept();
+    client.DataOpen();
   }
   catch (const util::net::NetworkError&e )
   {
@@ -192,8 +192,10 @@ void LISTCommand::Execute()
   }
   catch (const util::net::NetworkError& e)
   {
+    client.DataClose();
     client.Reply(ftp::DataCloseAborted,
                 "Error whiling writing to data connection: " + e.Message());
+    return;
   }
   
   client.DataClose();
@@ -298,7 +300,7 @@ void NLSTCommand::Execute()
 
   try
   {
-    client.DataAccept();
+    client.DataOpen();
   }
   catch (const util::net::NetworkError&e )
   {
@@ -387,7 +389,7 @@ void PASVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataListen(ep);
+    client.DataInitialise(ep, true);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -479,7 +481,7 @@ void PORTCommand::Execute()
   
   try
   {
-    client.DataConnect(ep);
+    client.DataInitialise(ep, false);
   }
   catch (const util::net::NetworkError& e)
   {
