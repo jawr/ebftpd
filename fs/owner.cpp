@@ -6,6 +6,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #endif
+#include <boost/bind.hpp>
 #include "fs/owner.hpp"
 #include "fs/status.hpp"
 #include "util/error.hpp"
@@ -14,6 +15,7 @@
 namespace fs
 {
 
+OwnerCache OwnerCache::instance;
 const std::string OwnerFile::ownerFilename = ".owner";
 
 void OwnerFile::Create(const std::string& name, const class Owner& owner)
@@ -27,16 +29,6 @@ void OwnerFile::Chown(const std::string& name, const class Owner& owner)
   else entries.at(name).Chown(owner);
 }
 
-void OwnerFile::Rename(const std::string& oldName, const std::string& newName)
-{
-  boost::unordered_map<std::string, OwnerEntry>::iterator it;
-  it = entries.find(oldName);
-  if (it == entries.end()) throw std::out_of_range("key doesn't exist");
-  it->second.Rename(newName);
-  entries.insert(std::make_pair(newName, it->second));
-  entries.erase(it);
-}
-
 void OwnerFile::Delete(const std::string& name)
 {
   entries.erase(name);
@@ -47,9 +39,9 @@ bool OwnerFile::Exists(const std::string& name) const
   return entries.find(name) != entries.end();
 }
 
-const class Owner& OwnerFile::GetOwner(const std::string& name) const
+const class fs::Owner& OwnerFile::Owner(const std::string& name) const
 {
-  return entries.at(name).GetOwner();
+  return entries.at(name).Owner();
 }
 
 bool OwnerFile::InnerLoad(FileLockPtr& lock)
@@ -129,6 +121,7 @@ bool OwnerFile::InnerSave(FileLockPtr& lock)
 
 bool OwnerFile::Save(FileLockPtr& lock)
 {
+  std::cout << "saving.." << std::endl;
   if (!InnerSave(lock))
   {
     logger::error << "Unable to save owner file: " << ownerFile << logger::endl;
@@ -143,45 +136,114 @@ bool OwnerFile::Save()
   return Save(lock);
 }
 
-OwnerModify::OwnerModify(const Path& path) :
-  path(path),
-  parent(path.Dirname()),
-  name(path.Basename()),
-  ownerFile(parent) 
+void OwnerCache::Chown(const fs::Path& path, const fs::Owner& owner)
 {
-}
-
-void OwnerModify::Chown(const Owner& owner)
-{
-  if (!ownerFile.Load()) return;
-  ownerFile.Chown(name, owner);
-  ownerFile.Save();
-}
-
-void OwnerModify::Rename(const Path& newName)
-{
-  if (!ownerFile.Load()) return;
-  if (!ownerFile.Exists(name)) return;
-  ownerFile.Rename(name, newName);
-  ownerFile.Save();
-}
-
-void OwnerModify::Delete()
-{
-  if (!ownerFile.Load()) return;
-  if (!ownerFile.Exists(name)) return;
-  ownerFile.Delete(name);
-  ownerFile.Save();
-}
-
-Owner GetOwner(const Path& path)
-{
-  OwnerFile ownerFile(path.Dirname());
-  if (!ownerFile.Load()) return Owner();
+  boost::unique_lock<boost::shared_mutex> readLock(instance.cacheMutex);
+  fs::Path parent = path.Dirname();
+  fs::Path name = path.Basename();
+  try
+  {
+    CacheEntry& entry = instance.cache.Lookup(parent);
+    entry.first->Chown(name, owner);
+    entry.second = true; // save please!
+  }
+  catch (const std::out_of_range&)
+  {
+    std::auto_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
+    if (!ownerFile->Load()) return;
+    ownerFile->Chown(name, owner);
+    CacheEntry entry = std::make_pair(ownerFile.release(), true /* save please */);
+    instance.cache.Insert(parent, entry);
+  }
   
-  std::string name = path.Basename();
-  if (!ownerFile.Exists(name)) return Owner();
-  return ownerFile.GetOwner(name);
+  instance.needSave = true;
+  instance.saveCond.notify_one();
+}
+
+Owner OwnerCache::Owner(const fs::Path& path)
+{
+  boost::shared_lock<boost::shared_mutex> readLock(instance.cacheMutex);
+  fs::Path parent = path.Dirname();
+  fs::Path name = path.Basename();
+  try
+  {
+    CacheEntry& entry = instance.cache.Lookup(parent);
+    return entry.first->Owner(name);
+  }
+  catch (const std::out_of_range&)
+  {
+    std::auto_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
+    if (!ownerFile->Load()) return fs::Owner(0, 0);
+    
+    fs::Owner owner = ownerFile->Owner(name);
+    CacheEntry entry = std::make_pair(ownerFile.release(), true);
+
+    boost::upgrade_lock<boost::shared_mutex> writeLock(instance.cacheMutex);
+    instance.cache.Insert(parent, entry);
+    return owner;
+  }
+}
+
+void OwnerCache::Delete(const Path& path)
+{
+  boost::unique_lock<boost::shared_mutex> readLock(instance.cacheMutex);
+  fs::Path parent = path.Dirname();
+  fs::Path name = path.Basename();
+  try
+  {
+    CacheEntry& entry = instance.cache.Lookup(parent);
+    entry.first->Delete(name);
+    entry.second = true; // save please!
+  }
+  catch (const std::out_of_range&)
+  {
+    std::auto_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
+    if (!ownerFile->Load()) return;
+    ownerFile->Delete(name);
+    CacheEntry entry = std::make_pair(ownerFile.release(), true /* save please */);
+    instance.cache.Insert(parent, entry);
+  }
+  
+  instance.needSave = true;
+  instance.saveCond.notify_one();
+}
+
+void OwnerCache::Main()
+{
+  while (true)
+  {
+    boost::shared_lock<boost::shared_mutex> lock(cacheMutex);
+    if (!needSave)
+    {
+      boost::this_thread::interruption_point();
+      saveCond.wait(lock);
+    }
+    
+    bool loopUsed = false;
+    for (util::MRUCache<std::string, CacheEntry>::iterator it =
+         cache.begin(); it != cache.end(); ++it)
+    {
+      if (it->second.second)
+      {
+        if (it->second.first->Save()) it->second.second = false;
+        loopUsed = true;
+      }
+    }
+    
+    needSave = loopUsed;
+  }
+}
+
+void OwnerCache::Start()
+{
+  instance.thread = boost::thread(boost::bind(&OwnerCache::Main, &instance));
+}
+
+void OwnerCache::Stop()
+{
+  instance.saveCond.notify_one();
+  instance.thread.interrupt();
+  instance.thread.join();
 }
 
 std::ostream& operator<<(std::ostream& os, const Owner& owner)
@@ -204,63 +266,56 @@ int main()
 {
   using namespace fs;
   using namespace boost::posix_time;
-/*
-  try
-  {
-    std::cout << "getowner: " << GetOwner("/tmp/somefile") << std::endl;
-  }
-  catch (const util::SystemError& e)
-  {
-    std::cout << "getowner: " << e.what() << std::endl;
-  }
+
+  OwnerCache::Start();
   
-  system("touch /tmp/somefile");
-  OwnerModify("/tmp/somefile").Chown(Owner(69, 69));
-  OwnerModify("/tmp/somefile").Rename("otherfile");
-  OwnerModify("/tmp/otherfile").Delete();
-*/  
-  boost::posix_time::ptime start(boost::posix_time::microsec_clock::local_time());
-  for (int i = 0; i < 100; ++i)
   {
-    std::stringstream test;
-    test << "/tmp/" << i;
-    //system(("touch " + test.str()).c_str());
-    OwnerModify(test.str()).Chown(Owner(i, i));
+
+    boost::posix_time::ptime start(boost::posix_time::microsec_clock::local_time());
+    for (int i = 0; i < 1000; ++i)
+    {
+      start = boost::posix_time::microsec_clock::local_time();
+      std::stringstream test;
+      test << "/tmp/" << i;
+      OwnerCache::Chown(test.str(), Owner(i, i));
+      boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
+      //std::cout << i << " " << (end - start).total_microseconds() << std::endl;
+    }
     boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
-    std::cout << 1 << " " << (end - start).total_microseconds() << std::endl;
+    std::cout << (end - start).total_microseconds() << std::endl;
   }
-  boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
-  std::cout << (end - start).total_microseconds() << std::endl;
-/*
-  for (int i = 0; i < 100; ++i)
+  
   {
-    std::stringstream test;
-    test << "/tmp/" << i;
-    std::cout << "getowner " << i << ": " << GetOwner(test.str()) << std::endl;
+    boost::posix_time::ptime start(boost::posix_time::microsec_clock::local_time());
+    for (int i = 0; i < 100; ++i)
+    {
+      start = boost::posix_time::microsec_clock::local_time();
+      std::stringstream test;
+      test << "/tmp/" << i;
+      /*std::cout << "owner: " << */OwnerCache::Owner(test.str())/* << std::endl*/;
+      boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
+      std::cout << i << " " << (end - start).total_microseconds() << std::endl;
+    }
+    boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
+    std::cout << (end - start).total_microseconds() << std::endl;
   }
   
-  OwnerFile of("/home/bioboy");
-  of.Create("test1", Owner(1, 1));
-  of.Create("test2", Owner(2, 2));
-  of.Save();
+  {
+    boost::posix_time::ptime start(boost::posix_time::microsec_clock::local_time());
+    for (int i = 0; i < 1000; ++i)
+    {
+      start = boost::posix_time::microsec_clock::local_time();
+      std::stringstream test;
+      test << "/tmp/" << i;
+      OwnerCache::Delete(test.str());
+      boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
+      std::cout << i << " " << (end - start).total_microseconds() << std::endl;
+    }
+    boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
+    std::cout << (end - start).total_microseconds() << std::endl;
+  }
   
-  std::cout << "test 2 UID: " << of.GetOwner("test2").UID() << std::endl;
-  std::cout << "test 1 GID: " << of.GetOwner("test1").GID() << std::endl;
-  std::cout << "test 1 exists: " << of.Exists("test1") << std::endl;
-  of.Chown("test1", Owner(69, 69));
-  std::cout << "test 1 UID, GID: " << of.GetOwner("test1").UID() << ", " << of.GetOwner("test1").GID() << std::endl;
-  of.Rename("test1", "test69");
-  std::cout << "test 1 exists: " << of.Exists("test1") << std::endl;
-  std::cout << "test 69 exists: " << of.Exists("test69") << std::endl;
-  of.Delete("test2");
-  std::cout << "test 2 exists: " << of.Exists("test2") << std::endl;
-  
-  of.Save();
-  
-  OwnerFile of2("/home/bioboy");
-  of2.Load();
-  boost::archive::text_oarchive oa(std::cout);  
-  oa << of2;*/
+  OwnerCache::Stop();
 }
 
 #endif

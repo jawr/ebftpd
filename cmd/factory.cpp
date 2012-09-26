@@ -58,7 +58,7 @@ Factory::Factory()
   Register("STOR", new Creator<STORCommand>(ftp::LoggedIn));
   Register("STOU", new Creator<STOUCommand>(ftp::LoggedIn));
   Register("STRU", new Creator<STRUCommand>(ftp::LoggedIn));
-  Register("SYST", new Creator<SYSTCommand>(ftp::LoggedIn));
+  Register("SYST", new Creator<SYSTCommand>(ftp::AnyState));
   Register("TYPE", new Creator<TYPECommand>(ftp::LoggedIn));
   Register("USER", new Creator<USERCommand>(ftp::LoggedOut));
   Register("XCUP", new Creator<XCUPCommand>(ftp::LoggedIn));

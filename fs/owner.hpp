@@ -7,10 +7,13 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/thread.hpp>
 #include "boost/serialization/unordered_map.hpp"
 #include "acl/types.hpp"
 #include "fs/path.hpp"
 #include "fs/filelock.hpp"
+#include "util/mrucache.hpp"
 
 namespace fs
 {
@@ -38,13 +41,12 @@ public:
   gid_t GID() const { return gid; }
 
   friend class boost::serialization::access;
-  friend Owner GetOwner(const Path& path);
 };
   
 class OwnerEntry
 {
   std::string name;
-  Owner owner;
+  fs::Owner owner;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version)
@@ -58,14 +60,13 @@ class OwnerEntry
 public:
   OwnerEntry() : owner(-1, -1) { }
 
-  OwnerEntry(const std::string& name, const Owner& owner) :
+  OwnerEntry(const std::string& name, const fs::Owner& owner) :
     name(name), owner(owner) { }
     
   const std::string& Name() const { return name; }
-  const Owner& GetOwner() const { return owner; }
+  const fs::Owner& Owner() const { return owner; }
   
-  void Chown(const Owner& owner) { this->owner = owner; }
-  void Rename(const std::string& name) { this->name = name; }
+  void Chown(const fs::Owner& owner) { this->owner = owner; }
 
   friend class boost::serialization::access;
 };
@@ -97,10 +98,9 @@ public:
     parent(parent), ownerFile(parent / ownerFilename) { }
   
   void Chown(const std::string& name, const Owner& owner);
-  void Rename(const std::string& oldName, const std::string& newName);
   void Delete(const std::string& name);
   bool Exists(const std::string& name) const;
-  const Owner& GetOwner(const std::string& name) const;
+  const fs::Owner& Owner(const std::string& name) const;
 
   bool Load(FileLockPtr& lock);
   bool Load();
@@ -110,22 +110,32 @@ public:
   friend class boost::serialization::access;
 };
 
-class OwnerModify
+class OwnerCache
 {
-  Path path;
-  Path parent;
-  Path name;
-  OwnerFile ownerFile;
+  boost::thread thread;
+  boost::shared_mutex cacheMutex;
+  boost::condition_variable_any saveCond;
+  bool needSave;
   
-public:
-  OwnerModify(const Path& path);
+  typedef std::pair<OwnerFile*, bool> CacheEntry;
+  util::MRUCache<std::string, CacheEntry> cache;
   
-  void Chown(const Owner& owner);
-  void Rename(const Path& newName);
-  void Delete();
-};
+  static const uint16_t cacheSize = 1000;
+  
+  static OwnerCache instance;
+  
+  OwnerCache() : needSave(false), cache(cacheSize) { }
 
-Owner GetOwner(const Path& path);
+  void Main();
+  
+public:  
+  static void Start();
+  static void Stop();
+  
+  static void Chown(const Path& path, const Owner& owner);
+  static void Delete(const Path& path);
+  static fs::Owner Owner(const Path& path);
+};
 
 std::ostream& operator<<(std::ostream& os, const Owner& owner);
 
