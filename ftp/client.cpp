@@ -60,6 +60,13 @@ bool Client::CheckState(ClientState reqdState)
     Reply(ftp::BadCommandSequence, "Expecting PASS comamnd.");
   else if (state == LoggedOut && reqdState == WaitingPassword)
     Reply(ftp::BadCommandSequence, "Expecting USER command first.");
+  else if (reqdState == NotBeforeAuth)
+  {
+    if (!control.IsTLS())
+      Reply(ftp::BadCommandSequence, "AUTH command must be issued first.");
+    else
+      return true;
+  }
   else if (state == LoggedOut)
     Reply(ftp::NotLoggedIn, "Not logged in.");
   assert(state != Finished);
@@ -219,7 +226,7 @@ void Client::Run()
   using boost::bind;
   
   scope_guard finishedGuard = make_guard(bind(&Client::SetFinished, this));
-  
+
   try
   {
     logger::ftpd << "Servicing client connected from "
@@ -241,33 +248,36 @@ void Client::Run()
   (void) finishedGuard; /* silence unused variable warning */
 }
 
-void Client::DataListen(util::net::Endpoint& ep)
-{
-  dataListen.Close();
-  data.Close();
-  dataListen.Listen(util::net::Endpoint(control.LocalEndpoint().IP(),
-                    util::net::Endpoint::AnyPort()));
-  ep = dataListen.Endpoint();
-  passiveMode = true;
-}
-
-void Client::DataConnect(const util::net::Endpoint& ep)
+void Client::DataInitialise(util::net::Endpoint& ep, bool passiveMode)
 {
   data.Close();
   dataListen.Close();
-  passiveMode = false;
-  data.Connect(ep);
+  if (passiveMode)
+  {
+    dataListen.Listen(util::net::Endpoint(control.LocalEndpoint().IP(),
+                      util::net::Endpoint::AnyPort()));
+    ep = dataListen.Endpoint();
+  }
+  else
+  {
+    portEndpoint = ep;
+  }
+  this->passiveMode = passiveMode;
 }
 
-void Client::DataAccept()
+void Client::DataOpen()
 {
   if (passiveMode)
   {
     dataListen.Accept(data);
     dataListen.Close();
   }
+  else
+  {
+    data.Connect(portEndpoint);
+  }
   
-  if (dataProtected)
+  if (dataProtected || true)
   {
     data.HandshakeTLS(util::net::TLSSocket::Server);
   }

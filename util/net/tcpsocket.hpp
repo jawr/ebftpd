@@ -122,6 +122,8 @@ public:
   
   const Endpoint& LocalEndpoint() const { return localEndpoint; }
   /* No exceptions */
+  
+  bool IsTLS() const { return tls.get() != 0; }
 };
 
 } /* net namespace */

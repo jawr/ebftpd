@@ -7,6 +7,7 @@
 #include <openssl/err.h>
 #include <openssl/rand.h>
 #include <openssl/crypto.h>
+#include <openssl/rsa.h>
 #include <boost/thread/mutex.hpp>
 
 namespace util { namespace net
@@ -42,6 +43,8 @@ protected:
   
   static unsigned long ThreadIdCallback();
   static void MutexLockCallback(int mode, int n, const char * file, int line);
+  static RSA* GenerateRSA(int keyLength);
+  static RSA* TempRSACallback(SSL* session, int isExport, int keyLength);
 };
 
 class TLSClientContext : public TLSContext

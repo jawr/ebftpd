@@ -4,6 +4,8 @@
 #include "util/net/tlserror.hpp"
 #include "util/net/tlscontext.hpp"
 
+#include <iostream>
+
 namespace util { namespace net
 {
 
@@ -65,7 +67,7 @@ void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role)
   
   if (role == Client) SSL_set_connect_state(session);
   else SSL_set_accept_state(session);
-  
+
   int result;
   while (true)
   {
