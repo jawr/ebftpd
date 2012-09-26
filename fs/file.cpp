@@ -108,30 +108,43 @@ int main()
 {
   using namespace fs;
 
-  util::Error e = DeleteFile("/tmp/somefile");
+  util::Error e = DeleteFile("somefile");
   std::cout << "delete: " << (e ? "true" : "false") << " " << e.Message() << " " << e.Errno() << std::endl;
   
-  e = RenameFile("/tmp/one", "/tmp/two");
+  e = RenameFile("one", "two");
   std::cout << "rename: " << (e ? "true" : "false") << " " << e.Message() << " " << e.Errno() << std::endl;
-  
-  OutStreamPtr os(CreateFile("/tmp/newfile"));
-  
-  *os << "test" << std::endl;
-  
-  os = AppendFile("/tmp/newfile");
-  
-  *os << "test2" << std::endl;
   
   try
   {
-    os = AppendFile("/tmp/notexist");
+    OutStreamPtr os(CreateFile("newfile"));
+    *os << "test" << std::endl;
   }
   catch (const util::SystemError& e)
   {
-    std::cout << "append: " << e.what() << " " << e.Errno() << std::endl;
+    std::cout << "create file: " << e.Message() << std::endl;
   }
   
-  InStreamPtr is(OpenFile("/tmp/newfile"));
+  try
+  {
+    OutStreamPtr os(AppendFile("newfile"));
+    
+    *os << "test2" << std::endl;
+  }
+  catch (const util::SystemError& e)
+  {
+    std::cout << "append file: " << e.Message() << std::endl;
+  }
+  
+  try
+  {
+    OutStreamPtr os(AppendFile("notexist"));
+  }
+  catch (const util::SystemError& e)
+  {
+    std::cout << "append: " << e.Message() << " " << e.Errno() << std::endl;
+  }
+  
+  InStreamPtr is(OpenFile("newfile"));
   
   std::string line;
   while (std::getline(*is, line)) std::cout << line << std::endl;

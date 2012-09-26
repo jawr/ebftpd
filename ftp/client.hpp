@@ -12,6 +12,12 @@
 #include "cmd/dirlist.hpp"
 #include "ftp/replycodes.hpp"
 
+namespace cmd
+{
+class STORCommand;
+class RETRCommand;
+}
+
 namespace ftp 
 {
 
@@ -95,6 +101,9 @@ public:
   friend cmd::DirectoryList::DirectoryList(
               ftp::Client& client, const fs::Path& path, 
               const ListOptions& options, bool dataOutput);
+              
+  friend class cmd::STORCommand;
+  friend class cmd::RETRCommand;
 };
 
 } /* ftp namespace */

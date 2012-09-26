@@ -5,6 +5,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/iostreams/concepts.hpp>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 #include "fs/directory.hpp"
@@ -545,7 +546,68 @@ void RESTCommand::Execute()
 
 void RETRCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "RETR Command not implemented."); 
+  if (argStr.empty())
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+
+  fs::InStreamPtr fin;
+  try
+  {
+    fin = fs::OpenFile(client, argStr);
+  }
+  catch (const util::SystemError& e)
+  {
+    client.Reply(ftp::ActionNotOkay,
+                 "Unable to open file: " + e.Message());
+    return;
+  }
+
+  client.Reply(ftp::TransferStatusOkay,
+               "Opening data connection for RETR command.");
+
+  try
+  {
+    client.DataOpen();
+  }
+  catch (const util::net::NetworkError&e )
+  {
+    client.Reply(ftp::CantOpenDataConnection,
+                 "Unable to accept data connection: " +
+                 e.Message());
+    return;
+  }
+
+  try
+  {
+    char buffer[16384];
+    while (true)
+    {
+      ssize_t len = boost::iostreams::read(*fin,buffer, sizeof(buffer));
+      if (len < 0) break;
+      client.data.Write(buffer, len);
+    }
+  }
+  catch (const std::ios_base::failure&)
+  {
+    fin->close();
+    client.DataClose();
+    client.Reply(ftp::DataCloseAborted,
+                 "Error while reading from disk.");
+    return;
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    client.DataClose();
+    client.Reply(ftp::DataCloseAborted,
+                 "Error while writing to data connection: " +
+                 e.Message());
+    return;
+  }
+  
+  client.DataClose();
+  client.Reply(ftp::DataClosedOkay, "Transfer finished."); 
 }
 
 void RMDCommand::Execute()
@@ -661,7 +723,59 @@ void STATCommand::Execute()
 
 void STORCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "STOR Command not implemented."); 
+  if (argStr.empty())
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+
+  fs::OutStreamPtr fout;
+  try
+  {
+    fout = fs::CreateFile(client, argStr);
+  }
+  catch (const util::SystemError& e)
+  {
+    client.Reply(ftp::ActionNotOkay,
+                 "Unable to create file: " + e.Message());
+    return;
+  }
+
+  client.Reply(ftp::TransferStatusOkay,
+               "Opening data connection for STOR command.");
+
+  try
+  {
+    client.DataOpen();
+  }
+  catch (const util::net::NetworkError&e )
+  {
+    client.Reply(ftp::CantOpenDataConnection,
+                 "Unable to accept data connection: " + e.Message());
+    return;
+  }
+
+  try
+  {
+    char buffer[16384];
+    while (true)
+    {
+      size_t len = client.data.Read(buffer, sizeof(buffer));
+      fout->write(buffer, len);
+    }
+  }
+  catch (const util::net::EndOfStream&) { }
+  catch (const util::net::NetworkError& e)
+  {
+    client.DataClose();
+    client.Reply(ftp::DataCloseAborted,
+                 "Error while reading from data connection: " +
+                 e.Message());
+    return;
+  }
+  
+  client.DataClose();
+  client.Reply(ftp::DataClosedOkay, "Transfer finished."); 
 }
 
 void STOUCommand::Execute()

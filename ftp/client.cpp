@@ -277,7 +277,7 @@ void Client::DataOpen()
     data.Connect(portEndpoint);
   }
   
-  if (dataProtected || true)
+  if (dataProtected)
   {
     data.HandshakeTLS(util::net::TLSSocket::Server);
   }
