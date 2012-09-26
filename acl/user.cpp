@@ -10,8 +10,8 @@ User::User(const std::string& name,
            const std::string& password,
            const std::string& flags) :
   name(name),
-  uid(-1),
-  primaryGid(-1)
+  uid(69),
+  primaryGid(69)
 {
   SetPassword(password);
   AddFlags(flags);

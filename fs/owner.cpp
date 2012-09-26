@@ -8,9 +8,9 @@
 #endif
 #include <boost/bind.hpp>
 #include "fs/owner.hpp"
-#include "fs/status.hpp"
 #include "util/error.hpp"
 #include "logger/logger.hpp"
+#include "fs/status.hpp"
 
 namespace fs
 {
@@ -39,9 +39,10 @@ bool OwnerFile::Exists(const std::string& name) const
   return entries.find(name) != entries.end();
 }
 
-const class fs::Owner& OwnerFile::Owner(const std::string& name) const
+class fs::Owner OwnerFile::Owner(const std::string& name) const
 {
-  return entries.at(name).Owner();
+  if (Exists(name)) return entries.at(name).Owner();
+  else return fs::Owner(0, 0);
 }
 
 bool OwnerFile::InnerLoad(FileLockPtr& lock)
@@ -138,9 +139,11 @@ bool OwnerFile::Save()
 
 void OwnerCache::Chown(const fs::Path& path, const fs::Owner& owner)
 {
+  fs::Path parent;
+  fs::Path name;
+  if (!GetParentName(path, parent, name)) return;
+
   boost::unique_lock<boost::shared_mutex> readLock(instance.cacheMutex);
-  fs::Path parent = path.Dirname();
-  fs::Path name = path.Basename();
   try
   {
     CacheEntry& entry = instance.cache.Lookup(parent);
@@ -160,11 +163,39 @@ void OwnerCache::Chown(const fs::Path& path, const fs::Owner& owner)
   instance.saveCond.notify_one();
 }
 
+bool OwnerCache::GetParentName(const fs::Path& path, fs::Path& parent, fs::Path& name)
+{
+  fs::Status status;
+  try
+  {
+    status.Reset(path);
+  }
+  catch (const util::SystemError&)
+  {
+    return false;
+  }
+
+  if (status.IsDirectory())
+  {
+    parent = path;
+    name = ".";
+  }
+  else
+  {
+    parent = path.Dirname();
+    name = path.Basename();
+  }
+  
+  return true;
+}
+
 Owner OwnerCache::Owner(const fs::Path& path)
 {
+  fs::Path parent;
+  fs::Path name;
+  if (!GetParentName(path, parent, name)) return fs::Owner(0, 0);
+
   boost::shared_lock<boost::shared_mutex> readLock(instance.cacheMutex);
-  fs::Path parent = path.Dirname();
-  fs::Path name = path.Basename();
   try
   {
     CacheEntry& entry = instance.cache.Lookup(parent);
@@ -186,9 +217,11 @@ Owner OwnerCache::Owner(const fs::Path& path)
 
 void OwnerCache::Delete(const Path& path)
 {
+  fs::Path parent;
+  fs::Path name;
+  if (!GetParentName(path, parent, name)) return;
+
   boost::unique_lock<boost::shared_mutex> readLock(instance.cacheMutex);
-  fs::Path parent = path.Dirname();
-  fs::Path name = path.Basename();
   try
   {
     CacheEntry& entry = instance.cache.Lookup(parent);
@@ -225,7 +258,8 @@ void OwnerCache::Main()
     {
       if (it->second.second)
       {
-        if (it->second.first->Save()) it->second.second = false;
+        it->second.first->Save();
+        it->second.second = false;
         loopUsed = true;
       }
     }

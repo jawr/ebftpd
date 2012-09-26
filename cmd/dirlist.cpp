@@ -235,8 +235,10 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
       if (options.LongFormat())
       {
         message << Permissions(it->Status()) << " "
-                << 1 << " username groupname "
-                << std::setw(10) << it->Status().Size() << " "
+                << 1 << " "
+                << std::left << std::setw(10) << it->Owner().UID() << " "
+                << std::left << std::setw(10) << it->Owner().GID() << " "
+                << std::right << std::setw(10) << it->Status().Size() << " "
                 << Timestamp(it->Status()) << " "
                 << it->Path();
         if (options.SlashDirs() && it->Status().IsDirectory()) message << "/";
@@ -325,12 +327,21 @@ int main(int argc, char** argv)
   }
   
   ftp::Client client;
-
-  boost::posix_time::ptime start(boost::posix_time::microsec_clock::local_time());
-  DirectoryList dl(client, std::string(argv[2]), ListOptions("", argv[1]), false);
-  dl.Execute();
-  boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
-  std::cout << (end - start).total_microseconds() << std::endl;
+  {
+    boost::posix_time::ptime start(boost::posix_time::microsec_clock::local_time());
+    DirectoryList dl(client, std::string(argv[2]), ListOptions("", argv[1]), false);
+    dl.Execute();
+    boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
+    std::cout << (end - start).total_microseconds() << std::endl;
+  }
+  
+  {
+    boost::posix_time::ptime start(boost::posix_time::microsec_clock::local_time());
+    DirectoryList dl(client, std::string(argv[2]), ListOptions("", argv[1]), false);
+    dl.Execute();
+    boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
+    std::cout << (end - start).total_microseconds() << std::endl;
+  }
 }
 
 #endif

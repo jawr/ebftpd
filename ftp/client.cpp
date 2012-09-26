@@ -232,10 +232,10 @@ void Client::Run()
     logger::error << "Client from " << control.RemoteEndpoint()
                   << " lost connection: " << e.Message() << logger::endl;
   }
-  catch (const std::exception& e)
+  /*catch (const std::exception& e)
   {
     logger::error << e.what() << logger::endl;
-  }
+  }*/
   
   (void) finishedGuard; /* silence unused variable warning */
 }

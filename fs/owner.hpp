@@ -100,7 +100,7 @@ public:
   void Chown(const std::string& name, const Owner& owner);
   void Delete(const std::string& name);
   bool Exists(const std::string& name) const;
-  const fs::Owner& Owner(const std::string& name) const;
+  fs::Owner Owner(const std::string& name) const;
 
   bool Load(FileLockPtr& lock);
   bool Load();
@@ -126,6 +126,8 @@ class OwnerCache
   
   OwnerCache() : needSave(false), cache(cacheSize) { }
 
+  static bool GetParentName(const fs::Path& path, fs::Path& parent, fs::Path& name);
+  
   void Main();
   
 public:  

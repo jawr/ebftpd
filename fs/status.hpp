@@ -30,6 +30,8 @@ public:
   bool IsExecutable() const;
   bool IsReadable() const;
   bool IsWriteable() const;
+  uid_t UID() const { return native.st_uid; }
+  gid_t GID() const { return native.st_gid; }
   
   const fs::Path& Path() const;
   off_t Size() const;
