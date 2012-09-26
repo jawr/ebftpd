@@ -33,7 +33,6 @@ TCPListener::TCPListener(int backlog) :
 
 void TCPListener::Listen()
 {
-  std::cout << endpoint << std::endl;
   socket = ::socket(endpoint.Family(), SOCK_STREAM, 0);
   if (socket < 0) return throw NetworkSystemError(errno);
 

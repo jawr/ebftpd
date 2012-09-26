@@ -1,3 +1,4 @@
+#include <ctime>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include "cmd/command.hpp"
@@ -163,7 +164,35 @@ void LPSVCommand::Execute()
 
 void MDTMCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "MDTM Command not implemented."); 
+  static const char* dummySiteRoot = "/home/bioboy/ftpd/site";
+  
+  if (argStr.empty())
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+  
+  fs::Path absolute = client.WorkDir() / args[1];
+  
+  // ACL check
+  
+  fs::Path real = fs::Path(dummySiteRoot) + absolute;
+  
+  fs::Status status;
+  try
+  {
+    status.Reset(real);
+  }
+  catch (const util::SystemError& e)
+  {
+    client.Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
+    return;
+  }
+  
+  char timestamp[15];
+  strftime(timestamp, sizeof(timestamp), "%Y%m%d%H%M%S",
+           localtime(&status.Native().st_mtime));
+  client.Reply(ftp::FileStatus, timestamp);
 }
 
 void MICCommand::Execute()
@@ -196,7 +225,22 @@ void MLSTCommand::Execute()
 
 void MODECommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "MODE Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+  
+  if (args[1] == "S")
+    client.Reply(ftp::CommandOkay, "Transfer mode set to 'stream'.");
+  else if (args[1] == "B")
+    client.Reply(ftp::ParameterNotImplemented,
+                 "Transfer mode 'block' not implemented.");
+  else if (args[1] == "C")
+    client.Reply(ftp::ParameterNotImplemented,
+                 "Transfer mode 'compressed' not implemented.");
+  else
+    client.Reply(ftp::SyntaxError, "Unrecognised transfer mode.");
 }
 
 void NLSTCommand::Execute()
@@ -206,7 +250,7 @@ void NLSTCommand::Execute()
 
 void NOOPCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "NOOP Command not implemented."); 
+  client.Reply(ftp::CommandOkay, "NOOP command successful."); 
 }
 
 void OPTSCommand::Execute()
@@ -255,8 +299,10 @@ void PBSZCommand::Execute()
     return;
   }
   
-  // implement this properly later?
-  client.Reply(ftp::CommandOkay, "PBSZ command successful."); 
+  if (args[1] != "0")
+    client.Reply(ftp::ParameterNotImplemented, "Only protection buffer size 0 supported.");
+  else
+    client.Reply(ftp::CommandOkay, "Protection buffer size set to 0.");
 }
 
 void PORTCommand::Execute()
@@ -266,12 +312,36 @@ void PORTCommand::Execute()
 
 void PROTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "PROT Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+  
+  if (args[1] == "P")
+  {
+    client.SetDataProtected(true);
+    client.Reply(ftp::CommandOkay, "Protection type set to 'private'.");
+  }
+  else if (args[1] == "C")
+  {
+    client.SetDataProtected(false);
+    client.Reply(ftp::CommandOkay, "Protection type set to 'clear'.");
+  }
+  else if (args[1] == "S")
+    client.Reply(ftp::ParameterNotImplemented,
+                 "Protection type 'secure' not implemented.");
+  else if (args[1] == "E")
+    client.Reply(ftp::ParameterNotImplemented,
+                 "Protection type 'confidential' not implemented.");
+  else
+    client.Reply(ftp::SyntaxError, "Unrecognised protection type.");
 }
 
 void PWDCommand::Execute()
 {
-  client.Reply(ftp::PathCreated, "\"" + client.WorkDir().ToString() + "\" is your working directory.");
+  client.Reply(ftp::PathCreated, "\"" + client.WorkDir().ToString() +
+               "\" is your working directory.");
 }
 
 void QUITCommand::Execute()
@@ -327,6 +397,7 @@ void RNFRCommand::Execute()
     client.Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
     return;
   }
+  
   client.PartReply(ftp::PendingMoreInfo, std::string(absolute));
   client.SetRenameFrom(absolute);
   client.Reply("File exists, ready for destination name."); 
@@ -422,7 +493,7 @@ void STRUCommand::Execute()
 
 void SYSTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "SYST Command not implemented."); 
+  client.Reply(ftp::SystemType, "UNIX Type: L8"); 
 }
 
 void TYPECommand::Execute()

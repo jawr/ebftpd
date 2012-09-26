@@ -32,6 +32,7 @@ class Client : public util::ThreadSelect
   util::net::TCPSocket control;
 //  util::tcp::server dataListen;
   util::net::TCPSocket data;
+  bool dataProtected;
   ClientState state;
   ReplyCode lastCode;
   char buffer[BUFSIZ];
@@ -50,7 +51,7 @@ class Client : public util::ThreadSelect
   
 public:
   Client() : workDir("/"), user("root", "password", "1"),
-     state(LoggedOut), lastCode(CodeNotSet)   { }
+     dataProtected(false), state(LoggedOut), lastCode(CodeNotSet)   { }
   
   ~Client();
      
@@ -76,6 +77,9 @@ public:
   void SetRenameFrom(const fs::Path& path) { this->renameFrom = path; }
   const fs::Path& RenameFrom() const { return renameFrom; }
   void NegotiateTLS();
+  
+  bool DataProtected() const { return dataProtected; }
+  void SetDataProtected(bool dataProtected) { this->dataProtected = dataProtected; }
   
   void DataListen();
   void DataConnect();
