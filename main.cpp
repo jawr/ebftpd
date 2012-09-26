@@ -2,6 +2,7 @@
 #include "util/net/tlscontext.hpp"
 #include "util/net/error.hpp"
 #include "logger/logger.hpp"
+#include "fs/owner.hpp"
 
 #ifndef TEST
 
@@ -24,6 +25,8 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  fs::OwnerCache::Start();
+  
   ftp::Listener listener("127.0.0.1", 1234);  
   if (!listener.Initialise())
   {
@@ -33,6 +36,8 @@ int main(int argc, char** argv)
   
   listener.Start();
   listener.Join();
+  
+  fs::OwnerCache::Stop();
   
   (void) argc;
   (void) argv;

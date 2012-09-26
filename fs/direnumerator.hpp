@@ -6,6 +6,7 @@
 #include <boost/cstdint.hpp>
 #include "fs/path.hpp"
 #include "fs/status.hpp"
+#include "fs/owner.hpp"
 
 namespace ftp
 {
@@ -19,13 +20,16 @@ class DirEntry
 {
   fs::Path path;
   fs::Status status;
+  fs::Owner owner;
   
 public:  
-  DirEntry(const fs::Path& path, const fs::Status& status) :
-    path(path), status(status) { }
+  DirEntry(const fs::Path& path, const fs::Status& status,
+           const fs::Owner& owner) :
+    path(path), status(status), owner(owner) { }
 
   const fs::Path& Path() const { return path; }
   const fs::Status& Status() const { return status; }
+  const fs::Owner& Owner() const { return owner; }
 };
 
 class DirEnumerator

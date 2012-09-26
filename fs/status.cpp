@@ -36,7 +36,7 @@ Status& Status::Reset()
       if (!stat(path.CString(), &st) < 0) throw util::SystemError(errno);
       if (S_ISDIR(st.st_mode)) linkDirectory = true;
       else if (S_ISREG(st.st_mode)) linkRegularFile = true;
-    }
+    }    
     statOkay = true;
   }
   return *this;

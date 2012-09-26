@@ -5,6 +5,8 @@
 #include "fs/status.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
+#include "fs/owner.hpp"
+#include "fs/direnumerator.hpp"
 
 #include <iostream>
 #include "logger/logger.hpp"
@@ -16,19 +18,43 @@ namespace
 
 const Path dummySiteRoot = "/home/bioboy/ftpd/site";
 
-util::Error CreateDirectory(const Path& path)
-{
-  Path real = dummySiteRoot + path;
-  if (mkdir(real.CString(), 0777) < 0) return util::Error::Failure(errno);
-  else return util::Error::Success();
-}
-
 util::Error RemoveDirectory(const Path& path)
 {
   Path real = dummySiteRoot + path;
+  
+  DirEnumerator dirEnum;
+  
+  try
+  {
+    dirEnum.Readdir(real);
+  }
+  catch (const util::SystemError& e)
+  {
+    return util::Error::Failure(e.Errno());
+  }
+  
+  for (DirEnumerator::const_iterator it =
+       dirEnum.begin(); it != dirEnum.end(); ++it)
+  {
+    if (it->Path().ToString()[0] != '.' ||
+        it->Status().IsDirectory() ||
+        !it->Status().IsWriteable())
+      return util::Error::Failure(ENOTEMPTY);
+  }
+  
+  for (DirEnumerator::const_iterator it =
+       dirEnum.begin(); it != dirEnum.end(); ++it)
+  {
+    fs::Path fullPath = real / it->Path();
+    if (unlink(fullPath.CString()) < 0)
+      return util::Error::Failure(errno);
+    OwnerCache::Delete(fullPath);
+  }
+    
   logger::ftpd << "real: " << real << logger::endl;
   if (rmdir(real.CString()) < 0) return util::Error::Failure(errno);
-  else return util::Error::Success();
+  OwnerCache::Delete(real);
+  return util::Error::Success();
 }
 
 // we don't literally change the the working dir of the process
@@ -64,7 +90,12 @@ util::Error CreateDirectory(ftp::Client& client, const Path& path)
   
   // check ACLs here
   
-  return CreateDirectory(absolute);
+  Path real = dummySiteRoot + absolute;
+  if (mkdir(real.CString(), 0777) < 0) return util::Error::Failure(errno);
+  
+  OwnerCache::Chown(real, Owner(client.User().UID(), client.User().PrimaryGID()));
+  
+  return util::Error::Success();
 }
 
 util::Error RemoveDirectory(ftp::Client& client, const Path& path)
