@@ -13,7 +13,7 @@
 #include "acl/types.hpp"
 #include "fs/path.hpp"
 #include "fs/filelock.hpp"
-#include "util/mrucache.hpp"
+#include "util/lrucache.hpp"
 
 namespace fs
 {
@@ -118,7 +118,7 @@ class OwnerCache
   bool needSave;
   
   typedef std::pair<OwnerFile*, bool> CacheEntry;
-  util::MRUCache<std::string, CacheEntry> cache;
+  util::LRUCache<std::string, CacheEntry> cache;
   
   static const uint16_t cacheSize = 1000;
   

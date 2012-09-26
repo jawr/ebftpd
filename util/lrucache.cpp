@@ -1,4 +1,4 @@
-#include "mrucache.hpp"
+#include "lrucache.hpp"
 #include <sstream>
 #include <iostream>
 
@@ -6,7 +6,7 @@ int main()
 {
     using namespace util;
     
-    MRUCache<int, std::string> cache(2);
+    LRUCache<int, std::string> cache(2);
     
     for (int i = 0; i < 10000; ++i)
     {
@@ -17,7 +17,7 @@ int main()
     
     std::cout << "iterate" << std::endl;
     
-    for (MRUCache<int, std::string>::const_iterator it =
+    for (LRUCache<int, std::string>::const_iterator it =
          cache.begin(); it != cache.end(); ++it)
     {
       std::cout << it->first << std::endl;

@@ -18,6 +18,7 @@ Client::~Client()
 {
   control.Close();
   data.Close();
+  dataListen.Close();
 }
 
 bool Client::IsFinished() const
@@ -242,6 +243,7 @@ void Client::Run()
 
 void Client::DataListen(util::net::Endpoint& ep)
 {
+  dataListen.Close();
   data.Close();
   dataListen.Listen(util::net::Endpoint(control.LocalEndpoint().IP(),
                     util::net::Endpoint::AnyPort()));
@@ -263,6 +265,11 @@ void Client::DataAccept()
   {
     dataListen.Accept(data);
     dataListen.Close();
+  }
+  
+  if (dataProtected)
+  {
+    data.HandshakeTLS(util::net::TLSSocket::Server);
   }
 }
 
