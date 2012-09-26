@@ -51,7 +51,7 @@ class Client : public util::ThreadSelect
   
 public:
   Client() : workDir("/"), user("root", "password", "1"),
-     dataProtected(false), state(LoggedOut), lastCode(CodeNotSet)   { }
+     control(15), data(15), dataProtected(false), state(LoggedOut), lastCode(CodeNotSet)   { }
   
   ~Client();
      
@@ -82,7 +82,7 @@ public:
   void SetDataProtected(bool dataProtected) { this->dataProtected = dataProtected; }
   
   void DataListen();
-  void DataConnect();
+  void DataConnect(const util::net::Endpoint& ep);
   
   friend cmd::DirectoryList::DirectoryList(
               ftp::Client& client, const fs::Path& path, 
