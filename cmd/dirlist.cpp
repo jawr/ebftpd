@@ -193,7 +193,6 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
   }
   catch (const util::SystemError& e)
   {
-    std::cout << "Failed " << path << " " << e.Message() << std::endl;
     // silent failure - gives empty directory list
     return;
   }
@@ -201,7 +200,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
   if (depth > 1) Output("\r\n");
   
   std::ostringstream message;
-  if (options.Recursive() || !masks.empty() || depth > 1)
+  if (!path.Empty() && (options.Recursive() || !masks.empty() || depth > 1))
   {
     message << path << ":\r\n";
     Output(message.str());
@@ -280,6 +279,7 @@ void DirectoryList::Execute()
 {
   fs::Path parent;
   std::queue<std::string> masks;
+  std::cout << parent << " " << masks.size() << std::endl;
   SplitPath(path, parent, masks);
   ListPath(parent, masks);
 }

@@ -43,7 +43,8 @@ OBJECTS = \
 	util/net/test.o \
 	util/net/tlscontext.o \
 	util/net/tlserror.o \
-	util/net/tlssocket.o
+	util/net/tlssocket.o \
+	util/net/ftp.o 
 
 all: 
 	@if [ -f .state ] && [ `cat .state` != 'all' ]; then \
