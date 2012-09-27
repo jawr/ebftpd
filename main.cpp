@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
   fs::OwnerCache::Start();
   
-  ftp::Listener listener("127.0.0.1", 1234);  
+  ftp::Listener listener("::", 1234);  
   if (!listener.Initialise())
   {
     logger::error << "Listener failed to initialise!" << logger::endl;

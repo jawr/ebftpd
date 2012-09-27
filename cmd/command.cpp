@@ -6,6 +6,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/iostreams/concepts.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 #include "fs/directory.hpp"
@@ -14,6 +15,8 @@
 #include "fs/status.hpp"
 #include "fs/path.hpp"
 #include "cmd/dirlist.hpp"
+#include "cmd/factory.hpp"
+#include "util/misc.hpp"
 
 #include <iostream>
 
@@ -120,17 +123,109 @@ void ENCCommand::Execute()
 
 void EPRTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "EPRT Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+
+  std::string delim = args[1].substr(0, 1);
+  std::vector<std::string> fields;
+  boost::split(fields, args[1], boost::is_any_of(delim));
+  if (fields.size() != 5)
+  {
+    client.Reply(ftp::SyntaxError, "Invalid port string.");
+    return;
+  }
+  
+  if (fields[1] != "1" && fields[1] != "2")
+  {
+    client.Reply(ftp::SyntaxError, "Uknown address family.");
+    return;
+  }
+  
+  uint16_t port;
+  try
+  {
+    port = boost::lexical_cast<uint16_t>(fields[3]);
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    client.Reply(ftp::SyntaxError, "Invalid port string.");
+    return;
+  }
+  
+  util::net::Endpoint ep;
+  try
+  {
+    ep = util::net::Endpoint(fields[2], port);
+  }
+  catch (const util::net::InvalidIPAddressError&)
+  {
+    client.Reply(ftp::SyntaxError, "Invalid port string.");
+    return;
+  }
+  
+  try
+  {
+    client.DataInitialise(ep, false);
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    client.Reply(ftp::CantOpenDataConnection,
+                 "Unable to open data connection to " + ep.ToString());
+    return;
+  }
+  
+  client.Reply(ftp::CommandOkay, "EPRT command successful.");
 }
 
 void EPSVCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "EPSV Command not implemented."); 
+  if (!argStr.empty())
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+  
+  util::net::Endpoint ep;
+  try
+  {
+    client.DataInitialise(ep, true);
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    client.Reply(ftp::CantOpenDataConnection,
+                 "Unable to listen for data connection.");
+    return;
+  }
+  
+  int16_t family = ep.IP().Family() == util::net::IPAddress::IPv4 ? 1 : 2;
+  std::ostringstream hostString;
+  
+  if (client.ExtPasvMode() == ftp::EPSVFull)
+    hostString << "|" << family
+               << "|" << ep.IP()
+               << "|" << ep.Port() << "|";
+  else
+    hostString << "|||" << ep.Port() << "|";
+  
+  client.Reply(ftp::ExtendedPassiveMode, "Entering extended passive mode (" + 
+               hostString.str() + ")");
 }
 
 void FEATCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "FEAT Command not implemented."); 
+  client.PartReply(ftp::SystemStatus, "Extended feature support:");
+  client.PartReply(ftp::NoCode, " AUTH TLS");
+  client.PartReply(ftp::NoCode, " EPRT");
+  client.PartReply(ftp::NoCode, " EPSV");
+  client.PartReply(ftp::NoCode, " PBSZ");
+  client.PartReply(ftp::NoCode, " PROT");
+  client.PartReply(ftp::NoCode, " MDTM");
+  client.PartReply(ftp::NoCode, " SIZE");
+  client.PartReply(ftp::NoCode, " SIZE");
+  client.Reply(ftp::SystemStatus, "End.");
 }
 
 void HELPCommand::Execute()
@@ -205,7 +300,54 @@ void LISTCommand::Execute()
 
 void LPRTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "LPRT Command not implemented."); 
+  if (args.size() != 2)
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+  
+  std::vector<int16_t> fields;
+  util::SplitToType(args[1], ',', fields);
+
+  if (fields.size() < 2)
+  {
+    client.Reply(ftp::SyntaxError, "Invalid port string.");
+    return;
+  }
+  
+  for (size_t i = 0; i < fields.size(); ++i)
+  {
+    if (fields[i] < 0 || fields[i] > 255)
+    {
+      client.Reply(ftp::SyntaxError, "Invalid port string.");
+      return;
+    }
+  }
+  
+  int16_t family = fields[0];
+  if (family != 4 && family != 6)
+  {
+    client.Reply(ftp::SyntaxError, "Unsupported address family.");
+    return;
+  }
+  
+  uint16_t addrLen = fields[1];
+  char addr[addrLen];
+  
+  if (fields.size() != addrLen + 5 || 
+      fields[addrLen + 2] != 2)
+  {
+    client.Reply(ftp::SyntaxError, "Invalid port string.");
+    return;
+  }
+  
+  for (size_t i = 2, j = 0; j < addrLen; ++i, ++j)
+    addr[j] = fields[i];
+
+  uint16_t port = (fields[addrLen + 3] << 8) | fields[addrLen + 4];
+  
+  util::net::Endpoint ep(addr, port);
+    
 }
 
 void LPSVCommand::Execute()
@@ -321,7 +463,7 @@ void NLSTCommand::Execute()
       optOffset += args[1].length();
     }
     
-    std::string path(argStr, optOffset);
+    path = argStr.substr(optOffset);
     boost::trim(path);
   }
   
@@ -433,7 +575,6 @@ void PORTCommand::Execute()
   boost::split(octets, args[1], boost::is_any_of(","));
   if (octets.size() != 6)
   {
-    std::cout << "octet num" << std::endl;
     client.Reply(ftp::SyntaxError, "Invalid port string.");
     return;
   }
@@ -446,19 +587,16 @@ void PORTCommand::Execute()
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    std::cout << octets[4] << " " << octets[5] << " " << e.what() << std::endl;
     client.Reply(ftp::SyntaxError, "Invalid port string.");
     return;
   }
   
   for (unsigned i = 0; i < octets.size(); ++i)
-  {
     if (intOctets[i] < 0 || intOctets[i] > 255)
     {
       client.Reply(ftp::SyntaxError, "Invalid port string.");
       return;
     }
-  }
   
   int32_t port = (intOctets[4] << 8) | intOctets[5];
 
@@ -475,7 +613,6 @@ void PORTCommand::Execute()
   }
   catch (const util::net::InvalidIPAddressError&)
   {
-    std::cout << ip << std::endl;
     client.Reply(ftp::SyntaxError, "Invalid port string.");
     return;
   }
@@ -551,7 +688,7 @@ void RETRCommand::Execute()
     client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
-
+    
   fs::InStreamPtr fin;
   try
   {
@@ -565,7 +702,8 @@ void RETRCommand::Execute()
   }
 
   client.Reply(ftp::TransferStatusOkay,
-               "Opening data connection for RETR command.");
+               "Opening data connection for download of " + 
+               fs::Path(argStr).Basename().ToString() + ".");
 
   try
   {
@@ -663,7 +801,43 @@ void RNTOCommand::Execute()
 
 void SITECommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "SITE Command not implemented."); 
+  if (argStr.empty())
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+  
+  boost::to_upper(args[1]);
+  if (args[1] == "EPSV")
+  {
+    static const char* syntax = "Syntax: SITE EPSV normal|full";
+    if (args.size() == 2)
+      client.Reply(ftp::CommandOkay, "Extended passive mode is currently '" +
+                   std::string(client.ExtPasvMode() == ftp::EPSVNormal ?
+                   "normal" : "full") + "'.");
+                    
+    else if (args.size() != 3) client.Reply(ftp::SyntaxError, syntax);
+    else
+    {
+      boost::to_upper(args[2]);
+      if (args[2] == "NORMAL")
+      {
+        client.SetExtPasvMode(ftp::EPSVNormal);
+        client.Reply(ftp::SyntaxError, "Extended passive mode now set to 'normal'.");
+      }
+      else if (args[2] == "FULL")
+      {
+        client.SetExtPasvMode(ftp::EPSVFull);
+        client.Reply(ftp::SyntaxError, "Extended passive mode now set to 'full'.");
+      }
+      else
+        client.Reply(ftp::SyntaxError, syntax);
+    }
+    return;
+  }
+  
+  client.Reply(ftp::CommandUnrecognised, "SITE " + args[1] + 
+               " command unrecognised."); 
 }
 
 void SIZECommand::Execute()
@@ -742,7 +916,8 @@ void STORCommand::Execute()
   }
 
   client.Reply(ftp::TransferStatusOkay,
-               "Opening data connection for STOR command.");
+               "Opening data connection for upload of " +
+               fs::Path(argStr).Basename().ToString() + ".");
 
   try
   {
@@ -780,7 +955,34 @@ void STORCommand::Execute()
 
 void STOUCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "STOU Command not implemented."); 
+  static size_t filenameLength = 10;
+
+  if (!argStr.empty())
+  {
+    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    return;
+  }
+  
+  fs::Path uniquePath;
+  if (!fs::UniqueFile(client, client.WorkDir(),
+                      filenameLength, uniquePath))
+  {
+    client.Reply(ftp::ActionNotOkay,
+                 "Unable to generate a unique filename.");
+    return;
+  }
+  
+  argStr = uniquePath.ToString();
+  args.clear();
+  args.push_back("STOR");
+  args.push_back(argStr);
+  
+  ftp::ClientState reqdState;
+
+  std::auto_ptr<cmd::Command>
+    command(cmd::Factory::Create(client, argStr, args, reqdState));
+  assert(command.get());
+  command->Execute();
 }
 
 void STRUCommand::Execute()

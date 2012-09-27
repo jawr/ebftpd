@@ -32,6 +32,8 @@ util::Error RenameFile(ftp::Client& client, const Path& oldPath,
 OutStreamPtr CreateFile(ftp::Client& client, const Path& path);
 OutStreamPtr AppendFile(ftp::Client& client, const Path& path);
 InStreamPtr OpenFile(ftp::Client& client, const Path& path);
+util::Error UniqueFile(ftp::Client& client, const Path& path, 
+                       size_t filenameLength, Path& uniquePath);
 
 } /* fs namespace */
 

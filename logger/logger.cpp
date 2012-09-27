@@ -8,6 +8,7 @@ util::logger::Logger ftpd;
 util::logger::Logger access;
 util::logger::Logger siteop;
 util::logger::Logger error;
+util::logger::Logger debug;
 
 void Initialise(const std::string& dataPath)
 {
@@ -15,6 +16,7 @@ void Initialise(const std::string& dataPath)
   access.SetPath(dataPath + "/access.log");
   siteop.SetPath(dataPath + "/siteop.log");
   error.SetPath(dataPath + "/error.log");
+  debug.SetPath(dataPath + "/debug.log");
 }
 
 } /* logger namespace */

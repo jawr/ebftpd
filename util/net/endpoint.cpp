@@ -56,7 +56,7 @@ Endpoint::Endpoint(const IPAddress& addr, int32_t port) :
     memcpy(&addr6->sin6_addr, ip.Addr(), ip.Length());
     addrLen = sizeof(struct sockaddr_in6);
     addr6->sin6_family = AF_INET6;
-    addr6->sin6_family = htons(port);
+    addr6->sin6_port = htons(port);
   }
 }
 
