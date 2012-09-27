@@ -7,6 +7,7 @@ namespace ftp
 enum ReplyCode
 {
   CodeNotSet = -1,
+  NoCode = 0,
   CommandOkay = 200,
   ServiceReady = 220,
   CommandUnrecognised = 500,
@@ -27,6 +28,7 @@ enum ReplyCode
   DataClosedOkay = 226,
   DataCloseAborted = 426,
   PassiveMode = 227,
+  ExtendedPassiveMode = 229,
   UserLoggedIn = 230,
   UserLoggedInSecure = 232,
   SecurityExchangeOkay = 234,

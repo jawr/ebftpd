@@ -23,6 +23,7 @@ extern util::logger::Logger ftpd;
 extern util::logger::Logger access;
 extern util::logger::Logger siteop;
 extern util::logger::Logger error;
+extern util::logger::Logger debug;
 #endif
 
 using util::logger::flush;

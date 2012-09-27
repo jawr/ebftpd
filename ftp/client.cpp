@@ -107,9 +107,12 @@ bool Client::Accept(util::net::TCPListener& server)
 void Client::SendReply(ReplyCode code, bool part, const std::string& message)
 {
   std::ostringstream reply;
-  reply << std::setw(3) << code << (part ? "-" : " ") << message << "\r\n";
+  if (code != NoCode)
+    reply << std::setw(3) << code << (part ? "-" : " ");
+  reply << message << "\r\n";
   const std::string& str = reply.str();
   control.Write(str.c_str(), str.length());
+  logger::debug << str << logger::endl;
   lastCode = code;
 }
 
@@ -181,6 +184,7 @@ void Client::NextCommand()
   if (FD_ISSET(control.Socket(), &readSet))
   {
     control.Getline(commandLine, true);
+    logger::debug << commandLine << logger::endl;
     return;
   }
 

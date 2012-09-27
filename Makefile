@@ -27,6 +27,7 @@ OBJECTS = \
 	acl/handler.o \
 	acl/flags.o \
 	logger/logger.o \
+	util/misc.o \
 	util/path.o \
 	util/verify.o \
 	util/passwd.o \

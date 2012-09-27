@@ -31,6 +31,12 @@ enum ClientState
   AnyState
 };
 
+enum EPSVMode
+{
+  EPSVNormal,
+  EPSVFull
+};
+
 class Client : public util::ThreadSelect
 {
 
@@ -50,6 +56,7 @@ class Client : public util::ThreadSelect
   bool dataProtected;
   bool passiveMode;
   util::net::Endpoint portEndpoint;
+  EPSVMode epsvMode;
   
   static const int maxPasswordAttemps = 3;
   
@@ -64,7 +71,7 @@ public:
   Client() : workDir("/"), user("root", "password", "1"),
      control(15), state(LoggedOut), lastCode(CodeNotSet),
      passwordAttemps(0), data(15), dataProtected(false),
-     passiveMode(false) { }
+     passiveMode(false), epsvMode(EPSVNormal) { }
   
   ~Client();
      
@@ -93,6 +100,8 @@ public:
   
   bool DataProtected() const { return dataProtected; }
   void SetDataProtected(bool dataProtected) { this->dataProtected = dataProtected; }
+  EPSVMode ExtPasvMode() const { return epsvMode; }
+  void SetExtPasvMode(EPSVMode epsvMode) { this->epsvMode = epsvMode; }
   
   void DataInitialise(util::net::Endpoint& ep, bool passiveMode);
   void DataOpen();

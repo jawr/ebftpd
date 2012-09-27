@@ -8,6 +8,7 @@
 #include "fs/path.hpp"
 #include "ftp/client.hpp"
 #include "fs/owner.hpp"
+#include "util/misc.hpp"
 
 namespace fs
 {
@@ -94,6 +95,34 @@ InStreamPtr OpenFile(ftp::Client& client, const Path& path)
   Path absolute = (client.WorkDir() / path).Expand();
   // check ACLs
   return OpenFile(absolute);
+}
+
+util::Error UniqueFile(ftp::Client& client, const Path& path, 
+                       size_t filenameLength, Path& uniquePath)
+{ 
+  Path absolute = (client.WorkDir() / path).Expand();
+  Path real = dummySiteRoot + absolute;
+
+  for (int i = 0; i < 1000; ++i)
+  {
+    std::string filename = util::RandomString(filenameLength);
+    Path realUniquePath = real / filename;
+    try
+    {
+      Status status(realUniquePath);
+    }
+    catch (const util::SystemError& e)
+    {
+      if (e.Errno() == ENOENT)
+      {
+        uniquePath = absolute / filename;
+        return util::Error::Success();
+      }
+      else return util::Error::Failure(e.Errno());
+    }
+  }
+  
+  return util::Error::Failure();
 }
 
 } /* fs namespace */
