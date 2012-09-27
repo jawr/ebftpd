@@ -140,7 +140,7 @@ void EPRTCommand::Execute()
   
   try
   {
-    client.DataInitialise(ep, false);
+    client.DataInitialise(ep, ftp::DIConnect);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -163,7 +163,7 @@ void EPSVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataInitialise(ep, true);
+    client.DataInitialise(ep, ftp::DIListen);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -282,7 +282,7 @@ void LPRTCommand::Execute()
   
   try
   {
-    client.DataInitialise(ep, false);
+    client.DataInitialise(ep, ftp::DIConnect);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -305,7 +305,7 @@ void LPSVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataInitialise(ep, true);
+    client.DataInitialise(ep, ftp::DIListen);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -497,7 +497,7 @@ void PASVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataInitialise(ep, true);
+    client.DataInitialise(ep, ftp::DIListenPASV);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -549,7 +549,7 @@ void PORTCommand::Execute()
   
   try
   {
-    client.DataInitialise(ep, false);
+    client.DataInitialise(ep, ftp::DIConnect);
   }
   catch (const util::net::NetworkError& e)
   {

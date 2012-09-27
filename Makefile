@@ -44,6 +44,7 @@ OBJECTS = \
 	util/net/tlscontext.o \
 	util/net/tlserror.o \
 	util/net/tlssocket.o \
+	util/net/interfaces.o \
 	util/net/ftp.o 
 
 all: 
@@ -77,6 +78,7 @@ DEPS = $(OBJECTS:.o=.d)
 -include $(DEPS)
 
 clean:
-	@rm -f *.o *.d *.gch */*.o */*.d */*.gch
+	@find -iname "*.[od]" -exec rm '{}' ';'
+	@find -iname "*.gch" -exec rm '{}' ';'
 	@rm -f ftpd
 	@rm -f .state

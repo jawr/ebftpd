@@ -17,7 +17,7 @@ int main(int argc, char** argv)
   
   try
   {
-    util::net::TLSServerContext::Initialise(certificate, "AES256-SHA");
+    util::net::TLSServerContext::Initialise(certificate, "");
   }
   catch (const util::net::NetworkError& e)
   {
