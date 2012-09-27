@@ -7,6 +7,7 @@
 #include "acl/user.hpp"
 #include "fs/path.hpp"
 #include "ftp/client.hpp"
+#include "fs/owner.hpp"
 
 namespace fs
 {
@@ -51,21 +52,18 @@ util::Error RenameFile(ftp::Client& client, const Path& oldPath,
   return RenameFile(oldAbsolute, newAbsolute);
 }
 
-OutStreamPtr CreateFile(const Path& path)
-{
-  Path real = dummySiteRoot + path;
-  int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, 0777);
-  if (fd < 0) throw util::SystemError(errno);
-  return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
-}
-
 OutStreamPtr CreateFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
   // check ACLs
-  OutStreamPtr os(CreateFile(absolute));
-  // update owner file
-  return os;
+
+  Path real = dummySiteRoot + absolute;
+  int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, 0777);
+  if (fd < 0) throw util::SystemError(errno);
+
+  OwnerCache::Chown(real, Owner(client.User().UID(), client.User().PrimaryGID()));
+
+  return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
 }
 
 OutStreamPtr AppendFile(const Path& path)
