@@ -10,6 +10,7 @@
 #include "util/scopeguard.hpp"
 #include "util/net/tcplistener.hpp"
 #include "cmd/factory.hpp"
+#include "util/net/interfaces.hpp"
 
 namespace ftp
 {
@@ -252,21 +253,30 @@ void Client::Run()
   (void) finishedGuard; /* silence unused variable warning */
 }
 
-void Client::DataInitialise(util::net::Endpoint& ep, bool passiveMode)
+void Client::DataInitialise(util::net::Endpoint& ep, DataInitType type)
 {
+  using namespace util::net;
+
   data.Close();
   dataListen.Close();
-  if (passiveMode)
+  if (type != DIConnect)
   {
-    dataListen.Listen(util::net::Endpoint(control.LocalEndpoint().IP(),
-                      util::net::Endpoint::AnyPort()));
+    IPAddress ip = control.LocalEndpoint().IP();
+    if (type == DIListenPASV && ip.Family() == IPAddress::IPv6)
+    {
+      // let's try find out the IPv4 address for this interface!
+      FindPartnerIP(ip, ip);
+    }
+    
+    dataListen.Listen(Endpoint(ip, Endpoint::AnyPort()));
     ep = dataListen.Endpoint();
+    passiveMode = true;
   }
   else
   {
     portEndpoint = ep;
+    passiveMode = false;
   }
-  this->passiveMode = passiveMode;
 }
 
 void Client::DataOpen()

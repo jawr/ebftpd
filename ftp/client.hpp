@@ -37,6 +37,13 @@ enum EPSVMode
   EPSVFull
 };
 
+enum DataInitType
+{
+  DIListen,
+  DIListenPASV,
+  DIConnect
+};
+
 class Client : public util::ThreadSelect
 {
 
@@ -103,7 +110,7 @@ public:
   EPSVMode ExtPasvMode() const { return epsvMode; }
   void SetExtPasvMode(EPSVMode epsvMode) { this->epsvMode = epsvMode; }
   
-  void DataInitialise(util::net::Endpoint& ep, bool passiveMode);
+  void DataInitialise(util::net::Endpoint& ep, DataInitType type);
   void DataOpen();
   void DataClose() { data.Close(); }
   
