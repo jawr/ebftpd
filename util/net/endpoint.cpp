@@ -66,6 +66,29 @@ Endpoint::Endpoint(const struct sockaddr& addr, socklen_t addrLen) :
   addrLen(addrLen),
   port(-1)
 {
+  FromAddr(addr);
+}
+
+Endpoint::Endpoint(const struct sockaddr_in& addr) :
+  addr4(0),
+  addr6(0),
+  addrLen(sizeof(addr)),
+  port(-1)
+{
+  FromAddr(*reinterpret_cast<const struct sockaddr*>(&addr));
+}
+
+Endpoint::Endpoint(const struct sockaddr_in6& addr) :
+  addr4(0),
+  addr6(0),
+  addrLen(sizeof(addr)),
+  port(-1)
+{
+  FromAddr(*reinterpret_cast<const struct sockaddr*>(&addr));
+}
+
+void Endpoint::FromAddr(const struct sockaddr& addr)
+{
   memcpy(&this->addr, &addr, addrLen);
   if (addrLen == sizeof(struct sockaddr_in))
   {

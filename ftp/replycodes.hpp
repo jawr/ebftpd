@@ -28,6 +28,7 @@ enum ReplyCode
   DataClosedOkay = 226,
   DataCloseAborted = 426,
   PassiveMode = 227,
+  LongPassiveMode = 228,
   ExtendedPassiveMode = 229,
   UserLoggedIn = 230,
   UserLoggedInSecure = 232,

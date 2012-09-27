@@ -61,14 +61,6 @@ Factory::Factory()
   Register("SYST", new Creator<SYSTCommand>(ftp::AnyState));
   Register("TYPE", new Creator<TYPECommand>(ftp::LoggedIn));
   Register("USER", new Creator<USERCommand>(ftp::LoggedOut));
-  Register("XCUP", new Creator<XCUPCommand>(ftp::LoggedIn));
-  Register("XMKD", new Creator<XMKDCommand>(ftp::LoggedIn));
-  Register("XPWD", new Creator<XPWDCommand>(ftp::LoggedIn));
-  Register("XRCP", new Creator<XRCPCommand>(ftp::LoggedIn));
-  Register("XRMD", new Creator<XRMDCommand>(ftp::LoggedIn));
-  Register("XRSQ", new Creator<XRSQCommand>(ftp::LoggedIn));
-  Register("XSEM", new Creator<XSEMCommand>(ftp::LoggedIn));
-  Register("XSEN", new Creator<XSENCommand>(ftp::LoggedIn));
 }
 
 Factory::~Factory()

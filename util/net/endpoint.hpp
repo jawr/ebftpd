@@ -21,6 +21,7 @@ class Endpoint
   int32_t port;
   
   bool Equals(const Endpoint& ep) const;
+  void FromAddr(const struct sockaddr& addr);
 
 public:
   Endpoint();
@@ -31,6 +32,12 @@ public:
   
   Endpoint(const IPAddress& addr, int32_t port);
   /* No exceptions */
+
+  Endpoint(const struct sockaddr_in& addr);
+  /* Throws InvalidIPAddressError */
+
+  Endpoint(const struct sockaddr_in6& addr);
+  /* Throws InvalidIPAddressError */
 
   Endpoint(const struct sockaddr& addr, socklen_t addrLen);
   /* Throws InvalidIPAddressError */
