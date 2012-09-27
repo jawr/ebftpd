@@ -122,7 +122,6 @@ bool OwnerFile::InnerSave(FileLockPtr& lock)
 
 bool OwnerFile::Save(FileLockPtr& lock)
 {
-  std::cout << "saving.." << std::endl;
   if (!InnerSave(lock))
   {
     logger::error << "Unable to save owner file: " << ownerFile << logger::endl;

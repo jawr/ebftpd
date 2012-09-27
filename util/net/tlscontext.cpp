@@ -152,6 +152,7 @@ void TLSServerContext::CreateContext()
 #if (OPENSSL_VERSION_NUMBER >= 0x10000000)
   options |= SSL_OP_NO_COMPRESSION;
 #endif  
+
   SSL_CTX_set_options(context, options);
 }
 
