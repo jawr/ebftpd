@@ -21,6 +21,8 @@
 
 #include <iostream>
 
+extern const fs::Path dummySiteRoot;
+
 namespace cmd
 {
 
@@ -140,7 +142,7 @@ void EPRTCommand::Execute()
   
   try
   {
-    client.DataInitialise(ep, ftp::DIConnect);
+    client.DataInitActive(ep);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -163,7 +165,7 @@ void EPSVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataInitialise(ep, ftp::DIListen);
+    client.DataInitPassive(ep, false);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -174,7 +176,7 @@ void EPSVCommand::Execute()
 
   std::string portString;
   util::net::ftp::EndpointToEPRT(ep, portString, 
-                                 client.ExtPasvMode() == ftp::EPSVFull);
+                                 client.EPSVMode() == ftp::EPSVMode::Full);
   
   client.Reply(ftp::ExtendedPassiveMode, "Entering extended passive mode (" + 
                portString + ")");
@@ -184,8 +186,10 @@ void FEATCommand::Execute()
 {
   client.PartReply(ftp::SystemStatus, "Extended feature support:");
   client.PartReply(ftp::NoCode, " AUTH TLS");
-//  client.PartReply(ftp::NoCode, " EPRT");
- // client.PartReply(ftp::NoCode, " EPSV");
+  client.PartReply(ftp::NoCode, " EPRT");
+  client.PartReply(ftp::NoCode, " EPSV");
+  client.PartReply(ftp::NoCode, " LPRT");
+  client.PartReply(ftp::NoCode, " LPSV");
   client.PartReply(ftp::NoCode, " PBSZ");
   client.PartReply(ftp::NoCode, " PROT");
   client.PartReply(ftp::NoCode, " MDTM");
@@ -227,7 +231,7 @@ void LISTCommand::Execute()
   catch (const util::net::NetworkError&e )
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to accept data connection: " + e.Message());
+                 "Unable to open data connection: " + e.Message());
     return;
   }
   
@@ -282,7 +286,7 @@ void LPRTCommand::Execute()
   
   try
   {
-    client.DataInitialise(ep, ftp::DIConnect);
+    client.DataInitActive(ep);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -305,7 +309,7 @@ void LPSVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataInitialise(ep, ftp::DIListen);
+    client.DataInitPassive(ep, false);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -322,8 +326,6 @@ void LPSVCommand::Execute()
 
 void MDTMCommand::Execute()
 {
-  static const char* dummySiteRoot = "/home/bioboy/ftpd/site";
-  
   if (argStr.empty())
   {
     client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
@@ -413,7 +415,7 @@ void NLSTCommand::Execute()
   catch (const util::net::NetworkError&e )
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to accept data connection: " + e.Message());
+                 "Unable to open data connection: " + e.Message());
     return;
   }
   
@@ -497,7 +499,7 @@ void PASVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataInitialise(ep, ftp::DIListenPASV);
+    client.DataInitPassive(ep, true);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -549,7 +551,7 @@ void PORTCommand::Execute()
   
   try
   {
-    client.DataInitialise(ep, ftp::DIConnect);
+    client.DataInitActive(ep);
   }
   catch (const util::net::NetworkError& e)
   {
@@ -642,7 +644,7 @@ void RETRCommand::Execute()
   catch (const util::net::NetworkError&e )
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to accept data connection: " +
+                 "Unable to open data connection: " +
                  e.Message());
     return;
   }
@@ -743,7 +745,7 @@ void SITECommand::Execute()
     static const char* syntax = "Syntax: SITE EPSV normal|full";
     if (args.size() == 2)
       client.Reply(ftp::CommandOkay, "Extended passive mode is currently '" +
-                   std::string(client.ExtPasvMode() == ftp::EPSVNormal ?
+                   std::string(client.EPSVMode() == ftp::EPSVMode::Normal ?
                    "normal" : "full") + "'.");
                     
     else if (args.size() != 3) client.Reply(ftp::SyntaxError, syntax);
@@ -752,12 +754,12 @@ void SITECommand::Execute()
       boost::to_upper(args[2]);
       if (args[2] == "NORMAL")
       {
-        client.SetExtPasvMode(ftp::EPSVNormal);
+        client.SetEPSVMode(ftp::EPSVMode::Normal);
         client.Reply(ftp::SyntaxError, "Extended passive mode now set to 'normal'.");
       }
       else if (args[2] == "FULL")
       {
-        client.SetExtPasvMode(ftp::EPSVFull);
+        client.SetEPSVMode(ftp::EPSVMode::Full);
         client.Reply(ftp::SyntaxError, "Extended passive mode now set to 'full'.");
       }
       else
@@ -854,7 +856,7 @@ void STORCommand::Execute()
   catch (const util::net::NetworkError&e )
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to accept data connection: " + e.Message());
+                 "Unable to open data connection: " + e.Message());
     return;
   }
 
@@ -905,7 +907,7 @@ void STOUCommand::Execute()
   args.push_back("STOR");
   args.push_back(argStr);
   
-  ftp::ClientState reqdState;
+  ftp::ClientState::Enum reqdState;
 
   std::auto_ptr<cmd::Command>
     command(cmd::Factory::Create(client, argStr, args, reqdState));

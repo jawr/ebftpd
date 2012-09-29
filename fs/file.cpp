@@ -10,13 +10,10 @@
 #include "fs/owner.hpp"
 #include "util/misc.hpp"
 
+extern const fs::Path dummySiteRoot;
+
 namespace fs
 {
-
-namespace
-{
-const std::string dummySiteRoot = "/home/bioboy/ftpd/site";
-}
 
 util::Error DeleteFile(ftp::Client& client, const Path& path)
 {
