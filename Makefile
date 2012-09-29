@@ -1,8 +1,8 @@
 CXX = g++
 CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -DDEBUG
-LIBS = -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
-LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle -lssl
-INCLUDE = -I.
+LIBS = -lcryptopp -lboost_thread -lboost_regex -lboost_serialization
+LIBS += -lboost_iostreams -lboost_system -lpthread -lssl -lboost_filesystem
+INCLUDE = -include stdafx.hpp -I.
 
 OBJECTS = \
 	main.o \
@@ -47,6 +47,8 @@ OBJECTS = \
 	util/net/interfaces.o \
 	util/net/ftp.o 
 
+.PHONY: test clean strip
+
 all: 
 	@if [ -f .state ] && [ `cat .state` != 'all' ]; then \
 	$(MAKE) $(MAKEFILE) clean; \
@@ -65,8 +67,11 @@ test:
 	echo "$(TEST)" > .state
 	$(MAKE) $(MAKEFILE) ftpd CXXFLAGS="$(CXXFLAGS) -DTEST -D$(TEST)"
 
-ftpd: $(OBJECTS)
+ftpd: stdafx.hpp.gch $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd
+
+stdafx.hpp.gch:
+	$(CXX) -c $(CXXFLAGS) stdafx.hpp
 	
 strip:
 	@strip -s ftpd
