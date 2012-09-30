@@ -1,15 +1,19 @@
 #include <sys/stat.h>
 #include <cerrno>
 #include <cassert>
+#include <boost/algorithm/string/predicate.hpp>
 #include "fs/directory.hpp"
 #include "fs/status.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
 #include "fs/owner.hpp"
 #include "fs/direnumerator.hpp"
+#include "logger/logger.hpp"
+#include "acl/check.hpp"
 
 #include <iostream>
-#include "logger/logger.hpp"
+
+namespace PP = acl::PathPermission;
 
 extern const fs::Path dummySiteRoot;
 
@@ -57,11 +61,22 @@ util::Error RemoveDirectory(const Path& path)
   return util::Error::Success();
 }
 
+}
+
 // we don't literally change the the working dir of the process
 // as the ftpd is multithreaded and this would change work dir
 // of all threads, we instead just check that chdir is possible
-util::Error ChangeDirectory(const Path& path)
+util::Error ChangeDirectory(ftp::Client& client, Path& path)
 {
+  Path absolute = (client.WorkDir() / path).Expand();
+
+  std::cout << "abs: " << absolute << std::endl;
+  std::cout << "dirname: " << absolute.Dirname() << std::endl;
+  
+
+  util::Error e(PP::DirAllowed<PP::View>(client.User(), absolute));
+  if (!e) return e;
+
   Path real = dummySiteRoot + path;
   
   try
@@ -72,24 +87,48 @@ util::Error ChangeDirectory(const Path& path)
   }
   catch (const util::SystemError& e)
   {
-    return util::Error::Failure(e.Errno());
+    if (e.Errno() != ENOENT) return util::Error::Failure(e.Errno());
+
+    DirEnumerator dirEnum;    
+    try
+    {
+      dirEnum.Readdir(real.Dirname());
+    }
+    catch (const util::SystemError& e)
+    {
+      return util::Error::Failure(ENOENT);
+    }
+    
+    for (DirEnumerator::const_iterator it =
+         dirEnum.begin(); it != dirEnum.end(); ++it)
+    {
+      if (boost::istarts_with(it->Path().ToString(), real.Basename().ToString()) &&
+          it->Status().IsDirectory())
+      {
+        if (!PP::DirAllowed<PP::View>(client.User(), path))
+          return util::Error::Failure(ENOENT);
+        std::cout << absolute << " " << absolute.Dirname() << " " << it->Path() << std::endl;
+        path = absolute = absolute.Dirname() / it->Path();
+        if (!it->Status().IsExecutable()) return util::Error::Failure(EACCES);
+      }
+    }
   }
   catch (const util::RuntimeError& e)
   {
     return util::Error::Failure();
   }
   
+  client.SetWorkDir(absolute);
   return util::Error::Success();
-}
-
 }
 
 util::Error CreateDirectory(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
-  
-  // check ACLs here
-  
+
+  util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), absolute));
+  if (!e) return e;
+    
   Path real = dummySiteRoot + absolute;
   if (mkdir(real.CString(), 0777) < 0) return util::Error::Failure(errno);
   
@@ -102,19 +141,11 @@ util::Error RemoveDirectory(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
   
-  // check ACLs here
+  util::Error e(PP::DirAllowed<PP::Delete>(client.User(), absolute));
+  if (!e) return e;
+  
   logger::ftpd << "absolute: " << absolute << logger::endl;
   return RemoveDirectory(absolute);
-}
-
-util::Error ChangeDirectory(ftp::Client& client, const Path& path)
-{
-  Path absolute = (client.WorkDir() / path).Expand();
-  // check ACLs here
-  
-  util::Error e = ChangeDirectory(absolute);
-  if (e) client.SetWorkDir(absolute);
-  return e;
 }
 
 } /* fs namespace */

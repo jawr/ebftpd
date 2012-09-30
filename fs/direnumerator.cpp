@@ -5,6 +5,7 @@
 #include "fs/direnumerator.hpp"
 #include "fs/status.hpp"
 #include "ftp/client.hpp"
+#include "acl/check.hpp"
 
 #include <iostream>
 
@@ -50,16 +51,21 @@ void DirEnumerator::Readdir(ftp::Client& client, const fs::Path& path)
 
 void DirEnumerator::Readdir()
 {
+  namespace PP = acl::PathPermission;
+  
   Path real(path);
+  std::cout << real << std::endl;
   if (client)
-  {
+  {  
     Path absolute = (client->WorkDir() / path).Expand();
+    if (!PP::DirAllowed<PP::View>(client->User(), absolute)) return;
     real = dummySiteRoot + absolute;
   }
 
   std::tr1::shared_ptr<DIR> dp(opendir(real.CString()), closedir);
   if (!dp.get()) throw util::SystemError(errno);
   
+  size_t siteRootLen = dummySiteRoot.ToString().length();
   struct dirent de;
   struct dirent* dep;
   while (true)
@@ -71,17 +77,22 @@ void DirEnumerator::Readdir()
     
     fs::Path fullPath(real);
     fullPath /= de.d_name;
-    
-    
-    if (client)
-    {
-      // apply ACLs to hide privpaths or 
-      // other hidden directories / files
-    }
-    
+        
     try
     {
       fs::Status status(fullPath);
+      
+      if (client)
+      {
+        fs::Path absolute = fullPath.ToString().substr(siteRootLen);
+        util::Error e;
+        if (status.IsDirectory())
+          e = PP::DirAllowed<PP::View>(client->User(), absolute);
+        else
+          e = PP::FileAllowed<PP::View>(client->User(), absolute);
+        if (!e) continue;
+      }
+      
       totalBytes += status.Size();
       fs::Owner owner(OwnerCache::Owner(fullPath));
       entries.push_back(new DirEntry(de.d_name, status, owner));

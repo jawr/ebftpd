@@ -18,8 +18,11 @@
 #include "cmd/factory.hpp"
 #include "util/misc.hpp"
 #include "util/net/ftp.hpp"
+#include "acl/check.hpp"
 
 #include <iostream>
+
+namespace PP = acl::PathPermission;
 
 extern const fs::Path dummySiteRoot;
 
@@ -83,7 +86,9 @@ void CDUPCommand::Execute()
     return;
   }
   
-  util::Error e = fs::ChangeDirectory(client,  "..");
+  fs::Path path = "..";
+  
+  util::Error e = fs::ChangeDirectory(client,  path);
   if (!e) client.Reply(ftp::ActionNotOkay, "CDUP failed: " + e.Message());
   else client.Reply(ftp::FileActionOkay, "CDUP command successful."); 
 }
@@ -101,9 +106,15 @@ void CWDCommand::Execute()
     return;
   }
   
-  util::Error e = fs::ChangeDirectory(client,  argStr);
+  fs::Path path = argStr;
+  
+  util::Error e = fs::ChangeDirectory(client,  path);
   if (!e) client.Reply(ftp::ActionNotOkay, "CWD failed: " + e.Message());
-  else client.Reply(ftp::FileActionOkay, "CWD command successful."); 
+  else if (path.ToString() != argStr)
+    client.Reply(ftp::FileActionOkay, "CWD command successful (Matched: " + 
+                 path.ToString() + ").");
+  else
+    client.Reply(ftp::FileActionOkay, "CWD command successful."); 
 }
 
 void DELECommand::Execute()
@@ -334,7 +345,12 @@ void MDTMCommand::Execute()
   
   fs::Path absolute = client.WorkDir() / args[1];
   
-  // ACL check
+  util::Error e(PP::FileAllowed<PP::View>(client.User(), absolute));
+  if (!e)
+  {
+    client.Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
+    return;
+  }
   
   fs::Path real = fs::Path(dummySiteRoot) + absolute;
   
@@ -703,6 +719,13 @@ void RNFRCommand::Execute()
 
   fs::Path absolute = (client.WorkDir() / argStr).Expand();
   
+  util::Error e(PP::FileAllowed<PP::Rename>(client.User(), absolute));
+  if (!e)
+  {
+    client.Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
+    return;
+  }
+
   try
   {
     fs::Status status(absolute);
@@ -775,17 +798,22 @@ void SITECommand::Execute()
 void SIZECommand::Execute()
 {
   fs::Path absolute = (client.WorkDir() / argStr).Expand();
-  
-  // check ACLs
+
+  util::Error e(PP::FileAllowed<PP::View>(client.User(), absolute));
+  if (!e)
+  {
+    client.Reply(ftp::ActionNotOkay, "SIZE failed 2: " + e.Message());
+    return;
+  }
   
   fs::Status status;
   try
   {
-    status.Reset(absolute);
+    status.Reset(dummySiteRoot + absolute);
   }
   catch (const util::SystemError& e)
   {
-    client.Reply(ftp::ActionNotOkay, "SIZE failed: " + e.Message());
+    client.Reply(ftp::ActionNotOkay, "SIZE failed 1: " + e.Message());
     return;
   }
   
