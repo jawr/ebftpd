@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -DDEBUG
-LIBS = -lcryptopp -lboost_thread -lboost_regex -lboost_serialization
-LIBS += -lboost_iostreams -lboost_system -lpthread -lssl -lboost_filesystem
+LIBS = -lmongoclient -lcryptopp -lboost_thread -lboost_regex -lboost_serialization
+LIBS += -lboost_iostreams -lboost_system -lpthread -lssl -lboost_filesystem 
 INCLUDE = -include stdafx.hpp -I.
 
 OBJECTS = \
@@ -20,6 +20,7 @@ OBJECTS = \
 	fs/file.o \
 	fs/directory.o \
 	fs/path.o \
+	acl/check.o \
 	acl/acl.o \
 	acl/user.o \
 	acl/permission.o \

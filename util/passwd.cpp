@@ -1,7 +1,7 @@
 #include <crypto++/osrng.h>
 #include <crypto++/sha.h>
 #include <crypto++/hex.h>
-#include "passwd.hpp"
+#include "util/passwd.hpp"
 
 using CryptoPP::AutoSeededRandomPool;
 using CryptoPP::SHA256;

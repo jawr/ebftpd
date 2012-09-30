@@ -88,12 +88,13 @@ struct OwnerFile
     (void) version;
   }
   
-  static const std::string ownerFilename;
   
   bool InnerLoad(FileLockPtr& lock);
   bool InnerSave(FileLockPtr& lock);
   
 public:
+  static const std::string ownerFilename;
+
   OwnerFile(const Path& parent) :
     parent(parent), ownerFile(parent / ownerFilename) { }
   
