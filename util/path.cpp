@@ -74,6 +74,7 @@ std::string Append(const std::string& path1, const std::string& path2)
   std::string result(path1.substr(0, len1));
   if (path2[0] != '/') result += '/';
   result += path2.substr(0, len2);
+  if (result.empty()) result = "/";
   return result;
 }
 
