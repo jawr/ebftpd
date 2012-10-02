@@ -98,7 +98,7 @@ bool Client::Accept(util::net::TCPListener& server)
   catch(const util::net::NetworkError& e)
   {
     SetFinished();
-    logger::error << "Error while acceting new client: " << e.Message() << logger::endl;
+    logger::error << "Error while accepting new client: " << e.Message() << logger::endl;
     return false;
   }
   return true;
