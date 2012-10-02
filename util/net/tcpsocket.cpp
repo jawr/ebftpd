@@ -7,6 +7,10 @@
 #include "util/signalguard.hpp"
 
 #include <iostream>
+namespace
+{
+  util::SignalGuard pipeGuard(SIGPIPE);
+}
 
 namespace util { namespace net
 {
@@ -144,7 +148,6 @@ size_t TCPSocket::Read(char* buffer, size_t bufferSize)
 
 void TCPSocket::Write(const char* buffer, size_t bufferLen)
 {
-  util::SignalGuard pipeGuard(SIGPIPE);
   
   if (tls.get())
   {
