@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -DDEBUG
-LIBS = -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
+LIBS = -lcrypto -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle -lssl
 INCLUDE = -I.
 
