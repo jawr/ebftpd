@@ -1,282 +1,83 @@
 #ifndef __CFG_SETTING_HPP
 #define __CFG_SETTING_HPP
+
 #include <string>
 #include <vector>
-#include "fs/path.hpp"
-namespace cfg
-{
-class Setting {};
 
-// Path settings
-class Path : virtual public Setting
+namespace cfg { namespace setting
 {
-  fs::Path path;
+class Setting {
 public:
-  Path(const std::string& path) : path(path) {};
-  ~Path() {};
+  virtual void Save() = 0;
 };
 
-class PathWithArgument : virtual public Setting
+class AsciiDownloads : public Setting
 {
-  fs::Path path;
-  std::string argument;
+  int size;
+  std::vector<string> masks;
 public:
-  PathWithArgument(const std::string& path, const std::string& argument) :
-    path(path), argument(argument) {};
-  ~PathWithArgument() {};
+  AsciiDownloads() {};
+  virtual void Save(const std::vector<std::string>& toks);
 };
 
-// ACL settings
-class ACLWithInt : virtual public Setting
+class Shutdown : public Setting
 {
-  std::vector<std::string> acl;
-  int argument;
+  acl::ACL;
 public:
-  ACLWithInt(int argument, std::vector<std::string>& acl) : acl(acl), 
-    argument(argument) {};
-  ~ACLWithInt() {};
+  Shutdown() {};
+  virtual void Save(const std::vector<std::string>& toks);
 };
 
-class ACLWithArgument : virtual public Setting
+class FreeSpace : public Setting
 {
-  std::string argument;
-  std::vector<std::string> acl;
+  int amount;
 public:
-  ACLWithArgument(const std::string& argument, std::vector<std::string>& acl) :
-    argument(argument), acl(acl) {};
-  ~ACLWithArgument() {};
+  FreeSpace() {}
+  virtual void Save(const std::vector<std::string>& toks);
 };
 
-class ACLWithPath : virtual public Setting
+class UseDirSize : public Setting
 {
-  fs::Path path;
-  std::vector<std::string> acl;
+  char unit;
+  std::vector<fs::Path> paths;
 public:
-  ACLWithPath(const std::string& path, 
-    std::vector<std::string>& acl) : path(path), acl(acl) {};
-  ~ACLWithPath() {};
-  const fs::Path& Path() const { return path; };
+  UseDirSize() {};
+  virtual void Save(const std::vector<std::string>& toks);
 };
 
-class ACL : virtual public Setting
+class Timezone : public Setting
 {
-  std::vector<std::string> acl;
+  unsigned int hours;
 public:
-  ACL(std::vector<std::string>& acl) : acl(acl) {};
-  ACL(const std::string& acl) { acl.push_back(acl); };
-  ~ACL() {};
+  Timezone() {};
+  virtual void Save(const std::vector<std::string>& toks);
 };
 
-// Misc
-class StatSectionOpt : virtual public Setting
+class ColorMode : public Setting
 {
-  std::string keyword;
-  fs::Path path;
-  bool seperateCredits;
+  bool use;
 public:
-  StatSectionOpt(const std::string& keyword, const std::string& path,
-     bool seperateCredits) : keyword(keyword), path(path), 
-      seperateCredits(seperateCredits) {};
-  ~StatSectionOpt() {};
+  ColorMode() {};
+  virtual void Save(const std::vector<std::string>& toks);
 };
 
-class PathFilterOpt : virtual public Setting
-{
-  std::string group;
-  fs::Path messageFile;
-  std::vector<std::string> filters;
-public:
-  PathFilterOpt(const std::string& group, const std::string& messageFile,
-    const std::vector<std::string>& filters) : 
-      group(group), messageFile(messageFile), filters(filters) {};
-  ~PathFilterOpt() {};
-};
-
-enum When { PRE, POST };
-
-class Script : virtual public Setting
-{
-  std::string script;
-  When when;
-  fs::Path path;
-public:
-  Script(const std::string& script, When when, const std::string& path) :
-    script(script), when(when), path(path) {};
-  ~Script() {};
-};
-
-class SpeedLimitOpt : virtual public Setting
-{
-  fs::Path path;
-  int upload;
-  int download;
-  std::vector<std::string> acl;
-public:
-  SpeedLimitOpt(const std::string& path, int upload, int download, 
-    const std::vector<std::string>& acl) : path(path), upload(upload), download(download),
-    acl(acl) {};
-  ~SpeedLimitOpt() {};
-};
-
-class RequestsOpt : virtual public Setting
-{
-  fs::Path path;
-  int lines;
-public:
-  RequestsOpt(const std::string& path, int lines) : path(path), lines(lines) {};
-  ~RequestsOpt() {};
-};
-
-class IntWithArguments : virtual public Setting
-{
-  int first;
-  std::vector<std::string> arguments;
-public:
-  IntWithArguments(int first) : first(first), arguments() {};
-  IntWithArguments(int first, std::vector<std::string>& arguments) :
-    first(first), arguments(arguments) {};
-  ~IntWithArguments() {};
-};
-
-class IntWithBool : virtual public Setting
-{
-  int first;
-  bool enabled;
-public:
-  IntWithBool(int first, bool enabled=false) : first(first), enabled(enabled) {};
-  ~IntWithBool() {};
-};
-
-class NukedirStyleOpt : virtual public Setting
-{
-  std::string format;
-  int method;
-  int bytes;
-public:
-  NukedirStyleOpt(const std::string& format, int method, int bytes) :
-    format(format), method(method), bytes(bytes) {};
-  ~NukedirStyleOpt() {};
-};
-
-class SecureIpOpt : virtual public Setting
-{
-  int fields;
-  bool allowHostnames;
-  bool needIdent;
-  std::vector<std::string> acl;
-public:
-  SecureIpOpt(int fields, bool allowHostnames, bool needIdent,
-    const std::vector<std::string>& acl) :
-      fields(fields), allowHostnames(allowHostnames), needIdent(needIdent),
-      acl(acl) {};
-  ~SecureIpOpt() {};
-};
-
-class PasvAddrOpt : virtual public Setting
-{
-  std::string addr;
-  bool primary;
-public:
-  PasvAddrOpt(const std::string addr, bool primary=false) : addr(addr), 
-    primary(primary) {};
-  ~PasvAddrOpt() {};
-  void SetPrimary() { primary = true; };
-};
-
-class AllowFxpOpt : virtual public Setting
-{
-  bool downloads;
-  bool uploads;
-  bool logging;
-  std::vector<std::string> acl;
-public:
-  AllowFxpOpt(bool downloads, bool uploads, bool logging, const std::vector<std::string>& acl) :
-    downloads(downloads), uploads(uploads), logging(logging), acl(acl) {};
-  ~AllowFxpOpt() {};
-};
-
-class CreditlossOpt : virtual public Setting
-{
-  int multiplier;
-  bool leechers;
-  fs::Path path;
-  std::vector<std::string> acl;
-public:
-  CreditlossOpt(int multiplier, bool leechers, const std::string& path, 
-    std::vector<std::string>& acl) : multiplier(multiplier), leechers(leechers),
-      path(path), acl(acl) {};
-  ~CreditlossOpt() {};
-};
-
-class CreditcheckOpt : virtual public Setting
-{
-  fs::Path path;
-  int ratio;
-  std::vector<std::string> acl;
-public:
-  CreditcheckOpt(const std::string& path, int ratio, std::vector<std::string>& acl) :
-    path(path), ratio(ratio), acl(acl) {};
-  ~CreditcheckOpt() {};
-};
-
-class MsgPathOpt : virtual public Setting
-{
-  fs::Path path;
-  std::string filename;
-  std::vector<std::string> acl;
-public:
-  MsgPathOpt(const std::string& path, const std::string& filename, 
-    std::vector<std::string>& acl) : path(path), filename(filename), acl(acl) {};
-  ~MsgPathOpt() {};
-};
-
-class CscriptOpt : virtual public Setting
+class SitenameLong : public Setting
 {
   std::string name;
-  std::string command;
-  fs::Path path;
 public:
-  CscriptOpt(const std::string& name, const std::string& command, 
-    const std::string& path) : name(name), command(command), path(path) {};
-  ~CscriptOpt() {};
+  SitenameLong() {};
+  virtual void Save(const std::vector<std::string>& toks);
 };
 
-  
-enum SiteCmdMethod { EXEC, TEXT, IS };
-
-class SiteCmdOpt : virtual public Setting
+class SitenameShort : public Setting
 {
-  std::string command;
-  SiteCmdMethod method;
-  fs::Path file;
-  std::vector<std::string> arguments;
-  std::vector<std::string> acl;
+  std::string name;
 public:
-  // initalize with acl
-  SiteCmdOpt(const std::vector<std::string>& acl) :
-    command(), method(EXEC), file("/error/unconfigured"),
-    arguments(), acl(acl) {};
-  // initalize with site_cmd 
-  SiteCmdOpt(const std::string& command, SiteCmdMethod method, 
-    const std::string& file, const std::vector<std::string>& arguments) :
-    command(command), method(method), file(file), arguments(arguments), acl()  {};
-  // set alternative
-  void SetSiteCmd(const std::string& command, SiteCmdMethod method, 
-    const std::string& file, const std::vector<std::string>& arguments)
-  {
-    this->command = command;
-    this->method  = method;
-    this->file = fs::Path(file);
-    this->arguments = arguments;
-  };
-  void SetACL(const std::vector<std::string>& acl)
-  {
-    this->acl = acl;
-  };
-  ~SiteCmdOpt() {};
+  SitenameShort() {};
+  virtual void Save(const std::vector<std::string>& toks);
 };
-  
 
-  
-} // end cfg
+// end namespace
+}
+}
 #endif
