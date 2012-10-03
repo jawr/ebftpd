@@ -4,6 +4,7 @@
 #include <string>
 #include <boost/unordered_map.hpp>
 #include <tr1/memory>
+#include <tr1/unordered_map>
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
 #include "fs/path.hpp"
@@ -20,6 +21,9 @@ class Config
   std::string config;
  
   void Parse(const std::string& line);
+
+  typedef boost::function<void(setting::Setting*)> AddFunction;
+  std::tr1::unordered_map<std::string, AddFunction> registry;
 
   // containers
   std::vector<setting::AsciiDownloads*> asciiDownloads;
