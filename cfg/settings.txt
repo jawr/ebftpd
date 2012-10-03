@@ -1,76 +1,91 @@
-built with: cat cfg/setting.hpp | grep "public Setting" | grep -v "//" | cut -d' ' -f 2 > cfg/settings.txt
-AsciiDownloads
-Shutdown
-FreeSpace
-UseDirSize
-Timezone
-ColorMode
-SitenameLong
-SitenameShort
-LoginPrompt
-RootPath
-ReloadConfig
-Master
-SecureIp
-SecurePass
-DataPath
-PwdPath
-GrpPath
-BotscriptPath
-BouncerIp
-SpeedLimit
-SimXfers
-CalcCrc
-Xdupe
-MmapAmount
-DlSendfile
-UlBufferedForce
-MinHomedir
-ValidIp
-ActiveAddr
-PasvAddr
-Ports
-AllowFxp
-WelcomeMsg
-GoodbyeMsg
-Newsfile
-Banner
-Alias
-Cdpath
-IgnoreType
-Right
-StatSection
-PathFilter
-MaxUsers
-MaxUstats
-MaxGstats
-BannedUsers
-ShowDiz
-ShowTotals
-DlIncomplete
-FileDlCount
-DupeCheck
-Script
-IdleCommands
-TotalUsers
-Lslong
-HiddenFiles
-Noretrieve
-Tagline
-Email
-MultiplierMax
-Oneliners
-Requests
-Lastonline
-EmptyNuke
-Nodupecheck
-Creditcheck
-Creditloss
-NukedirStyle
-Hideuser
-Privgroup
-Msgpath
-Privpath
-SiteCmd
-MaxSitecmdLines
-Cscript
+const std::vector<AsciiDownloads>& AsciiDownloads() const { return asciiDownloads; }; 
+const std::vector<Shutdown>& Shutdown() const { return shutdown; }; 
+const std::vector<FreeSpace>& FreeSpace() const { return freeSpace; }; 
+const std::vector<UseDirSize>& UseDirSize() const { return useDirSize; }; 
+const std::vector<Timezone>& Timezone() const { return timezone; }; 
+const std::vector<ColorMode>& ColorMode() const { return colorMode; }; 
+const std::vector<SitenameLong>& SitenameLong() const { return sitenameLong; }; 
+const std::vector<SitenameShort>& SitenameShort() const { return sitenameShort; }; 
+const std::vector<LoginPrompt>& LoginPrompt() const { return loginPrompt; }; 
+const std::vector<RootPath>& RootPath() const { return rootPath; }; 
+const std::vector<ReloadConfig>& ReloadConfig() const { return reloadConfig; }; 
+const std::vector<Master>& Master() const { return master; }; 
+const std::vector<SecureIp>& SecureIp() const { return secureIp; }; 
+const std::vector<SecurePass>& SecurePass() const { return securePass; }; 
+const std::vector<DataPath>& DataPath() const { return dataPath; }; 
+const std::vector<PwdPath>& PwdPath() const { return pwdPath; }; 
+const std::vector<GrpPath>& GrpPath() const { return grpPath; }; 
+const std::vector<BotscriptPath>& BotscriptPath() const { return botscriptPath; }; 
+const std::vector<BouncerIp>& BouncerIp() const { return bouncerIp; }; 
+const std::vector<SpeedLimit>& SpeedLimit() const { return speedLimit; }; 
+const std::vector<SimXfers>& SimXfers() const { return simXfers; }; 
+const std::vector<CalcCrc>& CalcCrc() const { return calcCrc; }; 
+const std::vector<Xdupe>& Xdupe() const { return xdupe; }; 
+const std::vector<MmapAmount>& MmapAmount() const { return mmapAmount; }; 
+const std::vector<DlSendfile>& DlSendfile() const { return dlSendfile; }; 
+const std::vector<UlBufferedForce>& UlBufferedForce() const { return ulBufferedForce; }; 
+const std::vector<MinHomedir>& MinHomedir() const { return minHomedir; }; 
+const std::vector<ValidIp>& ValidIp() const { return validIp; }; 
+const std::vector<ActiveAddr>& ActiveAddr() const { return activeAddr; }; 
+const std::vector<PasvAddr>& PasvAddr() const { return pasvAddr; }; 
+const std::vector<Ports>& ActivePorts() const { return activePorts; }; 
+const std::vector<Ports>& PasvPorts() const { return pasvPorts; }; 
+const std::vector<AllowFxp>& AllowFxp() const { return allowFxp; }; 
+const std::vector<WelcomeMsg>& WelcomeMsg() const { return welcomeMsg; }; 
+const std::vector<GoodbyeMsg>& GoodbyeMsg() const { return goodbyeMsg; }; 
+const std::vector<Newsfile>& Newsfile() const { return newsfile; }; 
+const std::vector<Banner>& Banner() const { return banner; }; 
+const std::vector<Alias>& Alias() const { return alias; }; 
+const std::vector<Cdpath>& Cdpath() const { return cdpath; }; 
+const std::vector<IgnoreType>& IgnoreType() const { return ignoreType; }; 
+// rights section
+const std::vector<Right>& Delete() const { return delete_; }; 
+const std::vector<Right>& Deleteown() const { return deleteown; }; 
+const std::vector<Right>& Overwrite() const { return overwrite; }; 
+const std::vector<Right>& Resume() const { return resume; }; 
+const std::vector<Right>& Rename() const { return rename; }; 
+const std::vector<Right>& Renameown() const { return renameown; }; 
+const std::vector<Right>& Filemove() const { return filemove; }; 
+const std::vector<Right>& Makedir() const { return makedir; }; 
+const std::vector<Right>& Upload() const { return upload; }; 
+const std::vector<Right>& Download() const { return download; }; 
+const std::vector<Right>& Nuke() const { return nuke; }; 
+const std::vector<Right>& Dirlog() const { return dirlog; }; 
+const std::vector<Right>& Hideinwho() const { return hideinwho; }; 
+const std::vector<Right>& Freefile() const { return freefile; }; 
+// end rights section
+const std::vector<StatSection>& StatSection() const { return statSection; }; 
+const std::vector<PathFilter>& PathFilter() const { return pathFilter; }; 
+const std::vector<MaxUsers>& MaxUsers() const { return maxUsers; }; 
+const std::vector<MaxUstats>& MaxUstats() const { return maxUstats; }; 
+const std::vector<MaxGstats>& MaxGstats() const { return maxGstats; }; 
+const std::vector<BannedUsers>& BannedUsers() const { return bannedUsers; }; 
+const std::vector<ShowDiz>& ShowDiz() const { return showDiz; }; 
+const std::vector<ShowTotals>& ShowTotals() const { return showTotals; }; 
+const std::vector<DlIncomplete>& DlIncomplete() const { return dlIncomplete; }; 
+const std::vector<FileDlCount>& FileDlCount() const { return fileDlCount; }; 
+const std::vector<DupeCheck>& DupeCheck() const { return dupeCheck; }; 
+const std::vector<Script>& Script() const { return script; }; 
+const std::vector<IdleCommands>& IdleCommands() const { return idleCommands; }; 
+const std::vector<TotalUsers>& TotalUsers() const { return totalUsers; }; 
+const std::vector<Lslong>& Lslong() const { return lslong; }; 
+const std::vector<HiddenFiles>& HiddenFiles() const { return hiddenFiles; }; 
+const std::vector<Noretrieve>& Noretrieve() const { return noretrieve; }; 
+const std::vector<Tagline>& Tagline() const { return tagline; }; 
+const std::vector<Email>& Email() const { return email; }; 
+const std::vector<MultiplierMax>& MultiplierMax() const { return multiplierMax; }; 
+const std::vector<Oneliners>& Oneliners() const { return oneliners; }; 
+const std::vector<Requests>& Requests() const { return requests; }; 
+const std::vector<Lastonline>& Lastonline() const { return lastonline; }; 
+const std::vector<EmptyNuke>& EmptyNuke() const { return emptyNuke; }; 
+const std::vector<Nodupecheck>& Nodupecheck() const { return nodupecheck; }; 
+const std::vector<Creditcheck>& Creditcheck() const { return creditcheck; }; 
+const std::vector<Creditloss>& Creditloss() const { return creditloss; }; 
+const std::vector<NukedirStyle>& NukedirStyle() const { return nukedirStyle; }; 
+const std::vector<Hideuser>& Hideuser() const { return hideuser; }; 
+const std::vector<Privgroup>& Privgroup() const { return privgroup; }; 
+const std::vector<Msgpath>& Msgpath() const { return msgpath; }; 
+const std::vector<Privpath>& Privpath() const { return privpath; }; 
+const std::vector<SiteCmd>& SiteCmd() const { return siteCmd; }; 
+const std::vector<MaxSitecmdLines>& MaxSitecmdLines() const { return maxSitecmdLines; }; 
+const std::vector<Cscript>& Cscript() const { return cscript; }; 

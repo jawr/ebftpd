@@ -11,6 +11,7 @@ OBJECTS = \
 	cmd/dirlist.o \
 	cfg/config.o \
 	cfg/get.o \
+  cfg/setting.o \
 	ftp/listener.o \
 	ftp/client.o \
 	fs/direnumerator.o \
