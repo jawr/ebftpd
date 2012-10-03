@@ -37,14 +37,12 @@ protected:
   void InitialiseOpenSSL();
   virtual void CreateContext() = 0;
   void LoadCertificate();
-  virtual void InitialiseSessionCaching() = 0;
   void SelectCiphers();
   void InitialiseThreadSafety();
+  virtual void DerivedInitialise() = 0;
   
   static unsigned long ThreadIdCallback();
   static void MutexLockCallback(int mode, int n, const char * file, int line);
-  static RSA* GenerateRSA(int keyLength);
-  static RSA* TempRSACallback(SSL* session, int isExport, int keyLength);
 };
 
 class TLSClientContext : public TLSContext
@@ -54,6 +52,7 @@ class TLSClientContext : public TLSContext
 
   void CreateContext();
   void InitialiseSessionCaching() { }
+  void DerivedInitialise() { }
                    
 public:
   static void Initialise(const std::string& certificate = "",
@@ -70,6 +69,12 @@ class TLSServerContext : public TLSContext
 
   void CreateContext();
   void InitialiseSessionCaching() { }
+  void InitialiseDHKeyExchange();
+  void DerivedInitialise()
+  {
+    InitialiseSessionCaching();
+    InitialiseDHKeyExchange();
+  }
   
 public:
   static void Initialise(const std::string& certificate,

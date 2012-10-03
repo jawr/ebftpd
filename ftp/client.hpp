@@ -21,20 +21,35 @@ class RETRCommand;
 namespace ftp 
 {
 
-enum ClientState
+namespace ClientState
 {
-  LoggedOut,
-  WaitingPassword,
-  LoggedIn,
-  Finished,
-  NotBeforeAuth,
-  AnyState
+  enum Enum
+  {
+    LoggedOut,
+    WaitingPassword,
+    LoggedIn,
+    Finished,
+    NotBeforeAuth,
+    AnyState
+  };
 };
 
-enum EPSVMode
+namespace EPSVMode
 {
-  EPSVNormal,
-  EPSVFull
+  enum Enum
+  {
+    Normal,
+    Full
+  };
+};
+
+namespace DataType
+{
+  enum Enum
+  {
+    ASCII,
+    Binary
+  };
 };
 
 class Client : public util::ThreadSelect
@@ -44,7 +59,7 @@ class Client : public util::ThreadSelect
   fs::Path workDir;
   acl::User user;
   util::net::TCPSocket control;
-  ClientState state;
+  ::ftp::ClientState::Enum state;
   ReplyCode lastCode;
   std::string commandLine;
   int passwordAttemps;
@@ -56,7 +71,8 @@ class Client : public util::ThreadSelect
   bool dataProtected;
   bool passiveMode;
   util::net::Endpoint portEndpoint;
-  EPSVMode epsvMode;
+  ::ftp::EPSVMode::Enum epsvMode;
+  ::ftp::DataType::Enum dataType;
   
   static const int maxPasswordAttemps = 3;
   
@@ -65,13 +81,13 @@ class Client : public util::ThreadSelect
   void NextCommand();
   void ExecuteCommand();
   void Handle();
-  bool CheckState(ClientState reqdState);
+  bool CheckState(ClientState::Enum reqdState);
   
 public:
   Client() : workDir("/"), user("root", "password", "1"),
-     control(15), state(LoggedOut), lastCode(CodeNotSet),
+     control(15), state(ClientState::LoggedOut), lastCode(CodeNotSet),
      passwordAttemps(0), data(15), dataProtected(false),
-     passiveMode(false), epsvMode(EPSVNormal) { }
+     passiveMode(false), epsvMode(::ftp::EPSVMode::Normal) { }
   
   ~Client();
      
@@ -100,10 +116,15 @@ public:
   
   bool DataProtected() const { return dataProtected; }
   void SetDataProtected(bool dataProtected) { this->dataProtected = dataProtected; }
-  EPSVMode ExtPasvMode() const { return epsvMode; }
-  void SetExtPasvMode(EPSVMode epsvMode) { this->epsvMode = epsvMode; }
+
+  ::ftp::EPSVMode::Enum EPSVMode() const { return epsvMode; }
+  void SetEPSVMode(::ftp::EPSVMode::Enum epsvMode) { this->epsvMode = epsvMode; }
+
+  ::ftp::DataType::Enum DataType() const { return dataType; }
+  void SetDataType(::ftp::DataType::Enum dataType) { this->dataType = dataType; }
   
-  void DataInitialise(util::net::Endpoint& ep, bool passiveMode);
+  void DataInitPassive(util::net::Endpoint& ep, bool ipv4Only);
+  void DataInitActive(const util::net::Endpoint& ep);
   void DataOpen();
   void DataClose() { data.Close(); }
   
@@ -111,8 +132,8 @@ public:
               ftp::Client& client, const fs::Path& path, 
               const ListOptions& options, bool dataOutput);
               
-  friend class cmd::STORCommand;
-  friend class cmd::RETRCommand;
+  friend class cmd::STORCommand; // ugly
+  friend class cmd::RETRCommand; // ugly, interface needs improving so this isnt necessary
 };
 
 } /* ftp namespace */

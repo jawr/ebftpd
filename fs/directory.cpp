@@ -11,12 +11,12 @@
 #include <iostream>
 #include "logger/logger.hpp"
 
+extern const fs::Path dummySiteRoot;
+
 namespace fs
 {
-namespace
+namespace 
 {
-
-const Path dummySiteRoot = "/home/bioboy/ftpd/site";
 
 util::Error RemoveDirectory(const Path& path)
 {

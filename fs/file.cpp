@@ -10,38 +10,19 @@
 #include "fs/owner.hpp"
 #include "util/misc.hpp"
 
+extern const fs::Path dummySiteRoot;
+
 namespace fs
 {
-
-namespace
-{
-const std::string dummySiteRoot = "/home/bioboy/ftpd/site";
-
-}
-
-util::Error DeleteFile(const Path& path)
-{
-  Path real = dummySiteRoot + path;
-  if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
-  else return util::Error::Success();
-}
 
 util::Error DeleteFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
   // check ACLs
-  return DeleteFile(absolute);
-}
-
-// implement alternative rename for when not on same filesystem?
-// using copy / delete instead?
-util::Error RenameFile(const Path& oldPath, const Path& newPath)
-{
-  Path oldReal = dummySiteRoot + oldPath;
-  Path newReal = dummySiteRoot + newPath;
-
-  if (rename(oldReal.CString(), newReal.CString()) < 0) return util::Error::Failure(errno);
-  else return util::Error::Success();
+  Path real = dummySiteRoot + absolute;
+  if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
+  OwnerCache::Delete(real);
+  return util::Error::Success();
 }
 
 util::Error RenameFile(ftp::Client& client, const Path& oldPath,
@@ -50,7 +31,14 @@ util::Error RenameFile(ftp::Client& client, const Path& oldPath,
   Path oldAbsolute = (client.WorkDir() / oldPath).Expand();
   Path newAbsolute = (client.WorkDir() / newPath).Expand();
   // check ACLs
-  return RenameFile(oldAbsolute, newAbsolute);
+  Path oldReal = dummySiteRoot + oldAbsolute;
+  Path newReal = dummySiteRoot + newAbsolute;
+
+  Owner owner = OwnerCache::Owner(oldReal);
+  if (rename(oldReal.CString(), newReal.CString()) < 0) return util::Error::Failure(errno);
+  OwnerCache::Chown(newReal, owner);
+  OwnerCache::Delete(oldReal);
+  return util::Error::Success();
 }
 
 OutStreamPtr CreateFile(ftp::Client& client, const Path& path)
@@ -67,34 +55,24 @@ OutStreamPtr CreateFile(ftp::Client& client, const Path& path)
   return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
 }
 
-OutStreamPtr AppendFile(const Path& path)
-{
-  Path real = dummySiteRoot + path;
-  int fd = open(real.CString(), O_WRONLY | O_APPEND);
-  if (fd < 0) throw util::SystemError(errno);
-  return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
-}
-
 OutStreamPtr AppendFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
   // check ACLs
-  return AppendFile(absolute);
-}
-
-InStreamPtr OpenFile(const Path& path)
-{
-  Path real = dummySiteRoot + path;
-  int fd = open(real.CString(), O_RDONLY);
+  Path real = dummySiteRoot + absolute;
+  int fd = open(real.CString(), O_WRONLY | O_APPEND);
   if (fd < 0) throw util::SystemError(errno);
-  return InStreamPtr(new InStream(fd, boost::iostreams::close_handle));
+  return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
 }
 
 InStreamPtr OpenFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
   // check ACLs
-  return OpenFile(absolute);
+  Path real = dummySiteRoot + absolute;
+  int fd = open(real.CString(), O_RDONLY);
+  if (fd < 0) throw util::SystemError(errno);
+  return InStreamPtr(new InStream(fd, boost::iostreams::close_handle));
 }
 
 util::Error UniqueFile(ftp::Client& client, const Path& path, 

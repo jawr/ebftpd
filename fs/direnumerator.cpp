@@ -8,13 +8,10 @@
 
 #include <iostream>
 
+extern const fs::Path dummySiteRoot;
+
 namespace fs
 {
-
-namespace
-{
-const Path dummySiteRoot = "/home/bioboy/ftpd/site";
-}
 
 DirEnumerator::DirEnumerator() :
   client(0),
