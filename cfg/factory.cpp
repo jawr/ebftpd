@@ -27,7 +27,7 @@ Factory::Factory()
   Register("sim_xfers", new Creator<SimXfers>);
   Register("calc_crc", new Creator<CalcCrc>);
   Register("xdupe", new Creator<Xdupe>);
-  Register("mmap_amount", new Creator<MmapAmmount>);
+  Register("mmap_amount", new Creator<MmapAmount>);
   Register("dl_sendfile", new Creator<DlSendfile>);
   Register("ul_buffered_force", new Creator<UlBufferedForce>);
   Register("min_homedir", new Creator<MinHomedir>);
