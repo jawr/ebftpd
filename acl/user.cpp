@@ -89,6 +89,7 @@ bool User::CheckGID(gid_t gid)
 #ifdef ACL_USER_TEST
 
 #include <iostream>
+#include <mongo/client/dbclient.h>
 
 int main()
 {
@@ -98,7 +99,7 @@ int main()
   
   std::cout << u.VerifyPassword("test1234") << std::endl;
   std::cout << u.VerifyPassword("password") << std::endl;
-  u.Password("wowsers");
+  u.SetPassword("wowsers");
   std::cout << "pass changed" << std::endl;
   std::cout << u.VerifyPassword("wowsers") << std::endl;
   std::cout << u.VerifyPassword("w0000000000t") << std::endl;
@@ -109,7 +110,17 @@ int main()
   std::cout << u.Flags() << std::endl;
   u.DelFlags("17");
   std::cout << u.Flags() << std::endl;
-  
+
+  try
+  {
+    mongo::DBClientConnection c;
+    c.connect("localhost");
+    c.insert("ftpd.users", u.ToBSON());
+  }
+  catch (const mongo::DBException& e)
+  {
+    std::cout << "db connect: " << e.what() << std::endl;
+  }
 }
 
 #endif

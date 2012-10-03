@@ -10,6 +10,7 @@
 #include "util/scopeguard.hpp"
 #include "util/net/tcplistener.hpp"
 #include "cmd/factory.hpp"
+#include "util/net/interfaces.hpp"
 
 namespace ftp
 {
@@ -24,52 +25,53 @@ Client::~Client()
 bool Client::IsFinished() const
 {
   boost::lock_guard<boost::mutex> lock(mutex);
-  return state == Finished;
+  return state == ClientState::Finished;
 }
 
 void Client::SetLoggedIn()
 {
   boost::lock_guard<boost::mutex> lock(mutex);
-  state = LoggedIn;
+  state = ClientState::LoggedIn;
 }
 
 void Client::SetWaitingPassword()
 {
   boost::lock_guard<boost::mutex> lock(mutex);
-  state = WaitingPassword;
+  state = ClientState::WaitingPassword;
 }
 
 void Client::SetLoggedOut()
 {
   boost::lock_guard<boost::mutex> lock(mutex);
-  state = LoggedOut;
+  state = ClientState::LoggedOut;
 }
 
 void Client::SetFinished()
 {
   boost::lock_guard<boost::mutex> lock(mutex);
-  state = Finished;
+  state = ClientState::Finished;
 }
 
-bool Client::CheckState(ClientState reqdState)
+bool Client::CheckState(ClientState::Enum reqdState)
 {
-  if (state == reqdState || reqdState == AnyState) return true;
-  if (state == LoggedIn)
+  if (state == reqdState || reqdState == ClientState::AnyState) return true;
+  if (state == ClientState::LoggedIn)
     Reply(ftp::NotLoggedIn, "Already logged in.");
-  else if (state == WaitingPassword)
+  else if (state == ClientState::WaitingPassword)
     Reply(ftp::BadCommandSequence, "Expecting PASS comamnd.");
-  else if (state == LoggedOut && reqdState == WaitingPassword)
+  else if (state == ClientState::LoggedOut &&
+           reqdState == ClientState::WaitingPassword)
     Reply(ftp::BadCommandSequence, "Expecting USER command first.");
-  else if (reqdState == NotBeforeAuth)
+  else if (reqdState == ClientState::NotBeforeAuth)
   {
     if (!control.IsTLS())
       Reply(ftp::BadCommandSequence, "AUTH command must be issued first.");
     else
       return true;
   }
-  else if (state == LoggedOut)
+  else if (state == ClientState::LoggedOut)
     Reply(ftp::NotLoggedIn, "Not logged in.");
-  assert(state != Finished);
+  assert(state != ClientState::Finished);
   return false;
 }
 
@@ -206,7 +208,7 @@ void Client::ExecuteCommand()
     boost::trim(argStr);
   }
   
-  ftp::ClientState reqdState;
+  ClientState::Enum reqdState;
   std::auto_ptr<cmd::Command>
     command(cmd::Factory::Create(*this, argStr, args, reqdState));
   if (!command.get()) Reply(ftp::CommandUnrecognised, "Command not understood");
@@ -252,21 +254,30 @@ void Client::Run()
   (void) finishedGuard; /* silence unused variable warning */
 }
 
-void Client::DataInitialise(util::net::Endpoint& ep, bool passiveMode)
+void Client::DataInitPassive(util::net::Endpoint& ep, bool ipv4Only)
+{
+  using namespace util::net;
+
+  data.Close();
+  dataListen.Close();
+  IPAddress ip = control.LocalEndpoint().IP();
+  if (ipv4Only && ip.Family() == IPAddress::IPv6)
+  {
+    // let's get the IPv4 address for this interface
+    FindPartnerIP(ip, ip);
+  }
+  
+  dataListen.Listen(Endpoint(ip, Endpoint::AnyPort()));
+  ep = dataListen.Endpoint();
+  passiveMode = true;
+}
+
+void Client::DataInitActive(const util::net::Endpoint& ep)
 {
   data.Close();
   dataListen.Close();
-  if (passiveMode)
-  {
-    dataListen.Listen(util::net::Endpoint(control.LocalEndpoint().IP(),
-                      util::net::Endpoint::AnyPort()));
-    ep = dataListen.Endpoint();
-  }
-  else
-  {
-    portEndpoint = ep;
-  }
-  this->passiveMode = passiveMode;
+  data.Connect(ep);
+  passiveMode = false;
 }
 
 void Client::DataOpen()
@@ -275,10 +286,6 @@ void Client::DataOpen()
   {
     dataListen.Accept(data);
     dataListen.Close();
-  }
-  else
-  {
-    data.Connect(portEndpoint);
   }
   
   if (dataProtected)

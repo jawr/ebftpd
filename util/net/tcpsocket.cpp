@@ -15,6 +15,11 @@ namespace
 namespace util { namespace net
 {
 
+namespace
+{
+  util::SignalGuard pipeGuard(SIGPIPE);
+}
+
 const TimePair TCPSocket::defaultTimeout = TimePair(60, 0);
 
 TCPSocket::~TCPSocket()
@@ -148,7 +153,6 @@ size_t TCPSocket::Read(char* buffer, size_t bufferSize)
 
 void TCPSocket::Write(const char* buffer, size_t bufferLen)
 {
-  
   if (tls.get())
   {
     tls->Write(buffer, bufferLen);

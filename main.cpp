@@ -3,11 +3,22 @@
 #include "util/net/error.hpp"
 #include "logger/logger.hpp"
 #include "fs/owner.hpp"
+#include "fs/path.hpp"
+
+const char* dummySiteRootPtr = getenv("FTPD_ROOT");
+extern const fs::Path dummySiteRoot(dummySiteRootPtr ?  dummySiteRootPtr :
+                                    "/home/bioboy/ftpd/site");
 
 #ifndef TEST
 
 int main(int argc, char** argv)
 {
+  if (!dummySiteRootPtr)
+  {
+    logger::error << "set environment variable FTPD_ROOT to your site root directory" << logger::endl;
+    return 1;
+  }
+
   char *certificate = getenv("FTPD_CERT");
   if (!certificate)
   {
@@ -17,7 +28,7 @@ int main(int argc, char** argv)
   
   try
   {
-    util::net::TLSServerContext::Initialise(certificate, "AES256-SHA");
+    util::net::TLSServerContext::Initialise(certificate, "");
   }
   catch (const util::net::NetworkError& e)
   {

@@ -279,7 +279,6 @@ void DirectoryList::Execute()
 {
   fs::Path parent;
   std::queue<std::string> masks;
-  std::cout << parent << " " << masks.size() << std::endl;
   SplitPath(path, parent, masks);
   ListPath(parent, masks);
 }

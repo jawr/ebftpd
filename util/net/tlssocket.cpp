@@ -77,6 +77,7 @@ void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role)
     if (result == 1) break;
     else EvaluateResult(result);
   }
+  std::cout << SSL_version(session) << std::endl;
 }
 
 size_t TLSSocket::Read(char* buffer, size_t bufferSize)
