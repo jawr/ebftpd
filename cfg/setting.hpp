@@ -15,6 +15,7 @@ namespace cfg { namespace setting
 {
 class Setting {
 public:
+  virtual ~Setting() {};
   virtual void Save(std::vector<std::string>& toks) = 0;
   void Save(std::string& toks) {
     std::vector<std::string> temp;
