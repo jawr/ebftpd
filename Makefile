@@ -34,6 +34,7 @@ OBJECTS = \
 	util/passwd.o \
 	util/error.o \
 	util/logger.o \
+  util/string.o \
 	util/thread.o \
 	util/net/endpoint.o \
 	util/net/error.o \
