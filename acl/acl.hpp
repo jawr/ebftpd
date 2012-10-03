@@ -16,10 +16,10 @@ class ACL
   boost::ptr_vector<Permission> perms;
   boost::optional<bool> finalResult;
 
-  ACL() { }   
   void FromStringArg(const std::string& arg);
   
 public:
+  ACL() { }   
   bool Check(const User& user);
   static ACL FromString(const std::string& str);
 };
