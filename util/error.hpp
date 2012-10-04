@@ -44,6 +44,8 @@ class Error
     validErrno(true), message(ErrnoToMessage(errno_)) { }
   
 public:
+  Error() : success(false), errno_(0), validErrno(false),
+    message("Uninitialised") { }
 
   operator bool() const { return success; }
   

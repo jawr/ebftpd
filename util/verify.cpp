@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
-#include "verify.hpp"
+#include "util/verify.hpp"
 
 extern char *__progname;
 

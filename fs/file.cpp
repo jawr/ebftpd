@@ -9,8 +9,11 @@
 #include "ftp/client.hpp"
 #include "fs/owner.hpp"
 #include "util/misc.hpp"
+#include "acl/check.hpp"
 
 extern const fs::Path dummySiteRoot;
+
+namespace PP = acl::PathPermission;
 
 namespace fs
 {
@@ -18,7 +21,8 @@ namespace fs
 util::Error DeleteFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
-  // check ACLs
+  util::Error e = PP::FileAllowed<PP::Delete>(client.User(), absolute);
+  if (!e) return e;
   Path real = dummySiteRoot + absolute;
   if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
   OwnerCache::Delete(real);
@@ -29,8 +33,13 @@ util::Error RenameFile(ftp::Client& client, const Path& oldPath,
                  const Path& newPath)
 {
   Path oldAbsolute = (client.WorkDir() / oldPath).Expand();
+  util::Error e(PP::FileAllowed<PP::Rename>(client.User(), oldAbsolute));
+  if (!e) return e;
+
   Path newAbsolute = (client.WorkDir() / newPath).Expand();
-  // check ACLs
+  e = PP::FileAllowed<PP::Upload>(client.User(), newAbsolute);
+  if (!e) return e;
+
   Path oldReal = dummySiteRoot + oldAbsolute;
   Path newReal = dummySiteRoot + newAbsolute;
 
@@ -44,7 +53,8 @@ util::Error RenameFile(ftp::Client& client, const Path& oldPath,
 OutStreamPtr CreateFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
-  // check ACLs
+  util::Error e(PP::FileAllowed<PP::Upload>(client.User(), absolute));
+  if (!e) throw util::SystemError(e.Errno());
 
   Path real = dummySiteRoot + absolute;
   int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, 0777);
@@ -58,7 +68,9 @@ OutStreamPtr CreateFile(ftp::Client& client, const Path& path)
 OutStreamPtr AppendFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
-  // check ACLs
+  util::Error e = PP::FileAllowed<PP::Resume>(client.User(), absolute);
+  if (!e) throw util::SystemError(e.Errno());
+
   Path real = dummySiteRoot + absolute;
   int fd = open(real.CString(), O_WRONLY | O_APPEND);
   if (fd < 0) throw util::SystemError(errno);
@@ -68,7 +80,9 @@ OutStreamPtr AppendFile(ftp::Client& client, const Path& path)
 InStreamPtr OpenFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
-  // check ACLs
+  util::Error e = PP::FileAllowed<PP::Download>(client.User(), absolute);
+  if (!e) throw util::SystemError(e.Errno());
+
   Path real = dummySiteRoot + absolute;
   int fd = open(real.CString(), O_RDONLY);
   if (fd < 0) throw util::SystemError(errno);
@@ -79,6 +93,10 @@ util::Error UniqueFile(ftp::Client& client, const Path& path,
                        size_t filenameLength, Path& uniquePath)
 { 
   Path absolute = (client.WorkDir() / path).Expand();
+  
+  util::Error e = PP::FileAllowed<PP::Upload>(client.User(), absolute / "dummyfile");
+  if (!e) throw util::SystemError(e.Errno());
+
   Path real = dummySiteRoot + absolute;
 
   for (int i = 0; i < 1000; ++i)
