@@ -1,3 +1,4 @@
+#include <tr1/memory>
 #include "ftp/listener.hpp"
 #include "util/net/tlscontext.hpp"
 #include "util/net/error.hpp"
@@ -5,6 +6,7 @@
 #include "fs/owner.hpp"
 #include "fs/path.hpp"
 #include "cfg/config.hpp"
+#include "cfg/get.hpp"
 #include "cfg/exception.hpp"
 
 const char* dummySiteRootPtr = getenv("FTPD_ROOT");
@@ -17,14 +19,19 @@ int main(int argc, char** argv)
 {
   try
   {
-    cfg::Config config("ftpd.conf");
-    const std::string& certificate = config.TlsCertificate()->ToString();
-    util::net::TLSServerContext::Initialise(certificate, "");
+    cfg::Config *config = new cfg::Config("ftpd.conf");
+    cfg::UpdateShared(std::tr1::shared_ptr<cfg::Config>(config));
   }
   catch (const cfg::ConfigError& e)
   {
     logger::error << e.what() << logger::endl;
     return 1;
+  }
+  
+  try
+  {
+    const std::string& certificate = cfg::Get()->TlsCertificate()->ToString();
+    util::net::TLSServerContext::Initialise(certificate, "");
   }
   catch (const util::net::NetworkError& e)
   {
