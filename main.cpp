@@ -4,6 +4,8 @@
 #include "logger/logger.hpp"
 #include "fs/owner.hpp"
 #include "fs/path.hpp"
+#include "cfg/config.hpp"
+#include "cfg/exception.hpp"
 
 const char* dummySiteRootPtr = getenv("FTPD_ROOT");
 extern const fs::Path dummySiteRoot(dummySiteRootPtr ?  dummySiteRootPtr :
@@ -13,22 +15,16 @@ extern const fs::Path dummySiteRoot(dummySiteRootPtr ?  dummySiteRootPtr :
 
 int main(int argc, char** argv)
 {
-  if (!dummySiteRootPtr)
-  {
-    logger::error << "set environment variable FTPD_ROOT to your site root directory" << logger::endl;
-    return 1;
-  }
-
-  char *certificate = getenv("FTPD_CERT");
-  if (!certificate)
-  {
-    logger::error << "set environment variable FTPD_CERT to your certificate file" << logger::endl;
-    return 1;
-  }
-  
   try
   {
+    cfg::Config config("ftpd.conf");
+    const std::string& certificate = config.TlsCertificate()->ToString();
     util::net::TLSServerContext::Initialise(certificate, "");
+  }
+  catch (const cfg::ConfigError& e)
+  {
+    logger::error << e.what() << logger::endl;
+    return 1;
   }
   catch (const util::net::NetworkError& e)
   {

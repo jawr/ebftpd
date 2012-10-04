@@ -23,8 +23,8 @@ struct NoSetting : public ConfigError
 
 struct RequiredSetting : public ConfigError
 {
-  RequiredSetting() : ConfigError("Missing equired setting.") {}
-  RequiredSetting(const std::string& message) : ConfigError(message) {}
+  RequiredSetting() : ConfigError("Missing required setting.") {}
+  RequiredSetting(const std::string& message) : ConfigError("Missing required setting: " + message) {}
 };
 
 }

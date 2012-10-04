@@ -146,6 +146,8 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
       throw;
     }
   }
+
+  SanityCheck();
 }
 
 void Config::Parse(const std::string& line, Factory& factory) {
@@ -194,13 +196,12 @@ bool Config::CheckSetting(const std::string& name)
 {
   std::tr1::unordered_map<std::string, int>::const_iterator it;
   it = settingsCache.find(name);
-  return (it == settingsCache.end());
+  return (it != settingsCache.end());
 }
 
-bool Config::SanityCheck()
+void Config::SanityCheck()
 {
   if (!CheckSetting("tls_certificate")) throw RequiredSetting("tls_certificate");
-  return true;
 }
 
 }
@@ -208,9 +209,16 @@ bool Config::SanityCheck()
 #ifdef CFG_CONFIG_TEST
 int main()
 {
-  cfg::Config c("glftpd.conf");
-  const std::vector<cfg::setting::Right*>& x = c.Download();
-  logger::ftpd << "Download: " << x.size() << logger::endl;
+  try
+  {
+    cfg::Config c("glftpd.conf");
+  }
+  catch(const cfg::ConfigError& e)
+  {
+    logger::ftpd << e.what() << logger::endl;
+    return 1;
+  }
+  logger::ftpd << "Config loaded." << logger::endl;
   return 0;
 }
 #endif

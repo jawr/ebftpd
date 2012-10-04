@@ -24,7 +24,7 @@ class Config
   void Parse(const std::string& line, Factory& f);
   
   bool CheckSetting(const std::string& name);
-  bool SanityCheck();
+  void SanityCheck();
 
   typedef boost::function<void(setting::Setting*)> AddFunction;
   typedef std::tr1::unordered_map<std::string, AddFunction> Registry;
