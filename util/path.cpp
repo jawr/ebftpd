@@ -2,7 +2,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include "path.hpp"
+#include "util/path.hpp"
 
 namespace util { namespace path
 {
@@ -74,6 +74,7 @@ std::string Append(const std::string& path1, const std::string& path2)
   std::string result(path1.substr(0, len1));
   if (path2[0] != '/') result += '/';
   result += path2.substr(0, len2);
+  if (result.empty()) result = "/";
   return result;
 }
 
@@ -82,6 +83,7 @@ std::string Dirname(std::string path)
   TrimTrailingSlash(path);
   if (path == "/") return path;
   std::string::size_type pos = path.find_last_of('/');
+  if (pos == 0) return "/";
   if (pos == std::string::npos) return "";
   return path.substr(0, pos);
 }
