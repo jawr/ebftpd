@@ -1,6 +1,7 @@
 #ifndef __CFG_FACTOTY_HPP
 #define __CFG_FACTORY_HPP
 #include <string>
+#include <tr1/memory>
 #include <tr1/unordered_map>
 #include "cfg/setting.hpp"
 namespace cfg
@@ -24,8 +25,9 @@ public:
 
 class Factory
 {
-  std::tr1::unordered_map<std::string, 
-    CreatorBase<setting::Setting*> > registry;
+  typedef std::tr1::unordered_map<std::string, 
+    CreatorBase<setting::Setting>* > Registry;
+  Registry registry;
 public:
   Factory();
   setting::Setting *Create(const std::string& name);
