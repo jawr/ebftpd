@@ -20,5 +20,11 @@ struct NoSetting : public ConfigError
   NoSetting() : ConfigError("Error parsing setting") {}
   NoSetting(const std::string& message) : ConfigError(message) {}
 };
+
+struct RequiredSetting : public ConfigError
+  RequiredSetting() : RequiredSetting("Missing equired setting.") {}
+  RequiredSetting(const std::string& message) : ConfigError(message) {}
+};
+
 }
 #endif
