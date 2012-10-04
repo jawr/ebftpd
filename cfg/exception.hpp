@@ -22,7 +22,8 @@ struct NoSetting : public ConfigError
 };
 
 struct RequiredSetting : public ConfigError
-  RequiredSetting() : RequiredSetting("Missing equired setting.") {}
+{
+  RequiredSetting() : ConfigError("Missing equired setting.") {}
   RequiredSetting(const std::string& message) : ConfigError(message) {}
 };
 

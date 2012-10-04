@@ -8,6 +8,13 @@
 namespace cfg { namespace setting
 {
 
+void TlsCertificate::Save(std::vector<std::string>& toks)
+{
+  path = fs::Path(toks.at(0));
+};
+
+// glftpd 
+
 void AsciiDownloads::Save(std::vector<std::string>& toks)
 {
   size = (toks.at(0) == "*") ? -1 : boost::lexical_cast<int>(toks.at(0));
