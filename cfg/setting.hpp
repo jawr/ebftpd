@@ -30,6 +30,8 @@ class TlsCertificate : public Setting
 public:
   TlsCertificate() {};
   virtual void Save(std::vector<std::string>& toks);
+
+  const std::string& ToString() const { return path.ToString(); };
 };
 
 // glftpd
