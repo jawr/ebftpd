@@ -30,12 +30,12 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
   registry.insert(std::make_pair("sitename_long", boost::bind(&Config::AddSitenameLong, this, _1)));
   registry.insert(std::make_pair("sitename_short", boost::bind(&Config::AddSitenameShort, this, _1)));
   registry.insert(std::make_pair("login_prompt", boost::bind(&Config::AddLoginPrompt, this, _1)));
-  registry.insert(std::make_pair("root_path", boost::bind(&Config::AddRootPath, this, _1)));
+  registry.insert(std::make_pair("rootpath", boost::bind(&Config::AddRootpath, this, _1)));
   registry.insert(std::make_pair("reload_config", boost::bind(&Config::AddReloadConfig, this, _1)));
   registry.insert(std::make_pair("master", boost::bind(&Config::AddMaster, this, _1)));
   registry.insert(std::make_pair("secure_ip", boost::bind(&Config::AddSecureIp, this, _1)));
   registry.insert(std::make_pair("secure_pass", boost::bind(&Config::AddSecurePass, this, _1)));
-  registry.insert(std::make_pair("data_path", boost::bind(&Config::AddDataPath, this, _1)));
+  registry.insert(std::make_pair("datapath", boost::bind(&Config::AddDatapath, this, _1)));
   registry.insert(std::make_pair("pwd_path", boost::bind(&Config::AddPwdPath, this, _1)));
   registry.insert(std::make_pair("grp_path", boost::bind(&Config::AddGrpPath, this, _1)));
   registry.insert(std::make_pair("botscript_path", boost::bind(&Config::AddBotscriptPath, this, _1)));
@@ -75,6 +75,7 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
   registry.insert(std::make_pair("dirlog", boost::bind(&Config::AddDirlog, this, _1)));
   registry.insert(std::make_pair("hideinwho", boost::bind(&Config::AddHideinwho, this, _1)));
   registry.insert(std::make_pair("freefile", boost::bind(&Config::AddFreefile, this, _1)));
+  registry.insert(std::make_pair("nostats", boost::bind(&Config::AddNostats, this, _1)));
   registry.insert(std::make_pair("stat_section", boost::bind(&Config::AddStatSection, this, _1)));
   registry.insert(std::make_pair("path-filter", boost::bind(&Config::AddPathFilter, this, _1)));
   registry.insert(std::make_pair("max_users", boost::bind(&Config::AddMaxUsers, this, _1)));
@@ -120,6 +121,8 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
 
   if (!io.is_open()) throw ConfigFileError();
 
+  Factory f;
+
   while (io.good())
   {
     std::getline(io, line);
@@ -128,7 +131,7 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
     if (line.size() > 0 && line.at(0) == '#') continue;
     try 
     {
-      Parse(line);
+      Parse(line, f);
     } 
     catch (NoSetting &e) // handle properly
     {
@@ -137,12 +140,13 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
     catch (...)
     {
       logger::ftpd << "super error on line " << i << logger::endl;
+      logger::ftpd << line << logger::endl;
       throw;
     }
   }
 }
 
-void Config::Parse(const std::string& line) {
+void Config::Parse(const std::string& line, Factory& factory) {
   std::vector<std::string> toks;
   boost::split(toks, line, boost::is_any_of("\t "));
   if (toks.size() == 0) return;
@@ -160,8 +164,27 @@ void Config::Parse(const std::string& line) {
 
   // parse string
   boost::algorithm::to_lower(opt);
-  //SetSetting(opt, toks);
-  // push onto setting's vector
+
+  // plan to rehaul this area in the future to sway from glftpd's inconsitencies
+  // check if we have a perm to parse
+  if (opt.at(0) == '-' || opt.find("custom-") != std::string::npos)
+  {
+    std::vector<std::string> temp;
+    boost::split(temp, opt, boost::is_any_of("-"));
+    if (temp.size() > 1) temp.erase(temp.begin());
+    // loop and update
+    return;
+  }
+
+  cfg::setting::Setting *set = factory.Create(opt);
+  if (set == 0)
+    throw cfg::NoSetting("No setting found for: " + opt);
+  set->Save(toks);
+
+  
+  registry[opt](set);
+
+  // todo: build internal cache to easily manage required
   
 }
 
@@ -172,6 +195,8 @@ void Config::Parse(const std::string& line) {
 int main()
 {
   cfg::Config c("glftpd.conf");
+  const std::vector<cfg::setting::Right*>& x = c.Download();
+  logger::ftpd << "Download: " << x.size() << logger::endl;
   return 0;
 }
 #endif

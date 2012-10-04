@@ -61,7 +61,7 @@ void LoginPrompt::Save(std::vector<std::string>& toks)
   arg = toks.at(0);
 }
 
-void RootPath::Save(std::vector<std::string>& toks)
+void Rootpath::Save(std::vector<std::string>& toks)
 {
   path = fs::Path(toks.at(0));
 }
@@ -92,7 +92,7 @@ void SecurePass::Save(std::vector<std::string>& toks)
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-void DataPath::Save(std::vector<std::string>& toks)
+void Datapath::Save(std::vector<std::string>& toks)
 {
   path = fs::Path(toks.at(0));
 }
@@ -301,7 +301,7 @@ void ShowDiz::Save(std::vector<std::string>& toks)
 
 void ShowTotals::Save(std::vector<std::string>& toks)   
 {
-  maxLines = boost::lexical_cast<int>(toks.at(0));
+  maxLines = (toks.at(0) == "*") ? -1 : boost::lexical_cast<int>(toks.at(0));
   toks.erase(toks.begin());
   paths = toks;
 }
@@ -412,7 +412,10 @@ void Lastonline::Save(std::vector<std::string>& toks)
       throw cfg::ConfigError("Invalid lastonline param.");
       break;
   }
-  max = boost::lexical_cast<int>(toks.at(1));
+  if (toks.size() > 1)
+    max = boost::lexical_cast<int>(toks.at(1));
+  else
+    max = 10;
 }
 
 void EmptyNuke::Save(std::vector<std::string>& toks)   
@@ -456,6 +459,7 @@ void NukedirStyle::Save(std::vector<std::string>& toks)
       break;
     case 2:
       type = nukedirstyle::KEEP;
+      break;
     default:
       throw cfg::ConfigError("Invalid nukedir_style param.");
       break;
@@ -491,22 +495,11 @@ void Privpath::Save(std::vector<std::string>& toks)
 void SiteCmd::Save(std::vector<std::string>& toks)   
 {
   command = toks.at(0);
-  int i = boost::lexical_cast<int>(toks.at(1));
-  switch (i)
-  {
-    case 0:
-      type = sitecmd::EXEC;
-      break;
-    case 1:
-      type = sitecmd::TEXT;
-      break;
-    case 2:
-      type = sitecmd::IS;
-      break;
-    default:
-      throw cfg::ConfigError("Invalid site_cmd param.");
-      break;
-  }
+  if (toks.at(1) == "EXEC") type = sitecmd::EXEC;
+  else if (toks.at(1) == "TEXT") type = sitecmd::TEXT;
+  else if (toks.at(1) == "IS") type = sitecmd::IS;
+  else
+    throw cfg::ConfigError("Invalid site_cmd param.");
   script = toks.at(2);
   toks.erase(toks.begin(), toks.begin()+3);
   arguments = toks;

@@ -98,11 +98,11 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-class RootPath : public Setting
+class Rootpath : public Setting
 {
   fs::Path path;
 public:
-  RootPath() {};
+  Rootpath() {};
   virtual void Save(std::vector<std::string>& toks);
 };
 
@@ -142,11 +142,11 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-class DataPath : public Setting
+class Datapath : public Setting
 {
   fs::Path path;
 public:
-  DataPath() {};
+  Datapath() {};
   virtual void Save(std::vector<std::string>& toks);
 };
 
@@ -445,7 +445,7 @@ public:
 
 class ShowTotals : public Setting
 {
-  int maxLines;
+  unsigned int maxLines;
   std::vector<std::string> paths;
 public:
   ShowTotals() {};

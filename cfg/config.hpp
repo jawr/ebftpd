@@ -7,6 +7,7 @@
 #include <tr1/unordered_map>
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
+#include "cfg/factory.hpp"
 #include "fs/path.hpp"
 
 
@@ -20,10 +21,11 @@ class Config
 
   std::string config;
  
-  void Parse(const std::string& line);
+  void Parse(const std::string& line, Factory& f);
 
   typedef boost::function<void(setting::Setting*)> AddFunction;
-  std::tr1::unordered_map<std::string, AddFunction> registry;
+  typedef std::tr1::unordered_map<std::string, AddFunction> Registry;
+  Registry registry;
 
   // containers
   std::vector<setting::AsciiDownloads*> asciiDownloads;
@@ -35,12 +37,12 @@ class Config
   std::vector<setting::SitenameLong*> sitenameLong;
   std::vector<setting::SitenameShort*> sitenameShort;
   std::vector<setting::LoginPrompt*> loginPrompt;
-  std::vector<setting::RootPath*> rootPath;
+  std::vector<setting::Rootpath*> rootpath;
   std::vector<setting::ReloadConfig*> reloadConfig;
   std::vector<setting::Master*> master;
   std::vector<setting::SecureIp*> secureIp;
   std::vector<setting::SecurePass*> securePass;
-  std::vector<setting::DataPath*> dataPath;
+  std::vector<setting::Datapath*> datapath;
   std::vector<setting::PwdPath*> pwdPath;
   std::vector<setting::GrpPath*> grpPath;
   std::vector<setting::BotscriptPath*> botscriptPath;
@@ -132,12 +134,12 @@ class Config
   void AddSitenameLong(setting::Setting* s) { sitenameLong.push_back(Convert<setting::SitenameLong>(s)); };
   void AddSitenameShort(setting::Setting* s) { sitenameShort.push_back(Convert<setting::SitenameShort>(s)); };
   void AddLoginPrompt(setting::Setting* s) { loginPrompt.push_back(Convert<setting::LoginPrompt>(s)); };
-  void AddRootPath(setting::Setting* s) { rootPath.push_back(Convert<setting::RootPath>(s)); };
+  void AddRootpath(setting::Setting* s) { rootpath.push_back(Convert<setting::Rootpath>(s)); };
   void AddReloadConfig(setting::Setting* s) { reloadConfig.push_back(Convert<setting::ReloadConfig>(s)); };
   void AddMaster(setting::Setting* s) { master.push_back(Convert<setting::Master>(s)); };
   void AddSecureIp(setting::Setting* s) { secureIp.push_back(Convert<setting::SecureIp>(s)); };
   void AddSecurePass(setting::Setting* s) { securePass.push_back(Convert<setting::SecurePass>(s)); };
-  void AddDataPath(setting::Setting* s) { dataPath.push_back(Convert<setting::DataPath>(s)); };
+  void AddDatapath(setting::Setting* s) { datapath.push_back(Convert<setting::Datapath>(s)); };
   void AddPwdPath(setting::Setting* s) { pwdPath.push_back(Convert<setting::PwdPath>(s)); };
   void AddGrpPath(setting::Setting* s) { grpPath.push_back(Convert<setting::GrpPath>(s)); };
   void AddBotscriptPath(setting::Setting* s) { botscriptPath.push_back(Convert<setting::BotscriptPath>(s)); };
@@ -233,12 +235,12 @@ public:
   const std::vector<setting::SitenameLong*>& SitenameLong() const { return sitenameLong; }; 
   const std::vector<setting::SitenameShort*>& SitenameShort() const { return sitenameShort; }; 
   const std::vector<setting::LoginPrompt*>& LoginPrompt() const { return loginPrompt; }; 
-  const std::vector<setting::RootPath*>& RootPath() const { return rootPath; }; 
+  const std::vector<setting::Rootpath*>& Rootpath() const { return rootpath; }; 
   const std::vector<setting::ReloadConfig*>& ReloadConfig() const { return reloadConfig; }; 
   const std::vector<setting::Master*>& Master() const { return master; }; 
   const std::vector<setting::SecureIp*>& SecureIp() const { return secureIp; }; 
   const std::vector<setting::SecurePass*>& SecurePass() const { return securePass; }; 
-  const std::vector<setting::DataPath*>& DataPath() const { return dataPath; }; 
+  const std::vector<setting::Datapath*>& Datapath() const { return datapath; }; 
   const std::vector<setting::PwdPath*>& PwdPath() const { return pwdPath; }; 
   const std::vector<setting::GrpPath*>& GrpPath() const { return grpPath; }; 
   const std::vector<setting::BotscriptPath*>& BotscriptPath() const { return botscriptPath; }; 
@@ -279,6 +281,7 @@ public:
   const std::vector<setting::Right*>& Dirlog() const { return dirlog; }; 
   const std::vector<setting::Right*>& Hideinwho() const { return hideinwho; }; 
   const std::vector<setting::Right*>& Freefile() const { return freefile; }; 
+  const std::vector<setting::Right*>& Nostats() const { return nostats; }; 
   // end rights section
   const std::vector<setting::StatSection*>& StatSection() const { return statSection; }; 
   const std::vector<setting::PathFilter*>& PathFilter() const { return pathFilter; }; 
