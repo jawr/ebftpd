@@ -13,6 +13,12 @@ void TlsCertificate::Save(std::vector<std::string>& toks)
   path = fs::Path(toks.at(0));
 };
 
+void Sitepath::Save(std::vector<std::string>& toks)
+{
+  path = fs::Path(toks.at(0));
+};
+
+
 // glftpd 
 
 void AsciiDownloads::Save(std::vector<std::string>& toks)

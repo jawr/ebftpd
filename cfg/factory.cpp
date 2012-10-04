@@ -5,6 +5,7 @@ namespace cfg
 Factory::Factory()
 {
   Register("tls_certificate", new Creator<setting::TlsCertificate>);
+  Register("sitepath", new Creator<setting::Sitepath>);
   // glftpd
   Register("ascii_downloads", new Creator<setting::AsciiDownloads>);
   Register("shutdown", new Creator<setting::Shutdown>);

@@ -9,10 +9,6 @@
 #include "cfg/get.hpp"
 #include "cfg/exception.hpp"
 
-const char* dummySiteRootPtr = getenv("FTPD_ROOT");
-extern const fs::Path dummySiteRoot(dummySiteRootPtr ?  dummySiteRootPtr :
-                                    "/home/bioboy/ftpd/site");
-
 #ifndef TEST
 
 int main(int argc, char** argv)

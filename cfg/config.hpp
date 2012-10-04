@@ -33,6 +33,7 @@ class Config
   std::tr1::unordered_map<std::string, int> settingsCache;
 
   // containers
+  std::vector<setting::Sitepath*> sitepath;
   std::vector<setting::TlsCertificate*> tlsCertificate;
   // glftpd
   std::vector<setting::AsciiDownloads*> asciiDownloads;
@@ -132,6 +133,7 @@ class Config
   template <typename T> T *Convert(setting::Setting* s) { return (T*)s; };
 
   // adders
+  void AddSitepath(setting::Setting* s) { sitepath.push_back(Convert<setting::Sitepath>(s)); };
   void AddTlsCertificate(setting::Setting* s) { tlsCertificate.push_back(Convert<setting::TlsCertificate>(s)); };
   // glftpd
   void AddAsciiDownloads(setting::Setting* s) { asciiDownloads.push_back(Convert<setting::AsciiDownloads>(s)); };
@@ -235,6 +237,7 @@ public:
   int Version() const { return version; };
 
   // getters
+  const setting::Sitepath* Sitepath() const { return sitepath.back(); };
   const setting::TlsCertificate* TlsCertificate() const { return tlsCertificate.back(); };
   // glftpd
   const std::vector<setting::AsciiDownloads*>& AsciiDownloads() const { return asciiDownloads; }; 

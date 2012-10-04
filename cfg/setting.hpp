@@ -34,6 +34,16 @@ public:
   const std::string& ToString() const { return path.ToString(); };
 };
 
+class Sitepath : public Setting
+{
+  fs::Path path;
+public:
+  Sitepath() {};
+  virtual void Save(std::vector<std::string>& toks);
+
+  const std::string& ToString() const { return path.ToString(); };
+};
+
 // glftpd
 
 class AsciiDownloads : public Setting

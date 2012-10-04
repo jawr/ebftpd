@@ -6,10 +6,9 @@
 #include "fs/status.hpp"
 #include "ftp/client.hpp"
 #include "acl/check.hpp"
-
+#include "cfg/config.hpp"
+#include "cfg/get.hpp"
 #include <iostream>
-
-extern const fs::Path dummySiteRoot;
 
 namespace fs
 {
@@ -59,13 +58,13 @@ void DirEnumerator::Readdir()
   {  
     Path absolute = (client->WorkDir() / path).Expand();
     if (!PP::DirAllowed<PP::View>(client->User(), absolute)) return;
-    real = dummySiteRoot + absolute;
+    real = cfg::Get()->Sitepath()->ToString() + absolute;
   }
 
   std::tr1::shared_ptr<DIR> dp(opendir(real.CString()), closedir);
   if (!dp.get()) throw util::SystemError(errno);
   
-  size_t siteRootLen = dummySiteRoot.ToString().length();
+  size_t siteRootLen = cfg::Get()->Sitepath()->ToString().length();
   struct dirent de;
   struct dirent* dep;
   while (true)
