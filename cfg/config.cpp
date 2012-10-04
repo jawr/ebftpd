@@ -21,6 +21,7 @@ int Config::latestVersion = 0;
 Config::Config(const std::string& config) : version(++latestVersion), config(config)
 {
   // register
+  registry.insert(std::make_pair("sitepath", boost::bind(&Config::AddSitepath, this, _1)));
   registry.insert(std::make_pair("tls_certificate", boost::bind(&Config::AddTlsCertificate, this, _1)));
   // glftpd
   registry.insert(std::make_pair("ascii_downloads", boost::bind(&Config::AddAsciiDownloads, this, _1)));
@@ -202,6 +203,7 @@ bool Config::CheckSetting(const std::string& name)
 void Config::SanityCheck()
 {
   if (!CheckSetting("tls_certificate")) throw RequiredSetting("tls_certificate");
+  else if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
 }
 
 }

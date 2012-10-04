@@ -19,12 +19,12 @@
 #include "util/misc.hpp"
 #include "util/net/ftp.hpp"
 #include "acl/check.hpp"
-
+#include "cfg/config.hpp"
+#include "cfg/get.hpp"
 #include <iostream>
 
 namespace PP = acl::PathPermission;
 
-extern const fs::Path dummySiteRoot;
 
 namespace cmd
 {
@@ -352,7 +352,8 @@ void MDTMCommand::Execute()
     return;
   }
   
-  fs::Path real = fs::Path(dummySiteRoot) + absolute;
+  const std::string& sitepath = cfg::Get()->Sitepath()->ToString();
+  fs::Path real = fs::Path(sitepath) + absolute;
   
   fs::Status status;
   try
@@ -809,7 +810,7 @@ void SIZECommand::Execute()
   fs::Status status;
   try
   {
-    status.Reset(dummySiteRoot + absolute);
+    status.Reset(cfg::Get()->Sitepath()->ToString() + absolute);
   }
   catch (const util::SystemError& e)
   {

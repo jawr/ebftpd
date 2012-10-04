@@ -3,10 +3,9 @@
 #include "acl/user.hpp"
 #include "fs/path.hpp"
 #include "fs/owner.hpp"
-
+#include "cfg/get.hpp"
 #include <iostream>
 
-extern const std::string dummySiteRoot;
 
 namespace acl
 {
