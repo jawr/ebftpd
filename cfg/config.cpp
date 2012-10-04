@@ -21,6 +21,8 @@ int Config::latestVersion = 0;
 Config::Config(const std::string& config) : version(++latestVersion), config(config)
 {
   // register
+  registry.insert(std::make_pair("tls_certificate", boost::bind(&Config::AddTlsCertificate, this, _1)));
+  // glftpd
   registry.insert(std::make_pair("ascii_downloads", boost::bind(&Config::AddAsciiDownloads, this, _1)));
   registry.insert(std::make_pair("shutdown", boost::bind(&Config::AddShutdown, this, _1)));
   registry.insert(std::make_pair("free_space", boost::bind(&Config::AddFreeSpace, this, _1)));
@@ -181,13 +183,25 @@ void Config::Parse(const std::string& line, Factory& factory) {
     throw cfg::NoSetting("No setting found for: " + opt);
   set->Save(toks);
 
-  
+  // wrap 
   registry[opt](set);
 
-  // todo: build internal cache to easily manage required
-  
+  // update cache for sanity check
+  settingsCache[opt]++; 
 }
 
+bool Config::CheckSetting(const std::string& name)
+{
+  std::tr1::unordered_map<std::string, int>::const_iterator it;
+  it = settingsCache.find(name);
+  return (it == settingsCache.end());
+}
+
+bool Config::SanityCheck()
+{
+  if (!CheckSetting("tls_certificate")) throw RequiredSetting("tls_certificate");
+  return true;
+}
 
 }
 

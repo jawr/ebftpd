@@ -4,6 +4,8 @@ namespace cfg
 {
 Factory::Factory()
 {
+  Register("tls_certificate", new Creator<setting::TlsCertificate>);
+  // glftpd
   Register("ascii_downloads", new Creator<setting::AsciiDownloads>);
   Register("shutdown", new Creator<setting::Shutdown>);
   Register("free_space", new Creator<setting::FreeSpace>);

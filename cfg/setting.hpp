@@ -24,6 +24,16 @@ public:
   };
 };
 
+class TlsCertificate : public Setting
+{
+  fs::Path path;
+public:
+  TlsCertificate() {};
+  virtual void Save(std::vector<std::string>& toks);
+};
+
+// glftpd
+
 class AsciiDownloads : public Setting
 {
   int size;

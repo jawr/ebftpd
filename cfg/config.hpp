@@ -22,12 +22,19 @@ class Config
   std::string config;
  
   void Parse(const std::string& line, Factory& f);
+  
+  bool CheckSetting(const std::string& name);
+  bool SanityCheck();
 
   typedef boost::function<void(setting::Setting*)> AddFunction;
   typedef std::tr1::unordered_map<std::string, AddFunction> Registry;
   Registry registry;
 
+  std::tr1::unordered_map<std::string, int> settingsCache;
+
   // containers
+  std::vector<setting::TlsCertificate*> tlsCertificate;
+  // glftpd
   std::vector<setting::AsciiDownloads*> asciiDownloads;
   std::vector<setting::Shutdown*> shutdown;
   std::vector<setting::FreeSpace*> freeSpace;
@@ -125,6 +132,8 @@ class Config
   template <typename T> T *Convert(setting::Setting* s) { return (T*)s; };
 
   // adders
+  void AddTlsCertificate(setting::Setting* s) { tlsCertificate.push_back(Convert<setting::TlsCertificate>(s)); };
+  // glftpd
   void AddAsciiDownloads(setting::Setting* s) { asciiDownloads.push_back(Convert<setting::AsciiDownloads>(s)); };
   void AddShutdown(setting::Setting* s) { shutdown.push_back(Convert<setting::Shutdown>(s)); };
   void AddFreeSpace(setting::Setting* s) { freeSpace.push_back(Convert<setting::FreeSpace>(s)); };
@@ -226,6 +235,8 @@ public:
   int Version() const { return version; };
 
   // getters
+  const setting::TlsCertificate* TlsCertificate() const { return tlsCertificate.back(); };
+  // glftpd
   const std::vector<setting::AsciiDownloads*>& AsciiDownloads() const { return asciiDownloads; }; 
   const std::vector<setting::Shutdown*>& Shutdown() const { return shutdown; }; 
   const std::vector<setting::FreeSpace*>& FreeSpace() const { return freeSpace; }; 
