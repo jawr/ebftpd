@@ -13,36 +13,29 @@
 
 namespace cfg { namespace setting
 {
-class Setting {
-public:
-  virtual ~Setting() {};
-  virtual void Save(std::vector<std::string>& toks) = 0;
-  void Save(std::string& toks) {
-    std::vector<std::string> temp;
-    boost::split(temp, toks, boost::is_any_of("\t "));
-    Save(temp);                                                                 
-  };
-};
-
-class TlsCertificate : public Setting
+class Setting // a base class might be useful in the future.. maybe
 {
-  fs::Path path;
-public:
-  TlsCertificate() {};
-  virtual void Save(std::vector<std::string>& toks);
-
-  const std::string& ToString() const { return path.ToString(); };
 };
 
-class Sitepath : public Setting
+// generics
+class Right : public Setting
 {
-  fs::Path path;
+  std::string path;
+  // includes wildcards and possibley regex so can't be fs::Path path;
+  acl::ACL acl;
 public:
-  Sitepath() {};
+  Right() {};
   virtual void Save(std::vector<std::string>& toks);
-
-  const std::string& ToString() const { return path.ToString(); };
 };
+
+class ACLInt : public Setting
+{
+  int arg;
+  acl::ACL acl;
+public:
+  ACLInt(std::vector<std::string>& toks);
+};
+
 
 // glftpd
 
@@ -51,24 +44,7 @@ class AsciiDownloads : public Setting
   int size;
   std::vector<std::string> masks;
 public:
-  AsciiDownloads() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Shutdown : public Setting
-{
-  acl::ACL acl;
-public:
-  Shutdown() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class FreeSpace : public Setting
-{
-  int amount;
-public:
-  FreeSpace() {}
-  virtual void Save(std::vector<std::string>& toks);
+  AsciiDownloads(std::vector<std::string>& toks);
 };
 
 class UseDirSize : public Setting
@@ -76,8 +52,7 @@ class UseDirSize : public Setting
   char unit;
   std::vector<fs::Path> paths;
 public:
-  UseDirSize() {};
-  virtual void Save(std::vector<std::string>& toks);
+  UseDirSize(std::vector<std::string>& toks);
 };
 
 class Timezone : public Setting
@@ -85,62 +60,6 @@ class Timezone : public Setting
   unsigned int hours;
 public:
   Timezone() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class ColorMode : public Setting
-{
-  bool use;
-public:
-  ColorMode() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class SitenameLong : public Setting
-{
-  std::string name;
-public:
-  SitenameLong() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class SitenameShort : public Setting
-{
-  std::string name;
-public:
-  SitenameShort() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class LoginPrompt : public Setting
-{
-  std::string arg;
-public:
-  LoginPrompt() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Rootpath : public Setting
-{
-  fs::Path path;
-public:
-  Rootpath() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class ReloadConfig : public Setting
-{
-  fs::Path path;
-public:
-  ReloadConfig() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Master : public Setting
-{
-  std::vector<std::string> users;
-public:
-  Master() {};
   virtual void Save(std::vector<std::string>& toks);
 };
 
@@ -161,38 +80,6 @@ class SecurePass : public Setting
   acl::ACL acl;
 public:
   SecurePass() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Datapath : public Setting
-{
-  fs::Path path;
-public:
-  Datapath() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class PwdPath : public Setting
-{
-  fs::Path path;
-public:
-  PwdPath() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class GrpPath : public Setting
-{
-  fs::Path path;
-public:
-  GrpPath() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class BotscriptPath : public Setting
-{
-  fs::Path path;
-public:
-  BotscriptPath() {};
   virtual void Save(std::vector<std::string>& toks);
 };
 
@@ -224,77 +111,12 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-class CalcCrc : public Setting
-{
-  std::vector<std::string> masks;
-public:
-  CalcCrc() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Xdupe : public Setting
-{
-  std::vector<std::string> masks;
-public:
-  Xdupe() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class MmapAmount : public Setting
-{
-  int size;
-public:
-  MmapAmount() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class DlSendfile : public Setting
-{
-  int size;
-public:
-  DlSendfile() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class UlBufferedForce : public Setting
-{
-  int size;
-public:
-  UlBufferedForce() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class MinHomedir : public Setting
-{
-  fs::Path path;
-public:
-  MinHomedir() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class ValidIp : public Setting
-{
-  std::vector<std::string> ips;
-public:
-  ValidIp() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class ActiveAddr : public Setting
-{
-  std::string addr;
-public:
-  ActiveAddr() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
 class PasvAddr : public Setting
 {
   std::string addr;
   bool nat;
 public:
-  PasvAddr() {};
-  virtual void Save(std::vector<std::string>& toks);
+  PasvAddr(std::vector<std::string>& toks);
 };
 
 class PortRange
@@ -327,41 +149,6 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-class WelcomeMsg : public Setting
-{
-  fs::Path path;
-  acl::ACL acl;
-public:
-  WelcomeMsg() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class GoodbyeMsg : public Setting
-{
-  fs::Path path;
-  acl::ACL acl;
-public:
-  GoodbyeMsg() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Newsfile : public Setting
-{
-  fs::Path path;
-  acl::ACL acl;
-public:
-  Newsfile() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Banner : public Setting
-{
-  fs::Path path;
-public:
-  Banner() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
 class Alias : public Setting
 {
   std::string alias;
@@ -370,36 +157,6 @@ public:
   Alias() {};
   virtual void Save(std::vector<std::string>& toks);
 };
-
-class Cdpath : public Setting
-{
-  fs::Path path;
-public:
-  Cdpath() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class IgnoreType : public Setting
-{
-  std::vector<std::string> masks;
-public:
-  IgnoreType() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-// rights sections
-
-class Right : public Setting
-{
-  std::string path;
-  // includes wildcards and possibley regex so can't be fs::Path path;
-  acl::ACL acl;
-public:
-  Right() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-// end rights
 
 class StatSection : public Setting
 {
@@ -430,63 +187,12 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-class MaxUstats : public Setting
-{
-  int maxResults;
-  acl::ACL acl;
-public:
-  MaxUstats() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class MaxGstats : public Setting
-{
-  int maxResults;
-  acl::ACL acl;
-public:
-  MaxGstats() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class BannedUsers : public Setting
-{
-  std::vector<std::string> users;
-public:
-  BannedUsers() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class ShowDiz : public Setting
-{
-  std::string filename;
-  acl::ACL acl;
-public:
-  ShowDiz() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
 class ShowTotals : public Setting
 {
   unsigned int maxLines;
   std::vector<std::string> paths;
 public:
   ShowTotals() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class DlIncomplete : public Setting
-{
-  bool enabled;
-public:
-  DlIncomplete() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class FileDlCount : public Setting
-{
-  bool enabled;
-public:
-  FileDlCount() {};
   virtual void Save(std::vector<std::string>& toks);
 };
 
@@ -510,22 +216,6 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-class IdleCommands : public Setting
-{
-  std::vector<std::string> commands;
-public:
-  IdleCommands() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class TotalUsers : public Setting
-{
-  int limit;
-public:
-  TotalUsers() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
 class Lslong : public Setting
 {
   fs::Path bin;
@@ -545,54 +235,6 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-class Noretrieve : public Setting
-{
-  std::vector<std::string> masks;
-public:
-  Noretrieve() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-// do not implement
-// class NameRule : public Setting
-// {
-// public:
-//   NameRule() {};
-// };
-// end
-  
-class Tagline : public Setting
-{
-  std::string tagline;
-public:
-  Tagline() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Email : public Setting
-{
-  std::string email;
-public: 
-  Email() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class MultiplierMax : public Setting
-{
-  int max;
-public:
-  MultiplierMax() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Oneliners : public Setting
-{
-  int max;
-public:
-  Oneliners() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
 class Requests : public Setting
 {
   fs::Path path;
@@ -602,34 +244,13 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-// lastonline
-namespace lastonline
-{
-enum Type { ALL, TIMEOUT, ALL_WITH_ACTIVITY };
-} 
 class Lastonline : public Setting
 {
-  lastonline::Type type;
+  enum Type { ALL, TIMEOUT, ALL_WITH_ACTIVITY };
+  Type type;
   int max;
 public:
   Lastonline() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-// end lastonline
-
-class EmptyNuke : public Setting
-{
-  int amount;
-public:
-  EmptyNuke() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-class Nodupecheck : public Setting
-{
-  fs::Path path;
-public:
-  Nodupecheck() {};
   virtual void Save(std::vector<std::string>& toks);
 };
 
@@ -654,27 +275,14 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-// nukedir_style
-namespace nukedirstyle {
-  enum Type { DELETE_ALL, DELETE_FILES, KEEP };
-}
-
 class NukedirStyle : public Setting
 {
   std::string format;
-  nukedirstyle::Type type;
+  enum Type { DELETE_ALL, DELETE_FILES, KEEP };
+  Type type;
   int minBytes;
 public:
   NukedirStyle() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-// end
-
-class Hideuser : public Setting
-{
-  acl::ACL acl;
-public:
-  Hideuser() {};
   virtual void Save(std::vector<std::string>& toks);
 };
 
@@ -706,15 +314,11 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-// might want to register these in a seperate factory
-namespace sitecmd
-{
-  enum Type { EXEC, TEXT, IS };
-}
 class SiteCmd : public Setting
 {
   std::string command;
-  sitecmd::Type type;
+  enum Type { EXEC, TEXT, IS };
+  Type type;
   std::string script;
   std::vector<std::string> arguments;
 public:
@@ -722,25 +326,11 @@ public:
   virtual void Save(std::vector<std::string>& toks);
 };
 
-// end
-
-class MaxSitecmdLines : public Setting
-{
-  int max;
-public:
-  MaxSitecmdLines() {};
-  virtual void Save(std::vector<std::string>& toks);
-};
-
-// custom scripts
-namespace cscript
-{
-  enum Type { PRE, POST };
-}
 class Cscript : public Setting
 {
   std::string command;
-  cscript::Type type;
+  enum Type { PRE, POST };
+  Type type;
   fs::Path script;
 public:
   Cscript() {};
