@@ -5,8 +5,8 @@
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/function.hpp>                                                   
-#include <boost/bind.hpp>                                                       
+#include <boost/function.hpp>                                   
+#include <boost/bind.hpp>                                     
 #include "cfg/config.hpp"
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
@@ -20,111 +20,11 @@ int Config::latestVersion = 0;
 
 Config::Config(const std::string& config) : version(++latestVersion), config(config)
 {
-  // register
-  registry.insert(std::make_pair("sitepath", boost::bind(&Config::AddSitepath, this, _1)));
-  registry.insert(std::make_pair("tls_certificate", boost::bind(&Config::AddTlsCertificate, this, _1)));
-  // glftpd
-  registry.insert(std::make_pair("ascii_downloads", boost::bind(&Config::AddAsciiDownloads, this, _1)));
-  registry.insert(std::make_pair("shutdown", boost::bind(&Config::AddShutdown, this, _1)));
-  registry.insert(std::make_pair("free_space", boost::bind(&Config::AddFreeSpace, this, _1)));
-  registry.insert(std::make_pair("use_dir_size", boost::bind(&Config::AddUseDirSize, this, _1)));
-  registry.insert(std::make_pair("timezone", boost::bind(&Config::AddTimezone, this, _1)));
-  registry.insert(std::make_pair("color_mode", boost::bind(&Config::AddColorMode, this, _1)));
-  registry.insert(std::make_pair("sitename_long", boost::bind(&Config::AddSitenameLong, this, _1)));
-  registry.insert(std::make_pair("sitename_short", boost::bind(&Config::AddSitenameShort, this, _1)));
-  registry.insert(std::make_pair("login_prompt", boost::bind(&Config::AddLoginPrompt, this, _1)));
-  registry.insert(std::make_pair("rootpath", boost::bind(&Config::AddRootpath, this, _1)));
-  registry.insert(std::make_pair("reload_config", boost::bind(&Config::AddReloadConfig, this, _1)));
-  registry.insert(std::make_pair("master", boost::bind(&Config::AddMaster, this, _1)));
-  registry.insert(std::make_pair("secure_ip", boost::bind(&Config::AddSecureIp, this, _1)));
-  registry.insert(std::make_pair("secure_pass", boost::bind(&Config::AddSecurePass, this, _1)));
-  registry.insert(std::make_pair("datapath", boost::bind(&Config::AddDatapath, this, _1)));
-  registry.insert(std::make_pair("pwd_path", boost::bind(&Config::AddPwdPath, this, _1)));
-  registry.insert(std::make_pair("grp_path", boost::bind(&Config::AddGrpPath, this, _1)));
-  registry.insert(std::make_pair("botscript_path", boost::bind(&Config::AddBotscriptPath, this, _1)));
-  registry.insert(std::make_pair("bouncer_ip", boost::bind(&Config::AddBouncerIp, this, _1)));
-  registry.insert(std::make_pair("speed_limit", boost::bind(&Config::AddSpeedLimit, this, _1)));
-  registry.insert(std::make_pair("sim_xfers", boost::bind(&Config::AddSimXfers, this, _1)));
-  registry.insert(std::make_pair("calc_crc", boost::bind(&Config::AddCalcCrc, this, _1)));
-  registry.insert(std::make_pair("xdupe", boost::bind(&Config::AddXdupe, this, _1)));
-  registry.insert(std::make_pair("mmap_amount", boost::bind(&Config::AddMmapAmount, this, _1)));
-  registry.insert(std::make_pair("dl_sendfile", boost::bind(&Config::AddDlSendfile, this, _1)));
-  registry.insert(std::make_pair("ul_buffered_force", boost::bind(&Config::AddUlBufferedForce, this, _1)));
-  registry.insert(std::make_pair("min_homedir", boost::bind(&Config::AddMinHomedir, this, _1)));
-  registry.insert(std::make_pair("valid_ip", boost::bind(&Config::AddValidIp, this, _1)));
-  registry.insert(std::make_pair("active_addr", boost::bind(&Config::AddActiveAddr, this, _1)));
-  registry.insert(std::make_pair("pasv_addr", boost::bind(&Config::AddPasvAddr, this, _1)));
-  registry.insert(std::make_pair("active_ports", boost::bind(&Config::AddActivePorts, this, _1)));
-  registry.insert(std::make_pair("pasv_ports", boost::bind(&Config::AddPasvPorts, this, _1)));
-  registry.insert(std::make_pair("allow_fxp", boost::bind(&Config::AddAllowFxp, this, _1)));
-  registry.insert(std::make_pair("welcome_msg", boost::bind(&Config::AddWelcomeMsg, this, _1)));
-  registry.insert(std::make_pair("goodbye_msg", boost::bind(&Config::AddGoodbyeMsg, this, _1)));
-  registry.insert(std::make_pair("newsfile", boost::bind(&Config::AddNewsfile, this, _1)));
-  registry.insert(std::make_pair("banner", boost::bind(&Config::AddBanner, this, _1)));
-  registry.insert(std::make_pair("alias", boost::bind(&Config::AddAlias, this, _1)));
-  registry.insert(std::make_pair("cdpath", boost::bind(&Config::AddCdpath, this, _1)));
-  registry.insert(std::make_pair("ignore_type", boost::bind(&Config::AddIgnoreType, this, _1)));
-  registry.insert(std::make_pair("delete", boost::bind(&Config::AddDelete, this, _1)));
-  registry.insert(std::make_pair("deleteown", boost::bind(&Config::AddDeleteown, this, _1)));
-  registry.insert(std::make_pair("overwrite", boost::bind(&Config::AddOverwrite, this, _1)));
-  registry.insert(std::make_pair("resume", boost::bind(&Config::AddResume, this, _1)));
-  registry.insert(std::make_pair("rename", boost::bind(&Config::AddRename, this, _1)));
-  registry.insert(std::make_pair("renameown", boost::bind(&Config::AddRenameown, this, _1)));
-  registry.insert(std::make_pair("filemove", boost::bind(&Config::AddFilemove, this, _1)));
-  registry.insert(std::make_pair("makedir", boost::bind(&Config::AddMakedir, this, _1)));
-  registry.insert(std::make_pair("upload", boost::bind(&Config::AddUpload, this, _1)));
-  registry.insert(std::make_pair("download", boost::bind(&Config::AddDownload, this, _1)));
-  registry.insert(std::make_pair("nuke", boost::bind(&Config::AddNuke, this, _1)));
-  registry.insert(std::make_pair("dirlog", boost::bind(&Config::AddDirlog, this, _1)));
-  registry.insert(std::make_pair("hideinwho", boost::bind(&Config::AddHideinwho, this, _1)));
-  registry.insert(std::make_pair("freefile", boost::bind(&Config::AddFreefile, this, _1)));
-  registry.insert(std::make_pair("nostats", boost::bind(&Config::AddNostats, this, _1)));
-  registry.insert(std::make_pair("stat_section", boost::bind(&Config::AddStatSection, this, _1)));
-  registry.insert(std::make_pair("path-filter", boost::bind(&Config::AddPathFilter, this, _1)));
-  registry.insert(std::make_pair("max_users", boost::bind(&Config::AddMaxUsers, this, _1)));
-  registry.insert(std::make_pair("max_ustats", boost::bind(&Config::AddMaxUstats, this, _1)));
-  registry.insert(std::make_pair("max_gstats", boost::bind(&Config::AddMaxGstats, this, _1)));
-  registry.insert(std::make_pair("banned_users", boost::bind(&Config::AddBannedUsers, this, _1)));
-  registry.insert(std::make_pair("show_diz", boost::bind(&Config::AddShowDiz, this, _1)));
-  registry.insert(std::make_pair("show_totals", boost::bind(&Config::AddShowTotals, this, _1)));
-  registry.insert(std::make_pair("dl_incomplete", boost::bind(&Config::AddDlIncomplete, this, _1)));
-  registry.insert(std::make_pair("file_dl_count", boost::bind(&Config::AddFileDlCount, this, _1)));
-  registry.insert(std::make_pair("dupe_check", boost::bind(&Config::AddDupeCheck, this, _1)));
-  registry.insert(std::make_pair("script", boost::bind(&Config::AddScript, this, _1)));
-  registry.insert(std::make_pair("idle_commands", boost::bind(&Config::AddIdleCommands, this, _1)));
-  registry.insert(std::make_pair("total_users", boost::bind(&Config::AddTotalUsers, this, _1)));
-  registry.insert(std::make_pair("lslong", boost::bind(&Config::AddLslong, this, _1)));
-  registry.insert(std::make_pair("hidden_files", boost::bind(&Config::AddHiddenFiles, this, _1)));
-  registry.insert(std::make_pair("noretrieve", boost::bind(&Config::AddNoretrieve, this, _1)));
-  registry.insert(std::make_pair("tagline", boost::bind(&Config::AddTagline, this, _1)));
-  registry.insert(std::make_pair("email", boost::bind(&Config::AddEmail, this, _1)));
-  registry.insert(std::make_pair("multiplier_max", boost::bind(&Config::AddMultiplierMax, this, _1)));
-  registry.insert(std::make_pair("oneliners", boost::bind(&Config::AddOneliners, this, _1)));
-  registry.insert(std::make_pair("requests", boost::bind(&Config::AddRequests, this, _1)));
-  registry.insert(std::make_pair("lastonline", boost::bind(&Config::AddLastonline, this, _1)));
-  registry.insert(std::make_pair("empty_nuke", boost::bind(&Config::AddEmptyNuke, this, _1)));
-  registry.insert(std::make_pair("nodupecheck", boost::bind(&Config::AddNodupecheck, this, _1)));
-  registry.insert(std::make_pair("creditcheck", boost::bind(&Config::AddCreditcheck, this, _1)));
-  registry.insert(std::make_pair("creditloss", boost::bind(&Config::AddCreditloss, this, _1)));
-  registry.insert(std::make_pair("nukedir_style", boost::bind(&Config::AddNukedirStyle, this, _1)));
-  registry.insert(std::make_pair("hideuser", boost::bind(&Config::AddHideuser, this, _1)));
-  registry.insert(std::make_pair("privgroup", boost::bind(&Config::AddPrivgroup, this, _1)));
-  registry.insert(std::make_pair("msgpath", boost::bind(&Config::AddMsgpath, this, _1)));
-  registry.insert(std::make_pair("privpath", boost::bind(&Config::AddPrivpath, this, _1)));
-  registry.insert(std::make_pair("site_cmd", boost::bind(&Config::AddSiteCmd, this, _1)));
-  registry.insert(std::make_pair("max_sitecmd_lines", boost::bind(&Config::AddMaxSitecmdLines, this, _1)));
-  registry.insert(std::make_pair("cscript", boost::bind(&Config::AddCscript, this, _1)));
-
-
-  // end register
-
   std::string line;
   std::ifstream io(config.c_str(), std::ifstream::in);
   int i = 0;
 
   if (!io.is_open()) throw ConfigFileError();
-
-  Factory f;
 
   while (io.good())
   {
@@ -151,9 +51,10 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
   SanityCheck();
 }
 
-void Config::Parse(const std::string& line, Factory& factory) {
+void Config::Parse(const std::string& line) {
   std::vector<std::string> toks;
-  boost::split(toks, line, boost::is_any_of("\t "));
+  boost::split(toks, line, boost::is_any_of("\t "), boost::token_compress_on);
+  
   if (toks.size() == 0) return;
   std::string opt = toks.at(0);
   if (opt.size() == 0) return;
@@ -172,7 +73,8 @@ void Config::Parse(const std::string& line, Factory& factory) {
 
   // plan to rehaul this area in the future to sway from glftpd's inconsitencies
   // check if we have a perm to parse
-  if (opt.at(0) == '-' || opt.find("custom-") != std::string::npos)
+  if (opt.at(0) == '-')
+  else if (opt.find("custom-") != std::string::npos)
   {
     std::vector<std::string> temp;
     boost::split(temp, opt, boost::is_any_of("-"));
@@ -181,13 +83,366 @@ void Config::Parse(const std::string& line, Factory& factory) {
     return;
   }
 
-  cfg::setting::Setting *set = factory.Create(opt);
-  if (set == 0)
-    throw cfg::NoSetting("No setting found for: " + opt);
-  set->Save(toks);
-
-  // wrap 
-  registry[opt](set);
+  if (opt == "site_path")
+  {
+    sitepath = fs::Path(toks.at(0));
+  }
+  else if (opt == "tls_certificate")
+  {
+    tlsCertificate = fs::Path(toks.at(0));
+  }
+  else if (opt == "rootpath")
+  {
+    rootpath = fs::Path(toks.at(0));
+  }
+  else if (opt == "reload_config")
+  {
+    reloadConfig = fs::Path(toks.at(0));
+  }
+  else if (opt == "datapath")
+  {
+    datapath = fs::Path(toks.at(0));
+  }
+  else if (opt == "pwd_path")
+  {
+    pwdPath = fs::Path(toks.at(0));
+  }
+  else if (opt == "grp_path")
+  {
+    grpPath = fs::Path(toks.at(0));
+  }
+  else if (opt == "botscript_path")
+  {
+    botscriptPath = fs::Path(toks.at(0));
+  }
+  else if (opt == "banner")
+  {
+    banner = fs::Path(toks.at(0));
+  }
+  else if (opt == "ascii_downloads")
+  {
+    asciiDownloads = setting::AsciiDownloads(toks);
+  }
+  else if (opt == "free_space")
+  {
+    freeSpace = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "mmap_amount")
+  {
+    mmapAmount = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "dl_send_file")
+  {
+    dlSendFile = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "ul_buffered_force")
+  {
+    ulBufferedForce = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "total_users")
+  {
+    totalUsers = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "multiplier_max")
+  {
+    multiplierMax = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "oneliners")
+  {
+    oneliners = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "empty_nuke")
+  {
+    emptyNuke = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "max_sitecmd_lines")
+  {
+    maxSitecmdLines = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "shutdown")
+  {
+    shutdown = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
+  }
+  else if (opt == "hideuser")
+  {
+    hideuser = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  }
+  else if (opt == "use_dir_size")
+  {
+    useDirSize.push_back(setting::UseDirSize(toks)); 
+  }
+  else if (opt == "timezone")
+  {
+    timezone = setting::Timezone(toks);
+  }
+  else if (opt == "color_mode")
+  {
+    colorMode = util::string::BoolLexicalCast(toks.at(0));
+  }
+  else if (opt == "dl_incomplete")
+  {
+    dlIncomplete = util::string::BoolLexicalCast(toks.at(0));
+  }
+  else if (opt == "file_dl_count")
+  {
+    fileDlCount = util::string::BoolLexicalCast(toks.at(0));
+  }
+  else if (opt == "sitename_long")
+  {
+    sitenameLong = boost::replace_all(toks[0], "[:space:]", " ");
+  }
+  else if (opt == "sitename_short")
+  {
+    sitenameShort = boost::replace_all(toks[0], "[:space:]", " ")
+  }
+  else if (opt == "login_prompt")
+  {
+    loginPrompt = boost::replace_all(toks[0], "[:space:]", " ");
+  }
+  else if (opt == "email")
+  {
+    email = boost::replace_all(toks[0], "[:space:]", " ");
+  }
+  else if (opt == "master")
+  {
+    master = toks; 
+  }
+  else if (opt == "bouncer_ip")
+  {
+    bouncerIp = toks;
+  }
+  else if (opt == "calc_crc")
+  {
+    calcCrc = toks;
+  }
+  else if (opt == "xdupe")
+  {
+    xdupe = toks;
+  }
+  else if (opt == "valid_ip")
+  {
+    validIp = toks;
+  }
+  else if (opt == "active_addr")
+  {
+    activeAddr = toks; 
+  }
+  else if (opt == "ignore_type")
+  { 
+    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
+      ++it)
+      ignoreType.push_back((*it));
+  }
+  else if (opt == "banned_users")
+  {
+    bannedUsers = toks;
+  }
+  else if (opt == "idle_commands")
+  {
+    idleCommands = toks;
+  }
+  else if (opt == "noretrieve")
+  {
+    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
+      ++it)
+      ignoreType.push_back((*it));
+  }
+  else if (opt == "tagline")
+  {
+    tagline.push_back(boost::replace_all(toks[0], "[:space:]", " "));
+  }
+  else if (opt == "speed_limit")
+  {
+    speedLimit.push_back(setting::SpeedLimit(toks));
+  }
+  else if (opt == "sim_xfers")
+  {
+    simXfers.push_back(setting::SimXfer(toks));
+  }
+  else if (opt == "secure_ip")
+  {
+    secureIp.push_back(setting::SecureIp(toks));
+  }
+  else if (opt == "secure_pass")
+  {
+    securePass.push_back(setting::SecurePass(toks));
+  }
+  else if (opt == "pasv_addr")
+  {
+    pasvAddr.push_back(setting::PasvAddr(toks));
+  }
+  else if (opt == "active_ports")
+  {
+    activePorts.push_back(setting::Ports(toks));
+  }
+  else if (opt == "pasv_ports")
+  {
+    pasvPorts.push_back(setting::Ports(toks));
+  }
+  else if (opt == "allow_fxp")
+  {
+    allowFxp.push_back(setting::AllowFxp(toks));
+  }
+  else if (opt == "welcome_msg")
+  {
+    welcomeMsg.push_back(fs::Path(toks.at(0))); 
+  }
+  else if (opt == "goodbye_msg")
+  {
+    goodbyeMsg.push_back(fs::Path(toks.at(0))); 
+  }
+  else if (opt == "newsfile")
+  {
+    newsfile.push_back(fs::Path(toks.at(0))); 
+  }
+  else if (opt == "cdpath")
+  {
+    cdpath.push_back(fs::Path(toks.at(0)));
+  }
+  else if (opt == "nodupecheck")
+  {
+    nodupecheck.push_back(setting::Nodupecheck(toks));
+  }
+  else if (opt == "alias")
+  {
+    alias.push_back(setting::Alias(toks)); 
+  }
+  else if (opt == "delete")
+  {
+    delete_.push_back(setting::Right(toks));
+  }
+  else if (opt == "deleteown")
+  {
+    deleteown.push_back(setting::Right(toks));
+  }
+  else if (opt == "overwrite")
+  {
+    overwrite.push_back(setting::Right(toks));
+  }
+  else if (opt == "resume")
+  {
+    resume.push_back(setting::Right(toks));
+  }
+  else if (opt == "rename")
+  {
+    rename.push_back(setting::Right(toks));
+  }
+  else if (opt == "renameown")
+  {
+    renameown.push_back(setting::Right(toks));
+  }
+  else if (opt == "filemove")
+  {
+    filemove.push_back(setting::Right(toks));
+  }
+  else if (opt == "makedir")
+  {
+    makedir.push_back(setting::Right(toks));
+  }
+  else if (opt == "upload")
+  {
+    upload.push_back(setting::Right(toks));
+  }
+  else if (opt == "download")
+  {
+    download.push_back(setting::Right(toks));
+  }
+  else if (opt == "nuke")
+  {
+    nuke.push_back(setting::Right(toks));
+  }
+  else if (opt == "dirlog")
+  {
+    dirlog.push_back(setting::Right(toks));
+  }
+  else if (opt == "hideinwho")
+  {
+    hideinwho.push_back(setting::Right(toks));
+  }
+  else if (opt == "freefile")
+  {
+    freefile.push_back(setting::Right(toks));
+  }
+  else if (opt == "nostats")
+  {
+    nostats.push_back(setting::Right(toks));
+  }
+  else if (opt == "show_diz")
+  {
+    showDiz.push_back(setting::Right(toks));
+  }
+  else if (opt == "stat_section")
+  {
+    statSection.push_back(setting::StatSection(toks));
+  }
+  else if (opt == "path-filter")
+  {
+    pathFilter.push_back(setting::PathFilter(toks));
+  }
+  else if (opt == "max_users")
+  {
+    maxUsers.push_back(setting::MaxUsers(toks));
+  }
+  else if (opt == "max_ustats")
+  {
+    maxUstats = setting::ACLInt(toks);
+  }
+  else if (opt == "max_gstats")
+  {
+    maxGstats = setting::ACLInt(toks);
+  }
+  else if (opt == "show_totals")
+  {
+    showTotals.push_back(setting::ShowTotals(toks)); 
+  }
+  else if (opt == "dupe_check")
+  {
+    dupeCheck = setting::DupeCheck(toks);
+  }
+  else if (opt == "script")
+  {
+    script.push_back(setting::Script(toks));
+  }
+  else if (opt == "lslong")
+  {
+    lslong = setting::Lslong(toks);
+  }
+  else if (opt == "hidden_files")
+  {
+    hiddenFiles.push_back(setting::HiddenFiles(toks));
+  }
+  else if (opt == "creditcheck")
+  {
+    creditcheck.push_back(setting::Creditcheck(toks));
+  }
+  else if (opt == "creditloss")
+  {
+    creditloss.push_back(setting::Creditloss(toks));
+  }
+  else if (opt == "nukedir_style")
+  {
+    nukedirStyle = setting::NukeDirStyle(toks);
+  }
+  else if (opt == "privgroup")
+  {
+    privgroup.push_back(setting::Privgroup(toks));
+  }
+  else if (opt == "msg_path")
+  {
+    msgPath.push_back(setting::MsgPath(toks));
+  }
+  else if (opt == "privpath")
+  {
+    privpath.push_back(setting::Privpath(toks)); 
+  }
+  else if (opt == "site_cmd")
+  {
+    siteCmd.push_back(setting::SiteCmd(toks));
+  }
+  else if (opt == "cscript")
+  {
+    cscript.push_back(setting::Cscript(toks));
+  }
 
   // update cache for sanity check
   settingsCache[opt]++; 
@@ -202,10 +457,113 @@ bool Config::CheckSetting(const std::string& name)
 
 void Config::SanityCheck()
 {
+  // required
   if (!CheckSetting("tls_certificate")) throw RequiredSetting("tls_certificate");
   else if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
+
+  // set defaults
+  SetDefaults("ascii_downloads");
+  SetDefaults("shutdown");
+  SetDefaults("free_space");
+  SetDefaults("use_dir_size");
+  SetDefaults("timezone");
+  SetDefaults("color_mode");
+  SetDefaults("sitename_long");
+  SetDefaults("sitename_short");
+  SetDefaults("login_prompt");
+  SetDefaults("rootpath");
+  SetDefaults("reload_config");
+  SetDefaults("master");
+  SetDefaults("secure_ip");
+  SetDefaults("secure_pass");
+  SetDefaults("datapath");
+  SetDefaults("pwd_path");
+  SetDefaults("grp_path");
+  SetDefaults("botscript_path");
+  SetDefaults("bouncer_ip");
+  SetDefaults("speed_limit");
+  SetDefaults("sim_xfers");
+  SetDefaults("calc_crc");
+  SetDefaults("xdupe");
+  SetDefaults("mmap_amount");
+  SetDefaults("dl_sendfile");
+  SetDefaults("ul_buffered_force");
+  SetDefaults("min_homedir");
+  SetDefaults("valid_ip");
+  SetDefaults("active_addr");
+  SetDefaults("pasv_addr");
+  SetDefaults("active_ports");
+  SetDefaults("pasv_ports");
+  SetDefaults("allow_fxp");
+  SetDefaults("welcome_msg");
+  SetDefaults("goodbye_msg");
+  SetDefaults("newsfile");
+  SetDefaults("banner");
+  SetDefaults("alias");
+  SetDefaults("cdpath");
+  SetDefaults("ignore_type");
+  SetDefaults("delete");
+  SetDefaults("deleteown");
+  SetDefaults("overwrite");
+  SetDefaults("resume");
+  SetDefaults("rename");
+  SetDefaults("renameown");
+  SetDefaults("filemove");
+  SetDefaults("makedir");
+  SetDefaults("upload");
+  SetDefaults("download");
+  SetDefaults("nuke");
+  SetDefaults("dirlog");
+  SetDefaults("hideinwho");
+  SetDefaults("freefile");
+  SetDefaults("nostats");
+  SetDefaults("stat_section");
+  SetDefaults("path-filter");
+  SetDefaults("max_users");
+  SetDefaults("max_ustats");
+  SetDefaults("max_gstats");
+  SetDefaults("banned_users");
+  SetDefaults("show_diz");
+  SetDefaults("show_totals");
+  SetDefaults("dl_incomplete");
+  SetDefaults("file_dl_count");
+  SetDefaults("dupe_check");
+  SetDefaults("script");
+  SetDefaults("idle_commands");
+  SetDefaults("total_users");
+  SetDefaults("lslong");
+  SetDefaults("hidden_files");
+  SetDefaults("noretrieve");
+  SetDefaults("tagline");
+  SetDefaults("email");
+  SetDefaults("multiplier_max");
+  SetDefaults("oneliners");
+  SetDefaults("requests");
+  SetDefaults("lastonline");
+  SetDefaults("empty_nuke");
+  SetDefaults("nodupecheck");
+  SetDefaults("creditcheck");
+  SetDefaults("creditloss");
+  SetDefaults("nukedir_style");
+  SetDefaults("hideuser");
+  SetDefaults("privgroup");
+  SetDefaults("msgpath");
+  SetDefaults("privpath");
+  SetDefaults("site_cmd");
+  SetDefaults("max_sitecmd_lines");
+  SetDefaults("cscript");
 }
 
+void Config::SetDefaults(const std::string& opt)
+{
+  cfg::setting::Setting *set = factory.Create(opt);
+  if (set == 0) 
+    throw cfg::NoSetting("No setting found when trying to set default: " + opt);
+  set->SetDefault();
+  registry[opt](set);
+}
+
+// end namespace
 }
 
 #ifdef CFG_CONFIG_TEST

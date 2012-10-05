@@ -8,37 +8,21 @@
 namespace cfg { namespace setting
 {
 
-void TlsCertificate::Save(std::vector<std::string>& toks)
+void ACL(std::vector<std::string>& toks)
 {
-  path = fs::Path(toks.at(0));
-};
-
-void Sitepath::Save(std::vector<std::string>& toks)
-{
-  path = fs::Path(toks.at(0));
-};
-
+  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+}
 
 // glftpd 
 
-void AsciiDownloads::Save(std::vector<std::string>& toks)
+void AsciiDownloads::AsciiDownloads(std::vector<std::string>& toks)
 {
   size = (toks.at(0) == "*") ? -1 : boost::lexical_cast<int>(toks.at(0));
   toks.erase(toks.begin());
   masks = toks;
 }
 
-void Shutdown::Save(std::vector<std::string>& toks)
-{
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
-}
-
-void FreeSpace::Save(std::vector<std::string>& toks)
-{
-  amount = boost::lexical_cast<int>(toks.at(0));
-}
-
-void UseDirSize::Save(std::vector<std::string>& toks)
+void UseDirSize::UseDirSize(std::vector<std::string>& toks)
 {
   unit = (char)toks.at(0)[0];
   toks.erase(toks.begin());
@@ -49,47 +33,12 @@ void UseDirSize::Save(std::vector<std::string>& toks)
   }
 }
 
-void Timezone::Save(std::vector<std::string>& toks)
+void Timezone::Timezone(std::vector<std::string>& toks)
 {
   hours = boost::lexical_cast<int>(toks.at(0));
 }
 
-void ColorMode::Save(std::vector<std::string>& toks)
-{
-  use = util::string::BoolLexicalCast(toks.at(0));
-}
-
-void SitenameLong::Save(std::vector<std::string>& toks)
-{
-  name = toks.at(0);
-}
-
-void SitenameShort::Save(std::vector<std::string>& toks)
-{
-  name = toks.at(0);
-}
-
-void LoginPrompt::Save(std::vector<std::string>& toks)
-{
-  arg = toks.at(0);
-}
-
-void Rootpath::Save(std::vector<std::string>& toks)
-{
-  path = fs::Path(toks.at(0));
-}
-
-void ReloadConfig::Save(std::vector<std::string>& toks)
-{
-  path = fs::Path(toks.at(0));
-}
-
-void Master::Save(std::vector<std::string>& toks)
-{
-  users = toks;
-}
-
-void SecureIp::Save(std::vector<std::string>& toks)
+void SecureIp::SecureIp(std::vector<std::string>& toks)
 {
   minFields = boost::lexical_cast<int>(toks.at(0));
   allowHostname = util::string::BoolLexicalCast(toks.at(1));
@@ -98,39 +47,14 @@ void SecureIp::Save(std::vector<std::string>& toks)
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-void SecurePass::Save(std::vector<std::string>& toks)
+void SecurePass::SecurePass(std::vector<std::string>& toks)
 {
   mask = toks.at(0);
   toks.erase(toks.begin());
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-void Datapath::Save(std::vector<std::string>& toks)
-{
-  path = fs::Path(toks.at(0));
-}
-
-void PwdPath::Save(std::vector<std::string>& toks)
-{
-  path = fs::Path(toks.at(0));
-}
-
-void GrpPath::Save(std::vector<std::string>& toks)
-{
-  path = fs::Path(toks.at(0));
-}
-
-void BotscriptPath::Save(std::vector<std::string>& toks)
-{
-  path = fs::Path(toks.at(0));
-}
-
-void BouncerIp::Save(std::vector<std::string>& toks)
-{
-  addrs = toks;
-}
-
-void SpeedLimit::Save(std::vector<std::string>& toks)
+void SpeedLimit::SpeedLimit(std::vector<std::string>& toks)
 {
   path = fs::Path(toks.at(0));
   dlLimit = boost::lexical_cast<long>(toks.at(1));
@@ -139,60 +63,20 @@ void SpeedLimit::Save(std::vector<std::string>& toks)
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));                                    
 }
 
-void SimXfers::Save(std::vector<std::string>& toks)
+void SimXfers::SimXfers(std::vector<std::string>& toks)
 {
   maxDownloads = boost::lexical_cast<unsigned int>(toks.at(0));
   maxUploads = boost::lexical_cast<unsigned int>(toks.at(1));
 }
 
-void CalcCrc::Save(std::vector<std::string>& toks)   
-{
-  masks = toks;
-}
-
-void Xdupe::Save(std::vector<std::string>& toks)   
-{
-  masks = toks;
-}
-
-void MmapAmount::Save(std::vector<std::string>& toks)   
-{
-  size = boost::lexical_cast<int>(toks.at(0));
-}
-
-void DlSendfile::Save(std::vector<std::string>& toks)   
-{
-  size = boost::lexical_cast<int>(toks.at(0));
-}
-
-void UlBufferedForce::Save(std::vector<std::string>& toks)   
-{
-  size = boost::lexical_cast<int>(toks.at(0));
-}
-
-void MinHomedir::Save(std::vector<std::string>& toks)   
-{
-  path = fs::Path(toks.at(0));
-}
-
-void ValidIp::Save(std::vector<std::string>& toks)   
-{
-  ips = toks;
-}
-
-void ActiveAddr::Save(std::vector<std::string>& toks)   
-{
-  addr = toks.at(0);
-}
-
-void PasvAddr::Save(std::vector<std::string>& toks)   
+void PasvAddr::PasvAddr(std::vector<std::string>& toks)   
 {
   addr = toks.at(0);
   if (toks.size() > 1) nat = true;
   else nat = false;
 }
 
-void Ports::Save(std::vector<std::string>& toks)   
+void Ports::Ports(std::vector<std::string>& toks)   
 {
   std::vector<std::string> temp;
   for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
@@ -207,7 +91,7 @@ void Ports::Save(std::vector<std::string>& toks)
   }
 }
 
-void AllowFxp::Save(std::vector<std::string>& toks)   
+void AllowFxp::AllowFxp(std::vector<std::string>& toks)   
 {
   downloads = util::string::BoolLexicalCast(toks.at(0));
   uploads   = util::string::BoolLexicalCast(toks.at(1));
@@ -216,63 +100,27 @@ void AllowFxp::Save(std::vector<std::string>& toks)
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-void WelcomeMsg::Save(std::vector<std::string>& toks)   
-{
-  path = fs::Path(toks.at(0));
-  toks.erase(toks.begin());
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
-}
-
-void GoodbyeMsg::Save(std::vector<std::string>& toks)   
-{
-  path = fs::Path(toks.at(0));
-  toks.erase(toks.begin());
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
-}
-
-void Newsfile::Save(std::vector<std::string>& toks)   
-{
-  path = fs::Path(toks.at(0));
-  toks.erase(toks.begin());
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
-}
-
-void Banner::Save(std::vector<std::string>& toks)   
-{
-  path = fs::Path(toks.at(0));
-}
-
-void Alias::Save(std::vector<std::string>& toks)   
+void Alias::Alias(std::vector<std::string>& toks)   
 {
   alias = toks.at(0);
   path = fs::Path(toks.at(1));
 }
 
-void Cdpath::Save(std::vector<std::string>& toks)   
-{
-  path = fs::Path(toks.at(0));
-}
-
-void IgnoreType::Save(std::vector<std::string>& toks)   
-{
-  masks = toks;
-}
-
-void Right::Save(std::vector<std::string>& toks)
+void Right::Right(std::vector<std::string>& toks)
 {
   path = toks.at(0);
   toks.erase(toks.begin());
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-void StatSection::Save(std::vector<std::string>& toks)   
+void StatSection::StatSection(std::vector<std::string>& toks)   
 {
   keyword = toks.at(0);
   path = toks.at(1);
   seperateCredits = util::string::BoolLexicalCast(toks.at(2));
 }
 
-void PathFilter::Save(std::vector<std::string>& toks)   
+void PathFilter::PathFilter(std::vector<std::string>& toks)   
 {
   group = toks.at(0);
   path = toks.at(1);
@@ -280,79 +128,40 @@ void PathFilter::Save(std::vector<std::string>& toks)
   filters = toks;
 }
 
-void MaxUsers::Save(std::vector<std::string>& toks)   
+void MaxUsers::MaxUsers(std::vector<std::string>& toks)   
 {
   maxUsers = boost::lexical_cast<int>(toks.at(0));
   maxExemptUsers = boost::lexical_cast<int>(toks.at(1));
 }
 
-void MaxUstats::Save(std::vector<std::string>& toks)   
+void ACLInt(std::vector<std::string>& toks)   
 {
   maxResults = boost::lexical_cast<int>(toks.at(0));
   toks.erase(toks.begin());
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
 }
 
-void MaxGstats::Save(std::vector<std::string>& toks)
-{
-  maxResults = boost::lexical_cast<int>(toks.at(0));
-  toks.erase(toks.begin());
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
-}
-
-void BannedUsers::Save(std::vector<std::string>& toks)   
-{
-  users = toks;
-}
-
-void ShowDiz::Save(std::vector<std::string>& toks)   
-{
-  filename = toks.at(0);
-  toks.erase(toks.begin());
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
-}
-
-void ShowTotals::Save(std::vector<std::string>& toks)   
+void ShowTotals::ShowTotals(std::vector<std::string>& toks)   
 {
   maxLines = (toks.at(0) == "*") ? -1 : boost::lexical_cast<int>(toks.at(0));
   toks.erase(toks.begin());
   paths = toks;
 }
 
-void DlIncomplete::Save(std::vector<std::string>& toks)   
-{
-  enabled = util::string::BoolLexicalCast(toks.at(0));
-}
-
-void FileDlCount::Save(std::vector<std::string>& toks)   
-{
-  enabled = util::string::BoolLexicalCast(toks.at(0));
-}
-
-void DupeCheck::Save(std::vector<std::string>& toks)   
+void DupeCheck::DupeCheck(std::vector<std::string>& toks)   
 {
   days = boost::lexical_cast<int>(toks.at(0));
   ignoreCase = util::string::BoolLexicalCast(toks.at(1));
 }
 
-void Script::Save(std::vector<std::string>& toks)   
+void Script::Script(std::vector<std::string>& toks)   
 {
   script = fs::Path(toks.at(0));
   toks.erase(toks.begin());
   masks = toks;
 }
 
-void IdleCommands::Save(std::vector<std::string>& toks)   
-{
-  commands = toks;
-}
-
-void TotalUsers::Save(std::vector<std::string>& toks)   
-{
-  limit = boost::lexical_cast<int>(toks.at(0));
-}
-
-void Lslong::Save(std::vector<std::string>& toks)   
+void Lslong::Lslong(std::vector<std::string>& toks)   
 {
   bin = fs::Path(toks.at(0));
   toks.erase(toks.begin());
@@ -369,45 +178,20 @@ void Lslong::Save(std::vector<std::string>& toks)
   options = toks;
 }
 
-void HiddenFiles::Save(std::vector<std::string>& toks)   
+void HiddenFiles::HiddenFiles(std::vector<std::string>& toks)   
 {
   path = fs::Path(toks.at(0));
   toks.erase(toks.begin());
   masks = toks;
 }
 
-void Noretrieve::Save(std::vector<std::string>& toks)   
-{
-  masks = toks;
-}
-
-void Tagline::Save(std::vector<std::string>& toks)   
-{
-  tagline = toks.at(0);
-}
-
-void Email::Save(std::vector<std::string>& toks)   
-{
-  email = toks.at(0);
-}
-
-void MultiplierMax::Save(std::vector<std::string>& toks)   
-{
-  max = boost::lexical_cast<int>(toks.at(0));
-}
-
-void Oneliners::Save(std::vector<std::string>& toks)   
-{
-  max = boost::lexical_cast<int>(toks.at(0));                                                       
-}
-
-void Requests::Save(std::vector<std::string>& toks)   
+void Requests::Requests(std::vector<std::string>& toks)   
 {
   path = fs::Path(toks.at(0));
   max = boost::lexical_cast<int>(toks.at(1));
 }
 
-void Lastonline::Save(std::vector<std::string>& toks)   
+void Lastonline::Lastonline(std::vector<std::string>& toks)   
 {
   int i = boost::lexical_cast<int>(toks.at(0));
   switch (i) 
@@ -431,17 +215,7 @@ void Lastonline::Save(std::vector<std::string>& toks)
     max = 10;
 }
 
-void EmptyNuke::Save(std::vector<std::string>& toks)   
-{
-  amount = boost::lexical_cast<int>(toks.at(0));
-}
-
-void Nodupecheck::Save(std::vector<std::string>& toks)   
-{
-  path = fs::Path(toks.at(0));
-}
-
-void Creditcheck::Save(std::vector<std::string>& toks)   
+void Creditcheck::Creditcheck(std::vector<std::string>& toks)   
 {
   path = fs::Path(toks.at(0));
   ratio = boost::lexical_cast<int>(toks.at(1));
@@ -449,7 +223,7 @@ void Creditcheck::Save(std::vector<std::string>& toks)
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-void Creditloss::Save(std::vector<std::string>& toks)   
+void Creditloss::Creditloss(std::vector<std::string>& toks)   
 {
   multiplier = boost::lexical_cast<int>(toks.at(0));
   allowLeechers = util::string::BoolLexicalCast(toks.at(1));
@@ -458,7 +232,7 @@ void Creditloss::Save(std::vector<std::string>& toks)
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-void NukedirStyle::Save(std::vector<std::string>& toks)   
+void NukedirStyle::NukedirStyle(std::vector<std::string>& toks)   
 {
   format = toks.at(0);
   int i = boost::lexical_cast<int>(toks.at(1));
@@ -480,32 +254,27 @@ void NukedirStyle::Save(std::vector<std::string>& toks)
   minBytes = boost::lexical_cast<int>(toks.at(2));
 }
 
-void Hideuser::Save(std::vector<std::string>& toks)   
-{
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
-}
-
-void Privgroup::Save(std::vector<std::string>& toks)   
+void Privgroup::Privgroup(std::vector<std::string>& toks)   
 {
   group = toks.at(0);
   description = toks.at(1);
 }
 
-void Msgpath::Save(std::vector<std::string>& toks)   
+void Msgpath::Msgpath(std::vector<std::string>& toks)   
 {
   path = toks.at(0);
   file = fs::Path(toks.at(1));
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-void Privpath::Save(std::vector<std::string>& toks)   
+void Privpath::Privpath(std::vector<std::string>& toks)   
 {
   path = fs::Path(toks.at(0));
   toks.erase(toks.begin());
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-void SiteCmd::Save(std::vector<std::string>& toks)   
+void SiteCmd::SiteCmd(std::vector<std::string>& toks)   
 {
   command = toks.at(0);
   if (toks.at(1) == "EXEC") type = sitecmd::EXEC;
@@ -518,12 +287,7 @@ void SiteCmd::Save(std::vector<std::string>& toks)
   arguments = toks;
 }
 
-void MaxSitecmdLines::Save(std::vector<std::string>& toks)   
-{
-  max = boost::lexical_cast<int>(toks.at(0));
-}
-
-void Cscript::Save(std::vector<std::string>& toks)   
+void Cscript::Cscript(std::vector<std::string>& toks)   
 {
   command = toks.at(0);
   std::string when = toks.at(1);
