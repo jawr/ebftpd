@@ -15,8 +15,8 @@ int main(int argc, char** argv)
 {
   try
   {
-    cfg::Config config("ftpd.conf");
-    cfg::UpdateShared(std::tr1::shared_ptr<cfg::Config>(&config));
+    std::tr1::shared_ptr<cfg::Config> config(new cfg::Config("ftpd.conf"));
+    cfg::UpdateShared(config);
   }
   catch (const cfg::ConfigError& e)
   {
