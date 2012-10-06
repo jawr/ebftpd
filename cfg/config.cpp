@@ -85,9 +85,13 @@ void Config::Parse(const std::string& line) {
     return;
   }
 
-  if (opt == "site_path")
+  if (opt == "sitepath")
   {
     sitepath = fs::Path(toks.at(0));
+  }
+  else if (opt == "listen_addr")
+  {
+    listenAddr = toks[0];
   }
   else if (opt == "port")
   {
@@ -471,6 +475,7 @@ void Config::SanityCheck()
   if (!CheckSetting("tls_certificate")) throw RequiredSetting("tls_certificate");
   else if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
   else if (!CheckSetting("port")) throw RequiredSetting("port");
+  else if (!CheckSetting("listen_addr")) throw RequiredSetting("listen_addr");
 
 }
 
@@ -482,14 +487,15 @@ int main()
 {
   try
   {
-    cfg::Config c("glftpd.conf");
+    cfg::Config config("ftpd.conf");
+    logger::ftpd << "Config loaded." << logger::endl;
+    logger::ftpd << "Download: " << config.Download().size() << logger::endl;
   }
   catch(const cfg::ConfigError& e)
   {
     logger::ftpd << e.what() << logger::endl;
     return 1;
   }
-  logger::ftpd << "Config loaded." << logger::endl;
   return 0;
 }
 #endif
