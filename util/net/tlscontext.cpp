@@ -12,8 +12,8 @@
 namespace util { namespace net
 {
 
-std::auto_ptr<TLSClientContext> TLSContext::client;
-std::auto_ptr<TLSServerContext> TLSContext::server;
+std::unique_ptr<TLSClientContext> TLSContext::client;
+std::unique_ptr<TLSServerContext> TLSContext::server;
 boost::mutex* TLSContext::mutexes = new boost::mutex[CRYPTO_num_locks()];
 
 namespace

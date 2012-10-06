@@ -151,7 +151,7 @@ void OwnerCache::Chown(const fs::Path& path, const fs::Owner& owner)
   }
   catch (const std::out_of_range&)
   {
-    std::auto_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
+    std::unique_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
     if (!ownerFile->Load()) return;
     ownerFile->Chown(name, owner);
     CacheEntry entry = std::make_pair(ownerFile.release(), true /* save please */);
@@ -202,7 +202,7 @@ Owner OwnerCache::Owner(const fs::Path& path)
   }
   catch (const std::out_of_range&)
   {
-    std::auto_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
+    std::unique_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
     if (!ownerFile->Load()) return fs::Owner(0, 0);
     
     fs::Owner owner = ownerFile->Owner(name);
@@ -229,7 +229,7 @@ void OwnerCache::Delete(const Path& path)
   }
   catch (const std::out_of_range&)
   {
-    std::auto_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
+    std::unique_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
     if (!ownerFile->Load()) return;
     ownerFile->Delete(name);
     CacheEntry entry = std::make_pair(ownerFile.release(), true /* save please */);
