@@ -8,6 +8,7 @@
 #include "acl/check.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
+#include "logger/logger.hpp"
 #include <iostream>
 
 namespace fs
@@ -58,7 +59,8 @@ void DirEnumerator::Readdir()
   {  
     Path absolute = (client->WorkDir() / path).Expand();
     if (!PP::DirAllowed<PP::View>(client->User(), absolute)) return;
-    real = cfg::Get()->Sitepath().ToString() + absolute;
+    real = cfg::Get()->Sitepath() + absolute;
+    logger::ftpd << "real: " << real << logger::endl;
   }
 
   std::tr1::shared_ptr<DIR> dp(opendir(real.CString()), closedir);
