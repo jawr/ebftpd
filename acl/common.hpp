@@ -9,10 +9,10 @@ class ACL
 {
   std::string allowFlags;
   std::string denyFlags;
-  boost::unordered_set<uid_t> allowUID;
-  boost::unordered_set<uid_t> denyUID;
-  boost::unordered_set<uid_t> allowGID;
-  boost::unordered_set<uid_t> denyGID;
+  boost::unordered_set<UserID> allowUID;
+  boost::unordered_set<UserID> denyUID;
+  boost::unordered_set<UserID> allowGID;
+  boost::unordered_set<UserID> denyGID;
 public:
   ACL(const std::string& acl);
   ~ACL() {};

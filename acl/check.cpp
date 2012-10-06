@@ -63,7 +63,6 @@ struct Traits<Makedir>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    std::cout << "mkdir " << path << std::endl;
     if (Evaluate(cfg::Get()->Makedir(), user, path))
       return util::Error::Success();
     else

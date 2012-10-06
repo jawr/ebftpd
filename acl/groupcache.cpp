@@ -32,7 +32,7 @@ bool GroupCache::Exists(const std::string& name)
   return instance.byName.find(name) != instance.byName.end();
 }
 
-bool GroupCache::Exists(gid_t gid)
+bool GroupCache::Exists(GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   return instance.byGID.find(gid) != instance.byGID.end();
@@ -48,7 +48,7 @@ util::Error GroupCache::Create(const std::string& name)
     return util::Error::Failure("Group already exists");
 
   // dummy random gid
-  gid_t gid;
+  GroupID gid;
   while (true)
   {
     gid = rand() % 10000 + 1; /* 1 to 10000 */
@@ -108,7 +108,7 @@ const acl::Group GroupCache::Group(const std::string& name)
   return *it->second;
 }
 
-const acl::Group GroupCache::Group(gid_t gid)
+const acl::Group GroupCache::Group(GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByGIDMap::iterator it = instance.byGID.find(gid);

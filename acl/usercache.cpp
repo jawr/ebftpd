@@ -32,7 +32,7 @@ bool UserCache::Exists(const std::string& name)
   return instance.byName.find(name) != instance.byName.end();
 }
 
-bool UserCache::Exists(uid_t uid)
+bool UserCache::Exists(UserID uid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   return instance.byUID.find(uid) != instance.byUID.end();
@@ -49,7 +49,7 @@ util::Error UserCache::Create(const std::string& name, const std::string& passwo
     return util::Error::Failure("User already exists");
 
   // dummy random uid
-  uid_t uid;
+  UserID uid;
   while (true)
   {
     uid = rand() % 10000 + 1; /* 1 to 10000 */
@@ -153,7 +153,7 @@ util::Error UserCache::DelFlags(const std::string& name, const std::string& flag
   return util::Error::Success();
 }
 
-util::Error UserCache::SetPrimaryGID(const std::string& name, gid_t gid)
+util::Error UserCache::SetPrimaryGID(const std::string& name, GroupID gid)
 {
   // unlike to happen, but what to do if group is deleted between 
   // checking it exists and then this function being called?
@@ -170,7 +170,7 @@ util::Error UserCache::SetPrimaryGID(const std::string& name, gid_t gid)
   return util::Error::Success();
 }
 
-util::Error UserCache::AddSecondaryGID(const std::string& name, gid_t gid)
+util::Error UserCache::AddSecondaryGID(const std::string& name, GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
@@ -183,7 +183,7 @@ util::Error UserCache::AddSecondaryGID(const std::string& name, gid_t gid)
   return util::Error::Success();
 }
 
-util::Error UserCache::DelSecondaryGID(const std::string& name, gid_t gid)
+util::Error UserCache::DelSecondaryGID(const std::string& name, GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
@@ -204,7 +204,7 @@ const acl::User UserCache::User(const std::string& name)
   return *it->second;
 }
 
-const acl::User UserCache::User(uid_t uid)
+const acl::User UserCache::User(UserID uid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByUIDMap::iterator it = instance.byUID.find(uid);

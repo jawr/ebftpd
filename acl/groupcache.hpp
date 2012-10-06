@@ -13,7 +13,7 @@ namespace acl
 class GroupCache
 {
   typedef boost::unordered_map<std::string, acl::Group*> ByNameMap;
-  typedef boost::unordered_map<gid_t, acl::Group*> ByGIDMap;
+  typedef boost::unordered_map<GroupID, acl::Group*> ByGIDMap;
   
   mutable boost::mutex mutex;
   ByNameMap byName;
@@ -27,7 +27,7 @@ class GroupCache
   
 public:
   static bool Exists(const std::string& name);
-  static bool Exists(gid_t gid);
+  static bool Exists(GroupID gid);
   static util::Error Create(const std::string& name);
   static util::Error Delete(const std::string& name);
   static util::Error Rename(const std::string& oldName, const std::string& newName);
@@ -35,7 +35,7 @@ public:
   // these return const as the group objects should NEVER
   // be modified except via the above functions'
   static const acl::Group Group(const std::string& name);
-  static const acl::Group Group(gid_t gid);
+  static const acl::Group Group(GroupID gid);
 };
 
 } /* acl namespace */
