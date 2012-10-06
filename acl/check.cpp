@@ -1,3 +1,4 @@
+#include <cassert>
 #include <boost/algorithm/string/predicate.hpp>
 #include "acl/check.hpp"
 #include "acl/user.hpp"
@@ -184,6 +185,9 @@ struct Traits<View>
     // always returns true as all the checking for View is done earlier on
     // as hidden files and priv paths
     return util::Error::Success();
+    
+    (void) user;
+    (void) path;
   }
 };
 
@@ -245,6 +249,29 @@ template util::Error DirAllowed<View>(const User& user, std::string path);
 
 } /* PathPermission namespace */
 
+
+bool AllowFxp(ftp::TransferType::Enum transferType,
+              const User& user, bool& logging)
+{
+  assert(transferType != ftp::TransferType::List);
+
+  const cfg::Config& config = cfg::Get();
+  for (std::vector<cfg::setting::AllowFxp>::const_iterator it =
+       config.AllowFxp().begin(); it != config.AllowFxp().end(); ++it)
+  {
+    if (it->ACL().Evaluate(user))
+    {
+      logging = it->Logging();
+      if (transferType == ftp::TransferType::Download)
+        return it->Downloads();
+      else
+        return it->Uploads();
+    }
+  }
+  
+  return false;
+}
+  
 } /* acl namespace */
 
 

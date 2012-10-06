@@ -162,6 +162,11 @@ class AllowFxp : public Setting
 public:
   AllowFxp() {};
   AllowFxp(std::vector<std::string>& toks);
+  
+  bool Downloads() const { return downloads; }
+  bool Uploads() const { return uploads; }
+  bool Logging() const { return logging; }
+  const acl::ACL& ACL() const { return acl; }
 };
 
 class Alias : public Setting

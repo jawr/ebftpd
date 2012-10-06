@@ -65,7 +65,7 @@ class Config
   std::vector<setting::PasvAddr> pasvAddr;
   setting::Ports activePorts;
   setting::Ports pasvPorts;
-  setting::AllowFxp allowFxp;
+  std::vector<setting::AllowFxp> allowFxp;
   std::vector<fs::Path> welcomeMsg;
   std::vector<fs::Path> goodbyeMsg;
   std::vector<fs::Path> newsfile;
@@ -170,7 +170,7 @@ public:
   const std::vector<setting::PasvAddr>& PasvAddr() const { return pasvAddr; };
   const setting::Ports& ActivePorts() const { return activePorts; };
   const setting::Ports& PasvPorts() const { return pasvPorts; };
-  const setting::AllowFxp& AllowFxp() const { return allowFxp; };
+  const std::vector<setting::AllowFxp>& AllowFxp() const { return allowFxp; };
   const std::vector<fs::Path>& WelcomeMsg() const { return welcomeMsg; };
   const std::vector<fs::Path>& GoodbyeMsg() const { return goodbyeMsg; };
   const std::vector<fs::Path>& Newsfile() const { return newsfile; };

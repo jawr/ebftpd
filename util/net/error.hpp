@@ -10,7 +10,8 @@ class NetworkError : public virtual util::RuntimeError
 {
 public:
   NetworkError() : std::runtime_error("Network error") { }
-  NetworkError(const char* message) : std::runtime_error(message) { }
+  NetworkError(const std::string& message) : 
+    std::runtime_error(message.c_str()) { }
 };
 
 class NetworkSystemError : public util::SystemError, public virtual NetworkError
