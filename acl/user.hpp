@@ -6,6 +6,11 @@
 #include <sys/types.h>
 #include "acl/flags.hpp"
 
+namespace db { namespace bson {
+struct User;
+}
+}
+
 namespace acl
 {
 
@@ -19,6 +24,8 @@ class User
   uid_t uid;
   gid_t primaryGid;
   boost::unordered_set<gid_t> secondaryGids;
+  
+  User() : uid(-1), primaryGid(-1) { }
   
 public:
   User(const std::string& name, uid_t uid, const std::string& password,
@@ -50,6 +57,8 @@ public:
   void DelSecondaryGID(gid_t gid);
   
   bool CheckGID(gid_t gid);
+  
+  friend struct db::bson::User;
 };
 
 }
