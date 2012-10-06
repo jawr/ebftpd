@@ -41,7 +41,7 @@ private:
 
   int socket;
   boost::mutex socketMutex;
-  std::auto_ptr<TLSSocket> tls;
+  std::unique_ptr<TLSSocket> tls;
   util::TimePair timeout;
   Endpoint localEndpoint;
   Endpoint remoteEndpoint;

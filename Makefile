@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb
+CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x
 LIBS = -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle -lssl -lboost_filesystem
 INCLUDE = -include stdafx.hpp -I.

@@ -947,7 +947,7 @@ void STOUCommand::Execute()
   
   ftp::ClientState::Enum reqdState;
 
-  std::auto_ptr<cmd::Command>
+  std::unique_ptr<cmd::Command>
     command(cmd::Factory::Create(client, argStr, args, reqdState));
   assert(command.get());
   command->Execute();

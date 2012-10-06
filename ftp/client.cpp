@@ -212,7 +212,7 @@ void Client::ExecuteCommand()
   }
   
   ClientState::Enum reqdState;
-  std::auto_ptr<cmd::Command>
+  std::unique_ptr<cmd::Command>
     command(cmd::Factory::Create(*this, argStr, args, reqdState));
   if (!command.get()) Reply(ftp::CommandUnrecognised, "Command not understood");
   else if (!CheckState(reqdState));

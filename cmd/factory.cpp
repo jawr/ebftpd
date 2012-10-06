@@ -105,7 +105,7 @@ int main()
   ftp::ClientState::Client client;
   Args args;
   args.push_back("USER");
-  std::auto_ptr<Command> cmd(Factory::Create(client, args));
+  std::unique_ptr<Command> cmd(Factory::Create(client, args));
   cmd->Execute();
   args.clear();
   args.push_back("PASS");

@@ -56,7 +56,7 @@ util::Error GroupCache::Create(const std::string& name)
       break;
   }
 
-  std::auto_ptr<acl::Group> group(new acl::Group(name, gid));
+  std::unique_ptr<acl::Group> group(new acl::Group(name, gid));
     
   instance.byName.insert(std::make_pair(name, group.get()));
   instance.byGID.insert(std::make_pair(gid, group.get()));
