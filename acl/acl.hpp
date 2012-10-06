@@ -14,13 +14,13 @@ class User;
 class ACL
 {
   boost::ptr_vector<Permission> perms;
-  boost::optional<bool> finalResult;
+  mutable boost::optional<bool> finalResult;
 
   void FromStringArg(const std::string& arg);
   
 public:
   ACL() { }   
-  bool Check(const User& user);
+  bool Evaluate(const User& user) const;
   static ACL FromString(const std::string& str);
 };
 

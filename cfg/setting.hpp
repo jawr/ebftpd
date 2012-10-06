@@ -28,6 +28,9 @@ class Right : public Setting
 public:
   Right() {};
   Right(std::vector<std::string>& toks);
+  
+  const std::string& Path() const { return path; }
+  const acl::ACL& ACL() const { return acl; }
 };
 
 class ACLInt : public Setting
@@ -324,6 +327,9 @@ class Privpath : public Setting
 public:
   Privpath() {};
   Privpath(std::vector<std::string>& toks);
+  
+  const fs::Path& Path() const { return path; }
+  const acl::ACL& ACL() const { return acl; }
 };
 
 class SiteCmd : public Setting

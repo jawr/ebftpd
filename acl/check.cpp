@@ -4,8 +4,9 @@
 #include "fs/path.hpp"
 #include "fs/owner.hpp"
 #include "cfg/get.hpp"
-#include <iostream>
+#include "util/string.hpp"
 
+#include <iostream>
 
 namespace acl
 {
@@ -16,6 +17,20 @@ namespace PathPermission
 namespace
 {
 
+bool Evaluate(const std::vector<cfg::setting::Right>& rights, 
+              const User& user, const std::string& path)
+{
+  for (std::vector<cfg::setting::Right>::const_iterator it =
+       rights.begin(); it != rights.end(); ++it)
+  {
+    if (util::string::WildcardMatch(it->Path(), path))
+    {
+      return it->ACL().Evaluate(user);
+    }
+  }
+  return true;
+}
+
 template <Type type>
 struct Traits;
 
@@ -24,8 +39,10 @@ struct Traits<Upload>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    std::cout << "checking upload" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Upload(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
 };
 
@@ -34,8 +51,10 @@ struct Traits<Resume>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    std::cout << "checking resume" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Resume(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
 };
 
@@ -44,8 +63,10 @@ struct Traits<Makedir>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    std::cout << "checking makedir" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Makedir(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
 };
 
@@ -54,8 +75,10 @@ struct Traits<Download>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    std::cout << "checking download" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Download(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
 };
 
@@ -64,8 +87,10 @@ struct Traits<Dirlog>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    std::cout << "checking dirlog" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Dirlog(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
 };
 
@@ -74,14 +99,18 @@ struct Traits<Rename>
 {
   static util::Error AllowedOwner(const User& user, const std::string& path)
   {
-    std::cout << "checking renameown" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Renameown(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
   
   static util::Error AllowedOther(const User& user, const std::string& path)
   {
-    std::cout << "checking rename" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Rename(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
   
   static util::Error Allowed(const User& user, const std::string& path)
@@ -99,8 +128,10 @@ struct Traits<Filemove>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    std::cout << "checking filemove" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Filemove(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
 };
 
@@ -109,8 +140,10 @@ struct Traits<Nuke>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    std::cout << "checking nuke" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Nuke(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
 };
 
@@ -119,14 +152,18 @@ struct Traits<Delete>
 {
   static util::Error AllowedOwner(const User& user, const std::string& path)
   {
-    std::cout << "checking deleteown" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Deleteown(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
 
   static util::Error AllowedOther(const User& user, const std::string& path)
   {
-    std::cout << "checking delete" << std::endl;
-    return util::Error::Success();
+    if (Evaluate(cfg::Get()->Delete(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
   }
 
   static util::Error Allowed(const User& user, const std::string& path)
@@ -144,7 +181,8 @@ struct Traits<View>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    std::cout << "checking view" << std::endl;
+    // always returns true as all the checking for View is done earlier on
+    // as hidden files and priv paths
     return util::Error::Success();
   }
 };
@@ -156,9 +194,23 @@ bool HiddenFile(const std::string& path)
   return boost::ends_with(path, "/" + fs::OwnerFile::ownerFilename);
 }
 
+bool PrivatePath(const std::string& path, const User& user)
+{
+  const std::vector<cfg::setting::Privpath>& privPath = 
+    cfg::Get()->Privpath();
+  for (std::vector<cfg::setting::Privpath>::const_iterator it =
+       privPath.begin(); it != privPath.end(); ++it)
+  {
+    if (!path.compare(0, it->Path().Length(), it->Path()))
+      return !it->ACL().Evaluate(user);
+  }
+  return false;
+}
+
 template <Type type>
 util::Error Allowed(const User& user, const std::string& path)
-{    
+{ 
+  if (PrivatePath(path, user)) return util::Error::Failure(ENOENT);
   return Traits<type>::Allowed(user, path);
 }
 

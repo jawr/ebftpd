@@ -7,7 +7,7 @@
 namespace acl
 {
 
-bool ACL::Check(const User& user)
+bool ACL::Evaluate(const User& user) const
 {
   if (finalResult) return *finalResult;
   for (boost::ptr_vector<Permission>::const_iterator it =
@@ -62,11 +62,11 @@ int main()
 {
   acl::User u("bioboy", "password", "12");
   acl::ACL acl = acl::ACL::FromString("!61 =test -test");
-  std::cout << acl.Check(u) << std::endl;
+  std::cout << acl.Evaluate(u) << std::endl;
   acl = acl::ACL::FromString("!6 =test -someone");
-  std::cout << acl.Check(u) << std::endl;
+  std::cout << acl.Evaluate(u) << std::endl;
   acl = acl::ACL::FromString("!6 =test -bioboy");
-  std::cout << acl.Check(u) << std::endl;
+  std::cout << acl.Evaluate(u) << std::endl;
 }
 
 #endif

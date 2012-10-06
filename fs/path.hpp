@@ -40,6 +40,7 @@ public:
   
   bool Absolute() const { return !path.empty() && path[0] == '/'; }
   bool Empty() const { return path.empty(); }
+  size_t Length() const { return path.length(); }
   
   const char* CString() const { return path.c_str(); }
   const std::string& ToString() const { return path; }
