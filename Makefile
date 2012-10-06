@@ -10,7 +10,6 @@ OBJECTS = \
 	cmd/command.o \
 	cmd/dirlist.o \
 	cfg/config.o \
-  cfg/factory.o \
 	cfg/get.o \
   cfg/setting.o \
 	ftp/listener.o \

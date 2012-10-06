@@ -34,7 +34,7 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
     if (line.size() > 0 && line.at(0) == '#') continue;
     try 
     {
-      Parse(line, f);
+      Parse(line);
     } 
     catch (NoSetting &e) // handle properly
     {
@@ -54,6 +54,9 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
 void Config::Parse(const std::string& line) {
   std::vector<std::string> toks;
   boost::split(toks, line, boost::is_any_of("\t "), boost::token_compress_on);
+  for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
+    ++it)
+    boost::replace_all((*it), "[:space:]", " ");
   
   if (toks.size() == 0) return;
   std::string opt = toks.at(0);
@@ -73,8 +76,7 @@ void Config::Parse(const std::string& line) {
 
   // plan to rehaul this area in the future to sway from glftpd's inconsitencies
   // check if we have a perm to parse
-  if (opt.at(0) == '-')
-  else if (opt.find("custom-") != std::string::npos)
+  if (opt.at(0) == '-' || opt.find("custom-") != std::string::npos)
   {
     std::vector<std::string> temp;
     boost::split(temp, opt, boost::is_any_of("-"));
@@ -189,19 +191,19 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "sitename_long")
   {
-    sitenameLong = boost::replace_all(toks[0], "[:space:]", " ");
+    sitenameLong = toks[0];
   }
   else if (opt == "sitename_short")
   {
-    sitenameShort = boost::replace_all(toks[0], "[:space:]", " ")
+    sitenameShort = toks[0];
   }
   else if (opt == "login_prompt")
   {
-    loginPrompt = boost::replace_all(toks[0], "[:space:]", " ");
+    loginPrompt = toks[0];
   }
   else if (opt == "email")
   {
-    email = boost::replace_all(toks[0], "[:space:]", " ");
+    email = toks[0];
   }
   else if (opt == "master")
   {
@@ -249,7 +251,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "tagline")
   {
-    tagline.push_back(boost::replace_all(toks[0], "[:space:]", " "));
+    tagline.push_back(toks[0]);
   }
   else if (opt == "speed_limit")
   {
@@ -257,7 +259,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "sim_xfers")
   {
-    simXfers.push_back(setting::SimXfer(toks));
+    simXfers.push_back(setting::SimXfers(toks));
   }
   else if (opt == "secure_ip")
   {
@@ -273,15 +275,15 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "active_ports")
   {
-    activePorts.push_back(setting::Ports(toks));
+    activePorts = setting::Ports(toks);
   }
   else if (opt == "pasv_ports")
   {
-    pasvPorts.push_back(setting::Ports(toks));
+    pasvPorts = setting::Ports(toks);
   }
   else if (opt == "allow_fxp")
   {
-    allowFxp.push_back(setting::AllowFxp(toks));
+    allowFxp = setting::AllowFxp(toks);
   }
   else if (opt == "welcome_msg")
   {
@@ -301,7 +303,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "nodupecheck")
   {
-    nodupecheck.push_back(setting::Nodupecheck(toks));
+    nodupecheck.push_back(fs::Path(toks.at(0)));
   }
   else if (opt == "alias")
   {
@@ -421,7 +423,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "nukedir_style")
   {
-    nukedirStyle = setting::NukeDirStyle(toks);
+    nukedirStyle = setting::NukedirStyle(toks);
   }
   else if (opt == "privgroup")
   {
@@ -429,7 +431,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "msg_path")
   {
-    msgPath.push_back(setting::MsgPath(toks));
+    msgpath.push_back(setting::Msgpath(toks));
   }
   else if (opt == "privpath")
   {
@@ -442,6 +444,10 @@ void Config::Parse(const std::string& line) {
   else if (opt == "cscript")
   {
     cscript.push_back(setting::Cscript(toks));
+  }
+  else if (opt == "requests")
+  {
+    requests = setting::Requests(toks);
   }
 
   // update cache for sanity check
@@ -556,11 +562,6 @@ void Config::SanityCheck()
 
 void Config::SetDefaults(const std::string& opt)
 {
-  cfg::setting::Setting *set = factory.Create(opt);
-  if (set == 0) 
-    throw cfg::NoSetting("No setting found when trying to set default: " + opt);
-  set->SetDefault();
-  registry[opt](set);
 }
 
 // end namespace

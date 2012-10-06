@@ -7,7 +7,6 @@
 #include <tr1/unordered_map>
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
-#include "cfg/factory.hpp"
 #include "fs/path.hpp"
 
 namespace cfg
@@ -19,12 +18,12 @@ class Config
   int version;
 
   std::string config;
-  Factory factory;
  
   void Parse(const std::string& line);
   
   bool CheckSetting(const std::string& name);
   void SanityCheck();
+  void SetDefaults(const std::string& opt); 
 
   std::tr1::unordered_map<std::string, int> settingsCache;
 
@@ -56,7 +55,7 @@ class Config
   std::vector<std::string> calcCrc;
   std::vector<std::string> xdupe;
   int mmapAmount;
-  int dlSendfile;
+  int dlSendFile;
   int ulBufferedForce;
   fs::Path minHomedir;
   std::vector<std::string> validIp;
@@ -90,7 +89,7 @@ class Config
   std::vector<setting::Right> nostats;
   // end rights
   std::vector<setting::StatSection> statSection;
-  std::vector<fs::PathFilter> pathFilter;
+  std::vector<setting::PathFilter> pathFilter;
   std::vector<setting::MaxUsers> maxUsers;
   setting::ACLInt maxUstats;
   setting::ACLInt maxGstats;
@@ -142,10 +141,10 @@ public:
   const setting::Timezone& Timezone() const { return timezone; };
   bool ColorMode() const { return colorMode; };
   const std::string& SitenameLong() const { return sitenameLong; };
-  const std::string& SitenameShort() const { return sitenameShortg; };
+  const std::string& SitenameShort() const { return sitenameShort; };
   const std::string& LoginPrompt() const { return loginPrompt; };
   const fs::Path& Rootpath() const { return rootpath; };
-  const fs::Path& ReloadConfig() const { return reloadconfig; };
+  const fs::Path& ReloadConfig() const { return reloadConfig; };
   const std::vector<std::string>& Master() const { return master; };  
   const std::vector<setting::SecureIp>& SecureIp() const { return secureIp; };
   const std::vector<setting::SecurePass>& SecurePass() const { return securePass; };
@@ -153,7 +152,7 @@ public:
   const fs::Path& PwdPath() const { return pwdPath; };
   const fs::Path& GrpPath() const { return grpPath; };
   const fs::Path& BotscriptPath() const { return botscriptPath; };
-  const std::vector<std::string>& BouncerIp() const { return BouncerIp; };
+  const std::vector<std::string>& BouncerIp() const { return bouncerIp; };
   const std::vector<setting::SpeedLimit>& SpeedLimit() const { return speedLimit; };
   const std::vector<setting::SimXfers>& SimXfers() const { return simXfers; };
   const std::vector<std::string>& CalcCrc() const { return calcCrc; };
@@ -164,7 +163,7 @@ public:
   const fs::Path& MinHomedir() const { return minHomedir; };
   const std::vector<std::string>& ValidIp() const { return validIp; };
   const std::vector<std::string>& ActiveAddr() const { return activeAddr; };
-  const std::vector<std::string>& PasvAddr() const { return pasvAddr; };
+  const std::vector<setting::PasvAddr>& PasvAddr() const { return pasvAddr; };
   const setting::Ports& ActivePorts() const { return activePorts; };
   const setting::Ports& PasvPorts() const { return pasvPorts; };
   const setting::AllowFxp& AllowFxp() const { return allowFxp; };
@@ -194,23 +193,23 @@ public:
   const std::vector<setting::Right>& Nostats() const { return nostats; }; 
 
   const std::vector<setting::StatSection>& StatSection() const { return statSection; };
-  const std::vector<fs::PathFilter>& PathFilter() const { return pathFilter; };
+  const std::vector<setting::PathFilter>& PathFilter() const { return pathFilter; };
   const std::vector<setting::MaxUsers>& MaxUsers() const { return maxUsers; };
-  const setting::ACLint MaxUstats() const { return maxUstats; };
-  const setting::ACLint MacGstats() const { return maxGstats; };
+  const setting::ACLInt MaxUstats() const { return maxUstats; };
+  const setting::ACLInt MacGstats() const { return maxGstats; };
   const std::vector<std::string>& BannedUsers() const { return bannedUsers; };
   const std::vector<setting::Right>& ShowDiz() const { return showDiz; };
   bool DlIncomplete() const { return dlIncomplete; };
   bool FileDlCount() const { return fileDlCount; };
   const setting::DupeCheck& DupeCheck() const { return dupeCheck; };
-  const std::vector<setting::Script>& Script() Const { return script; };
+  const std::vector<setting::Script>& Script() const { return script; };
   const std::vector<std::string>& IdleCommands() const { return idleCommands; };
   int TotalUsers() const { return totalUsers; };
   const setting::Lslong& Lslong() const { return lslong; };
   const std::vector<setting::HiddenFiles>& HiddenFiles() const { return hiddenFiles; };
   const std::vector<std::string>& Noretrieve() const { return noretrieve; };
   const std::vector<std::string>& Tagline() const { return tagline; };
-  const std::string& Email() const { return email; }:
+  const std::string& Email() const { return email; };
   int MultiplierMax() const { return multiplierMax; };
   int Oneliners() const { return oneliners; };
   const setting::Requests& Requests() const { return requests; };

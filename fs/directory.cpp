@@ -23,7 +23,7 @@ namespace
 
 util::Error RemoveDirectory(const Path& path)
 {
-  Path real = cfg::Get()->Sitepath()->ToString() + path;
+  Path real = cfg::Get()->Sitepath().ToString() + path;
   
   DirEnumerator dirEnum;
   
@@ -76,7 +76,7 @@ util::Error ChangeDirectory(ftp::Client& client, Path& path)
   util::Error e(PP::DirAllowed<PP::View>(client.User(), absolute));
   if (!e) return e;
 
-  Path real = cfg::Get()->Sitepath()->ToString() + path;
+  Path real = cfg::Get()->Sitepath().ToString() + path;
   
   try
   {
@@ -128,7 +128,7 @@ util::Error CreateDirectory(ftp::Client& client, const Path& path)
   util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), absolute));
   if (!e) return e;
     
-  Path real = cfg::Get()->Sitepath()->ToString() + absolute;
+  Path real = cfg::Get()->Sitepath().ToString() + absolute;
   if (mkdir(real.CString(), 0777) < 0) return util::Error::Failure(errno);
   
   OwnerCache::Chown(real, Owner(client.User().UID(), client.User().PrimaryGID()));
