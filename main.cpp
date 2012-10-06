@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 
   fs::OwnerCache::Start();
   
-  ftp::Listener listener("::", 1234);  
+  ftp::Listener listener("::", cfg::Get()->Port());  
   if (!listener.Initialise())
   {
     logger::error << "Listener failed to initialise!" << logger::endl;
