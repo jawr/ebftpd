@@ -54,7 +54,6 @@ util::Error RemoveDirectory(const Path& path)
     OwnerCache::Delete(fullPath);
   }
     
-  logger::ftpd << "real: " << real << logger::endl;
   if (rmdir(real.CString()) < 0) return util::Error::Failure(errno);
   OwnerCache::Delete(real);
   return util::Error::Success();
@@ -69,16 +68,10 @@ util::Error ChangeDirectory(ftp::Client& client, Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
 
-  std::cout << "abs: " << absolute << std::endl;
-  std::cout << "dirname: " << absolute.Dirname() << std::endl;
-  
-
   util::Error e(PP::DirAllowed<PP::View>(client.User(), absolute));
   if (!e) return e;
 
   Path real = cfg::Get().Sitepath() + path;
-
-  std::cout << "real: " << real << std::endl;
   
   try
   {
@@ -108,7 +101,7 @@ util::Error ChangeDirectory(ftp::Client& client, Path& path)
       {
         if (!PP::DirAllowed<PP::View>(client.User(), path))
           return util::Error::Failure(ENOENT);
-        std::cout << absolute << " " << absolute.Dirname() << " " << it->Path() << std::endl;
+
         path = absolute = absolute.Dirname() / it->Path();
         if (!it->Status().IsExecutable()) return util::Error::Failure(EACCES);
       }
@@ -145,7 +138,6 @@ util::Error RemoveDirectory(ftp::Client& client, const Path& path)
   util::Error e(PP::DirAllowed<PP::Delete>(client.User(), absolute));
   if (!e) return e;
   
-  logger::ftpd << "absolute: " << absolute << logger::endl;
   return RemoveDirectory(absolute);
 }
 
