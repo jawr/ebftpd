@@ -233,12 +233,14 @@ public:
 
 class Lslong : public Setting
 {
-  fs::Path bin;
-  std::vector<std::string> options;
+  std::string options;
   int maxRecursion;
 public:
-  Lslong() {};
+  Lslong(): maxRecursion(2) {};
   Lslong(std::vector<std::string>& toks);
+  
+  const std::string& Options() const { return options; }
+  int MaxRecursion() const { return maxRecursion; }
 };
 
 class HiddenFiles : public Setting

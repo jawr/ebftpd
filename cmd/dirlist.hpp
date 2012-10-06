@@ -51,8 +51,7 @@ class DirectoryList
   fs::Path path;
   ListOptions options;
   bool dataOutput;
-  
-  static const int maxRecursionDepth = -1; // -1 unlimited
+  int maxRecursion;
   
   void ListPath(const fs::Path& path, std::queue<std::string> masks, int depth = 1) const;
   void Readdir(const fs::Path& path, fs::DirEnumerator& dirEnum) const;
@@ -66,7 +65,8 @@ class DirectoryList
 public:
   DirectoryList(ftp::Client& client, const fs::Path& path,
                 const ListOptions& options,
-                bool dataOutput);
+                bool dataOutput,
+                int maxRecursion);
                 
   void Execute();
 };
