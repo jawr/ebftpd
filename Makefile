@@ -11,7 +11,7 @@ OBJECTS = \
 	cmd/dirlist.o \
 	cfg/config.o \
 	cfg/get.o \
-  cfg/setting.o \
+	cfg/setting.o \
 	ftp/listener.o \
 	ftp/client.o \
 	fs/direnumerator.o \
@@ -21,9 +21,11 @@ OBJECTS = \
 	fs/file.o \
 	fs/directory.o \
 	fs/path.o \
+	acl/groupcache.o \
 	acl/check.o \
 	acl/acl.o \
 	acl/user.o \
+	acl/usercache.o \
 	acl/permission.o \
 	acl/repository.o \
 	acl/handler.o \
@@ -35,7 +37,7 @@ OBJECTS = \
 	util/passwd.o \
 	util/error.o \
 	util/logger.o \
-  util/string.o \
+	util/string.o \
 	util/thread.o \
 	util/net/endpoint.o \
 	util/net/error.o \

@@ -7,11 +7,12 @@ namespace acl
 {
 
 User::User(const std::string& name,
+           uid_t uid,
            const std::string& password,
            const std::string& flags) :
   name(name),
-  uid(69),
-  primaryGid(69)
+  uid(uid),
+  primaryGid(-1)
 {
   SetPassword(password);
   AddFlags(flags);
