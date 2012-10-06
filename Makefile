@@ -1,11 +1,13 @@
 CXX = g++
-CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -DDEBUG
+CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb
 LIBS = -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle -lssl -lboost_filesystem
 INCLUDE = -include stdafx.hpp -I.
 
 OBJECTS = \
 	main.o \
+	db/bson/user.o \
+	db/bson/group.o \
 	cmd/factory.o \
 	cmd/command.o \
 	cmd/dirlist.o \

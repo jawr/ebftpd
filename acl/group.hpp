@@ -4,6 +4,12 @@
 #include <string>
 #include "acl/types.hpp"
 
+namespace db { namespace bson
+{
+struct Group;
+}
+}
+
 namespace acl
 {
 
@@ -19,6 +25,8 @@ public:
   void SetName(const std::string& name) { this->name = name; }
   
   gid_t GID() const { return gid; }
+  
+  friend struct db::bson::Group;
 };
 
 } /* acl namespace */
