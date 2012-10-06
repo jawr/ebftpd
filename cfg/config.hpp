@@ -128,7 +128,7 @@ class Config
 
 public:
   Config(const std::string& configFile);
-  ~Config() {};  
+  ~Config() {}  
 
   int Version() const { return version; };
 

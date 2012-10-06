@@ -80,10 +80,15 @@ Ports::Ports(std::vector<std::string>& toks)
     ++it)
   {
     temp.clear();
-    boost::split(temp, (*it), boost::is_any_of("-"));
+    boost::split(temp, *it, boost::is_any_of("-"));
+    if (temp.size() > 2) throw cfg::ConfigError("Invalid port range.");
     int from = boost::lexical_cast<int>(temp.at(0));
     int to = from;
     if (temp.size() > 1) to = boost::lexical_cast<int>(temp.at(1));
+    if (to < from)
+      throw cfg::ConfigError("To port lower than from port in port range.");
+    if (to < 1024 || from < 1024 || to > 65535 || from > 65535)
+      throw cfg::ConfigError("Invalid to port number in port range.");
     ranges.push_back(PortRange(from, to));
   }
 }
@@ -163,7 +168,6 @@ Lslong::Lslong(std::vector<std::string>& toks)
 {
   options = toks[0];
   if (options[0] == '-') options.erase(0, 1);
-  std::cout << options << std::endl;
   if (toks.size() == 1) return;
   
   try

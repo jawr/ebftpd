@@ -54,13 +54,11 @@ void DirEnumerator::Readdir()
   namespace PP = acl::PathPermission;
   
   Path real(path);
-  std::cout << real << std::endl;
   if (client)
   {  
     Path absolute = (client->WorkDir() / path).Expand();
     if (!PP::DirAllowed<PP::View>(client->User(), absolute)) return;
     real = cfg::Get().Sitepath() + absolute;
-    logger::ftpd << "real: " << real << logger::endl;
   }
 
   std::tr1::shared_ptr<DIR> dp(opendir(real.CString()), closedir);

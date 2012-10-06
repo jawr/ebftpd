@@ -15,7 +15,7 @@ class ACL
   boost::unordered_set<UserID> denyGID;
 public:
   ACL(const std::string& acl);
-  ~ACL() {};
+  ~ACL() {}
   // bool Check(User user);
 
   static ACL CreateFromString(const std::string& acl);
