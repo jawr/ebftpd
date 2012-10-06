@@ -352,8 +352,8 @@ void MDTMCommand::Execute()
     return;
   }
   
-  const std::string& sitepath = cfg::Get()->Sitepath()->ToString();
-  fs::Path real = fs::Path(sitepath) + absolute;
+  const std::string& Sitepath = cfg::Get()->Sitepath().ToString();
+  fs::Path real = fs::Path(Sitepath) + absolute;
   
   fs::Status status;
   try
@@ -810,7 +810,7 @@ void SIZECommand::Execute()
   fs::Status status;
   try
   {
-    status.Reset(cfg::Get()->Sitepath()->ToString() + absolute);
+    status.Reset(cfg::Get()->Sitepath().ToString() + absolute);
   }
   catch (const util::SystemError& e)
   {

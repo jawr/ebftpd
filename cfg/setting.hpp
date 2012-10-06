@@ -3,9 +3,9 @@
 
 #include <string>
 #include <vector>
-#include <boost/function.hpp>                                                   
-#include <boost/bind.hpp>                                                       
-#include <boost/algorithm/string/join.hpp>                                      
+#include <boost/function.hpp>                             
+#include <boost/bind.hpp>                                  
+#include <boost/algorithm/string/join.hpp>                
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include "acl/acl.hpp"
@@ -15,6 +15,8 @@ namespace cfg { namespace setting
 {
 class Setting // a base class might be useful in the future.. maybe
 {
+public:
+  virtual ~Setting() {};
 };
 
 // generics
@@ -25,7 +27,7 @@ class Right : public Setting
   acl::ACL acl;
 public:
   Right() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Right(std::vector<std::string>& toks);
 };
 
 class ACLInt : public Setting
@@ -33,9 +35,9 @@ class ACLInt : public Setting
   int arg;
   acl::ACL acl;
 public:
+  ACLInt() {};
   ACLInt(std::vector<std::string>& toks);
 };
-
 
 // glftpd
 
@@ -44,6 +46,10 @@ class AsciiDownloads : public Setting
   int size;
   std::vector<std::string> masks;
 public:
+  AsciiDownloads() : size(20000) {
+    masks.push_back("*.[Tt][Xx][Tt]");
+    masks.push_back("*.[Dd][Ii][Zz]");
+  };
   AsciiDownloads(std::vector<std::string>& toks);
 };
 
@@ -52,6 +58,9 @@ class UseDirSize : public Setting
   char unit;
   std::vector<fs::Path> paths;
 public:
+  UseDirSize() : unit('m') {
+    paths.push_back(fs::Path("/"));
+  };
   UseDirSize(std::vector<std::string>& toks);
 };
 
@@ -59,8 +68,8 @@ class Timezone : public Setting
 {
   unsigned int hours;
 public:
-  Timezone() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Timezone() : hours(0) {};
+  Timezone(std::vector<std::string>& toks);
 };
 
 class SecureIp : public Setting
@@ -70,8 +79,10 @@ class SecureIp : public Setting
   bool needIdent;
   acl::ACL acl;
 public:
-  SecureIp() {};
-  virtual void Save(std::vector<std::string>& toks);
+  SecureIp() : minFields(2), allowHostname(false), needIdent(true) {
+    acl = acl::ACL::FromString("*");
+  }; 
+  SecureIp(std::vector<std::string>& toks);
 };
 
 class SecurePass : public Setting
@@ -80,7 +91,7 @@ class SecurePass : public Setting
   acl::ACL acl;
 public:
   SecurePass() {};
-  virtual void Save(std::vector<std::string>& toks);
+  SecurePass(std::vector<std::string>& toks);
 };
 
 class BouncerIp : public Setting
@@ -88,7 +99,7 @@ class BouncerIp : public Setting
   std::vector<std::string> addrs;
 public:
   BouncerIp() {};
-  virtual void Save(std::vector<std::string>& toks);
+  BouncerIp(std::vector<std::string>& toks);
 };
 
 class SpeedLimit : public Setting
@@ -99,7 +110,7 @@ class SpeedLimit : public Setting
   acl::ACL acl;
 public:
   SpeedLimit() {};
-  virtual void Save(std::vector<std::string>& toks);
+  SpeedLimit(std::vector<std::string>& toks);
 };
 
 class SimXfers : public Setting
@@ -108,7 +119,7 @@ class SimXfers : public Setting
   unsigned int maxUploads;
 public:
   SimXfers() {};
-  virtual void Save(std::vector<std::string>& toks);
+  SimXfers(std::vector<std::string>& toks);
 };
 
 class PasvAddr : public Setting
@@ -116,6 +127,7 @@ class PasvAddr : public Setting
   std::string addr;
   bool nat;
 public:
+  PasvAddr() {};
   PasvAddr(std::vector<std::string>& toks);
 };
 
@@ -134,7 +146,7 @@ class Ports : public Setting
   std::vector<PortRange> ranges;
 public:
   Ports() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Ports(std::vector<std::string>& toks);
 };
 // end
 
@@ -146,7 +158,7 @@ class AllowFxp : public Setting
   acl::ACL acl;
 public:
   AllowFxp() {};
-  virtual void Save(std::vector<std::string>& toks);
+  AllowFxp(std::vector<std::string>& toks);
 };
 
 class Alias : public Setting
@@ -155,7 +167,7 @@ class Alias : public Setting
   fs::Path path;
 public:
   Alias() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Alias(std::vector<std::string>& toks);
 };
 
 class StatSection : public Setting
@@ -165,7 +177,7 @@ class StatSection : public Setting
   bool seperateCredits;
 public:
   StatSection() {};
-  virtual void Save(std::vector<std::string>& toks);
+  StatSection(std::vector<std::string>& toks);
 };
 
 class PathFilter : public Setting
@@ -175,7 +187,7 @@ class PathFilter : public Setting
   std::vector<std::string> filters;
 public:
   PathFilter() {};
-  virtual void Save(std::vector<std::string>& toks);
+  PathFilter(std::vector<std::string>& toks);
 };
 
 class MaxUsers : public Setting
@@ -183,8 +195,8 @@ class MaxUsers : public Setting
   int maxUsers;
   int maxExemptUsers;
 public:
-  MaxUsers() {};
-  virtual void Save(std::vector<std::string>& toks);
+  MaxUsers() : maxUsers(10), maxExemptUsers(5) {};
+  MaxUsers(std::vector<std::string>& toks);
 };
 
 class ShowTotals : public Setting
@@ -193,7 +205,7 @@ class ShowTotals : public Setting
   std::vector<std::string> paths;
 public:
   ShowTotals() {};
-  virtual void Save(std::vector<std::string>& toks);
+  ShowTotals(std::vector<std::string>& toks);
 };
 
 class DupeCheck : public Setting
@@ -202,7 +214,7 @@ class DupeCheck : public Setting
   bool ignoreCase;
 public:
   DupeCheck() {};
-  virtual void Save(std::vector<std::string>& toks);
+  DupeCheck(std::vector<std::string>& toks);
 };
 
 // in built scripts
@@ -213,7 +225,7 @@ class Script : public Setting
   std::vector<std::string> masks;
 public:
   Script() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Script(std::vector<std::string>& toks);
 };
 
 class Lslong : public Setting
@@ -223,7 +235,7 @@ class Lslong : public Setting
   int maxRecursion;
 public:
   Lslong() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Lslong(std::vector<std::string>& toks);
 };
 
 class HiddenFiles : public Setting
@@ -232,7 +244,7 @@ class HiddenFiles : public Setting
   std::vector<std::string> masks;
 public:
   HiddenFiles() {};
-  virtual void Save(std::vector<std::string>& toks);
+  HiddenFiles(std::vector<std::string>& toks);
 };
 
 class Requests : public Setting
@@ -240,8 +252,8 @@ class Requests : public Setting
   fs::Path path;
   int max;
 public:
-  Requests() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Requests() : path("/ftp-data/misc/requests"), max(10) {};
+  Requests(std::vector<std::string>& toks);
 };
 
 class Lastonline : public Setting
@@ -250,8 +262,8 @@ class Lastonline : public Setting
   Type type;
   int max;
 public:
-  Lastonline() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Lastonline() : type(ALL), max(10) {};
+  Lastonline(std::vector<std::string>& toks);
 };
 
 class Creditcheck : public Setting
@@ -261,7 +273,7 @@ class Creditcheck : public Setting
   acl::ACL acl;
 public:
   Creditcheck() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Creditcheck(std::vector<std::string>& toks);
 };
 
 class Creditloss : public Setting
@@ -272,7 +284,7 @@ class Creditloss : public Setting
   acl::ACL acl;
 public:
   Creditloss() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Creditloss(std::vector<std::string>& toks);
 };
 
 class NukedirStyle : public Setting
@@ -283,7 +295,7 @@ class NukedirStyle : public Setting
   int minBytes;
 public:
   NukedirStyle() {};
-  virtual void Save(std::vector<std::string>& toks);
+  NukedirStyle(std::vector<std::string>& toks);
 };
 
 class Privgroup : public Setting
@@ -291,8 +303,8 @@ class Privgroup : public Setting
   std::string group;
   std::string description;
 public:
-  Privgroup() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Privgroup() : group("STAFF"), description("Staff Group") {};
+  Privgroup(std::vector<std::string>& toks);
 };
 
 class Msgpath : public Setting
@@ -302,7 +314,7 @@ class Msgpath : public Setting
   acl::ACL acl;
 public:
   Msgpath() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Msgpath(std::vector<std::string>& toks);
 };
 
 class Privpath : public Setting
@@ -311,7 +323,7 @@ class Privpath : public Setting
   acl::ACL acl;
 public:
   Privpath() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Privpath(std::vector<std::string>& toks);
 };
 
 class SiteCmd : public Setting
@@ -323,7 +335,7 @@ class SiteCmd : public Setting
   std::vector<std::string> arguments;
 public:
   SiteCmd() {};
-  virtual void Save(std::vector<std::string>& toks);
+  SiteCmd(std::vector<std::string>& toks);
 };
 
 class Cscript : public Setting
@@ -334,7 +346,7 @@ class Cscript : public Setting
   fs::Path script;
 public:
   Cscript() {};
-  virtual void Save(std::vector<std::string>& toks);
+  Cscript(std::vector<std::string>& toks);
 };
 
 // end namespace

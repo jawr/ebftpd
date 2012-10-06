@@ -15,8 +15,8 @@ int main(int argc, char** argv)
 {
   try
   {
-    cfg::Config *config = new cfg::Config("ftpd.conf");
-    cfg::UpdateShared(std::tr1::shared_ptr<cfg::Config>(config));
+    cfg::Config config("ftpd.conf");
+    cfg::UpdateShared(std::tr1::shared_ptr<cfg::Config>(&config));
   }
   catch (const cfg::ConfigError& e)
   {
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
   
   try
   {
-    const std::string& certificate = cfg::Get()->TlsCertificate()->ToString();
+    const std::string& certificate = cfg::Get()->TlsCertificate().ToString();
     util::net::TLSServerContext::Initialise(certificate, "");
   }
   catch (const util::net::NetworkError& e)
