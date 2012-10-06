@@ -89,6 +89,10 @@ void Config::Parse(const std::string& line) {
   {
     sitepath = fs::Path(toks.at(0));
   }
+  else if (opt == "port")
+  {
+    port = boost::lexical_cast<int>(toks.at(0));
+  }
   else if (opt == "tls_certificate")
   {
     tlsCertificate = fs::Path(toks.at(0));
@@ -466,102 +470,8 @@ void Config::SanityCheck()
   // required
   if (!CheckSetting("tls_certificate")) throw RequiredSetting("tls_certificate");
   else if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
+  else if (!CheckSetting("port")) throw RequiredSetting("port");
 
-  // set defaults
-  SetDefaults("ascii_downloads");
-  SetDefaults("shutdown");
-  SetDefaults("free_space");
-  SetDefaults("use_dir_size");
-  SetDefaults("timezone");
-  SetDefaults("color_mode");
-  SetDefaults("sitename_long");
-  SetDefaults("sitename_short");
-  SetDefaults("login_prompt");
-  SetDefaults("rootpath");
-  SetDefaults("reload_config");
-  SetDefaults("master");
-  SetDefaults("secure_ip");
-  SetDefaults("secure_pass");
-  SetDefaults("datapath");
-  SetDefaults("pwd_path");
-  SetDefaults("grp_path");
-  SetDefaults("botscript_path");
-  SetDefaults("bouncer_ip");
-  SetDefaults("speed_limit");
-  SetDefaults("sim_xfers");
-  SetDefaults("calc_crc");
-  SetDefaults("xdupe");
-  SetDefaults("mmap_amount");
-  SetDefaults("dl_sendfile");
-  SetDefaults("ul_buffered_force");
-  SetDefaults("min_homedir");
-  SetDefaults("valid_ip");
-  SetDefaults("active_addr");
-  SetDefaults("pasv_addr");
-  SetDefaults("active_ports");
-  SetDefaults("pasv_ports");
-  SetDefaults("allow_fxp");
-  SetDefaults("welcome_msg");
-  SetDefaults("goodbye_msg");
-  SetDefaults("newsfile");
-  SetDefaults("banner");
-  SetDefaults("alias");
-  SetDefaults("cdpath");
-  SetDefaults("ignore_type");
-  SetDefaults("delete");
-  SetDefaults("deleteown");
-  SetDefaults("overwrite");
-  SetDefaults("resume");
-  SetDefaults("rename");
-  SetDefaults("renameown");
-  SetDefaults("filemove");
-  SetDefaults("makedir");
-  SetDefaults("upload");
-  SetDefaults("download");
-  SetDefaults("nuke");
-  SetDefaults("dirlog");
-  SetDefaults("hideinwho");
-  SetDefaults("freefile");
-  SetDefaults("nostats");
-  SetDefaults("stat_section");
-  SetDefaults("path-filter");
-  SetDefaults("max_users");
-  SetDefaults("max_ustats");
-  SetDefaults("max_gstats");
-  SetDefaults("banned_users");
-  SetDefaults("show_diz");
-  SetDefaults("show_totals");
-  SetDefaults("dl_incomplete");
-  SetDefaults("file_dl_count");
-  SetDefaults("dupe_check");
-  SetDefaults("script");
-  SetDefaults("idle_commands");
-  SetDefaults("total_users");
-  SetDefaults("lslong");
-  SetDefaults("hidden_files");
-  SetDefaults("noretrieve");
-  SetDefaults("tagline");
-  SetDefaults("email");
-  SetDefaults("multiplier_max");
-  SetDefaults("oneliners");
-  SetDefaults("requests");
-  SetDefaults("lastonline");
-  SetDefaults("empty_nuke");
-  SetDefaults("nodupecheck");
-  SetDefaults("creditcheck");
-  SetDefaults("creditloss");
-  SetDefaults("nukedir_style");
-  SetDefaults("hideuser");
-  SetDefaults("privgroup");
-  SetDefaults("msgpath");
-  SetDefaults("privpath");
-  SetDefaults("site_cmd");
-  SetDefaults("max_sitecmd_lines");
-  SetDefaults("cscript");
-}
-
-void Config::SetDefaults(const std::string& opt)
-{
 }
 
 // end namespace

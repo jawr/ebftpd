@@ -30,6 +30,7 @@ class Config
   // containers
   fs::Path sitepath;
   fs::Path tlsCertificate;
+  int port;
   // glftpd
   setting::AsciiDownloads asciiDownloads;
   acl::ACL shutdown;
@@ -133,6 +134,7 @@ public:
   // getters
   const fs::Path& Sitepath() const { return sitepath; };
   const fs::Path& TlsCertificate() const { return tlsCertificate; };
+  int Port() const { return port; };
   // glftpd
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; }; 
   const acl::ACL& Shutdown() const { return shutdown; };
