@@ -59,14 +59,14 @@ void DirEnumerator::Readdir()
   {  
     Path absolute = (client->WorkDir() / path).Expand();
     if (!PP::DirAllowed<PP::View>(client->User(), absolute)) return;
-    real = cfg::Get()->Sitepath() + absolute;
+    real = cfg::Get().Sitepath() + absolute;
     logger::ftpd << "real: " << real << logger::endl;
   }
 
   std::tr1::shared_ptr<DIR> dp(opendir(real.CString()), closedir);
   if (!dp.get()) throw util::SystemError(errno);
   
-  size_t siteRootLen = cfg::Get()->Sitepath().ToString().length();
+  size_t siteRootLen = cfg::Get().Sitepath().ToString().length();
   struct dirent de;
   struct dirent* dep;
   while (true)

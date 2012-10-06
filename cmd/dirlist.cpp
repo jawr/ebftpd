@@ -108,11 +108,13 @@ void ListOptions::ParseOption(char option)
 
 DirectoryList::DirectoryList(ftp::Client& client, const fs::Path& path,
                              const ListOptions& options,
-                             bool dataOutput) :
+                             bool dataOutput,
+                             int maxRecursion) :
   client(client),
   socket(dataOutput ? client.data : client.control),
   path(path),
-  options(options)
+  options(options),
+  maxRecursion(maxRecursion)
 {
 }
 
@@ -184,7 +186,7 @@ void DirectoryList::Output(const std::string& message) const
 
 void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks, int depth) const
 {
-  if (maxRecursionDepth != -1 && depth > maxRecursionDepth) return;
+  if (maxRecursion && depth > maxRecursion) return;
 
   fs::DirEnumerator dirEnum;
   try

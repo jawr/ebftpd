@@ -39,7 +39,7 @@ struct Traits<Upload>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Upload(), user, path))
+    if (Evaluate(cfg::Get().Upload(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -51,7 +51,7 @@ struct Traits<Resume>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Resume(), user, path))
+    if (Evaluate(cfg::Get().Resume(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -63,7 +63,7 @@ struct Traits<Makedir>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Makedir(), user, path))
+    if (Evaluate(cfg::Get().Makedir(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -75,7 +75,7 @@ struct Traits<Download>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Download(), user, path))
+    if (Evaluate(cfg::Get().Download(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -87,7 +87,7 @@ struct Traits<Dirlog>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Dirlog(), user, path))
+    if (Evaluate(cfg::Get().Dirlog(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -99,7 +99,7 @@ struct Traits<Rename>
 {
   static util::Error AllowedOwner(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Renameown(), user, path))
+    if (Evaluate(cfg::Get().Renameown(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -107,7 +107,7 @@ struct Traits<Rename>
   
   static util::Error AllowedOther(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Rename(), user, path))
+    if (Evaluate(cfg::Get().Rename(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -128,7 +128,7 @@ struct Traits<Filemove>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Filemove(), user, path))
+    if (Evaluate(cfg::Get().Filemove(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -140,7 +140,7 @@ struct Traits<Nuke>
 {
   static util::Error Allowed(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Nuke(), user, path))
+    if (Evaluate(cfg::Get().Nuke(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -152,7 +152,7 @@ struct Traits<Delete>
 {
   static util::Error AllowedOwner(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Deleteown(), user, path))
+    if (Evaluate(cfg::Get().Deleteown(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -160,7 +160,7 @@ struct Traits<Delete>
 
   static util::Error AllowedOther(const User& user, const std::string& path)
   {
-    if (Evaluate(cfg::Get()->Delete(), user, path))
+    if (Evaluate(cfg::Get().Delete(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -197,7 +197,7 @@ bool HiddenFile(const std::string& path)
 bool PrivatePath(const std::string& path, const User& user)
 {
   const std::vector<cfg::setting::Privpath>& privPath = 
-    cfg::Get()->Privpath();
+    cfg::Get().Privpath();
   for (std::vector<cfg::setting::Privpath>::const_iterator it =
        privPath.begin(); it != privPath.end(); ++it)
   {

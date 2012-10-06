@@ -5,6 +5,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
 
+#include <iostream>
+
 namespace cfg { namespace setting
 {
 
@@ -158,19 +160,21 @@ Script::Script(std::vector<std::string>& toks)
 
 Lslong::Lslong(std::vector<std::string>& toks)   
 {
-  bin = fs::Path(toks.at(0));
-  toks.erase(toks.begin());
-  if (toks.size() == 0) return;
+  options = toks[0];
+  if (options[0] == '-') options.erase(0, 1);
+  std::cout << options << std::endl;
+  if (toks.size() == 1) return;
+  
   try
   {
-    maxRecursion = boost::lexical_cast<int>(toks.back());
+    maxRecursion = boost::lexical_cast<int>(toks[1]);
     toks.pop_back();
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    maxRecursion = 2;
+    throw cfg::ConfigError(
+      "Invalid number for optional lslong recrusion paramter");
   }
-  options = toks;
 }
 
 HiddenFiles::HiddenFiles(std::vector<std::string>& toks)   

@@ -24,16 +24,16 @@ void UpdateShared(const std::tr1::shared_ptr<Config> newShared)
   shared = newShared;
 }
 
-Config const* Get(bool update)
+const Config& Get(bool update)
 {
   assert(shared.get()); // program must never call Get until a valid config is loaded
   Config* config = thisThread.get();
-  if (config && !update) return config;
+  if (config && !update) return *config;
   boost::lock_guard<boost::mutex> lock(sharedMutex);
-  if (config && update && shared->Version() <= config->Version()) return config;
+  if (config && update && shared->Version() <= config->Version()) return *config;
   config = new Config(*shared);
   thisThread.reset(config);
-  return config;
+  return *config;
 }
 
 }

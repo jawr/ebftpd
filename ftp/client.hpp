@@ -130,7 +130,7 @@ public:
   
   friend cmd::DirectoryList::DirectoryList(
               ftp::Client& client, const fs::Path& path, 
-              const ListOptions& options, bool dataOutput);
+              const ListOptions& options, bool dataOutput, int maxRecursion);
               
   friend class cmd::STORCommand; // ugly
   friend class cmd::RETRCommand; // ugly, interface needs improving so this isnt necessary
