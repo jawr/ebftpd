@@ -237,7 +237,7 @@ void LISTCommand::Execute()
 
   try
   {
-    client.DataOpen();
+    client.DataOpen(ftp::TransferType::List);
   }
   catch (const util::net::NetworkError&e )
   {
@@ -431,7 +431,7 @@ void NLSTCommand::Execute()
 
   try
   {
-    client.DataOpen();
+    client.DataOpen(ftp::TransferType::List);
   }
   catch (const util::net::NetworkError&e )
   {
@@ -661,7 +661,7 @@ void RETRCommand::Execute()
 
   try
   {
-    client.DataOpen();
+    client.DataOpen(ftp::TransferType::Download);
   }
   catch (const util::net::NetworkError&e )
   {
@@ -889,7 +889,7 @@ void STORCommand::Execute()
 
   try
   {
-    client.DataOpen();
+    client.DataOpen(ftp::TransferType::Upload);
   }
   catch (const util::net::NetworkError&e )
   {

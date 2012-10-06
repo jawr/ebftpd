@@ -93,7 +93,8 @@ AllowFxp::AllowFxp(std::vector<std::string>& toks)
   downloads = util::string::BoolLexicalCast(toks.at(0));
   uploads   = util::string::BoolLexicalCast(toks.at(1));
   logging   = util::string::BoolLexicalCast(toks.at(2));
-  toks.erase(toks.begin(), toks.begin()+3);
+  toks.erase(toks.begin(), toks.begin() + 3);
+  if (toks.empty()) throw cfg::ConfigError("Missing ACL parameter on allow_fxp");
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 

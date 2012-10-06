@@ -11,6 +11,7 @@
 #include "util/net/tcplistener.hpp"
 #include "cmd/factory.hpp"
 #include "util/net/interfaces.hpp"
+#include "acl/check.hpp"
 
 namespace ftp
 {
@@ -280,12 +281,31 @@ void Client::DataInitActive(const util::net::Endpoint& ep)
   passiveMode = false;
 }
 
-void Client::DataOpen()
+void Client::DataOpen(TransferType::Enum transferType)
 {
   if (passiveMode)
   {
     dataListen.Accept(data);
     dataListen.Close();
+  }
+  
+  if (transferType != TransferType::List &&
+      data.RemoteEndpoint().IP() != control.RemoteEndpoint().IP())
+  {
+    bool logging;
+    if (!acl::AllowFxp(transferType, user, logging))
+    {
+      data.Close();
+      std::string type = transferType == TransferType::Upload ?
+                         "upload" : "download";
+      if (logging)
+      {
+        logger::access << "User " << user.Name() << " attempted to fxp " << type
+                       << " to " << data.RemoteEndpoint() << logger::endl;
+      }
+      
+      throw util::net::NetworkError("FXP " + type + " not allowed.");
+    }
   }
   
   if (dataProtected)
