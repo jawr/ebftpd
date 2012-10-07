@@ -2,6 +2,7 @@
 #define __UTIL_NET_TCPLISTENER_HPP
 
 #include <sys/socket.h>
+#include <boost/noncopyable.hpp>
 #include "util/net/endpoint.hpp"
 #include "util/timepair.hpp"
 
@@ -10,7 +11,7 @@ namespace util {namespace net
 
 class TCPSocket;
 
-class TCPListener
+class TCPListener : boost::noncopyable
 {
   util::net::Endpoint endpoint;
   int socket;
@@ -25,30 +26,6 @@ class TCPListener
   
 public:
   static const int maximumBacklog = SOMAXCONN;
-  
-  TCPListener(TCPListener&& other) :
-    endpoint(other.endpoint),
-    socket(other.socket),
-    backlog(other.backlog),
-    interruptPipe({other.interruptPipe[0], other.interruptPipe[1]})
-  {
-    other.socket = -1;
-    other.interruptPipe[0] = -1;
-    other.interruptPipe[1] = -1;
-  }
-  
-  TCPListener& operator=(TCPListener&& other)
-  {
-    endpoint = other.endpoint;
-    socket = other.socket;
-    backlog = other.backlog;
-    interruptPipe[0] = other.interruptPipe[0];
-    interruptPipe[1] = other.interruptPipe[1];
-    other.socket = -1;
-    other.interruptPipe[0] = -1;
-    other.interruptPipe[1] = -1;
-    return *this;
-  }
 
   ~TCPListener();
   

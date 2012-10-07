@@ -36,11 +36,12 @@ public:
   {
     boost::lock_guard<boost::mutex> lock(mutex);
     this->ports = ports;
-    it  = this->ports.Ranges().begin();
+    it = this->ports.Ranges().begin();
   }
 
   uint16_t inline NextPort()
   {
+    boost::lock_guard<boost::mutex> lock(mutex);
     if (ports.Ranges().empty()) return util::net::Endpoint::AnyPort();
     if (!nextPort) 
     {

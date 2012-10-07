@@ -20,7 +20,7 @@ bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port
     for (const auto& ip : validIPs)
     {
       ep = util::net::Endpoint(ip, port);
-      servers.emplace_back(util::net::Endpoint(ip, port), 1234);
+      servers.push_back(new util::net::TCPListener(ep));
       logger::ftpd << "Listening for clients on " << ep << logger::endl;
     }
   }

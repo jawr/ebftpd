@@ -150,7 +150,6 @@ class PortRange
   int from;
   int to;
 public:
-  PortRange(int from) : from(from), to(from) {}
   PortRange(int from, int to) : from(from), to(to) {}
   int From() const { return from; }
   int To() const { return to; }
@@ -163,7 +162,7 @@ class Ports : public Setting
 public:
   Ports() {}
   Ports(std::vector<std::string>& toks);
-  const std::vector<PortRange> Ranges() const { return ranges; }
+  const std::vector<PortRange>& Ranges() const { return ranges; }
 };
 // end
 

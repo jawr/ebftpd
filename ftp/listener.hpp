@@ -6,6 +6,7 @@
 #include <tr1/unordered_set>
 #include <boost/thread.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include "ftp/client.hpp"
 #include "util/thread.hpp"
 #include "util/net/tcplistener.hpp"
@@ -18,7 +19,7 @@ class Listener : public util::ThreadSelect
 {
   typedef boost::ptr_list<Client> ClientList;
 
-  std::vector<util::net::TCPListener> servers;
+  boost::ptr_vector<util::net::TCPListener> servers;
   boost::ptr_list<Client> clients;
   std::vector<std::string> validIPs;
   int32_t port;

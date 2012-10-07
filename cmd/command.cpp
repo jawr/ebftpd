@@ -64,7 +64,7 @@ void AUTHCommand::Execute()
     return;
   }
   
-  if (argStr != "TLS")
+  if (argStr != "TLS" && argStr != "SSL")
   {
     client.Reply(ftp::ParameterNotImplemented,
                  "AUTH " + argStr + " is unsupported.");

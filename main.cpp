@@ -1,3 +1,4 @@
+#ifndef TEST
 #include <memory>
 #include "ftp/listener.hpp"
 #include "util/net/tlscontext.hpp"
@@ -11,8 +12,6 @@
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
 #include "version.hpp"
-
-#ifndef TEST
 
 extern const std::string programName = "ebftpd";
 extern const std::string programFullname = programName + " " + std::string(version);
@@ -48,23 +47,29 @@ int main(int argc, char** argv)
   ftp::AddrAllocator<ftp::AddrType::Passive>::SetAddrs(config->PasvAddr());
   ftp::PortAllocator<ftp::PortType::Active>::SetPorts(config->ActivePorts());
   ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(config->PasvPorts());
+  
   fs::OwnerCache::Start();
   
+  int exitStatus = 0;
   
   ftp::Listener listener;  
   if (!listener.Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
     logger::error << "Listener failed to initialise!" << logger::endl;
-    return 1;
+    exitStatus = 1;
   }
-  
-  listener.Start();
-  listener.Join();
+  else
+  {  
+    listener.Start();
+    listener.Join();
+  }
   
   fs::OwnerCache::Stop();
   
   (void) argc;
   (void) argv;
+  
+  return exitStatus;
 }
 
 #endif

@@ -15,7 +15,7 @@ namespace util { namespace net
 
 class TCPListener;
 
-class TCPSocket : private boost::noncopyable
+class TCPSocket : boost::noncopyable
 {
 public:
   class State
