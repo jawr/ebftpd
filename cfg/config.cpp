@@ -6,7 +6,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>                                   
-#include <boost/bind.hpp>                                     
 #include "cfg/config.hpp"
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
@@ -54,23 +53,24 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
 void Config::Parse(const std::string& line) {
   std::vector<std::string> toks;
   boost::split(toks, line, boost::is_any_of("\t "), boost::token_compress_on);
-  for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
-    ++it)
-    boost::replace_all((*it), "[:space:]", " ");
+  for (auto& token : toks) 
+    boost::replace_all(token, "[:space:]", " ");
   
   if (toks.size() == 0) return;
   std::string opt = toks.at(0);
   if (opt.size() == 0) return;
+  
   // remove setting from args
   toks.erase(toks.begin());
+  
+  // not too sure this is necessary with token_compress_on??
   std::vector<std::string>::iterator it;
   for (it = toks.begin(); it != toks.end();)
-    if ((*it).size() == 0)
+    if (it->size() == 0)
       it = toks.erase(it);
     else
       ++it;
     
-
   // parse string
   boost::algorithm::to_lower(opt);
 
@@ -239,9 +239,8 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "ignore_type")
   { 
-    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
-      ++it)
-      ignoreType.push_back((*it));
+    for (const auto& token : toks)
+      ignoreType.push_back(token);
   }
   else if (opt == "banned_users")
   {
@@ -253,9 +252,8 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "noretrieve")
   {
-    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
-      ++it)
-      ignoreType.push_back((*it));
+    for (const auto& token : toks)
+      ignoreType.push_back(token);
   }
   else if (opt == "tagline")
   {

@@ -5,8 +5,8 @@ namespace util { namespace net
 {
 
 Endpoint::Endpoint() :
-  addr4(0),
-  addr6(0),
+  addr4(nullptr),
+  addr6(nullptr),
   addrLen(0),
   port(-1)
 {
@@ -20,7 +20,7 @@ Endpoint::Endpoint(const std::string& addr, int32_t port) :
   memset(&this->addr, 0, sizeof(this->addr));
   if (ip.Family() == IPAddress::IPv4)
   {
-    addr4 = static_cast<struct sockaddr_in*>(static_cast<void*>(&this->addr));
+    addr4 = reinterpret_cast<struct sockaddr_in*>(&this->addr);
     memcpy(&addr4->sin_addr, ip.Addr(), ip.Length());
     addrLen = sizeof(struct sockaddr_in);
     addr4->sin_family = AF_INET;
@@ -28,7 +28,7 @@ Endpoint::Endpoint(const std::string& addr, int32_t port) :
   }
   else if (ip.Family() == IPAddress::IPv6)
   {
-    addr6 = static_cast<struct sockaddr_in6*>(static_cast<void*>(&this->addr));
+    addr6 = reinterpret_cast<struct sockaddr_in6*>(&this->addr);
     memcpy(&addr6->sin6_addr, ip.Addr(), ip.Length());
     addrLen = sizeof(struct sockaddr_in6);
     addr6->sin6_family = AF_INET6;
@@ -44,7 +44,7 @@ Endpoint::Endpoint(const IPAddress& addr, int32_t port) :
   memset(&this->addr, 0, sizeof(this->addr));
   if (ip.Family() == IPAddress::IPv4)
   {
-    addr4 = static_cast<struct sockaddr_in*>(static_cast<void*>(&this->addr));
+    addr4 = reinterpret_cast<struct sockaddr_in*>(&this->addr);
     memcpy(&addr4->sin_addr, ip.Addr(), ip.Length());
     addrLen = sizeof(struct sockaddr_in);
     addr4->sin_family = AF_INET;
@@ -52,7 +52,7 @@ Endpoint::Endpoint(const IPAddress& addr, int32_t port) :
   }
   else if (ip.Family() == IPAddress::IPv6)
   {
-    addr6 = static_cast<struct sockaddr_in6*>(static_cast<void*>(&this->addr));
+    addr6 = reinterpret_cast<struct sockaddr_in6*>(&this->addr);
     memcpy(&addr6->sin6_addr, ip.Addr(), ip.Length());
     addrLen = sizeof(struct sockaddr_in6);
     addr6->sin6_family = AF_INET6;
@@ -61,8 +61,8 @@ Endpoint::Endpoint(const IPAddress& addr, int32_t port) :
 }
 
 Endpoint::Endpoint(const struct sockaddr& addr, socklen_t addrLen) :
-  addr4(0),
-  addr6(0),
+  addr4(nullptr),
+  addr6(nullptr),
   addrLen(addrLen),
   port(-1)
 {
@@ -70,8 +70,8 @@ Endpoint::Endpoint(const struct sockaddr& addr, socklen_t addrLen) :
 }
 
 Endpoint::Endpoint(const struct sockaddr_in& addr) :
-  addr4(0),
-  addr6(0),
+  addr4(nullptr),
+  addr6(nullptr),
   addrLen(sizeof(addr)),
   port(-1)
 {
@@ -79,8 +79,8 @@ Endpoint::Endpoint(const struct sockaddr_in& addr) :
 }
 
 Endpoint::Endpoint(const struct sockaddr_in6& addr) :
-  addr4(0),
-  addr6(0),
+  addr4(nullptr),
+  addr6(nullptr),
   addrLen(sizeof(addr)),
   port(-1)
 {
@@ -106,7 +106,7 @@ void Endpoint::FromAddr(const struct sockaddr& addr)
 
 const struct sockaddr* Endpoint::Addr() const
 {
-  return static_cast<const struct sockaddr*>(static_cast<const void*>(&addr));
+  return reinterpret_cast<const struct sockaddr*>(&addr);
 }
 
 bool Endpoint::Equals(const Endpoint& ep) const

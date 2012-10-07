@@ -29,11 +29,8 @@ acl::User User::Unserialize(const mongo::BSONObj& bo)
   user.uid = bo["uid"].Int();
   user.primaryGid = bo["primary gid"].Int();
   std::vector<mongo::BSONElement> secondaryGids;
-  for (std::vector<mongo::BSONElement>::const_iterator it =
-       secondaryGids.begin(); it != secondaryGids.end(); ++it)
-  {
-    user.secondaryGids.insert(it->Int());
-  }
+  for (const auto& elem : secondaryGids)
+    user.secondaryGids.insert(elem.Int());
   return user;
 }
   

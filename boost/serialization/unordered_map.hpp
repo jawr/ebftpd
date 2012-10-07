@@ -51,7 +51,7 @@ inline void load(
         Archive,
         boost::unordered_map<Key, Type, Compare, Allocator>,
         boost::serialization::stl::archive_input_map<
-            Archive, boost::unordered_map<Key, Type, Compare, Allocator> >,
+            Archive, boost::unordered_map<Key, Type, Compare, Allocator>>,
             boost::serialization::stl::no_reserve_imp<boost::unordered_map<
                 Key, Type, Compare, Allocator
             >

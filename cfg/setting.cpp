@@ -23,11 +23,8 @@ UseDirSize::UseDirSize(std::vector<std::string>& toks)
 {
   unit = (char)toks.at(0)[0];
   toks.erase(toks.begin());
-  for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
-    ++it)
-  {
-    paths.push_back(fs::Path((*it)));
-  }
+  for (const auto& token : toks)
+    paths.push_back(fs::Path(token));
 }
 
 Timezone::Timezone(std::vector<std::string>& toks)
@@ -76,11 +73,10 @@ PasvAddr::PasvAddr(std::vector<std::string>& toks)
 Ports::Ports(std::vector<std::string>& toks)   
 {
   std::vector<std::string> temp;
-  for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
-    ++it)
+  for (const auto& token : toks)
   {
     temp.clear();
-    boost::split(temp, *it, boost::is_any_of("-"));
+    boost::split(temp, token, boost::is_any_of("-"));
     if (temp.size() > 2) throw cfg::ConfigError("Invalid port range.");
     int from = boost::lexical_cast<int>(temp.at(0));
     int to = from;

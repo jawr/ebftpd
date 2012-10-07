@@ -43,7 +43,7 @@ void TCPListener::Listen()
   struct sockaddr_storage addrStor;
   memcpy(&addrStor, endpoint.Addr(), addrLen);
   struct sockaddr* addr = 
-    static_cast<struct sockaddr*>(static_cast<void*>(&addrStor));
+    reinterpret_cast<struct sockaddr*>(&addrStor);
 
   if (bind(socket, addr, addrLen) < 0)
   {
@@ -92,7 +92,7 @@ bool TCPListener::WaitPendingTimeout(const TimePair* duration) const
   FD_SET(interruptPipe[0], &readSet);
   int max = std::max(socket, interruptPipe[0]);
   
-  struct timeval *tvPtr = 0;
+  struct timeval *tvPtr = nullptr;
   struct timeval tv;
   if (duration)
   {

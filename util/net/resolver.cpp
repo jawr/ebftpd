@@ -37,7 +37,7 @@ Resolver::~Resolver()
 
 void Resolver::Resolve()
 {
-  const char* charService = 0;
+  const char* charService = nullptr;
   if (port >= 0)
   {
     std::string service;
@@ -60,7 +60,7 @@ void Resolver::Resolve()
   hints.ai_flags = AI_PASSIVE;
   hints.ai_socktype = socketType;
 
-  const char* charHostname = 0;
+  const char* charHostname = nullptr;
   if (!hostname.empty()) charHostname = hostname.c_str();
   
   int error = getaddrinfo(charHostname, charService, &hints, &res);
@@ -78,7 +78,7 @@ void Resolver::Resolve()
   }
 
   freeaddrinfo(res);
-  res = 0;
+  res = nullptr;
 }
 
 void Resolver::Resolve(const std::string& hostname, int32_t port)

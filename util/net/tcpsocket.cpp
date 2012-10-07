@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <sys/socket.h>
-#include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include "util/net/tcpsocket.hpp"
 #include "util/net/tcplistener.hpp"
@@ -30,7 +29,7 @@ TCPSocket::~TCPSocket()
 TCPSocket::TCPSocket(const util::TimePair& timeout) :
   socket(-1),
   timeout(timeout),
-  getcharBufferPos(0),
+  getcharBufferPos(nullptr),
   getcharBufferLen(0)
   
 {
@@ -39,7 +38,7 @@ TCPSocket::TCPSocket(const util::TimePair& timeout) :
 TCPSocket::TCPSocket(const Endpoint& endpoint, const util::TimePair& timeout) :
   socket(-1),
   timeout(timeout),
-  getcharBufferPos(0),
+  getcharBufferPos(nullptr),
   getcharBufferLen(0)
 {
   Connect(endpoint);
@@ -50,7 +49,7 @@ void TCPSocket::PopulateLocalEndpoint()
   struct sockaddr_storage localAddrStor;
   socklen_t localLen = sizeof(localAddrStor);
   struct sockaddr* localAddr = 
-    static_cast<struct sockaddr*>(static_cast<void*>(&localAddrStor));
+    reinterpret_cast<struct sockaddr*>(&localAddrStor);
     
   if (getsockname(socket, (struct sockaddr*) localAddr, &localLen) < 0)
     throw NetworkSystemError(errno);
@@ -63,7 +62,7 @@ void TCPSocket::PopulateRemoteEndpoint()
   struct sockaddr_storage remoteAddrStor;
   socklen_t remoteLen = sizeof(remoteAddrStor);
   struct sockaddr* remoteAddr = 
-    static_cast<struct sockaddr*>(static_cast<void*>(&remoteAddrStor));
+    reinterpret_cast<struct sockaddr*>(&remoteAddrStor);
 
   if (getpeername(socket, (struct sockaddr*) remoteAddr, &remoteLen) < 0)
     throw NetworkSystemError(errno);
@@ -100,7 +99,7 @@ void TCPSocket::Accept(TCPListener& listener)
   struct sockaddr_storage addrStor;
   socklen_t addrLen = sizeof(addrStor);
   struct sockaddr* addr =
-    static_cast<struct sockaddr*>(static_cast<void*>(&addrStor));
+    reinterpret_cast<struct sockaddr*>(&addrStor);
     
   while ((socket = accept(listener.Socket(), addr, &addrLen)) < 0)
   {
@@ -280,7 +279,7 @@ void TCPSocket::Shutdown()
   FD_ZERO(&writeSet);
   if (state.writeable) FD_SET(socket, &writeSet);
   
-  struct timeval *tvPtr = 0;
+  struct timeval* tvPtr = nullptr;
   struct timeval tv;
   if (duration)
   {

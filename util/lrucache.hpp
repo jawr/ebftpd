@@ -32,7 +32,7 @@ class LRUCache
     Entry* prev;
     
     Entry(LRUCache& cache, const KeyType& key, const ValueType& value) :
-      cache(cache), pair(std::make_pair(key, value)), next(0), prev(0)
+      cache(cache), pair(std::make_pair(key, value)), next(nullptr), prev(nullptr)
     {
       Entry* temp = cache.first;
       cache.first = this;
@@ -136,7 +136,7 @@ public:
   };
 
   LRUCache(uint16_t capacity) :
-    first(0), last(0), capacity(capacity)
+    first(nullptr), last(nullptr), capacity(capacity)
   {
     if (!capacity) throw std::logic_error("Capacity must be larger than zero");
   }
@@ -171,9 +171,9 @@ public:
   }
   
   iterator begin() { return iterator(first); }
-  iterator end() { return iterator(0); }
+  iterator end() { return iterator(nullptr); }
   const_iterator begin() const { return const_iterator(first); }
-  const_iterator end() const { return const_iterator(0); }  
+  const_iterator end() const { return const_iterator(nullptr); }  
   
   friend struct Entry;
 };

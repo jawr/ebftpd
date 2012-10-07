@@ -4,6 +4,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/optional.hpp>
 #include "ftp/client.hpp"
 #include "logger/logger.hpp"
 #include "util/verify.hpp"
@@ -14,6 +15,7 @@
 #include "util/net/interfaces.hpp"
 #include "acl/check.hpp"
 #include "cfg/get.hpp"
+#include "ftp/portallocator.hpp"
 
 namespace ftp
 {
@@ -269,37 +271,28 @@ void Client::DataInitPassive(util::net::Endpoint& ep, bool ipv4Only)
     // let's get the IPv4 address for this interface
     FindPartnerIP(ip, ip);
   }
+
   
-  const cfg::Config& config = cfg::Get();
-  if (!config.PasvPorts().Ranges().empty())
+  boost::optional<uint16_t> firstPort;
+  while (true)
   {
-    for (std::vector<cfg::setting::PortRange>::const_iterator it =
-         config.PasvPorts().Ranges().begin();
-         it != config.PasvPorts().Ranges().end(); ++it)
+    uint16_t port = PortAllocator<PortType::Passive>::NextPort();
+    if (!firstPort) firstPort.reset(port);
+    else if (port == *firstPort) 
+      throw util::net::NetworkSystemError(EADDRINUSE);
+      
+    try
     {
-      for (uint16_t port = it->From(); port <= it->To(); ++port)
-      {
-        try
-        {
-          dataListen.Listen(Endpoint(ip, port));
-          goto portFound;
-        }
-        catch (util::net::NetworkSystemError& e)
-        {
-          if (e.Errno() != EADDRINUSE)
-            throw;
-        }
-      }
+      dataListen.Listen(Endpoint(ip, port));
+      break;
     }
-    
-    throw util::net::NetworkSystemError(EADDRINUSE);
-  }
-  else
-  {
-    dataListen.Listen(Endpoint(ip, Endpoint::AnyPort()));
+    catch (const util::net::NetworkSystemError& e)
+    {
+      if (e.Errno() != EADDRINUSE)
+        throw;
+    }
   }
   
-portFound:
   ep = dataListen.Endpoint();
   passiveMode = true;
 }
