@@ -21,6 +21,7 @@
 #include "acl/check.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
+#include "ftp/data.hpp"
 #include "main.hpp"
 
 #include <iostream>
@@ -33,115 +34,115 @@ namespace cmd
 
 void ABORCommand::Execute()
 {
-  client.Reply(ftp::DataClosedOkay, "ABOR command successful."); 
+  client.Control().Reply(ftp::DataClosedOkay, "ABOR command successful."); 
 }
 
 void ACCTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "ACCT Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "ACCT Command not implemented."); 
 }
 
 void ADATCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "ADAT Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "ADAT Command not implemented."); 
 }
 
 void ALLOCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "ALLO Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "ALLO Command not implemented."); 
 }
 
 void APPECommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "APPE Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "APPE Command not implemented."); 
 }
 
 void AUTHCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   if (argStr != "TLS" && argStr != "SSL")
   {
-    client.Reply(ftp::ParameterNotImplemented,
+    client.Control().Reply(ftp::ParameterNotImplemented,
                  "AUTH " + argStr + " is unsupported.");
     return;
   }
   
-  client.Reply(ftp::SecurityExchangeOkay, "AUTH TLS successful."); 
-  client.NegotiateTLS();  
+  client.Control().Reply(ftp::SecurityExchangeOkay, "AUTH TLS successful."); 
+  client.Control().NegotiateTLS();  
 }
 
 void CCCCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "CCC Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "CCC Command not implemented."); 
 }
 
 void CDUPCommand::Execute()
 {
   if (!argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   fs::Path path = "..";
   
   util::Error e = fs::ChangeDirectory(client,  path);
-  if (!e) client.Reply(ftp::ActionNotOkay, "CDUP failed: " + e.Message());
-  else client.Reply(ftp::FileActionOkay, "CDUP command successful."); 
+  if (!e) client.Control().Reply(ftp::ActionNotOkay, "CDUP failed: " + e.Message());
+  else client.Control().Reply(ftp::FileActionOkay, "CDUP command successful."); 
 }
 
 void CONFCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "CONF Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "CONF Command not implemented."); 
 }
 
 void CWDCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   fs::Path path = argStr;
   
   util::Error e = fs::ChangeDirectory(client,  path);
-  if (!e) client.Reply(ftp::ActionNotOkay, "CWD failed: " + e.Message());
+  if (!e) client.Control().Reply(ftp::ActionNotOkay, "CWD failed: " + e.Message());
   else if (path.ToString() != argStr)
-    client.Reply(ftp::FileActionOkay, "CWD command successful (Matched: " + 
+    client.Control().Reply(ftp::FileActionOkay, "CWD command successful (Matched: " + 
                  path.ToString() + ").");
   else
-    client.Reply(ftp::FileActionOkay, "CWD command successful."); 
+    client.Control().Reply(ftp::FileActionOkay, "CWD command successful."); 
 }
 
 void DELECommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::DeleteFile(client,  argStr);
-  if (!e) client.Reply(ftp::ActionNotOkay, "DELE failed: " + e.Message());
-  else client.Reply(ftp::FileActionOkay, "DELE command successful."); 
+  if (!e) client.Control().Reply(ftp::ActionNotOkay, "DELE failed: " + e.Message());
+  else client.Control().Reply(ftp::FileActionOkay, "DELE command successful."); 
 }
 
 void ENCCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "ENC Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "ENC Command not implemented."); 
 }
 
 void EPRTCommand::Execute()
 {
   if (args.size() != 2)
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
 
@@ -149,65 +150,65 @@ void EPRTCommand::Execute()
   util::Error e = util::net::ftp::EndpointFromEPRT(args[1], ep);
   if (!e)
   {
-    client.Reply(ftp::SyntaxError, "EPRT failed: " + e.Message());
+    client.Control().Reply(ftp::SyntaxError, "EPRT failed: " + e.Message());
     return;
   }
   
   try
   {
-    client.DataInitActive(ep);
+    client.Data().InitActive(ep);
   }
   catch (const util::net::NetworkError& e)
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
     return;
   }
   
-  client.Reply(ftp::CommandOkay, "EPRT command successful.");
+  client.Control().Reply(ftp::CommandOkay, "EPRT command successful.");
 }
 
 void EPSVCommand::Execute()
 {
   if (!argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::net::Endpoint ep;
   try
   {
-    client.DataInitPassive(ep, ftp::PassiveType::EPSV);
+    client.Data().InitPassive(ep, ftp::PassiveType::EPSV);
   }
   catch (const util::net::NetworkError& e)
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to listen for data connection: " + e.Message());
     return;
   }
 
   std::string portString;
   util::net::ftp::EndpointToEPRT(ep, portString, 
-                                 client.EPSVMode() == ftp::EPSVMode::Full);
+                                 client.Data().EPSVMode() == ftp::EPSVMode::Full);
   
-  client.Reply(ftp::ExtendedPassiveMode, "Entering extended passive mode (" + 
+  client.Control().Reply(ftp::ExtendedPassiveMode, "Entering extended passive mode (" + 
                portString + ")");
 }
 
 void FEATCommand::Execute()
 {
-  client.PartReply(ftp::SystemStatus, "Extended feature support:");
-  client.PartReply(ftp::NoCode, " AUTH TLS");
-  client.PartReply(ftp::NoCode, " EPRT");
-  client.PartReply(ftp::NoCode, " EPSV");
-  client.PartReply(ftp::NoCode, " LPRT");
-  client.PartReply(ftp::NoCode, " LPSV");
-  client.PartReply(ftp::NoCode, " PBSZ");
-  client.PartReply(ftp::NoCode, " PROT");
-  client.PartReply(ftp::NoCode, " MDTM");
-  client.PartReply(ftp::NoCode, " SIZE");
-  client.Reply(ftp::SystemStatus, "End.");
+  client.Control().PartReply(ftp::SystemStatus, "Extended feature support:");
+  client.Control().PartReply(ftp::NoCode, " AUTH TLS");
+  client.Control().PartReply(ftp::NoCode, " EPRT");
+  client.Control().PartReply(ftp::NoCode, " EPSV");
+  client.Control().PartReply(ftp::NoCode, " LPRT");
+  client.Control().PartReply(ftp::NoCode, " LPSV");
+  client.Control().PartReply(ftp::NoCode, " PBSZ");
+  client.Control().PartReply(ftp::NoCode, " PROT");
+  client.Control().PartReply(ftp::NoCode, " MDTM");
+  client.Control().PartReply(ftp::NoCode, " SIZE");
+  client.Control().Reply(ftp::SystemStatus, "End.");
 }
 
 void HELPCommand::Execute()
@@ -223,26 +224,26 @@ void HELPCommand::Execute()
     "------------------------------------------------------------------\n"
     "End of list.                         (* Commands not implemented)";
     
-  client.MultiReply(ftp::HelpMessage, reply);
+  client.Control().MultiReply(ftp::HelpMessage, reply);
 }
 
 void LANGCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "LANG Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "LANG Command not implemented."); 
 }
 
 void LISTCommand::Execute()
 {
-  client.Reply(ftp::TransferStatusOkay,
+  client.Control().Reply(ftp::TransferStatusOkay,
                "Opening data connection for directory listing.");
 
   try
   {
-    client.DataOpen(ftp::TransferType::List);
+    client.Data().Open(ftp::TransferType::List);
   }
   catch (const util::net::NetworkError&e )
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
     return;
   }
@@ -265,8 +266,8 @@ void LISTCommand::Execute()
   const cfg::Config& config = cfg::Get();
   std::string forcedOptions = "l" + config.Lslong().Options();
   
-  DirectoryList dirList(client, path, ListOptions(options, forcedOptions),
-                        true, config.Lslong().MaxRecursion());
+  DirectoryList dirList(client, client.Data(), path, ListOptions(options, forcedOptions),
+                        config.Lslong().MaxRecursion());
 
   try
   {
@@ -274,21 +275,21 @@ void LISTCommand::Execute()
   }
   catch (const util::net::NetworkError& e)
   {
-    client.DataClose();
-    client.Reply(ftp::DataCloseAborted,
+    client.Data().Close();
+    client.Control().Reply(ftp::DataCloseAborted,
                 "Error whiling writing to data connection: " + e.Message());
     return;
   }
   
-  client.DataClose();
-  client.Reply(ftp::DataClosedOkay, "End of directory listing."); 
+  client.Data().Close();
+  client.Control().Reply(ftp::DataClosedOkay, "End of directory listing."); 
 }
 
 void LPRTCommand::Execute()
 {
   if (args.size() != 2)
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
 
@@ -296,40 +297,40 @@ void LPRTCommand::Execute()
   util::Error e = util::net::ftp::EndpointFromLPRT(args[1], ep);
   if (!e)
   {
-    client.Reply(ftp::SyntaxError, "LPRT failed: " + e.Message());
+    client.Control().Reply(ftp::SyntaxError, "LPRT failed: " + e.Message());
     return;
   }
   
   try
   {
-    client.DataInitActive(ep);
+    client.Data().InitActive(ep);
   }
   catch (const util::net::NetworkError& e)
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
     return;
   }
   
-  client.Reply(ftp::CommandOkay, "LPRT command successful.");
+  client.Control().Reply(ftp::CommandOkay, "LPRT command successful.");
 }
 
 void LPSVCommand::Execute()
 {
   if (!argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::net::Endpoint ep;
   try
   {
-    client.DataInitPassive(ep, ftp::PassiveType::LPSV);
+    client.Data().InitPassive(ep, ftp::PassiveType::LPSV);
   }
   catch (const util::net::NetworkError& e)
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to listen for data connection: " + e.Message());
     return;
   }
@@ -337,14 +338,14 @@ void LPSVCommand::Execute()
   std::string portString;
   util::net::ftp::EndpointToLPRT(ep, portString);
   
-  client.Reply(ftp::LongPassiveMode, "Entering passive mode (" + portString + ")");
+  client.Control().Reply(ftp::LongPassiveMode, "Entering passive mode (" + portString + ")");
 }
 
 void MDTMCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
@@ -353,7 +354,7 @@ void MDTMCommand::Execute()
   util::Error e(PP::FileAllowed<PP::View>(client.User(), absolute));
   if (!e)
   {
-    client.Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
+    client.Control().Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
     return;
   }
   
@@ -367,76 +368,76 @@ void MDTMCommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    client.Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
+    client.Control().Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
     return;
   }
   
   char timestamp[15];
   strftime(timestamp, sizeof(timestamp), "%Y%m%d%H%M%S",
            localtime(&status.Native().st_mtime));
-  client.Reply(ftp::FileStatus, timestamp);
+  client.Control().Reply(ftp::FileStatus, timestamp);
 }
 
 void MICCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "MIC Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "MIC Command not implemented."); 
 }
 
 void MKDCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::CreateDirectory(client,  argStr);
-  if (!e) client.Reply(ftp::ActionNotOkay, "MKD failed: " + e.Message());
-  else client.Reply(ftp::PathCreated, "MKD command successful."); 
+  if (!e) client.Control().Reply(ftp::ActionNotOkay, "MKD failed: " + e.Message());
+  else client.Control().Reply(ftp::PathCreated, "MKD command successful."); 
 }
 
 void MLSDCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "MLSD Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "MLSD Command not implemented."); 
 }
 
 void MLSTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "MLST Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "MLST Command not implemented."); 
 }
 
 void MODECommand::Execute()
 {
   if (args.size() != 2)
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   if (args[1] == "S")
-    client.Reply(ftp::CommandOkay, "Transfer mode set to 'stream'.");
+    client.Control().Reply(ftp::CommandOkay, "Transfer mode set to 'stream'.");
   else if (args[1] == "B")
-    client.Reply(ftp::ParameterNotImplemented,
+    client.Control().Reply(ftp::ParameterNotImplemented,
                  "Transfer mode 'block' not implemented.");
   else if (args[1] == "C")
-    client.Reply(ftp::ParameterNotImplemented,
+    client.Control().Reply(ftp::ParameterNotImplemented,
                  "Transfer mode 'compressed' not implemented.");
   else
-    client.Reply(ftp::SyntaxError, "Unrecognised transfer mode.");
+    client.Control().Reply(ftp::SyntaxError, "Unrecognised transfer mode.");
 }
 
 void NLSTCommand::Execute()
 {
-  client.Reply(ftp::TransferStatusOkay,
+  client.Control().Reply(ftp::TransferStatusOkay,
                "Opening data connection for directory listing.");
 
   try
   {
-    client.DataOpen(ftp::TransferType::List);
+    client.Data().Open(ftp::TransferType::List);
   }
   catch (const util::net::NetworkError&e )
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
     return;
   }
@@ -456,8 +457,8 @@ void NLSTCommand::Execute()
     boost::trim(path);
   }
   
-  DirectoryList dirList(client, path, ListOptions(options, ""),
-                        true, cfg::Get().Lslong().MaxRecursion());
+  DirectoryList dirList(client, client.Data(), path, ListOptions(options, ""),
+                        cfg::Get().Lslong().MaxRecursion());
 
   try
   {
@@ -465,29 +466,29 @@ void NLSTCommand::Execute()
   }
   catch (const util::net::NetworkError& e)
   {
-    client.Reply(ftp::DataCloseAborted,
+    client.Control().Reply(ftp::DataCloseAborted,
                 "Error whiling writing to data connection: " + e.Message());
   }
   
-  client.DataClose();
-  client.Reply(ftp::DataClosedOkay, "End of directory listing."); 
+  client.Data().Close();
+  client.Control().Reply(ftp::DataClosedOkay, "End of directory listing."); 
 }
 
 void NOOPCommand::Execute()
 {
-  client.Reply(ftp::CommandOkay, "NOOP command successful."); 
+  client.Control().Reply(ftp::CommandOkay, "NOOP command successful."); 
 }
 
 void OPTSCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "OPTS Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "OPTS Command not implemented."); 
 }
 
 void PASSCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;    
   }
   
@@ -495,19 +496,19 @@ void PASSCommand::Execute()
   {
     if (client.PasswordAttemptsExceeded())
     {
-      client.Reply(ftp::NotLoggedIn,
+      client.Control().Reply(ftp::NotLoggedIn,
                   "Password attempts exceeded, disconnecting.");
       client.SetFinished();
     }
     else
     {
-      client.Reply(ftp::NotLoggedIn, "Login incorrect.");
+      client.Control().Reply(ftp::NotLoggedIn, "Login incorrect.");
       client.SetLoggedOut();
     }
     return;
   }
   
-  client.Reply(ftp::UserLoggedIn, "User " + client.User().Name() + " logged in.");
+  client.Control().Reply(ftp::UserLoggedIn, "User " + client.User().Name() + " logged in.");
   client.SetLoggedIn();
 }
 
@@ -515,18 +516,18 @@ void PASVCommand::Execute()
 {
   if (!argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::net::Endpoint ep;
   try
   {
-    client.DataInitPassive(ep, ftp::PassiveType::PASV);
+    client.Data().InitPassive(ep, ftp::PassiveType::PASV);
   }
   catch (const util::net::NetworkError& e)
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to listen for data connection: " + e.Message());
     return;
   }
@@ -535,32 +536,32 @@ void PASVCommand::Execute()
   util::Error e = util::net::ftp::EndpointToPORT(ep, portString);
   if (!e)
   {
-    client.Reply(ftp::SyntaxError, "PASV failed: " + e.Message());
+    client.Control().Reply(ftp::SyntaxError, "PASV failed: " + e.Message());
     return;
   }
   
-  client.Reply(ftp::PassiveMode, "Entering passive mode (" + portString + ")");
+  client.Control().Reply(ftp::PassiveMode, "Entering passive mode (" + portString + ")");
 }
 
 void PBSZCommand::Execute()
 {
   if (args.size() != 2)
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   if (args[1] != "0")
-    client.Reply(ftp::ParameterNotImplemented, "Only protection buffer size 0 supported.");
+    client.Control().Reply(ftp::ParameterNotImplemented, "Only protection buffer size 0 supported.");
   else
-    client.Reply(ftp::CommandOkay, "Protection buffer size set to 0.");
+    client.Control().Reply(ftp::CommandOkay, "Protection buffer size set to 0.");
 }
 
 void PORTCommand::Execute()
 {
   if (args.size() != 2)
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
 
@@ -568,79 +569,79 @@ void PORTCommand::Execute()
   util::Error e = util::net::ftp::EndpointFromPORT(args[1], ep);
   if (!e)
   {
-    client.Reply(ftp::SyntaxError, "Invalid port string.");
+    client.Control().Reply(ftp::SyntaxError, "Invalid port string.");
     return;
   }
   
   try
   {
-    client.DataInitActive(ep);
+    client.Data().InitActive(ep);
   }
   catch (const util::net::NetworkError& e)
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
     return;
   }
   
-  client.Reply(ftp::CommandOkay, "PORT command successful.");
+  client.Control().Reply(ftp::CommandOkay, "PORT command successful.");
 }
 
 void PROTCommand::Execute()
 {
   if (args.size() != 2)
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   if (args[1] == "P")
   {
-    client.SetDataProtected(true);
-    client.Reply(ftp::CommandOkay, "Protection type set to 'private'.");
+    client.Data().SetProtection(true);
+    client.Control().Reply(ftp::CommandOkay, "Protection type set to 'private'.");
   }
   else if (args[1] == "C")
   {
-    client.SetDataProtected(false);
-    client.Reply(ftp::CommandOkay, "Protection type set to 'clear'.");
+    client.Data().SetProtection(false);
+    client.Control().Reply(ftp::CommandOkay, "Protection type set to 'clear'.");
   }
   else if (args[1] == "S")
-    client.Reply(ftp::ParameterNotImplemented,
+    client.Control().Reply(ftp::ParameterNotImplemented,
                  "Protection type 'secure' not implemented.");
   else if (args[1] == "E")
-    client.Reply(ftp::ParameterNotImplemented,
+    client.Control().Reply(ftp::ParameterNotImplemented,
                  "Protection type 'confidential' not implemented.");
   else
-    client.Reply(ftp::SyntaxError, "Unrecognised protection type.");
+    client.Control().Reply(ftp::SyntaxError, "Unrecognised protection type.");
 }
 
 void PWDCommand::Execute()
 {
-  client.Reply(ftp::PathCreated, "\"" + client.WorkDir().ToString() +
+  client.Control().Reply(ftp::PathCreated, "\"" + client.WorkDir().ToString() +
                "\" is your working directory.");
 }
 
 void QUITCommand::Execute()
 {
-  client.Reply(ftp::ClosingControl, "Bye bye"); 
+  client.Control().Reply(ftp::ClosingControl, "Bye bye"); 
   client.SetFinished();
 }
 
 void REINCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "REIN Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "REIN Command not implemented."); 
 }
 
 void RESTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "REST Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "REST Command not implemented."); 
 }
 
 void RETRCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
     
@@ -651,22 +652,22 @@ void RETRCommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    client.Reply(ftp::ActionNotOkay,
+    client.Control().Reply(ftp::ActionNotOkay,
                  "Unable to open file: " + e.Message());
     return;
   }
 
-  client.Reply(ftp::TransferStatusOkay,
+  client.Control().Reply(ftp::TransferStatusOkay,
                "Opening data connection for download of " + 
                fs::Path(argStr).Basename().ToString() + ".");
 
   try
   {
-    client.DataOpen(ftp::TransferType::Download);
+    client.Data().Open(ftp::TransferType::Download);
   }
   catch (const util::net::NetworkError&e )
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " +
                  e.Message());
     return;
@@ -679,48 +680,48 @@ void RETRCommand::Execute()
     {
       ssize_t len = boost::iostreams::read(*fin,buffer, sizeof(buffer));
       if (len < 0) break;
-      client.data.Write(buffer, len);
+      client.Data().Write(buffer, len);
     }
   }
   catch (const std::ios_base::failure&)
   {
     fin->close();
-    client.DataClose();
-    client.Reply(ftp::DataCloseAborted,
+    client.Data().Close();
+    client.Control().Reply(ftp::DataCloseAborted,
                  "Error while reading from disk.");
     return;
   }
   catch (const util::net::NetworkError& e)
   {
-    client.DataClose();
-    client.Reply(ftp::DataCloseAborted,
+    client.Data().Close();
+    client.Control().Reply(ftp::DataCloseAborted,
                  "Error while writing to data connection: " +
                  e.Message());
     return;
   }
   
-  client.DataClose();
-  client.Reply(ftp::DataClosedOkay, "Transfer finished."); 
+  client.Data().Close();
+  client.Control().Reply(ftp::DataClosedOkay, "Transfer finished."); 
 }
 
 void RMDCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::RemoveDirectory(client,  argStr);
-  if (!e) client.Reply(ftp::ActionNotOkay, "RMD failed: " + e.Message());
-  else client.Reply(ftp::FileActionOkay, "RMD command successful."); 
+  if (!e) client.Control().Reply(ftp::ActionNotOkay, "RMD failed: " + e.Message());
+  else client.Control().Reply(ftp::FileActionOkay, "RMD command successful."); 
 }
 
 void RNFRCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
 
@@ -729,7 +730,7 @@ void RNFRCommand::Execute()
   util::Error e(PP::FileAllowed<PP::Rename>(client.User(), absolute));
   if (!e)
   {
-    client.Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
+    client.Control().Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
     return;
   }
 
@@ -739,33 +740,33 @@ void RNFRCommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    client.Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
+    client.Control().Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
     return;
   }
   
-  client.PartReply(ftp::PendingMoreInfo, std::string(absolute));
+  client.Control().PartReply(ftp::PendingMoreInfo, std::string(absolute));
   client.SetRenameFrom(absolute);
-  client.Reply("File exists, ready for destination name."); 
+  client.Control().Reply("File exists, ready for destination name."); 
 }
 
 void RNTOCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   util::Error e = fs::RenameFile(client, client.RenameFrom(), argStr);
-  if (!e) client.Reply(ftp::ActionNotOkay, "RNTO failed: " + e.Message());
-  else client.Reply(ftp::FileActionOkay, "RNTO command successful.");
+  if (!e) client.Control().Reply(ftp::ActionNotOkay, "RNTO failed: " + e.Message());
+  else client.Control().Reply(ftp::FileActionOkay, "RNTO command successful.");
 }
 
 void SITECommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
@@ -774,31 +775,31 @@ void SITECommand::Execute()
   {
     static const char* syntax = "Syntax: SITE EPSV normal|full";
     if (args.size() == 2)
-      client.Reply(ftp::CommandOkay, "Extended passive mode is currently '" +
-                   std::string(client.EPSVMode() == ftp::EPSVMode::Normal ?
+      client.Control().Reply(ftp::CommandOkay, "Extended passive mode is currently '" +
+                   std::string(client.Data().EPSVMode() == ftp::EPSVMode::Normal ?
                    "normal" : "full") + "'.");
                     
-    else if (args.size() != 3) client.Reply(ftp::SyntaxError, syntax);
+    else if (args.size() != 3) client.Control().Reply(ftp::SyntaxError, syntax);
     else
     {
       boost::to_upper(args[2]);
       if (args[2] == "NORMAL")
       {
-        client.SetEPSVMode(ftp::EPSVMode::Normal);
-        client.Reply(ftp::SyntaxError, "Extended passive mode now set to 'normal'.");
+        client.Data().SetEPSVMode(ftp::EPSVMode::Normal);
+        client.Control().Reply(ftp::SyntaxError, "Extended passive mode now set to 'normal'.");
       }
       else if (args[2] == "FULL")
       {
-        client.SetEPSVMode(ftp::EPSVMode::Full);
-        client.Reply(ftp::SyntaxError, "Extended passive mode now set to 'full'.");
+        client.Data().SetEPSVMode(ftp::EPSVMode::Full);
+        client.Control().Reply(ftp::SyntaxError, "Extended passive mode now set to 'full'.");
       }
       else
-        client.Reply(ftp::SyntaxError, syntax);
+        client.Control().Reply(ftp::SyntaxError, syntax);
     }
     return;
   }
   
-  client.Reply(ftp::CommandUnrecognised, "SITE " + args[1] + 
+  client.Control().Reply(ftp::CommandUnrecognised, "SITE " + args[1] + 
                " command unrecognised."); 
 }
 
@@ -809,7 +810,7 @@ void SIZECommand::Execute()
   util::Error e(PP::FileAllowed<PP::View>(client.User(), absolute));
   if (!e)
   {
-    client.Reply(ftp::ActionNotOkay, "SIZE failed 2: " + e.Message());
+    client.Control().Reply(ftp::ActionNotOkay, "SIZE failed 2: " + e.Message());
     return;
   }
   
@@ -820,25 +821,25 @@ void SIZECommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    client.Reply(ftp::ActionNotOkay, "SIZE failed 1: " + e.Message());
+    client.Control().Reply(ftp::ActionNotOkay, "SIZE failed 1: " + e.Message());
     return;
   }
   
-  client.Reply(ftp::FileStatus, boost::lexical_cast<std::string>(status.Size())); 
+  client.Control().Reply(ftp::FileStatus, boost::lexical_cast<std::string>(status.Size())); 
 }
 
 void SMNTCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "SMNT Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "SMNT Command not implemented."); 
 }
 
 void STATCommand::Execute()
 {
   if (args.size() == 1)
   {
-    client.PartReply(ftp::SystemStatus, programFullname + " status:");
-    client.PartReply("< Insert status info here >");
-    client.Reply("End of status.");
+    client.Control().PartReply(ftp::SystemStatus, programFullname + " status:");
+    client.Control().PartReply("< Insert status info here >");
+    client.Control().Reply("End of status.");
     return;
   }
 
@@ -856,19 +857,19 @@ void STATCommand::Execute()
   const cfg::Config& config = cfg::Get();
   std::string forcedOptions = "l" + config.Lslong().Options();
     
-  client.PartReply(ftp::DirectoryStatus, "Status of " + path + ":");
-  DirectoryList dirList(client, path, ListOptions(options, forcedOptions),
-                        false, config.Lslong().MaxRecursion());
+  client.Control().PartReply(ftp::DirectoryStatus, "Status of " + path + ":");
+  DirectoryList dirList(client, client.Control(), path, ListOptions(options, forcedOptions),
+                        config.Lslong().MaxRecursion());
   dirList.Execute();
   
-  client.Reply("End of status.");
+  client.Control().Reply("End of status.");
 }
 
 void STORCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
 
@@ -879,22 +880,22 @@ void STORCommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    client.Reply(ftp::ActionNotOkay,
+    client.Control().Reply(ftp::ActionNotOkay,
                  "Unable to create file: " + e.Message());
     return;
   }
 
-  client.Reply(ftp::TransferStatusOkay,
+  client.Control().Reply(ftp::TransferStatusOkay,
                "Opening data connection for upload of " +
                fs::Path(argStr).Basename().ToString() + ".");
 
   try
   {
-    client.DataOpen(ftp::TransferType::Upload);
+    client.Data().Open(ftp::TransferType::Upload);
   }
   catch (const util::net::NetworkError&e )
   {
-    client.Reply(ftp::CantOpenDataConnection,
+    client.Control().Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
     return;
   }
@@ -904,22 +905,22 @@ void STORCommand::Execute()
     char buffer[16384];
     while (true)
     {
-      size_t len = client.data.Read(buffer, sizeof(buffer));
+      size_t len = client.Data().Read(buffer, sizeof(buffer));
       fout->write(buffer, len);
     }
   }
   catch (const util::net::EndOfStream&) { }
   catch (const util::net::NetworkError& e)
   {
-    client.DataClose();
-    client.Reply(ftp::DataCloseAborted,
+    client.Data().Close();
+    client.Control().Reply(ftp::DataCloseAborted,
                  "Error while reading from data connection: " +
                  e.Message());
     return;
   }
   
-  client.DataClose();
-  client.Reply(ftp::DataClosedOkay, "Transfer finished."); 
+  client.Data().Close();
+  client.Control().Reply(ftp::DataClosedOkay, "Transfer finished."); 
 }
 
 void STOUCommand::Execute()
@@ -928,7 +929,7 @@ void STOUCommand::Execute()
 
   if (!argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
@@ -936,7 +937,7 @@ void STOUCommand::Execute()
   if (!fs::UniqueFile(client, client.WorkDir(),
                       filenameLength, uniquePath))
   {
-    client.Reply(ftp::ActionNotOkay,
+    client.Control().Reply(ftp::ActionNotOkay,
                  "Unable to generate a unique filename.");
     return;
   }
@@ -956,47 +957,47 @@ void STOUCommand::Execute()
 
 void STRUCommand::Execute()
 {
-  client.Reply(ftp::NotImplemented, "STRU Command not implemented."); 
+  client.Control().Reply(ftp::NotImplemented, "STRU Command not implemented."); 
 }
 
 void SYSTCommand::Execute()
 {
-  client.Reply(ftp::SystemType, "UNIX Type: L8"); 
+  client.Control().Reply(ftp::SystemType, "UNIX Type: L8"); 
 }
 
 void TYPECommand::Execute()
 {
   if (args.size() != 2)
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   if (args[1] != "I" && args[1] != "A")
   {
-    client.Reply(ftp::ParameterNotImplemented,
+    client.Control().Reply(ftp::ParameterNotImplemented,
                  "TYPE " + args[1] + " not supported.");
     return;
   }
   
-  client.Reply(ftp::CommandOkay, "TYPE command successful."); 
+  client.Control().Reply(ftp::CommandOkay, "TYPE command successful."); 
 }
 
 void USERCommand::Execute()
 {
   if (argStr.empty())
   {
-    client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
+    client.Control().Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
   
   if (argStr != client.User().Name())
   {
-    client.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
+    client.Control().Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
     return;
   }
   
-  client.Reply(ftp::NeedPassword, "Password required for " + argStr + "."); 
+  client.Control().Reply(ftp::NeedPassword, "Password required for " + argStr + "."); 
   client.SetWaitingPassword();
 }
 

@@ -104,12 +104,13 @@ void ListOptions::ParseOption(char option)
   }
 }
 
-DirectoryList::DirectoryList(ftp::Client& client, const fs::Path& path,
+DirectoryList::DirectoryList(ftp::Client& client,
+                             ftp::ReadWriteable& socket,
+                             const fs::Path& path,
                              const ListOptions& options,
-                             bool dataOutput,
                              int maxRecursion) :
   client(client),
-  socket(dataOutput ? client.data : client.control),
+  socket(socket),
   path(path),
   options(options),
   maxRecursion(maxRecursion)

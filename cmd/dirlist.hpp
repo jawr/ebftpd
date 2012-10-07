@@ -5,11 +5,11 @@
 #include <queue>
 #include "fs/path.hpp"
 #include "fs/status.hpp"
-#include "util/net/tcpsocket.hpp"
 
 namespace ftp
 {
 class Client;
+class ReadWriteable;
 }
 
 namespace fs
@@ -47,7 +47,7 @@ public:
 class DirectoryList
 {
   ftp::Client& client;
-  util::net::TCPSocket& socket;
+  ftp::ReadWriteable& socket;
   fs::Path path;
   ListOptions options;
   bool dataOutput;
@@ -63,9 +63,10 @@ class DirectoryList
   static std::string Timestamp(const fs::Status& status);
   
 public:
-  DirectoryList(ftp::Client& client, const fs::Path& path,
+  DirectoryList(ftp::Client& client,
+                ftp::ReadWriteable& socket,
+                const fs::Path& path,
                 const ListOptions& options,
-                bool dataOutput,
                 int maxRecursion);
                 
   void Execute();

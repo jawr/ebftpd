@@ -19,6 +19,8 @@ OBJECTS = \
 	ftp/client.o \
 	ftp/portallocator.o \
 	ftp/addrallocator.o \
+	ftp/data.o \
+	ftp/control.o \
 	fs/direnumerator.o \
 	fs/filelock.o \
 	fs/owner.o \
@@ -26,6 +28,7 @@ OBJECTS = \
 	fs/file.o \
 	fs/directory.o \
 	fs/path.o \
+	acl/allowfxp.o \
 	acl/groupcache.o \
 	acl/check.o \
 	acl/acl.o \

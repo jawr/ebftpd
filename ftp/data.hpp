@@ -1,0 +1,88 @@
+#ifndef __FTP_DATA_HPP
+#define __FTP_DATA_HPP
+
+#include "util/net/tcplistener.hpp"
+#include "util/net/tcpsocket.hpp"
+#include "util/net/endpoint.hpp"
+#include "ftp/readwriteable.hpp"
+
+namespace acl
+{
+class User;
+}
+
+namespace ftp
+{
+
+class Client;
+
+enum class EPSVMode : uint8_t
+{
+  Normal,
+  Full
+};
+
+enum class DataType : uint8_t
+{
+  ASCII,
+  Binary
+};
+
+enum class TransferType : uint8_t
+{
+  Upload,
+  Download,
+  List
+};
+
+enum class PassiveType : uint8_t
+{
+  PASV,
+  EPSV,
+  LPSV
+};
+
+class Data : public ReadWriteable
+{
+  Client& client;
+  util::net::TCPListener listener;
+  util::net::TCPSocket socket;
+  bool protection;
+  bool passiveMode;
+  util::net::Endpoint portEndpoint;
+  ::ftp::EPSVMode epsvMode;
+  ::ftp::DataType dataType;
+
+public:
+  explicit Data(Client& client) :
+    client(client),
+    protection(false),
+    passiveMode(false),
+    epsvMode(::ftp::EPSVMode::Normal),
+    dataType(::ftp::DataType::ASCII)
+  {
+  }
+
+  inline void SetProtection(bool protection) { this->protection = protection; }
+
+  inline ::ftp::EPSVMode EPSVMode() const { return epsvMode; }
+  inline void SetEPSVMode(::ftp::EPSVMode epsvMode) { this->epsvMode = epsvMode; }
+
+  inline ::ftp::DataType DataType() const { return dataType; }
+  inline void SetDataType(::ftp::DataType dataType) { this->dataType = dataType; }
+  
+  void InitPassive(util::net::Endpoint& ep, PassiveType pasvType);
+  void InitActive(const util::net::Endpoint& ep);
+  void Open(TransferType transferType);
+  inline void Close() { socket.Close(); }
+  
+  inline size_t Read(char* buffer, size_t size)
+  { return socket.Read(buffer, size); }
+  
+  inline void Write(const char* buffer, size_t len)
+  { socket.Write(buffer, len); }
+};
+
+} /* ftp namespace */
+
+#endif
