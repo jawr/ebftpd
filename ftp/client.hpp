@@ -83,7 +83,7 @@ class Client : public util::ThreadSelect
   static const int maxPasswordAttemps = 3;
   
   void SendReply(ReplyCode code, bool part, const std::string& message);
-  void DisplayWelcome();
+  void DisplayBanner();
   void NextCommand();
   void ExecuteCommand();
   void Handle();

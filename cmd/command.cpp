@@ -207,7 +207,6 @@ void FEATCommand::Execute()
   client.PartReply(ftp::NoCode, " PROT");
   client.PartReply(ftp::NoCode, " MDTM");
   client.PartReply(ftp::NoCode, " SIZE");
-  client.PartReply(ftp::NoCode, " SIZE");
   client.Reply(ftp::SystemStatus, "End.");
 }
 

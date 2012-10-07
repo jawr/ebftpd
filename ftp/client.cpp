@@ -17,6 +17,7 @@
 #include "cfg/get.hpp"
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
+#include "util/misc.hpp"
 #include "main.hpp"
 
 namespace ftp
@@ -160,11 +161,22 @@ void Client::MultiReply(ReplyCode code, const std::string& messages)
   {
     PartReply(code, *it);
   }
-  Reply(splitMessages.back());
+  Reply(code, splitMessages.back());
 }
 
-void Client::DisplayWelcome()
+void Client::DisplayBanner()
 {
+  const cfg::Config& config = cfg::Get();
+  if (!config.Banner().Empty())
+  {
+    std::string banner;
+    if (util::ReadFileToString(config.Banner(), banner))
+    {
+      MultiReply(ftp::ServiceReady, banner);
+      return;
+    }
+  }
+
   Reply(ftp::ServiceReady, programName + " v" + std::string(version) + " connected.");
 }
 
@@ -244,7 +256,7 @@ void Client::Run()
     logger::ftpd << "Servicing client connected from "
                  << control.RemoteEndpoint() << logger::endl;
   
-    DisplayWelcome();
+    DisplayBanner();
     Handle();
   }
   catch (const util::net::NetworkError& e)
