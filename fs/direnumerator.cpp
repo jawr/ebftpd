@@ -94,7 +94,7 @@ void DirEnumerator::Readdir()
       
       totalBytes += status.Size();
       fs::Owner owner(OwnerCache::Owner(fullPath));
-      entries.push_back(new DirEntry(de.d_name, status, owner));
+      entries.emplace_back(fs::Path(de.d_name), status, owner);
     }
     catch (const util::SystemError&)
     {
