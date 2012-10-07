@@ -76,6 +76,9 @@ void TCPSocket::Connect(const Endpoint& remoteEndpoint,
   socket = ::socket(remoteEndpoint.Family(), SOCK_STREAM, 0);
   if (socket < 0) throw NetworkSystemError(errno);
 
+  int optVal = 1;
+  setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof(optVal));
+
   SetTimeout();
   
   if (localEndpoint)
