@@ -64,7 +64,7 @@ bool User::CheckFlags(const std::string& flags) const
 
 bool User::CheckFlag(Flag flag) const
 {
-  return this->flags.find(flag) != std::string::npos;
+  return this->flags.find(static_cast<char>(flag)) != std::string::npos;
 }
 
 void User::AddSecondaryGID(GroupID gid)

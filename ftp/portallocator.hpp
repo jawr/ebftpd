@@ -13,7 +13,7 @@
 namespace ftp
 {
 
-enum class PortType : char
+enum class PortType : uint8_t
 {
   Active,
   Passive

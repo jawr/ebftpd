@@ -44,7 +44,7 @@ public:
   void DelFlags(const std::string& flags);
   bool CheckFlags(const std::string& flags) const;
   bool CheckFlag(Flag flag) const;
-  bool Deleted() const { return CheckFlag(FlagDeleted); }
+  bool Deleted() const { return CheckFlag(Flag::Deleted); }
   
   UserID UID() const { return uid; }
   /* should never need to modify UID, can mongodb provide the id?

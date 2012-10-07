@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <vector>
+#include <cstdint>
 #include <boost/thread/mutex.hpp>
 #include "util/net/endpoint.hpp"
 #include "cfg/setting.hpp"
@@ -12,7 +13,7 @@
 namespace ftp
 {
 
-enum class AddrType : char
+enum class AddrType : uint8_t
 {
   Active,
   Passive

@@ -6,30 +6,30 @@
 namespace acl
 {
 
-enum Flag
+enum class Flag : char
 {
 	FlagSiteop = '1',
-  FlagGadmin = '2',
-  FlagGlock = '3',
-  FlagExempt = '4',
-  FlagColor = '5',
-  FlagDeleted = '6',
-  FlagUseredit = '7',
-  FlagAnonymous = '8',
-  FlagNuke = 'A',
-  FlagUnnuke = 'B',
-  FlagUndupe = 'C',
-  FlagKick = 'D',
-  FlagKill = 'E',
-  FlagTake = 'F',
-  FlagGive = 'G',
-  FlagUsers = 'H',
-  FlagIdler = 'I',
-  FlagCustom1 = 'J',
-  FlagCustom2 = 'K',
-  FlagCustom3 = 'L',
-  FlagCustom4 = 'M',
-  FlagCustom6 = 'N'
+  Gadmin = '2',
+  Glock = '3',
+  Exempt = '4',
+  Color = '5',
+  Deleted = '6',
+  Useredit = '7',
+  Anonymous = '8',
+  Nuke = 'A',
+  Unnuke = 'B',
+  Undupe = 'C',
+  Kick = 'D',
+  Kill = 'E',
+  Take = 'F',
+  Give = 'G',
+  Users = 'H',
+  Idler = 'I',
+  Custom1 = 'J',
+  Custom2 = 'K',
+  Custom3 = 'L',
+  Custom4 = 'M',
+  Custom6 = 'N'
 };
 
 } /* acl namespace */

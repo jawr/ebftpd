@@ -79,7 +79,7 @@ void Factory::Register(const std::string& command,
 }  
 
 Command* Factory::Create(ftp::Client& client, const std::string& argStr, const Args& args,
-                         ftp::ClientState::Enum& reqdState)
+                         ftp::ClientState& reqdState)
 {
   std::string cmd = args[0];
   boost::to_upper(cmd);

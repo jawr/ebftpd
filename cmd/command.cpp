@@ -945,7 +945,7 @@ void STOUCommand::Execute()
   args.emplace_back("STOR");
   args.emplace_back(argStr);
   
-  ftp::ClientState::Enum reqdState;
+  ftp::ClientState reqdState;
 
   std::unique_ptr<cmd::Command>
     command(cmd::Factory::Create(client, argStr, args, reqdState));

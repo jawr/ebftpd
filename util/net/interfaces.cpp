@@ -56,7 +56,7 @@ bool FindPartnerIP(const IPAddress& ip, IPAddress& partner)
     for (Interface::const_iterator it2 = it->second.begin();
          it2 != it->second.end(); ++it2)
     {
-      if (it2->Family() == IPAddress::IPv4)
+      if (it2->Family() == IPFamily::IPv4)
       {
         partner = *it2;
         return true;

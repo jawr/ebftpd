@@ -247,7 +247,7 @@ template util::Error DirAllowed<View>(const User& user, std::string path);
 } /* PathPermission namespace */
 
 
-bool AllowFxp(ftp::TransferType::Enum transferType,
+bool AllowFxp(ftp::TransferType transferType,
               const User& user, bool& logging)
 {
   assert(transferType != ftp::TransferType::List);

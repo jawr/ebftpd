@@ -58,7 +58,7 @@ void Resolver::Resolve()
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = PF_UNSPEC;
   hints.ai_flags = AI_PASSIVE;
-  hints.ai_socktype = socketType;
+  hints.ai_socktype = static_cast<int>(socketType);
 
   const char* charHostname = nullptr;
   if (!hostname.empty()) charHostname = hostname.c_str();

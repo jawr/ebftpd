@@ -12,22 +12,22 @@ namespace cmd
 template <class BaseT>
 class CreatorBase
 {
-  ftp::ClientState::Enum reqdState;
+  ftp::ClientState reqdState;
   
 public:  
-  CreatorBase(ftp::ClientState::Enum reqdState) : reqdState(reqdState) { }
+  CreatorBase(ftp::ClientState reqdState) : reqdState(reqdState) { }
   virtual ~CreatorBase() { }
   
   virtual BaseT *Create(ftp::Client& client, const std::string& argStr,
                         const Args& args) = 0;
-  ftp::ClientState::Enum ReqdState() const { return reqdState; }
+  ftp::ClientState ReqdState() const { return reqdState; }
 };
 
 template <class CommandT>
 class Creator : public CreatorBase<Command>
 {
 public:
-  Creator(ftp::ClientState::Enum reqdState) : CreatorBase(reqdState) { }
+  Creator(ftp::ClientState reqdState) : CreatorBase(reqdState) { }
   Command *Create(ftp::Client& client, const std::string& argStr,
                   const Args& args)
   {
@@ -51,7 +51,7 @@ class Factory
   
 public:
   static Command* Create(ftp::Client& client, const std::string& argStr,
-                         const Args& args, ftp::ClientState::Enum& reqdState);
+                         const Args& args, ftp::ClientState& reqdState);
 };
 
 } /* cmd namespace */
