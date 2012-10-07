@@ -4,7 +4,7 @@
 #include <cassert>
 #include <iterator>
 #include <boost/cstdint.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 namespace util
 {
@@ -17,7 +17,7 @@ class LRUCache
 {
   struct Entry;
   
-  typedef boost::unordered_map<KeyType, Entry*> EntriesMap;
+  typedef std::unordered_map<KeyType, Entry*> EntriesMap;
 
   EntriesMap entries;
   Entry* first;
@@ -59,7 +59,7 @@ class LRUCache
   }
   
 public:
-  typedef typename boost::unordered_map<KeyType, ValueType>::size_type size_type;
+  typedef typename std::unordered_map<KeyType, ValueType>::size_type size_type;
 
   class const_iterator;
   

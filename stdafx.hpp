@@ -41,7 +41,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/tss.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <cassert>
 #include <cerrno>
 #include <cmath>

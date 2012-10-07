@@ -2,7 +2,7 @@
 #define __ACL_GROUPCACHE_HPP
 
 #include <utility>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <boost/thread/mutex.hpp>
 #include "acl/group.hpp"
 #include "util/error.hpp"
@@ -12,8 +12,8 @@ namespace acl
 
 class GroupCache
 {
-  typedef boost::unordered_map<std::string, acl::Group*> ByNameMap;
-  typedef boost::unordered_map<GroupID, acl::Group*> ByGIDMap;
+  typedef std::unordered_map<std::string, acl::Group*> ByNameMap;
+  typedef std::unordered_map<GroupID, acl::Group*> ByGIDMap;
   
   mutable boost::mutex mutex;
   ByNameMap byName;
