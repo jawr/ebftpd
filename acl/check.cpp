@@ -306,6 +306,57 @@ bool AllowFxp(ftp::TransferType transferType,
   
   return false;
 }
+
+namespace Message
+{
+
+std::string Evaluate(const std::vector<cfg::setting::Right>& rights, 
+                     const User& user)
+{
+  for (const auto& right : rights)
+  {
+    if (right.ACL().Evaluate(user)) return right.Path();
+  }
+  return "";
+}
+
+template <Type type>
+struct Traits;
+
+template <>
+struct Traits<Welcome>
+{
+  static std::string Choose(const User& user)
+  {
+    return Evaluate(cfg::Get().WelcomeMsg(), user);
+  }
+};
+
+template <>
+struct Traits<Goodbye>
+{
+  static std::string Choose(const User& user)
+  {
+    return Evaluate(cfg::Get().GoodbyeMsg(), user);
+  }
+};
+
+template <>
+struct Traits<Newsfile>
+{
+  static std::string Choose(const User& user)
+  {
+    return Evaluate(cfg::Get().Newsfile(), user);
+  }
+};
+
+template <Type type>
+std::string Chooose(const User& user)
+{
+  return Traits<type>::Choose(user);
+}
+
+}
   
 } /* acl namespace */
 

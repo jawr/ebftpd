@@ -17,7 +17,19 @@ namespace cfg
 
 int Config::latestVersion = 0;
 
-Config::Config(const std::string& config) : version(++latestVersion), config(config)
+Config::Config(const std::string& config) : 
+  version(++latestVersion),
+  config(config),
+  port(-1),
+  freeSpace(100),
+  timezone(0),
+  colorMode(false),
+  dlIncomplete(true),
+  totalUsers(20),
+  multiplierMax(10),
+  oneliners(10),
+  emptyNuke(102400),
+  maxSitecmdLines(20)
 {
   std::string line;
   std::ifstream io(config.c_str(), std::ifstream::in);

@@ -36,7 +36,7 @@ class Config
   // glftpd
   setting::AsciiDownloads asciiDownloads;
   acl::ACL shutdown;
-  int freeSpace;
+  long freeSpace;
   std::vector<setting::UseDirSize> useDirSize;
   int timezone;
   bool colorMode;
@@ -114,7 +114,7 @@ class Config
   int oneliners;
   setting::Requests requests;
   setting::Lastonline lastonline;
-  int emptyNuke;
+  long emptyNuke;
   std::vector<fs::Path> nodupecheck;
   std::vector<setting::Creditcheck> creditcheck;
   std::vector<setting::Creditloss> creditloss;
@@ -146,7 +146,7 @@ public:
   // glftpd
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
   const acl::ACL& Shutdown() const { return shutdown; }
-  int FreeSpace() const { return freeSpace; }
+  long FreeSpace() const { return freeSpace; }
   const std::vector<setting::UseDirSize>& UseDirSize() const { return useDirSize; }
   int Timezone() const { return timezone; }
   bool ColorMode() const { return colorMode; }
@@ -225,7 +225,7 @@ public:
   int Oneliners() const { return oneliners; }
   const setting::Requests& Requests() const { return requests; }
   const setting::Lastonline& Lastonline() const { return lastonline; }
-  int EmptyNuke() const { return emptyNuke; }
+  long EmptyNuke() const { return emptyNuke; }
   const std::vector<fs::Path>& Nodupecheck() const { return nodupecheck; }
   const std::vector<setting::Creditcheck>& Creditcheck() const { return creditcheck; }
   const std::vector<setting::Creditloss>& Creditloss() const { return creditloss; }

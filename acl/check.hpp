@@ -45,6 +45,22 @@ util::Error DirAllowed(const User& user, std::string path);
 bool AllowFxp(ftp::TransferType transferType,
               const User& user, bool& logging);
 
+              
+namespace Message
+{
+
+enum Type
+{
+  Welcome,
+  Goodbye,
+  Newsfile
+};
+
+template <Type type>
+std::string Choose(const User& user);
+
+}
+              
 } /* acl namespace */
 
 #endif
