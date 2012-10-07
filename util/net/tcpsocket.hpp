@@ -50,6 +50,8 @@ private:
   char* getcharBufferPos;
   size_t getcharBufferLen;
   
+  void Connect(const Endpoint& remoteEndpoint, 
+               const Endpoint* localEndpoint);
   
   char GetcharBuffered();
   void SetTimeout();
@@ -70,6 +72,9 @@ public:
   /* Thwos NetworkSystemError */
   
   void Connect(const Endpoint& endpoint);
+  /* Throws NetworkSystemError, InvalidIPAddressError */
+
+  void Connect(const Endpoint& remoteEndpoint, const Endpoint& localEndpoint);
   /* Throws NetworkSystemError, InvalidIPAddressError */
 
   void Accept(TCPListener& listener);
