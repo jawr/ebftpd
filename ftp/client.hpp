@@ -101,7 +101,7 @@ public:
   
   ~Client();
      
-  const fs::Path& WorkDir() const { return workDir; };
+  const fs::Path& WorkDir() const { return workDir; }
   const acl::User& User() const { return user; }
   void Run();
   
