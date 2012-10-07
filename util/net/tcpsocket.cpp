@@ -70,14 +70,31 @@ void TCPSocket::PopulateRemoteEndpoint()
   remoteEndpoint = Endpoint(*remoteAddr, remoteLen);
 }
 
-void TCPSocket::Connect(const Endpoint& endpoint)
+void TCPSocket::Connect(const Endpoint& remoteEndpoint,
+                        const Endpoint* localEndpoint)
 {
-  socket = ::socket(endpoint.Family(), SOCK_STREAM, 0);
+  socket = ::socket(remoteEndpoint.Family(), SOCK_STREAM, 0);
   if (socket < 0) throw NetworkSystemError(errno);
 
   SetTimeout();
   
-  while (connect(socket, endpoint.Addr(), endpoint.Length()) < 0)
+  if (localEndpoint)
+  {
+    socklen_t addrLen = localEndpoint->Length();
+    struct sockaddr_storage addrStor;
+    memcpy(&addrStor, localEndpoint->Addr(), addrLen);
+    struct sockaddr* addr = 
+      reinterpret_cast<struct sockaddr*>(&addrStor);
+
+    if (bind(socket, addr, addrLen) < 0)
+    {
+      int errno_ = errno;
+      Close();
+      throw util::net::NetworkSystemError(errno_);
+    }
+  }
+  
+  while (connect(socket, remoteEndpoint.Addr(), remoteEndpoint.Length()) < 0)
   {
     boost::this_thread::interruption_point();
     if (errno != EINTR)
@@ -92,6 +109,17 @@ void TCPSocket::Connect(const Endpoint& endpoint)
   boost::this_thread::interruption_point();
   PopulateRemoteEndpoint();
   PopulateLocalEndpoint();
+}
+
+void TCPSocket::Connect(const Endpoint& endpoint)
+{
+  Connect(endpoint, nullptr);
+}
+
+void TCPSocket::Connect(const Endpoint& remoteEndpoint, 
+                        const Endpoint& localEndpoint)
+{
+  Connect(remoteEndpoint, &localEndpoint);
 }
 
 void TCPSocket::Accept(TCPListener& listener)
