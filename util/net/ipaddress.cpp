@@ -84,6 +84,20 @@ const std::string& IPAddress::ToString() const
   return asString;
 }
 
+bool IPAddress::IsMappedv4() const
+{
+  if (family != IPv4) return false;
+  return IN6_IS_ADDR_V4MAPPED(data);
+}
+
+IPAddress IPAddress::ToUnmappedv4() const
+{
+  struct in_addr addr;
+  socklen_t len = sizeof(addr);
+  memcpy(&addr, data + (sizeof(in6_addr) - len), len);
+  return IPAddress(&addr, len);
+}
+
 bool IPAddress::Validv6(const std::string& addr)
 {
   try

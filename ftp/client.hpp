@@ -62,6 +62,13 @@ namespace TransferType
   };
 }
 
+enum class PassiveType : char
+{
+  PASV,
+  EPSV,
+  LPSV
+};
+
 class Client : public util::ThreadSelect
 {
 
@@ -133,7 +140,7 @@ public:
   ::ftp::DataType::Enum DataType() const { return dataType; }
   void SetDataType(::ftp::DataType::Enum dataType) { this->dataType = dataType; }
   
-  void DataInitPassive(util::net::Endpoint& ep, bool ipv4Only);
+  void DataInitPassive(util::net::Endpoint& ep, PassiveType pasvType);
   void DataInitActive(const util::net::Endpoint& ep);
   void DataOpen(TransferType::Enum transferType);
   void DataClose() { data.Close(); }

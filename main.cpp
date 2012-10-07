@@ -9,6 +9,7 @@
 #include "cfg/get.hpp"
 #include "cfg/exception.hpp"
 #include "ftp/portallocator.hpp"
+#include "ftp/addrallocator.hpp"
 
 #ifndef TEST
 
@@ -37,6 +38,8 @@ int main(int argc, char** argv)
     return 1;
   }
   
+  ftp::AddrAllocator<ftp::AddrType::Active>::SetAddrs(config->ActiveAddr());
+  ftp::AddrAllocator<ftp::AddrType::Passive>::SetAddrs(config->PasvAddr());
   ftp::PortAllocator<ftp::PortType::Active>::SetPorts(config->ActivePorts());
   ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(config->PasvPorts());
   fs::OwnerCache::Start();
