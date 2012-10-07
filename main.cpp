@@ -10,11 +10,16 @@
 #include "cfg/exception.hpp"
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
+#include "version.hpp"
 
 #ifndef TEST
 
+extern const std::string programName = "beftpd";
+
 int main(int argc, char** argv)
 {
+  std::cout << "Starting " << programName << " v" << version << " .. " << std::endl;
+
   std::shared_ptr<cfg::Config> config;
   try
   {

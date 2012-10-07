@@ -17,6 +17,7 @@
 #include "cfg/get.hpp"
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
+#include "main.hpp"
 
 namespace ftp
 {
@@ -164,7 +165,7 @@ void Client::MultiReply(ReplyCode code, const std::string& messages)
 
 void Client::DisplayWelcome()
 {
-  Reply(ftp::ServiceReady, "Welcome to eyeoh and biohazard's ftpd!");
+  Reply(ftp::ServiceReady, programName + " v" + std::string(version) + " connected.");
 }
 
 void Client::NegotiateTLS()

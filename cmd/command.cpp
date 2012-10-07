@@ -21,6 +21,8 @@
 #include "acl/check.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
+#include "main.hpp"
+
 #include <iostream>
 
 namespace PP = acl::PathPermission;
@@ -835,7 +837,8 @@ void STATCommand::Execute()
 {
   if (args.size() == 1)
   {
-    client.PartReply(ftp::SystemStatus, "FTPD status:");
+    client.PartReply(ftp::SystemStatus, programName + " v" + 
+                     std::string(version) + " status:");
     client.PartReply("< Insert status info here >");
     client.Reply("End of status.");
     return;

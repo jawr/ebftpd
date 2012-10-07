@@ -1,3 +1,4 @@
+
 CXX = g++
 CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x
 LIBS = -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
@@ -61,7 +62,10 @@ all:
 	@if [ -f .state ] && [ `cat .state` != 'all' ]; then \
 	$(MAKE) $(MAKEFILE) clean; \
 	fi; \
-	echo "all" > .state
+	echo "all" > .state; \
+	VERSION=`git log --decorate | grep "^commit " | grep -n "tag: " | \
+		sed -r 's|^([0-9]+):.+tag: ([^),]+).+$$|\2-\1|p' | head -n1`; \
+	echo "const char* version = \"$$VERSION\";" > version.hpp
 	$(MAKE) $(MAKEFILE) ftpd
 
 test: 
