@@ -277,7 +277,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "pasv_addr")
   {
-    pasvAddr.emplace_back(setting::PasvAddr(toks));
+    pasvAddr.emplace_back(toks.at(0));
   }
   else if (opt == "active_ports")
   {
