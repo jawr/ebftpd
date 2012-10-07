@@ -47,7 +47,6 @@ void TCPListener::Listen()
 
   if (bind(socket, addr, addrLen) < 0)
   {
-    std::cout << strerror(errno) << std::endl;
     int errno_ = errno;
     ::close(socket);
     socket = -1;

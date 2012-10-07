@@ -262,6 +262,7 @@ void Client::DataInitPassive(util::net::Endpoint& ep, bool ipv4Only)
 {
   using namespace util::net;
 
+  passiveMode = true;
   data.Close();
   dataListen.Close();
   IPAddress ip = control.LocalEndpoint().IP();
@@ -270,7 +271,6 @@ void Client::DataInitPassive(util::net::Endpoint& ep, bool ipv4Only)
     // let's get the IPv4 address for this interface
     FindPartnerIP(ip, ip);
   }
-
   
   boost::optional<uint16_t> firstPort;
   while (true)
@@ -293,15 +293,33 @@ void Client::DataInitPassive(util::net::Endpoint& ep, bool ipv4Only)
   }
   
   ep = dataListen.Endpoint();
-  passiveMode = true;
 }
 
 void Client::DataInitActive(const util::net::Endpoint& ep)
 {
+  passiveMode = false;
   data.Close();
   dataListen.Close();
-  data.Connect(ep);
-  passiveMode = false;
+  boost::optional<uint16_t> firstPort;
+  while (true)
+  {
+    uint16_t port = PortAllocator<PortType::Active>::NextPort();
+    if (!firstPort) firstPort.reset(port);
+    else if (port == *firstPort) 
+      throw util::net::NetworkSystemError(EADDRINUSE);
+      
+    try
+    {
+      std::cout << port << std::endl;
+      data.Connect(ep, util::net::Endpoint(ep.IP(), port));
+      break;
+    }
+    catch (const util::net::NetworkSystemError& e)
+    {
+      if (e.Errno() != EADDRINUSE)
+        throw;
+    }
+  }
 }
 
 void Client::DataOpen(TransferType::Enum transferType)
