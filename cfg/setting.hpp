@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <boost/function.hpp>                             
-#include <boost/bind.hpp>                                  
 #include <boost/algorithm/string/join.hpp>                
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>

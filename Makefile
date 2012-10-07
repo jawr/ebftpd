@@ -16,6 +16,7 @@ OBJECTS = \
 	cfg/setting.o \
 	ftp/listener.o \
 	ftp/client.o \
+	ftp/portallocator.o \
 	fs/direnumerator.o \
 	fs/filelock.o \
 	fs/owner.o \
@@ -29,7 +30,6 @@ OBJECTS = \
 	acl/user.o \
 	acl/usercache.o \
 	acl/permission.o \
-	acl/repository.o \
 	acl/handler.o \
 	acl/flags.o \
 	logger/logger.o \

@@ -1,6 +1,5 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/bind.hpp>
 #include "acl/acl.hpp"
 #include "acl/user.hpp"
 
@@ -10,10 +9,9 @@ namespace acl
 bool ACL::Evaluate(const User& user) const
 {
   if (finalResult) return *finalResult;
-  for (boost::ptr_vector<Permission>::const_iterator it =
-       perms.begin(); it != perms.end(); ++it)
+  for (const Permission& p : perms)
   {
-    boost::tribool result = it->Evaluate(user);
+    boost::tribool result = p.Evaluate(user);
     if (!boost::indeterminate(result))
     {
       finalResult.reset(result);
@@ -47,7 +45,7 @@ ACL ACL::FromString(const std::string& str)
   ACL acl;
   std::vector<std::string> args;
   boost::split(args, str, boost::is_any_of(" "), boost::token_compress_on);
-  std::for_each(args.begin(), args.end(), boost::bind(&ACL::FromStringArg, &acl, _1));  
+  for (const auto& arg : args) acl.FromStringArg(arg);
   return acl;
 }
 

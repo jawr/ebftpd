@@ -252,13 +252,12 @@ void OwnerCache::Main()
     }
     
     bool loopUsed = false;
-    for (util::LRUCache<std::string, CacheEntry>::iterator it =
-         cache.begin(); it != cache.end(); ++it)
+    for (auto& kv : cache)
     {
-      if (it->second.second)
+      if (kv.second.second)
       {
-        it->second.first->Save();
-        it->second.second = false;
+        kv.second.first->Save();
+        kv.second.second = false;
         loopUsed = true;
       }
     }

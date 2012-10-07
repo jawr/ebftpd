@@ -1,7 +1,7 @@
 #ifndef __CMD_FACTORY_HPP
 #define __CMD_FACTORY_HPP
 
-#include <tr1/memory>
+#include <memory>
 #include <tr1/unordered_map>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"

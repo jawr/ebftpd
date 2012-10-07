@@ -1,4 +1,4 @@
-#include <tr1/memory>
+#include <memory>
 #include <cassert>
 #include <boost/thread/tss.hpp>
 #include <boost/thread/mutex.hpp>
@@ -14,11 +14,11 @@ namespace
 boost::thread_specific_ptr<Config> thisThread;
 
 boost::mutex sharedMutex;
-std::tr1::shared_ptr<Config> shared;
+std::shared_ptr<Config> shared;
 
 }
 
-void UpdateShared(const std::tr1::shared_ptr<Config> newShared)
+void UpdateShared(const std::shared_ptr<Config> newShared)
 {
   boost::lock_guard<boost::mutex> lock(sharedMutex);
   shared = newShared;

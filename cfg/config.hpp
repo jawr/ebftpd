@@ -1,9 +1,10 @@
 #ifndef __CFG_CONFIG_CPP
 #define __CFG_CONFIG_CPP
+
 #include <vector>
 #include <string>
 #include <boost/unordered_map.hpp>
-#include <tr1/memory>
+#include <memory>
 #include <tr1/unordered_map>
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
@@ -125,6 +126,9 @@ class Config
   std::vector<setting::SiteCmd> siteCmd;
   int maxSitecmdLines;
   std::vector<setting::Cscript> cscript;
+  
+  Config(const Config&) = default;
+  Config& operator=(const Config&) = default;
 
 public:
   Config(const std::string& configFile);
@@ -230,10 +234,11 @@ public:
   const std::vector<setting::SiteCmd>& SiteCmd() const { return siteCmd; };
   int MaxSitecmdLines() const { return maxSitecmdLines; };
   const std::vector<setting::Cscript>& Cscript() const { return cscript; };
-  
+
+  friend const Config& Get(bool update);
 };
 
-typedef std::tr1::shared_ptr<cfg::Config> ConfigPtr;
+typedef std::shared_ptr<cfg::Config> ConfigPtr;
 
 }
 

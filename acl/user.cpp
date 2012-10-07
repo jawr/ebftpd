@@ -36,10 +36,9 @@ bool User::VerifyPassword(const std::string& password) const
 
 void User::AddFlags(const std::string& flags)
 {
-  for (std::string::const_iterator it = flags.begin();
-       it != flags.end(); ++it)
+  for (char ch: flags)
   {
-    if (this->flags.find(*it) == std::string::npos) this->flags += *it;
+    if (this->flags.find(ch) == std::string::npos) this->flags += ch;
   }
   
   std::sort(this->flags.begin(), this->flags.end());
@@ -47,20 +46,18 @@ void User::AddFlags(const std::string& flags)
 
 void User::DelFlags(const std::string& flags)
 {
-  for (std::string::const_iterator it = flags.begin();
-       it != flags.end(); ++it)
+  for (char ch: flags)
   {
-    std::string::size_type pos = this->flags.find(*it);
+    std::string::size_type pos = this->flags.find(ch);
     if (pos != std::string::npos) this->flags.erase(pos, 1);
   }  
 }
 
 bool User::CheckFlags(const std::string& flags) const
 {
-  for (std::string::const_iterator it =
-       flags.begin(); it != flags.end(); ++it)
+  for (char ch: flags)
   {
-    if (this->flags.find(*it) != std::string::npos) return true;
+    if (this->flags.find(ch) != std::string::npos) return true;
   }
   return false;
 }

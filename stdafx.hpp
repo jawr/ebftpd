@@ -64,7 +64,6 @@
 #include <istream>
 #include <iterator>
 #include <map>
-#include <memory>
 #include <netdb.h>
 #include <net/if.h>
 #include <netinet/in.h>
@@ -85,7 +84,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <tr1/memory>
+#include <memory>
 #include <tr1/unordered_map>
 #include <unistd.h>
 #include <utility>

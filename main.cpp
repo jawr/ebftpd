@@ -1,4 +1,4 @@
-#include <tr1/memory>
+#include <memory>
 #include "ftp/listener.hpp"
 #include "util/net/tlscontext.hpp"
 #include "util/net/error.hpp"
@@ -8,14 +8,16 @@
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "cfg/exception.hpp"
+#include "ftp/portallocator.hpp"
 
 #ifndef TEST
 
 int main(int argc, char** argv)
 {
+  std::shared_ptr<cfg::Config> config;
   try
   {
-    std::tr1::shared_ptr<cfg::Config> config(new cfg::Config("ftpd.conf"));
+    config.reset(new cfg::Config("ftpd.conf"));
     cfg::UpdateShared(config);
   }
   catch (const cfg::ConfigError& e)
@@ -34,8 +36,11 @@ int main(int argc, char** argv)
     logger::error << "TLS failed to initialise: " << e.Message() << logger::endl;
     return 1;
   }
-
+  
+  ftp::PortAllocator<ftp::PortType::Active>::SetPorts(config->ActivePorts());
+  ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(config->PasvPorts());
   fs::OwnerCache::Start();
+  
   
   ftp::Listener listener(cfg::Get().ListenAddr(), cfg::Get().Port());  
   if (!listener.Initialise())
