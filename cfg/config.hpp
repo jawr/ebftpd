@@ -44,23 +44,23 @@ class Config
   std::string sitenameShort;
   std::string loginPrompt;
   fs::Path rootpath;
-  fs::Path reloadConfig;
+  //fs::Path reloadConfig;
   std::vector<std::string> master;
   std::vector<setting::SecureIp> secureIp;
   std::vector<setting::SecurePass> securePass;
   fs::Path datapath;
-  fs::Path pwdPath;
-  fs::Path grpPath;
+  //fs::Path pwdPath;
+  //fs::Path grpPath;
   fs::Path botscriptPath;
   std::vector<std::string> bouncerIp;
   std::vector<setting::SpeedLimit> speedLimit;
   std::vector<setting::SimXfers> simXfers;
   std::vector<std::string> calcCrc;
   std::vector<std::string> xdupe;
-  int mmapAmount;
-  int dlSendFile;
-  int ulBufferedForce;
-  fs::Path minHomedir;
+  //int mmapAmount;
+  //int dlSendFile;
+  //int ulBufferedForce;
+  //fs::Path minHomedir;
   std::vector<std::string> validIp;
   std::vector<std::string> activeAddr;
   std::vector<std::string> pasvAddr;
@@ -100,7 +100,7 @@ class Config
   std::vector<setting::Right> showDiz;
   std::vector<setting::ShowTotals> showTotals;
   bool dlIncomplete;
-  bool fileDlCount;
+  //bool fileDlCount;
   setting::DupeCheck dupeCheck;
   std::vector<setting::Script> script;
   std::vector<std::string> idleCommands;
@@ -129,6 +129,8 @@ class Config
   
   Config(const Config&) = default;
   Config& operator=(const Config&) = default;
+  
+  void NotImplemented(const std::string& opt);
 
 public:
   Config(const std::string& configFile);
@@ -146,29 +148,29 @@ public:
   const acl::ACL& Shutdown() const { return shutdown; }
   int FreeSpace() const { return freeSpace; }
   const std::vector<setting::UseDirSize>& UseDirSize() const { return useDirSize; }
-  const setting::Timezone& Timezone() const { return timezone; }
+  int Timezone() const { return timezone; }
   bool ColorMode() const { return colorMode; }
   const std::string& SitenameLong() const { return sitenameLong; }
   const std::string& SitenameShort() const { return sitenameShort; }
   const std::string& LoginPrompt() const { return loginPrompt; }
   const fs::Path& Rootpath() const { return rootpath; }
-  const fs::Path& ReloadConfig() const { return reloadConfig; }
+  //const fs::Path& ReloadConfig() const { return reloadConfig; }
   const std::vector<std::string>& Master() const { return master; }  
   const std::vector<setting::SecureIp>& SecureIp() const { return secureIp; }
   const std::vector<setting::SecurePass>& SecurePass() const { return securePass; }
   const fs::Path& Datapath() const { return datapath; }
-  const fs::Path& PwdPath() const { return pwdPath; }
-  const fs::Path& GrpPath() const { return grpPath; }
+  //const fs::Path& PwdPath() const { return pwdPath; }
+  //const fs::Path& GrpPath() const { return grpPath; }
   const fs::Path& BotscriptPath() const { return botscriptPath; }
   const std::vector<std::string>& BouncerIp() const { return bouncerIp; }
   const std::vector<setting::SpeedLimit>& SpeedLimit() const { return speedLimit; }
   const std::vector<setting::SimXfers>& SimXfers() const { return simXfers; }
   const std::vector<std::string>& CalcCrc() const { return calcCrc; }
   const std::vector<std::string>& Xdupe() const { return xdupe; }
-  int MmapAmount() const { return mmapAmount; }
-  int DlSendFile() const { return dlSendFile; }
-  int UlBufferedForce() const { return ulBufferedForce; }
-  const fs::Path& MinHomedir() const { return minHomedir; }
+  //int MmapAmount() const { return mmapAmount; }
+  //int DlSendFile() const { return dlSendFile; }
+  //int UlBufferedForce() const { return ulBufferedForce; }
+  //const fs::Path& MinHomedir() const { return minHomedir; }
   const std::vector<std::string>& ValidIp() const { return validIp; }
   const std::vector<std::string>& ActiveAddr() const { return activeAddr; }
   const std::vector<std::string>& PasvAddr() const { return pasvAddr; }
@@ -208,7 +210,7 @@ public:
   const std::vector<std::string>& BannedUsers() const { return bannedUsers; }
   const std::vector<setting::Right>& ShowDiz() const { return showDiz; }
   bool DlIncomplete() const { return dlIncomplete; }
-  bool FileDlCount() const { return fileDlCount; }
+  //bool FileDlCount() const { return fileDlCount; }
   const setting::DupeCheck& DupeCheck() const { return dupeCheck; }
   const std::vector<setting::Script>& Script() const { return script; }
   const std::vector<std::string>& IdleCommands() const { return idleCommands; }

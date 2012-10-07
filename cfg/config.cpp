@@ -107,7 +107,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "reload_config")
   {
-    reloadConfig = fs::Path(toks.at(0));
+    NotImplemented(opt);
   }
   else if (opt == "datapath")
   {
@@ -115,11 +115,11 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "pwd_path")
   {
-    pwdPath = fs::Path(toks.at(0));
+    NotImplemented(opt);
   }
   else if (opt == "grp_path")
   {
-    grpPath = fs::Path(toks.at(0));
+    NotImplemented(opt);
   }
   else if (opt == "botscript_path")
   {
@@ -139,15 +139,15 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "mmap_amount")
   {
-    mmapAmount = boost::lexical_cast<int>(toks.at(0));
+    NotImplemented(opt);
   }
   else if (opt == "dl_send_file")
   {
-    dlSendFile = boost::lexical_cast<int>(toks.at(0));
+    NotImplemented(opt);
   }
   else if (opt == "ul_buffered_force")
   {
-    ulBufferedForce = boost::lexical_cast<int>(toks.at(0));
+    NotImplemented(opt);
   }
   else if (opt == "total_users")
   {
@@ -195,7 +195,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "file_dl_count")
   {
-    fileDlCount = util::string::BoolLexicalCast(toks.at(0));
+    NotImplemented(opt);
   }
   else if (opt == "sitename_long")
   {
@@ -458,6 +458,11 @@ void Config::Parse(const std::string& line) {
 
   // update cache for sanity check
   settingsCache[opt]++; 
+}
+
+void Config::NotImplemented(const std::string& opt)
+{
+  logger::ftpd << opt << " config option not impmented. ignored.." << logger::endl;
 }
 
 bool Config::CheckSetting(const std::string& name)
