@@ -177,7 +177,8 @@ void Client::DisplayBanner()
     }
   }
 
-  Reply(ftp::ServiceReady, programName + " v" + std::string(version) + " connected.");
+  Reply(ftp::ServiceReady, config.SitenameLong() + ": " + programFullname + 
+        " connected.");
 }
 
 void Client::NegotiateTLS()

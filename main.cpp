@@ -15,10 +15,11 @@
 #ifndef TEST
 
 extern const std::string programName = "ebftpd";
+extern const std::string programFullname = programName + " " + std::string(version);
 
 int main(int argc, char** argv)
 {
-  std::cout << "Starting " << programName << " v" << version << " .. " << std::endl;
+  std::cout << "Starting " << programFullname << " .. " << std::endl;
 
   std::shared_ptr<cfg::Config> config;
   try

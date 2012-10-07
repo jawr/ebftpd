@@ -213,7 +213,7 @@ void FEATCommand::Execute()
 void HELPCommand::Execute()
 {
   static const char* reply =
-    "FTP Command listing:\n"
+    " ebftpd Command listing:\n"
     "------------------------------------------------------------------\n"
     " ABOR *ACCT *ADAT *ALLO  APPE  AUTH *CCC   CDUP *CONF  CWD   DELE\n"
     "*ENC   EPRT  EPSV  FEAT  HELP *LANG  LIST *LPRT *LPSV  MDTM *MIC\n"
@@ -836,8 +836,7 @@ void STATCommand::Execute()
 {
   if (args.size() == 1)
   {
-    client.PartReply(ftp::SystemStatus, programName + " v" + 
-                     std::string(version) + " status:");
+    client.PartReply(ftp::SystemStatus, programFullname + " status:");
     client.PartReply("< Insert status info here >");
     client.Reply("End of status.");
     return;

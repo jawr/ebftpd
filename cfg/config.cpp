@@ -24,6 +24,8 @@ Config::Config(const std::string& config) :
   freeSpace(100),
   timezone(0),
   colorMode(false),
+  sitenameLong("SITE NAME"),
+  sitenameShort("SN"),
   dlIncomplete(true),
   totalUsers(20),
   multiplierMax(10),
