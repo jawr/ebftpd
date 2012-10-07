@@ -84,7 +84,7 @@ class Client : public util::ThreadSelect
   bool CheckState(ClientState::Enum reqdState);
   
 public:
-  Client() : workDir("/"), user("root", "password", "1"),
+  Client() : workDir("/"), user("root", 69, "password", "1"),
      control(15), state(ClientState::LoggedOut), lastCode(CodeNotSet),
      passwordAttemps(0), data(15), dataProtected(false),
      passiveMode(false), epsvMode(::ftp::EPSVMode::Normal) { }
