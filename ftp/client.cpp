@@ -16,6 +16,7 @@
 #include "acl/check.hpp"
 #include "cfg/get.hpp"
 #include "ftp/portallocator.hpp"
+#include "ftp/addrallocator.hpp"
 
 namespace ftp
 {
@@ -258,19 +259,46 @@ void Client::Run()
   (void) finishedGuard; /* silence unused variable warning */
 }
 
-void Client::DataInitPassive(util::net::Endpoint& ep, bool ipv4Only)
+void Client::DataInitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
 {
   using namespace util::net;
 
   passiveMode = true;
   data.Close();
   dataListen.Close();
-  IPAddress ip = control.LocalEndpoint().IP();
-  if (ipv4Only && ip.Family() == IPAddress::IPv6)
+  
+  boost::optional<util::net::IPAddress> ip;
+  // unable to use alternative pasv_addr if espv mode isn't Full
+  // should we fail -- or substitute the ip 
+  // from the control.LocalEndpoint like now?
+  if (pasvType != PassiveType::EPSV || epsvMode == EPSVMode::Full)
   {
-    // let's get the IPv4 address for this interface
-    FindPartnerIP(ip, ip);
+    std::string firstAddr;
+    while (true)
+    {
+      std::string addr = AddrAllocator<AddrType::Active>::NextAddr();
+      if (addr.empty()) break;
+      
+      if (addr == firstAddr)
+        throw util::net::NetworkError("Unable to find a valid local address");
+      
+      try
+      {
+        ip.reset(util::net::IPAddress(addr));
+        if (pasvType != PassiveType::PASV ||
+            ip->Family() == util::net::IPAddress::IPv6) break;
+      }
+      catch (const util::net::NetworkError&)
+      {
+      }
+      
+      if (firstAddr.empty()) firstAddr = addr;
+    }
   }
+  
+  if (!ip) ip = util::net::IPAddress(control.LocalEndpoint().IP());
+  if (pasvType == PassiveType::PASV && ip->Family() == IPAddress::IPv6)
+    FindPartnerIP(*ip, *ip);
   
   boost::optional<uint16_t> firstPort;
   while (true)
@@ -278,11 +306,11 @@ void Client::DataInitPassive(util::net::Endpoint& ep, bool ipv4Only)
     uint16_t port = PortAllocator<PortType::Passive>::NextPort();
     if (!firstPort) firstPort.reset(port);
     else if (port == *firstPort) 
-      throw util::net::NetworkSystemError(EADDRINUSE);
+      throw util::net::NetworkError("All ports exhausted");
       
     try
     {
-      dataListen.Listen(Endpoint(ip, port));
+      dataListen.Listen(Endpoint(*ip, port));
       break;
     }
     catch (const util::net::NetworkSystemError& e)
@@ -300,18 +328,42 @@ void Client::DataInitActive(const util::net::Endpoint& ep)
   passiveMode = false;
   data.Close();
   dataListen.Close();
+  
+  boost::optional<util::net::IPAddress> localIP;
+  std::string firstAddr;
+  while (true)
+  {
+    std::string addr = AddrAllocator<AddrType::Active>::NextAddr();
+    if (addr.empty()) break;
+    
+    if (addr == firstAddr)
+      throw util::net::NetworkError("Unable to find a valid local address");
+    
+    try
+    {
+      localIP.reset(util::net::IPAddress(addr));
+      if (localIP->Family() == ep.Family()) break;
+    }
+    catch (const util::net::NetworkError&)
+    {
+    }
+    
+    if (firstAddr.empty()) firstAddr = addr;
+  }
+  
+  if (!localIP) localIP = util::net::IPAddress(ep.Family());
+  
   boost::optional<uint16_t> firstPort;
   while (true)
   {
-    uint16_t port = PortAllocator<PortType::Active>::NextPort();
-    if (!firstPort) firstPort.reset(port);
-    else if (port == *firstPort) 
-      throw util::net::NetworkSystemError(EADDRINUSE);
+    uint16_t localPort = PortAllocator<PortType::Active>::NextPort();
+    if (!firstPort) firstPort.reset(localPort);
+    else if (localPort == *firstPort) 
+      throw util::net::NetworkError("All ports exhausted");
       
     try
     {
-      std::cout << port << std::endl;
-      data.Connect(ep, util::net::Endpoint(ep.IP(), port));
+      data.Connect(ep, util::net::Endpoint(*localIP, localPort));
       break;
     }
     catch (const util::net::NetworkSystemError& e)

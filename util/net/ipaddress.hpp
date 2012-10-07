@@ -56,6 +56,10 @@ public:
   
   const std::string& ToString() const;
   /* Throws util::NetworkSystemError */
+
+  bool IsMappedv4() const;
+  
+  IPAddress ToUnmappedv4() const;
   
   const void* Addr() const { return static_cast<const void*>(data); }
   /* No exceptions */
