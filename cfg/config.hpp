@@ -67,9 +67,9 @@ class Config
   setting::Ports activePorts;
   setting::Ports pasvPorts;
   std::vector<setting::AllowFxp> allowFxp;
-  std::vector<fs::Path> welcomeMsg;
-  std::vector<fs::Path> goodbyeMsg;
-  std::vector<fs::Path> newsfile;
+  std::vector<setting::Right> welcomeMsg;
+  std::vector<setting::Right> goodbyeMsg;
+  std::vector<setting::Right> newsfile;
   fs::Path banner;
   std::vector<setting::Alias> alias;
   std::vector<fs::Path> cdpath;
@@ -177,13 +177,14 @@ public:
   const setting::Ports& ActivePorts() const { return activePorts; }
   const setting::Ports& PasvPorts() const { return pasvPorts; }
   const std::vector<setting::AllowFxp>& AllowFxp() const { return allowFxp; }
-  const std::vector<fs::Path>& WelcomeMsg() const { return welcomeMsg; }
-  const std::vector<fs::Path>& GoodbyeMsg() const { return goodbyeMsg; }
-  const std::vector<fs::Path>& Newsfile() const { return newsfile; }
+  const std::vector<setting::Right>& WelcomeMsg() const { return welcomeMsg; }
+  const std::vector<setting::Right>& GoodbyeMsg() const { return goodbyeMsg; }
+  const std::vector<setting::Right>& Newsfile() const { return newsfile; }
   const fs::Path& Banner() const { return banner; }
   const std::vector<setting::Alias>& Alias() const { return alias; }
   const std::vector<fs::Path>& Cdpath() const { return cdpath; }
   const std::vector<std::string>& IgnoreType() const { return ignoreType; }
+  
 
   // rights section
   const std::vector<setting::Right>& Delete() const { return delete_; } 

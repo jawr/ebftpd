@@ -293,15 +293,15 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "welcome_msg")
   {
-    welcomeMsg.emplace_back(fs::Path(toks.at(0))); 
+    welcomeMsg.emplace_back(setting::Right(toks)); 
   }
   else if (opt == "goodbye_msg")
   {
-    goodbyeMsg.emplace_back(fs::Path(toks.at(0))); 
+    goodbyeMsg.emplace_back(setting::Right(toks)); 
   }
   else if (opt == "newsfile")
   {
-    newsfile.emplace_back(fs::Path(toks.at(0))); 
+    newsfile.emplace_back(setting::Right(toks)); 
   }
   else if (opt == "cdpath")
   {
