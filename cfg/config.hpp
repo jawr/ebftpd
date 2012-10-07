@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <memory>
 #include <tr1/unordered_map>
 #include "cfg/exception.hpp"

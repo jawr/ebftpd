@@ -2,7 +2,7 @@
 #define __ACL_USERCACHE_HPP
 
 #include <utility>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <boost/thread/mutex.hpp>
 #include "acl/user.hpp"
 #include "util/error.hpp"
@@ -12,8 +12,8 @@ namespace acl
 
 class UserCache
 {
-  typedef boost::unordered_map<std::string, acl::User*> ByNameMap;
-  typedef boost::unordered_map<UserID, acl::User*> ByUIDMap;
+  typedef std::unordered_map<std::string, acl::User*> ByNameMap;
+  typedef std::unordered_map<UserID, acl::User*> ByUIDMap;
   
   mutable boost::mutex mutex;
   ByNameMap byName;
