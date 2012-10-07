@@ -3,7 +3,7 @@
 
 #include <string>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #include "fs/path.hpp"
 #include "fs/status.hpp"
 #include "fs/owner.hpp"

@@ -3,7 +3,7 @@
 
 #include <cassert>
 #include <iterator>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #include <unordered_map>
 
 namespace util

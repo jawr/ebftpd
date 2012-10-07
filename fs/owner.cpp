@@ -1,4 +1,5 @@
 #include <fstream>
+#include <functional>
 #if defined(TEXT_OWNER_FILES)
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -6,7 +7,6 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #endif
-#include <boost/bind.hpp>
 #include "fs/owner.hpp"
 #include "util/error.hpp"
 #include "logger/logger.hpp"
@@ -268,7 +268,7 @@ void OwnerCache::Main()
 
 void OwnerCache::Start()
 {
-  instance.thread = boost::thread(boost::bind(&OwnerCache::Main, &instance));
+  instance.thread = boost::thread(std::bind(&OwnerCache::Main, &instance));
 }
 
 void OwnerCache::Stop()
