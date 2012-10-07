@@ -11,9 +11,9 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/bind.hpp>
+#include <functional>
 #include <boost/config.hpp>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/iostreams/concepts.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>

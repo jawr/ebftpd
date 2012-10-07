@@ -5,7 +5,7 @@
 #include <cstring>
 #include <ostream>
 #include <sys/socket.h>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #include "util/net/ipaddress.hpp"
 
 namespace util { namespace net

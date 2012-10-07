@@ -1,9 +1,9 @@
 #include <iomanip>
-#include <boost/bind.hpp>
+#include <functional>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #include <boost/optional.hpp>
 #include "ftp/client.hpp"
 #include "logger/logger.hpp"
@@ -234,9 +234,8 @@ void Client::Run()
 {
   using util::scope_guard;
   using util::make_guard;
-  using boost::bind;
   
-  scope_guard finishedGuard = make_guard(bind(&Client::SetFinished, this));
+  scope_guard finishedGuard = make_guard(std::bind(&Client::SetFinished, this));
 
   try
   {
