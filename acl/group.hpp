@@ -13,7 +13,7 @@ class Group
   gid_t gid;
   
 public:
-  Group(const std::string& name) : name(name), gid(-1) { }
+  Group(const std::string& name, gid_t gid) : name(name), gid(gid) { }
   
   const std::string& Name() const { return name; }
   void SetName(const std::string& name) { this->name = name; }

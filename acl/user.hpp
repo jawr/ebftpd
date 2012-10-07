@@ -21,7 +21,7 @@ class User
   boost::unordered_set<gid_t> secondaryGids;
   
 public:
-  User(const std::string& name, const std::string& password,
+  User(const std::string& name, uid_t uid, const std::string& password,
        const std::string& flags);
        
   const std::string& Name() const { return name; }
