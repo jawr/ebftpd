@@ -51,8 +51,8 @@ int main(int argc, char** argv)
   fs::OwnerCache::Start();
   
   
-  ftp::Listener listener(cfg::Get().ListenAddr(), cfg::Get().Port());  
-  if (!listener.Initialise())
+  ftp::Listener listener;  
+  if (!listener.Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
     logger::error << "Listener failed to initialise!" << logger::endl;
     return 1;

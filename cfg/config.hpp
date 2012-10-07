@@ -32,7 +32,6 @@ class Config
   fs::Path sitepath;
   fs::Path tlsCertificate;
   int port;
-  std::string listenAddr;
   // glftpd
   setting::AsciiDownloads asciiDownloads;
   acl::ACL shutdown;
@@ -142,7 +141,6 @@ public:
   const fs::Path& Sitepath() const { return sitepath; }
   const fs::Path& TlsCertificate() const { return tlsCertificate; }
   int Port() const { return port; }
-  const std::string& ListenAddr() const { return listenAddr; }
   // glftpd
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
   const acl::ACL& Shutdown() const { return shutdown; }

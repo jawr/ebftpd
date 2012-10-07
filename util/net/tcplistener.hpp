@@ -16,12 +16,39 @@ class TCPListener
   int socket;
   int backlog;
   int interruptPipe[2];
+
+  TCPListener(const TCPListener&) = delete;
+  TCPListener& operator=(const TCPListener&) = delete;
   
   bool WaitPendingTimeout(const TimePair* duration) const;
   void Listen();
   
 public:
   static const int maximumBacklog = SOMAXCONN;
+  
+  TCPListener(TCPListener&& other) :
+    endpoint(other.endpoint),
+    socket(other.socket),
+    backlog(other.backlog),
+    interruptPipe({other.interruptPipe[0], other.interruptPipe[1]})
+  {
+    other.socket = -1;
+    other.interruptPipe[0] = -1;
+    other.interruptPipe[1] = -1;
+  }
+  
+  TCPListener& operator=(TCPListener&& other)
+  {
+    endpoint = other.endpoint;
+    socket = other.socket;
+    backlog = other.backlog;
+    interruptPipe[0] = other.interruptPipe[0];
+    interruptPipe[1] = other.interruptPipe[1];
+    other.socket = -1;
+    other.interruptPipe[0] = -1;
+    other.interruptPipe[1] = -1;
+    return *this;
+  }
 
   ~TCPListener();
   

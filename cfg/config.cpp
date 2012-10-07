@@ -104,10 +104,6 @@ void Config::Parse(const std::string& line) {
   {
     sitepath = fs::Path(toks.at(0));
   }
-  else if (opt == "listen_addr")
-  {
-    listenAddr = toks[0];
-  }
   else if (opt == "port")
   {
     port = boost::lexical_cast<int>(toks.at(0));
@@ -494,7 +490,7 @@ void Config::SanityCheck()
   else if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
   else if (!CheckSetting("port")) throw RequiredSetting("port");
   else if (!CheckSetting("listen_addr")) throw RequiredSetting("listen_addr");
-
+  else if (!CheckSetting("valid_ip")) throw RequiredSetting("valid_ip");
 }
 
 // end namespace

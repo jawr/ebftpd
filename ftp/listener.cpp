@@ -1,3 +1,4 @@
+#include <cassert>
 #include <memory>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/locks.hpp>
@@ -10,19 +11,26 @@
 namespace ftp
 {
 
-bool Listener::Initialise()
+bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port)
 {
+  assert(!validIPs.empty());
+  util::net::Endpoint ep;
   try
   {
-    server.Listen(addr);
+    for (const auto& ip : validIPs)
+    {
+      ep = util::net::Endpoint(ip, port);
+      servers.emplace_back(util::net::Endpoint(ip, port), 1234);
+      logger::ftpd << "Listening for clients on " << ep << logger::endl;
+    }
   }
   catch (const util::net::NetworkError& e)
   {
-    logger::error << "Unable to listen for clients on " << addr << ": " << e.Message() << logger::endl;
+    logger::error << "Unable to listen for clients on " << ep
+                  << ": " << e.Message() << logger::endl;
     return false;
   }
   
-  logger::ftpd << "Listening for clients on " << addr << logger::endl;
   return true;
 }
 
@@ -43,7 +51,7 @@ void Listener::HandleClients()
   }
 }
 
-void Listener::AcceptClient()
+void Listener::AcceptClient(util::net::TCPListener& server)
 {
   std::unique_ptr<ftp::Client> client(new ftp::Client());
   if (client->Accept(server)) 
@@ -57,9 +65,15 @@ void Listener::AcceptClients()
 {
   fd_set readSet;
   FD_ZERO(&readSet);
-  FD_SET(server.Socket(), &readSet);
+
   FD_SET(interruptPipe[0], &readSet);
-  int max = std::max(server.Socket(), interruptPipe[0]);
+  int max = interruptPipe[0];
+  
+  for (auto& server : servers)
+  {
+    FD_SET(server.Socket(), &readSet);
+    max = std::max(server.Socket(), interruptPipe[0]);
+  }
   
   struct timeval tv;
   tv.tv_sec = 0;
@@ -72,13 +86,17 @@ void Listener::AcceptClients()
     // ensure we don't poll rapidly on repeated select failures
     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
   }
-  else if (FD_ISSET(server.Socket(), &readSet)) AcceptClient();
   else if (FD_ISSET(interruptPipe[0], &readSet))
   {
     boost::this_thread::interruption_point();
     // possibly use this to refresh our config too ??
     // if port has changed in config, we have to renew our server object with
     // new endpoint
+  }
+  else
+  {
+    for (auto& server : servers)
+      if (FD_ISSET(server.Socket(), &readSet)) AcceptClient(server);
   }
 }
 
