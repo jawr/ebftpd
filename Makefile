@@ -17,6 +17,7 @@ OBJECTS = \
 	ftp/listener.o \
 	ftp/client.o \
 	ftp/portallocator.o \
+	ftp/addrallocator.o \
 	fs/direnumerator.o \
 	fs/filelock.o \
 	fs/owner.o \

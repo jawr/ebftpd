@@ -63,7 +63,7 @@ class Config
   fs::Path minHomedir;
   std::vector<std::string> validIp;
   std::vector<std::string> activeAddr;
-  std::vector<setting::PasvAddr> pasvAddr;
+  std::vector<std::string> pasvAddr;
   setting::Ports activePorts;
   setting::Ports pasvPorts;
   std::vector<setting::AllowFxp> allowFxp;
@@ -171,7 +171,7 @@ public:
   const fs::Path& MinHomedir() const { return minHomedir; }
   const std::vector<std::string>& ValidIp() const { return validIp; }
   const std::vector<std::string>& ActiveAddr() const { return activeAddr; }
-  const std::vector<setting::PasvAddr>& PasvAddr() const { return pasvAddr; }
+  const std::vector<std::string>& PasvAddr() const { return pasvAddr; }
   const setting::Ports& ActivePorts() const { return activePorts; }
   const setting::Ports& PasvPorts() const { return pasvPorts; }
   const std::vector<setting::AllowFxp>& AllowFxp() const { return allowFxp; }
