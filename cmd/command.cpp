@@ -942,8 +942,8 @@ void STOUCommand::Execute()
   
   argStr = uniquePath.ToString();
   args.clear();
-  args.push_back("STOR");
-  args.push_back(argStr);
+  args.emplace_back("STOR");
+  args.emplace_back(argStr);
   
   ftp::ClientState::Enum reqdState;
 

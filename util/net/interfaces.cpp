@@ -36,7 +36,7 @@ void Interfaces::Load()
     std::string name = ifa->ifa_name;
     std::map<std::string, Interface>::iterator it =
       interfaces.insert(std::make_pair(name, Interface(name))).first;
-    it->second.addresses.push_back(ip);
+    it->second.addresses.emplace_back(ip);
   }
 }
 

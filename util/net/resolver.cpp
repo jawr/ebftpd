@@ -73,7 +73,7 @@ void Resolver::Resolve()
   struct addrinfo* current = res;
   while (current)
   {
-    results.push_back(Endpoint(*current->ai_addr, current->ai_addrlen));
+    results.emplace_back(Endpoint(*current->ai_addr, current->ai_addrlen));
     current = current->ai_next;
   }
 
