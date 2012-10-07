@@ -1,9 +1,12 @@
 #ifndef __CFG_EXCEPTION_HPP
 #define __CFG_EXCEPTION_HPP
-#include <stdexcept>
+
+#include "util/error.hpp"
+
 namespace cfg
 {
-struct ConfigError : public std::runtime_error
+
+struct ConfigError : public util::RuntimeError
 {
   ConfigError() : std::runtime_error("Config error.") {}
   ConfigError(const std::string& message) : std::runtime_error(message) {}
@@ -11,21 +14,22 @@ struct ConfigError : public std::runtime_error
 
 struct ConfigFileError : public ConfigError
 {
-  ConfigFileError() : ConfigError("Unable to open Config file.") {}
-  ConfigFileError(const std::string& message) : ConfigError(message) {}
+  ConfigFileError() : std::runtime_error("Unable to open Config file.") {}
+  ConfigFileError(const std::string& message) : std::runtime_error(message) {}
 };
 
 struct NoSetting : public ConfigError
 {
-  NoSetting() : ConfigError("Error parsing setting") {}
-  NoSetting(const std::string& message) : ConfigError(message) {}
+  NoSetting() : std::runtime_error("Error parsing setting") {}
+  NoSetting(const std::string& message) : std::runtime_error(message) {}
 };
 
 struct RequiredSetting : public ConfigError
 {
-  RequiredSetting() : ConfigError("Missing required setting.") {}
-  RequiredSetting(const std::string& message) : ConfigError("Missing required setting: " + message) {}
+  RequiredSetting() : std::runtime_error("Missing required setting.") {}
+  RequiredSetting(const std::string& message) : std::runtime_error("Missing required setting: " + message) {}
 };
 
 }
+
 #endif

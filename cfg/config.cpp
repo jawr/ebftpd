@@ -31,27 +31,28 @@ Config::Config(const std::string& config) :
   multiplierMax(10),
   oneliners(10),
   emptyNuke(102400),
-  maxSitecmdLines(20)
+  maxSitecmdLines(-1) // unlimited
 {
   std::string line;
   std::ifstream io(config.c_str(), std::ifstream::in);
   int i = 0;
 
-  if (!io.is_open()) throw ConfigFileError();
+  if (!io.is_open()) throw ConfigFileError("Unable to open config file");
 
   while (io.good())
   {
     std::getline(io, line);
     ++i;
-    if (line.size() == 0) continue;
-    if (line.size() > 0 && line.at(0) == '#') continue;
+    std::string::size_type pos = line.find_first_of('#');
+    if (pos != std::string::npos) line.erase(pos);
+    if (line.empty()) continue;
     try 
     {
       Parse(line);
     } 
-    catch (NoSetting &e) // handle properly
+    catch (const NoSetting &e) // handle properly
     {
-      ::logger::ftpd << e.what() << " (" << config << ":" << i << ")" << logger::endl;
+      ::logger::ftpd << e.Message() << " (" << config << ":" << i << ")" << logger::endl;
     }
     catch (...)
     {
@@ -510,7 +511,7 @@ int main()
   }
   catch(const cfg::ConfigError& e)
   {
-    logger::ftpd << e.what() << logger::endl;
+    logger::ftpd << e.Message() << logger::endl;
     return 1;
   }
   return 0;

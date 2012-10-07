@@ -29,7 +29,7 @@ int main(int argc, char** argv)
   }
   catch (const cfg::ConfigError& e)
   {
-    logger::error << e.what() << logger::endl;
+    logger::error << e.Message() << logger::endl;
     return 1;
   }
   
