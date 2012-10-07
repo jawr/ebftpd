@@ -24,7 +24,7 @@ UseDirSize::UseDirSize(std::vector<std::string>& toks)
   unit = (char)toks.at(0)[0];
   toks.erase(toks.begin());
   for (const auto& token : toks)
-    paths.push_back(fs::Path(token));
+    paths.emplace_back(fs::Path(token));
 }
 
 Timezone::Timezone(std::vector<std::string>& toks)
@@ -85,7 +85,7 @@ Ports::Ports(std::vector<std::string>& toks)
       throw cfg::ConfigError("To port lower than from port in port range.");
     if (to < 1024 || from < 1024 || to > 65535 || from > 65535)
       throw cfg::ConfigError("Invalid to port number in port range.");
-    ranges.push_back(PortRange(from, to));
+    ranges.emplace_back(PortRange(from, to));
   }
 }
 

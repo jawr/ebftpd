@@ -49,8 +49,8 @@ class AsciiDownloads : public Setting
   std::vector<std::string> masks;
 public:
   AsciiDownloads() : size(20000) {
-    masks.push_back("*.[Tt][Xx][Tt]");
-    masks.push_back("*.[Dd][Ii][Zz]");
+    masks.emplace_back("*.[Tt][Xx][Tt]");
+    masks.emplace_back("*.[Dd][Ii][Zz]");
   };
   AsciiDownloads(std::vector<std::string>& toks);
 };
@@ -61,7 +61,7 @@ class UseDirSize : public Setting
   std::vector<fs::Path> paths;
 public:
   UseDirSize() : unit('m') {
-    paths.push_back(fs::Path("/"));
+    paths.emplace_back(fs::Path("/"));
   };
   UseDirSize(std::vector<std::string>& toks);
 };
