@@ -28,7 +28,10 @@ enum Type
   Filemove,
   Nuke,
   Delete,
-  View
+  View,
+  Hideinwho,
+  Freefile,
+  Nostats
 };
 
 template <Type type>

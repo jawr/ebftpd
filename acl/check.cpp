@@ -188,6 +188,42 @@ struct Traits<View>
   }
 };
 
+template <>
+struct Traits<Hideinwho>
+{
+  static util::Error Allowed(const User& user, const std::string& path)
+  {
+    if (Evaluate(cfg::Get().Hideinwho(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+};
+
+template <>
+struct Traits<Freefile>
+{
+  static util::Error Allowed(const User& user, const std::string& path)
+  {
+    if (Evaluate(cfg::Get().Freefile(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+};
+
+template <>
+struct Traits<Nostats>
+{
+  static util::Error Allowed(const User& user, const std::string& path)
+  {
+    if (Evaluate(cfg::Get().Nostats(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+};
+
 }
 
 bool HiddenFile(const std::string& path)
@@ -199,11 +235,10 @@ bool PrivatePath(const std::string& path, const User& user)
 {
   const std::vector<cfg::setting::Privpath>& privPath = 
     cfg::Get().Privpath();
-  for (std::vector<cfg::setting::Privpath>::const_iterator it =
-       privPath.begin(); it != privPath.end(); ++it)
+  for (const auto& pp : privPath)
   {
-    if (!path.compare(0, it->Path().Length(), it->Path()))
-      return !it->ACL().Evaluate(user);
+    if (!path.compare(0, pp.Path().Length(), pp.Path()))
+      return !pp.ACL().Evaluate(user);
   }
   return false;
 }
@@ -229,6 +264,9 @@ template util::Error FileAllowed<Rename>(const User& user, const std::string& pa
 template util::Error FileAllowed<Filemove>(const User& user, const std::string& path);
 template util::Error FileAllowed<Delete>(const User& user, const std::string& path);
 template util::Error FileAllowed<View>(const User& user, const std::string& path);
+template util::Error FileAllowed<Hideinwho>(const User& user, const std::string& path);
+template util::Error FileAllowed<Freefile>(const User& user, const std::string& path);
+template util::Error FileAllowed<Nostats>(const User& user, const std::string& path);
 
 template <Type type>
 util::Error DirAllowed(const User& user, std::string path)
@@ -243,6 +281,7 @@ template util::Error DirAllowed<Dirlog>(const User& user, std::string path);
 template util::Error DirAllowed<Nuke>(const User& user, std::string path);
 template util::Error DirAllowed<Delete>(const User& user, std::string path);
 template util::Error DirAllowed<View>(const User& user, std::string path);
+template util::Error DirAllowed<Hideinwho>(const User& user, std::string path);
 
 } /* PathPermission namespace */
 

@@ -14,7 +14,7 @@
 
 #ifndef TEST
 
-extern const std::string programName = "beftpd";
+extern const std::string programName = "ebftpd";
 
 int main(int argc, char** argv)
 {
