@@ -183,7 +183,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "timezone")
   {
-    timezone = setting::Timezone(toks);
+    timezone = boost::lexical_cast<int>(toks[0]);
   }
   else if (opt == "color_mode")
   {

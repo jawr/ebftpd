@@ -28,11 +28,6 @@ UseDirSize::UseDirSize(std::vector<std::string>& toks)
   }
 }
 
-Timezone::Timezone(std::vector<std::string>& toks)
-{
-  hours = boost::lexical_cast<int>(toks.at(0));
-}
-
 SecureIp::SecureIp(std::vector<std::string>& toks)
 {
   minFields = boost::lexical_cast<int>(toks.at(0));

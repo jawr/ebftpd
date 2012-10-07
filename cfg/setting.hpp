@@ -64,14 +64,6 @@ public:
   UseDirSize(std::vector<std::string>& toks);
 };
 
-class Timezone : public Setting
-{
-  unsigned int hours;
-public:
-  Timezone() : hours(0) {};
-  Timezone(std::vector<std::string>& toks);
-};
-
 class SecureIp : public Setting
 {
   int minFields;
@@ -115,8 +107,8 @@ public:
 
 class SimXfers : public Setting
 {
-  unsigned int maxDownloads;
-  unsigned int maxUploads;
+  int maxDownloads;
+  int maxUploads;
 public:
   SimXfers() {};
   SimXfers(std::vector<std::string>& toks);
@@ -201,7 +193,7 @@ public:
 
 class ShowTotals : public Setting
 {
-  unsigned int maxLines;
+  int maxLines;
   std::vector<std::string> paths;
 public:
   ShowTotals() {};
