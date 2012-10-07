@@ -18,7 +18,7 @@ Endpoint::Endpoint(const std::string& addr, int32_t port) :
   port(port)
 {
   memset(&this->addr, 0, sizeof(this->addr));
-  if (ip.Family() == IPAddress::IPv4)
+  if (ip.Family() == IPFamily::IPv4)
   {
     addr4 = reinterpret_cast<struct sockaddr_in*>(&this->addr);
     memcpy(&addr4->sin_addr, ip.Addr(), ip.Length());
@@ -26,7 +26,7 @@ Endpoint::Endpoint(const std::string& addr, int32_t port) :
     addr4->sin_family = AF_INET;
     addr4->sin_port = htons(port);
   }
-  else if (ip.Family() == IPAddress::IPv6)
+  else if (ip.Family() == IPFamily::IPv6)
   {
     addr6 = reinterpret_cast<struct sockaddr_in6*>(&this->addr);
     memcpy(&addr6->sin6_addr, ip.Addr(), ip.Length());
@@ -42,7 +42,7 @@ Endpoint::Endpoint(const IPAddress& addr, int32_t port) :
   port(port)
 {
   memset(&this->addr, 0, sizeof(this->addr));
-  if (ip.Family() == IPAddress::IPv4)
+  if (ip.Family() == IPFamily::IPv4)
   {
     addr4 = reinterpret_cast<struct sockaddr_in*>(&this->addr);
     memcpy(&addr4->sin_addr, ip.Addr(), ip.Length());
@@ -50,7 +50,7 @@ Endpoint::Endpoint(const IPAddress& addr, int32_t port) :
     addr4->sin_family = AF_INET;
     addr4->sin_port = htons(port);
   }
-  else if (ip.Family() == IPAddress::IPv6)
+  else if (ip.Family() == IPFamily::IPv6)
   {
     addr6 = reinterpret_cast<struct sockaddr_in6*>(&this->addr);
     memcpy(&addr6->sin6_addr, ip.Addr(), ip.Length());
@@ -117,7 +117,7 @@ bool Endpoint::Equals(const Endpoint& ep) const
 std::string Endpoint::ToString() const
 {
   std::ostringstream os;
-  if (ip.Family() == IPAddress::IPv6)
+  if (ip.Family() == IPFamily::IPv6)
     os << "[" << ip << "]" << ":" << port;
   else
     os << ip << ":" << port;

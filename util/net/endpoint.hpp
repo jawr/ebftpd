@@ -57,7 +57,7 @@ public:
   bool Empty() const { return !addr4 && !addr6; }
   /*  No exceptions */
 
-  IPAddress::IPFamily Family() const { return ip.Family(); }
+  IPFamily Family() const { return ip.Family(); }
   /*  No exceptions */
   
   bool operator==(const Endpoint& lhs) const { return Equals(lhs); }

@@ -58,7 +58,7 @@ void Client::SetFinished()
   state = ClientState::Finished;
 }
 
-bool Client::CheckState(ClientState::Enum reqdState)
+bool Client::CheckState(ClientState reqdState)
 {
   if (state == reqdState || reqdState == ClientState::AnyState) return true;
   if (state == ClientState::LoggedIn)
@@ -214,7 +214,7 @@ void Client::ExecuteCommand()
     boost::trim(argStr);
   }
   
-  ClientState::Enum reqdState;
+  ClientState reqdState;
   std::unique_ptr<cmd::Command>
     command(cmd::Factory::Create(*this, argStr, args, reqdState));
   if (!command.get()) Reply(ftp::CommandUnrecognised, "Command not understood");
@@ -271,7 +271,7 @@ void Client::DataInitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
   // unable to use alternative pasv_addr if espv mode isn't Full
   // should we fail -- or substitute the ip 
   // from the control.LocalEndpoint like now?
-  if (pasvType != PassiveType::EPSV || epsvMode == EPSVMode::Full)
+  if (pasvType != PassiveType::EPSV || epsvMode == ::ftp::EPSVMode::Full)
   {
     std::string firstAddr;
     while (true)
@@ -280,15 +280,15 @@ void Client::DataInitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
       if (addr.empty()) break;
       
       if (addr == firstAddr)
-        throw util::net::NetworkError("Unable to find a valid local address");
+        throw NetworkError("Unable to find a valid local address");
       
       try
       {
-        ip.reset(util::net::IPAddress(addr));
+        ip.reset(IPAddress(addr));
         if (pasvType != PassiveType::PASV ||
-            ip->Family() == util::net::IPAddress::IPv6) break;
+            ip->Family() == IPFamily::IPv6) break;
       }
-      catch (const util::net::NetworkError&)
+      catch (const NetworkError&)
       {
       }
       
@@ -296,8 +296,8 @@ void Client::DataInitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
     }
   }
   
-  if (!ip) ip = util::net::IPAddress(control.LocalEndpoint().IP());
-  if (pasvType == PassiveType::PASV && ip->Family() == IPAddress::IPv6)
+  if (!ip) ip = IPAddress(control.LocalEndpoint().IP());
+  if (pasvType == PassiveType::PASV && ip->Family() == IPFamily::IPv6)
     FindPartnerIP(*ip, *ip);
   
   boost::optional<uint16_t> firstPort;
@@ -374,7 +374,7 @@ void Client::DataInitActive(const util::net::Endpoint& ep)
   }
 }
 
-void Client::DataOpen(TransferType::Enum transferType)
+void Client::DataOpen(TransferType transferType)
 {
   if (passiveMode)
   {

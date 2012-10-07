@@ -33,7 +33,7 @@ TCPListener::TCPListener(int backlog) :
 
 void TCPListener::Listen()
 {
-  socket = ::socket(endpoint.Family(), SOCK_STREAM, 0);
+  socket = ::socket(static_cast<int>(endpoint.Family()), SOCK_STREAM, 0);
   if (socket < 0) return throw NetworkSystemError(errno);
 
   int optVal = 1;

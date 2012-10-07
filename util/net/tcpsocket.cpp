@@ -73,7 +73,7 @@ void TCPSocket::PopulateRemoteEndpoint()
 void TCPSocket::Connect(const Endpoint& remoteEndpoint,
                         const Endpoint* localEndpoint)
 {
-  socket = ::socket(remoteEndpoint.Family(), SOCK_STREAM, 0);
+  socket = ::socket(static_cast<int>(remoteEndpoint.Family()), SOCK_STREAM, 0);
   if (socket < 0) throw NetworkSystemError(errno);
 
   int optVal = 1;
