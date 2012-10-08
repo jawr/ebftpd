@@ -44,8 +44,11 @@ public:
   
   // these return const as the user objects should NEVER
   // be modified except via the above functions'
-  static const acl::User User(const std::string& name);
-  static const acl::User User(UserID uid);
+  static acl::User User(const std::string& name);
+  static acl::User User(UserID uid);
+  
+  static UserID NameToUID(const std::string& name);
+  static std::string UIDToName(UserID uid);
 };
 
 } /* acl namespace */

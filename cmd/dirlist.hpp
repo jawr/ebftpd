@@ -5,6 +5,7 @@
 #include <queue>
 #include "fs/path.hpp"
 #include "fs/status.hpp"
+#include "acl/types.hpp"
 
 namespace ftp
 {
@@ -52,15 +53,22 @@ class DirectoryList
   ListOptions options;
   bool dataOutput;
   int maxRecursion;
+
+  mutable std::unordered_map<acl::UserID, std::string> userNameCache;
+  mutable std::unordered_map<acl::GroupID, std::string> groupNameCache;
   
   void ListPath(const fs::Path& path, std::queue<std::string> masks, int depth = 1) const;
   void Readdir(const fs::Path& path, fs::DirEnumerator& dirEnum) const;
-  void Output(const std::string& message) const;
+  inline void Output(const std::string& message) const;
+  
+  inline const std::string& UIDToName(acl::UserID uid) const;
+  inline const std::string& GIDToName(acl::GroupID gid) const;
   
   static void SplitPath(const fs::Path& path, fs::Path& parent,
                         std::queue<std::string>& masks);
-  static std::string Permissions(const fs::Status& status);
-  static std::string Timestamp(const fs::Status& status);
+                        
+  inline static std::string Permissions(const fs::Status& status);
+  inline static std::string Timestamp(const fs::Status& status);
   
 public:
   DirectoryList(ftp::Client& client,

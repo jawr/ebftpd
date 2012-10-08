@@ -36,8 +36,11 @@ public:
   
   // these return const as the group objects should NEVER
   // be modified except via the above functions'
-  static const acl::Group& Group(const std::string& name);
-  static const acl::Group& Group(GroupID gid);
+  static acl::Group Group(const std::string& name);
+  static acl::Group Group(GroupID gid);
+  
+  static GroupID NameToGID(const std::string& name);
+  static std::string GIDToName(GroupID gid);
 };
 
 } /* acl namespace */

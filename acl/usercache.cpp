@@ -208,7 +208,7 @@ util::Error UserCache::DelSecondaryGID(const std::string& name, GroupID gid)
   return util::Error::Success();
 }
 
-const acl::User UserCache::User(const std::string& name)
+acl::User UserCache::User(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
@@ -216,12 +216,28 @@ const acl::User UserCache::User(const std::string& name)
   return *it->second;
 }
 
-const acl::User UserCache::User(UserID uid)
+acl::User UserCache::User(UserID uid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByUIDMap::iterator it = instance.byUID.find(uid);
   if (it == instance.byUID.end()) throw util::RuntimeError("User doesn't exist");
   return *it->second;
+}
+
+UserID UserCache::NameToUID(const std::string& name)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return -1;
+  return it->second->UID();
+}
+
+std::string UserCache::UIDToName(UserID uid)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByUIDMap::iterator it = instance.byUID.find(uid);
+  if (it == instance.byUID.end()) return "unknown";
+  return it->second->Name();
 }
 
 } /* acl namespace */

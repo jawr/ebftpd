@@ -11,6 +11,8 @@
 #include "ftp/client.hpp"
 #include "fs/direnumerator.hpp"
 #include "fs/status.hpp"
+#include "acl/usercache.hpp"
+#include "acl/groupcache.hpp"
 
 #ifdef CMD_DIRLIST_TEST
 #include <iostream>
@@ -236,8 +238,8 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
       {
         message << Permissions(de.Status()) << " "
                 << std::setw(3) << de.Status().Native().st_nlink << " "
-                << std::left << std::setw(8) << de.Owner().UID() << " "
-                << std::left << std::setw(8) << de.Owner().GID() << " "
+                << std::left << std::setw(8) << UIDToName(de.Owner().UID()) << " "
+                << std::left << std::setw(8) << GIDToName(de.Owner().GID()) << " "
                 << std::right << std::setw(8) << de.Status().Size() << " "
                 << Timestamp(de.Status()) << " "
                 << de.Path();
@@ -309,6 +311,22 @@ std::string DirectoryList::Timestamp(const fs::Status& status)
   char buf[13];
   strftime(buf, sizeof(buf),  "%b %d %H:%M", localtime(&status.Native().st_mtime));
   return buf;
+}
+
+const std::string& DirectoryList::UIDToName(acl::UserID uid) const
+{
+  std::unordered_map<acl::UserID, std::string>::const_iterator it =
+    userNameCache.find(uid);
+  if (it != userNameCache.end()) return it->second;
+  return userNameCache[uid] = acl::UserCache::UIDToName(uid);
+}
+
+const std::string& DirectoryList::GIDToName(acl::GroupID gid) const
+{
+  std::unordered_map<acl::GroupID, std::string>::const_iterator it =
+    groupNameCache.find(gid);
+  if (it != groupNameCache.end()) return it->second;
+  return groupNameCache[gid] = acl::GroupCache::GIDToName(gid);
 }
 
 } /* cmd namespace */

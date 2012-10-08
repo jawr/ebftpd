@@ -112,7 +112,7 @@ util::Error GroupCache::Rename(const std::string& oldName, const std::string& ne
   return util::Error::Success();
 }
 
-const acl::Group& GroupCache::Group(const std::string& name)
+acl::Group GroupCache::Group(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
@@ -120,12 +120,28 @@ const acl::Group& GroupCache::Group(const std::string& name)
   return *it->second;
 }
 
-const acl::Group& GroupCache::Group(GroupID gid)
+acl::Group GroupCache::Group(GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByGIDMap::iterator it = instance.byGID.find(gid);
   if (it == instance.byGID.end()) throw util::RuntimeError("Group doesn't exist");
   return *it->second;
+}
+
+GroupID GroupCache::NameToGID(const std::string& name)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return -1;
+  return it->second->GID();
+}
+
+std::string GroupCache::GIDToName(GroupID gid)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByGIDMap::iterator it = instance.byGID.find(gid);
+  if (it == instance.byGID.end()) return "unknown";
+  return it->second->Name();
 }
 
 } /* acl namespace */

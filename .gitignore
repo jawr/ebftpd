@@ -19,3 +19,5 @@ tmp
 glftpd.conf
 *.pem
 site
+*.conf
+
