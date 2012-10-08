@@ -64,6 +64,9 @@ void Worker::Update(const std::string& container, mongo::BSONObj& obj,
 void Worker::Get(const std::string& container, const mongo::Query& query, 
   QueryResults& results, int limit)
 {
+  results.clear();
+  results.reserve(limit);
+  
   try
   {
     //boost::mutex::scoped_lock lock(mtx);
