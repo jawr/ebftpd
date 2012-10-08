@@ -52,6 +52,16 @@ namespace DataType
   };
 };
 
+namespace TransferType
+{
+  enum Enum
+  {
+    Upload,
+    Download,
+    List
+  };
+}
+
 class Client : public util::ThreadSelect
 {
 
@@ -125,12 +135,14 @@ public:
   
   void DataInitPassive(util::net::Endpoint& ep, bool ipv4Only);
   void DataInitActive(const util::net::Endpoint& ep);
-  void DataOpen();
+  void DataOpen(TransferType::Enum transferType);
   void DataClose() { data.Close(); }
   
   friend cmd::DirectoryList::DirectoryList(
               ftp::Client& client, const fs::Path& path, 
-              const ListOptions& options, bool dataOutput);
+              const ListOptions& options, bool dataOutput, int maxRecursion);
+              
+  bool IsFxp(const util::net::Endpoint& ep) const;
               
   friend class cmd::STORCommand; // ugly
   friend class cmd::RETRCommand; // ugly, interface needs improving so this isnt necessary

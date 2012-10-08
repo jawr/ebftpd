@@ -23,7 +23,7 @@ util::Error DeleteFile(ftp::Client& client, const Path& path)
   Path absolute = (client.WorkDir() / path).Expand();
   util::Error e = PP::FileAllowed<PP::Delete>(client.User(), absolute);
   if (!e) return e;
-  Path real = cfg::Get()->Sitepath() + absolute;
+  Path real = cfg::Get().Sitepath() + absolute;
   if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
   OwnerCache::Delete(real);
   return util::Error::Success();
@@ -40,8 +40,8 @@ util::Error RenameFile(ftp::Client& client, const Path& oldPath,
   e = PP::FileAllowed<PP::Upload>(client.User(), newAbsolute);
   if (!e) return e;
 
-  Path oldReal = cfg::Get()->Sitepath() + oldAbsolute;
-  Path newReal = cfg::Get()->Sitepath() + newAbsolute;
+  Path oldReal = cfg::Get().Sitepath() + oldAbsolute;
+  Path newReal = cfg::Get().Sitepath() + newAbsolute;
 
   Owner owner = OwnerCache::Owner(oldReal);
   if (rename(oldReal.CString(), newReal.CString()) < 0) return util::Error::Failure(errno);
@@ -56,7 +56,7 @@ OutStreamPtr CreateFile(ftp::Client& client, const Path& path)
   util::Error e(PP::FileAllowed<PP::Upload>(client.User(), absolute));
   if (!e) throw util::SystemError(e.Errno());
 
-  Path real = cfg::Get()->Sitepath() + absolute;
+  Path real = cfg::Get().Sitepath() + absolute;
   int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, 0777);
   if (fd < 0) throw util::SystemError(errno);
 
@@ -71,7 +71,7 @@ OutStreamPtr AppendFile(ftp::Client& client, const Path& path)
   util::Error e = PP::FileAllowed<PP::Resume>(client.User(), absolute);
   if (!e) throw util::SystemError(e.Errno());
 
-  Path real = cfg::Get()->Sitepath() + absolute;
+  Path real = cfg::Get().Sitepath() + absolute;
   int fd = open(real.CString(), O_WRONLY | O_APPEND);
   if (fd < 0) throw util::SystemError(errno);
   return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
@@ -83,7 +83,7 @@ InStreamPtr OpenFile(ftp::Client& client, const Path& path)
   util::Error e = PP::FileAllowed<PP::Download>(client.User(), absolute);
   if (!e) throw util::SystemError(e.Errno());
 
-  Path real = cfg::Get()->Sitepath() + absolute;
+  Path real = cfg::Get().Sitepath() + absolute;
   int fd = open(real.CString(), O_RDONLY);
   if (fd < 0) throw util::SystemError(errno);
   return InStreamPtr(new InStream(fd, boost::iostreams::close_handle));
@@ -97,7 +97,7 @@ util::Error UniqueFile(ftp::Client& client, const Path& path,
   util::Error e = PP::FileAllowed<PP::Upload>(client.User(), absolute / "dummyfile");
   if (!e) throw util::SystemError(e.Errno());
 
-  Path real = cfg::Get()->Sitepath() + absolute;
+  Path real = cfg::Get().Sitepath() + absolute;
 
   for (int i = 0; i < 1000; ++i)
   {

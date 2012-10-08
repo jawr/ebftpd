@@ -291,7 +291,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "allow_fxp")
   {
-    allowFxp = setting::AllowFxp(toks);
+    allowFxp.push_back(setting::AllowFxp(toks));
   }
   else if (opt == "welcome_msg")
   {

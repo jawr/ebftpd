@@ -26,7 +26,7 @@ int main(int argc, char** argv)
   
   try
   {
-    const std::string& certificate = cfg::Get()->TlsCertificate().ToString();
+    const std::string& certificate = cfg::Get().TlsCertificate().ToString();
     util::net::TLSServerContext::Initialise(certificate, "");
   }
   catch (const util::net::NetworkError& e)
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 
   fs::OwnerCache::Start();
   
-  ftp::Listener listener(cfg::Get()->ListenAddr(), cfg::Get()->Port());  
+  ftp::Listener listener(cfg::Get().ListenAddr(), cfg::Get().Port());  
   if (!listener.Initialise())
   {
     logger::error << "Listener failed to initialise!" << logger::endl;

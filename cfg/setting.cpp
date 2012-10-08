@@ -5,6 +5,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
 
+#include <iostream>
+
 namespace cfg { namespace setting
 {
 
@@ -73,10 +75,15 @@ Ports::Ports(std::vector<std::string>& toks)
     ++it)
   {
     temp.clear();
-    boost::split(temp, (*it), boost::is_any_of("-"));
+    boost::split(temp, *it, boost::is_any_of("-"));
+    if (temp.size() > 2) throw cfg::ConfigError("Invalid port range.");
     int from = boost::lexical_cast<int>(temp.at(0));
     int to = from;
     if (temp.size() > 1) to = boost::lexical_cast<int>(temp.at(1));
+    if (to < from)
+      throw cfg::ConfigError("To port lower than from port in port range.");
+    if (to < 1024 || from < 1024 || to > 65535 || from > 65535)
+      throw cfg::ConfigError("Invalid to port number in port range.");
     ranges.push_back(PortRange(from, to));
   }
 }
@@ -86,7 +93,8 @@ AllowFxp::AllowFxp(std::vector<std::string>& toks)
   downloads = util::string::BoolLexicalCast(toks.at(0));
   uploads   = util::string::BoolLexicalCast(toks.at(1));
   logging   = util::string::BoolLexicalCast(toks.at(2));
-  toks.erase(toks.begin(), toks.begin()+3);
+  toks.erase(toks.begin(), toks.begin() + 3);
+  if (toks.empty()) throw cfg::ConfigError("Missing ACL parameter on allow_fxp");
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
@@ -153,19 +161,20 @@ Script::Script(std::vector<std::string>& toks)
 
 Lslong::Lslong(std::vector<std::string>& toks)   
 {
-  bin = fs::Path(toks.at(0));
-  toks.erase(toks.begin());
-  if (toks.size() == 0) return;
+  options = toks[0];
+  if (options[0] == '-') options.erase(0, 1);
+  if (toks.size() == 1) return;
+  
   try
   {
-    maxRecursion = boost::lexical_cast<int>(toks.back());
+    maxRecursion = boost::lexical_cast<int>(toks[1]);
     toks.pop_back();
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    maxRecursion = 2;
+    throw cfg::ConfigError(
+      "Invalid number for optional lslong recrusion paramter");
   }
-  options = toks;
 }
 
 HiddenFiles::HiddenFiles(std::vector<std::string>& toks)   

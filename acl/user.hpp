@@ -5,6 +5,12 @@
 #include <boost/unordered_set.hpp>
 #include <sys/types.h>
 #include "acl/flags.hpp"
+#include "acl/types.hpp"
+
+namespace db { namespace bson {
+struct User;
+}
+}
 
 namespace acl
 {
@@ -16,12 +22,14 @@ class User
   std::string salt;
   std::string flags;
 
-  uid_t uid;
-  gid_t primaryGid;
-  boost::unordered_set<gid_t> secondaryGids;
+  UserID uid;
+  GroupID primaryGid;
+  boost::unordered_set<GroupID> secondaryGids;
+  
+  User() : uid(-1), primaryGid(-1) { }
   
 public:
-  User(const std::string& name, uid_t uid, const std::string& password,
+  User(const std::string& name, UserID uid, const std::string& password,
        const std::string& flags);
        
   const std::string& Name() const { return name; }
@@ -38,18 +46,20 @@ public:
   bool CheckFlag(Flag flag) const;
   bool Deleted() const { return CheckFlag(FlagDeleted); }
   
-  uid_t UID() const { return uid; }
+  UserID UID() const { return uid; }
   /* should never need to modify UID, can mongodb provide the id?
      possibly set this on first save to db */
   
-  gid_t PrimaryGID() const { return primaryGid; }
-  void SetPrimaryGID(gid_t primaryGid) { this->primaryGid = primaryGid; }
+  GroupID PrimaryGID() const { return primaryGid; }
+  void SetPrimaryGID(GroupID primaryGid) { this->primaryGid = primaryGid; }
   
-  const boost::unordered_set<gid_t> SecondaryGIDs() const { return secondaryGids; }
-  void AddSecondaryGID(gid_t gid);
-  void DelSecondaryGID(gid_t gid);
+  const boost::unordered_set<GroupID> SecondaryGIDs() const { return secondaryGids; }
+  void AddSecondaryGID(GroupID gid);
+  void DelSecondaryGID(GroupID gid);
   
-  bool CheckGID(gid_t gid);
+  bool CheckGID(GroupID gid);
+  
+  friend struct db::bson::User;
 };
 
 }
