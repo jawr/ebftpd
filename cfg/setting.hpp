@@ -69,7 +69,7 @@ public:
   };
   UseDirSize(std::vector<std::string>& toks);
   char Unit() const { return unit; };
-  const std::vector<std::string>& Paths() const { return paths; };
+  const std::vector<fs::Path>& Paths() const { return paths; };
 };
 
 class SecureIp : public Setting
@@ -132,7 +132,7 @@ public:
   SimXfers() {};
   SimXfers(std::vector<std::string>& toks);
   int MaxDownloads() const { return maxDownloads; };
-  int MaxUploads() const { return maxUplaods; };
+  int MaxUploads() const { return maxUploads; };
 };
 
 class PasvAddr : public Setting
@@ -178,19 +178,19 @@ public:
   AllowFxp() {};
   AllowFxp(std::vector<std::string>& toks);
   bool Downloads() const { return downloads; };
-  bool Uplaods() const { return uplaods; };
+  bool Uploads() const { return uploads; };
   bool Logging() const { return logging; };
   const acl::ACL& ACL() const { return acl; };  
 };
 
 class Alias : public Setting
 {
-  std::string alias;
+  std::string name;
   fs::Path path;
 public:
   Alias() {};
   Alias(std::vector<std::string>& toks);
-  const std::string& Alias() const { return alias; };
+  const std::string& Name() const { return name; };
   const fs::Path& Path() const { return path; };
 };
 
@@ -204,7 +204,7 @@ public:
   StatSection(std::vector<std::string>& toks);
   const std::string& Keyword() const { return keyword; };
   const std::string& Path() const { return path; };
-  bool SeperateCredits() const { return seperateKeywords; };
+  bool SeperateCredits() const { return seperateCredits; };
 };
 
 class PathFilter : public Setting
@@ -223,13 +223,13 @@ public:
 
 class MaxUsers : public Setting
 {
-  int maxUsers;
-  int maxExemptUsers;
+  int users;
+  int exemptUsers;
 public:
-  MaxUsers() : maxUsers(10), maxExemptUsers(5) {};
+  MaxUsers() : users(10), exemptUsers(5) {};
   MaxUsers(std::vector<std::string>& toks);
-  int MaxUsers() const { return maxUsers; };
-  int MaxExemptUsers() const { return maxExemptUsers; };
+  int Users() const { return users; };
+  int ExemptUsers() const { return exemptUsers; };
 };
 
 class ShowTotals : public Setting
@@ -257,25 +257,25 @@ public:
 // i.e. pre, pre_dir, post
 class Script : public Setting
 {
-  fs::Path script;
+  fs::Path path;
   std::vector<std::string> masks;
 public:
   Script() {};
   Script(std::vector<std::string>& toks);
-  const fs::Path& Script() const { return path; };
+  const fs::Path& Path() const { return path; };
   const std::vector<std::string>& Masks() const { return masks; };
 };
 
 class Lslong : public Setting
 {
   fs::Path bin;
-  std::vector<std::string> options;
+  std::string options;
   int maxRecursion;
 public:
   Lslong() {};
   Lslong(std::vector<std::string>& toks);
   const fs::Path& Bin() const { return bin; };
-  const std::vector<std::string>& Options const { return options; };
+  const std::string& Options() const { return options; };
   int MaxRecursion() const { return maxRecursion; };
 };
 
@@ -376,7 +376,7 @@ public:
   Msgpath(std::vector<std::string>& toks);
   const std::string& Path() const { return path; };
   const acl::ACL& ACL() const { return acl; };
-  const fs::Path& Path() const { return path; };
+  const fs::Path& File() const { return file; }
 };
 
 class Privpath : public Setting
@@ -416,7 +416,7 @@ public:
   Cscript() {};
   Cscript(std::vector<std::string>& toks);
   const std::string& Command() const { return command; };                       
-  const fs::Path& Path() const { return path; };
+  const fs::Path& Script() const { return script; };
   Type GetType() const { return type; }; // anonymous enum?
 };
 

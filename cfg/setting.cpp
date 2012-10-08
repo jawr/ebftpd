@@ -100,7 +100,7 @@ AllowFxp::AllowFxp(std::vector<std::string>& toks)
 
 Alias::Alias(std::vector<std::string>& toks)   
 {
-  alias = toks.at(0);
+  name = toks.at(0);
   path = fs::Path(toks.at(1));
 }
 
@@ -128,8 +128,8 @@ PathFilter::PathFilter(std::vector<std::string>& toks)
 
 MaxUsers::MaxUsers(std::vector<std::string>& toks)   
 {
-  maxUsers = boost::lexical_cast<int>(toks.at(0));
-  maxExemptUsers = boost::lexical_cast<int>(toks.at(1));
+  users = boost::lexical_cast<int>(toks.at(0));
+  exemptUsers = boost::lexical_cast<int>(toks.at(1));
 }
 
 ACLInt::ACLInt(std::vector<std::string>& toks)   
@@ -154,7 +154,7 @@ DupeCheck::DupeCheck(std::vector<std::string>& toks)
 
 Script::Script(std::vector<std::string>& toks)   
 {
-  script = fs::Path(toks.at(0));
+  path = fs::Path(toks.at(0));
   toks.erase(toks.begin());
   masks = toks;
 }
