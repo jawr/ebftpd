@@ -35,7 +35,7 @@ public:
     
   virtual void Execute() = 0;
 };
-
+/*
 class AUTHCommand : public Command
 {
 public:
@@ -458,7 +458,7 @@ public:
 
   void Execute();
 };
-
+*/
 } /* cmd namespace */
 
 #endif

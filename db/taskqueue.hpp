@@ -1,11 +1,11 @@
 #ifndef __DB_TASKQUEUE_HPP
 #define __DB_TASKQUEUE_HPP
 
-#include "db/types.hpp"
 #include <memory>
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include "db/types.hpp"
 
 namespace db
 {
@@ -53,6 +53,12 @@ public:
     boost::unique_lock<boost::mutex> lock(mutex);
     changed.wait(lock);
     return queue.size();
+  }
+  
+  void WaitEmpty()
+  {
+    boost::unique_lock<boost::mutex> lock(mutex);
+    while (!queue.empty()) changed.wait(lock);
   }
 };
 

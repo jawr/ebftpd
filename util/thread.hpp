@@ -1,48 +1,34 @@
 #ifndef __UTIL_THREAD_HPP
 #define __UTIL_THREAD_HPP
+
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
+
 namespace util
 {
+
 class Thread
 {
   void Main();
+
 protected:
   boost::thread thread;
+  bool started;
+  
+  virtual void Run() = 0;
+
 public:
-  Thread() : thread() {}
-  virtual ~Thread() {}
+  Thread() : started(false) { }
+  virtual ~Thread() { }
+
   void Start();
   void Join();
-  virtual void Run() = 0;
-  virtual void Stop() = 0;
-};
-
-class ThreadConsumer : public Thread
-{
-protected:
-  boost::condition cond;
-  boost::mutex mtx;
-
-public:
-  ThreadConsumer() : cond(), mtx() {}
-  virtual ~ThreadConsumer() {}
-  void Stop();
-  virtual void Run() {}
-};
-
-class ThreadSelect : public Thread
-{
-protected:
-  int interruptPipe[2];
-public:
-  ThreadSelect();
-  virtual ~ThreadSelect();
-  void Stop();
-  virtual void Run() {}
+  void Stop(bool join = false);
+  bool Started() const { return started; }
 };
 
 // end util namespace
 }
+
 #endif

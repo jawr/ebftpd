@@ -3,8 +3,10 @@
 #include "db/exception.hpp"
 #include "db/taskqueue.hpp"
 #include "logger/logger.hpp"
+
 namespace db
 {
+
 Worker::Worker(const std::string& host, TaskQueue& queue) : 
   host(host), database("ebftpd."), queue(queue)
 {
@@ -31,7 +33,7 @@ void Worker::Insert(const std::string& container, const mongo::BSONObj& obj)
 {
   try
   {
-    boost::mutex::scoped_lock lock(mtx);
+    //boost::mutex::scoped_lock lock(mtx);
     conn.insert(database + container, obj);
     const std::string& err = conn.getLastError();
     if (err.size() > 0) throw DBError(err);
@@ -47,7 +49,7 @@ void Worker::Update(const std::string& container, mongo::BSONObj& obj,
 {
   try
   {
-    boost::mutex::scoped_lock lock(mtx);
+    //boost::mutex::scoped_lock lock(mtx);
     conn.update(database + container, query, obj, upsert, false);
     const std::string& err = conn.getLastError();
     if (err.size() > 0) throw DBError(err);
@@ -64,7 +66,7 @@ void Worker::Get(const std::string& container, const mongo::Query& query,
 {
   try
   {
-    boost::mutex::scoped_lock lock(mtx);
+    //boost::mutex::scoped_lock lock(mtx);
     std::unique_ptr<mongo::DBClientCursor> cursor =
       conn.query(database + container, query);
     int i = 0;
@@ -87,7 +89,7 @@ void Worker::EnsureIndex(const std::string& container, const std::string& key)
 {
   try
   {
-    boost::mutex::scoped_lock lock(mtx);
+    //boost::mutex::scoped_lock lock(mtx);
     conn.ensureIndex(database + container, BSON(key << 1), true); // unique
     // no need to check for error
   }

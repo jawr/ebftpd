@@ -66,13 +66,13 @@ void Listener::AcceptClients()
   fd_set readSet;
   FD_ZERO(&readSet);
 
-  FD_SET(interruptPipe[0], &readSet);
-  int max = interruptPipe[0];
+  FD_SET(interruptPipe.ReadFd(), &readSet);
+  int max = interruptPipe.ReadFd();
   
   for (auto& server : servers)
   {
     FD_SET(server.Socket(), &readSet);
-    max = std::max(server.Socket(), interruptPipe[0]);
+    max = std::max(server.Socket(), interruptPipe.ReadFd());
   }
   
   struct timeval tv;
@@ -86,7 +86,7 @@ void Listener::AcceptClients()
     // ensure we don't poll rapidly on repeated select failures
     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
   }
-  else if (FD_ISSET(interruptPipe[0], &readSet))
+  else if (FD_ISSET(interruptPipe.ReadFd(), &readSet))
   {
     boost::this_thread::interruption_point();
     // possibly use this to refresh our config too ??
@@ -107,6 +107,13 @@ void Listener::Run()
     AcceptClients();
     HandleClients();
   }
+}
+
+void Listener::Stop()
+{
+  (void) write(interruptPipe.WriteFd(), "1", 1);
+  thread.interrupt();
+  thread.join();
 }
 
 }

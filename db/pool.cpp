@@ -1,42 +1,93 @@
+#include <memory>
 #include "db/pool.hpp"
 #include "db/exception.hpp"
 #include "logger/logger.hpp"
 #include "cfg/get.hpp"
-#include <tr1/memory>
 #include "db/task.hpp"
+
 namespace db
 {
 
 Pool Pool::instance;
 
+Pool::Pool() :
+  maxWorkers(boost::thread::hardware_concurrency()),
+  started(false)
+{
+  if (!maxWorkers) maxWorkers = defaultMaxWorkers;
+}
+
+void Pool::LaunchWorker()
+{
+  try
+  {
+    std::unique_ptr<Worker> worker(new Worker("localhost", queue));
+    worker->Start();
+    workers.push_back(worker.release());
+  }
+  catch (const DBError& e)
+  {
+    throw e;
+  }
+}
+
+void Pool::KillWorker()
+{
+  workers.back().Stop(true);
+  workers.pop_back();
+}
+
+void Pool::Finalise()
+{
+  queue.WaitEmpty();
+  while (!workers.empty()) KillWorker();
+}
+
+void Pool::HandleWorkers(size_t queueSize)
+{
+  if (!queueSize)
+  {
+    while (workers.size() > 1) KillWorker();
+  }
+  else if (queueSize > maxQueueContention &&
+           workers.size() < maxWorkers)
+  {
+    LaunchWorker();
+  }
+}
+
 void Pool::Run()
 {
-  for (int i = 0; i < 8; ++i)
-  {
-    try
-    {
-      std::unique_ptr<Worker> worker(new Worker("localhost", queue));
-      worker->Start();
-      workers.push_back(worker.release());
-    }
-    catch (const DBError& e)
-    {
-       throw e;
-    }
-  }
+  LaunchWorker();
 
+  TaskQueue::size_type queueSize;
   while (true)
   {
-    TaskQueue::size_type size = queue.WaitChanged();
-    (void)size;
-  }
-    
+    queueSize = queue.WaitChanged();
+
+    {
+      boost::this_thread::disable_interruption noInterrupt;
+      HandleWorkers(queueSize);
+    }
+  }    
+}
+
+void Pool::StartThread()
+{
+  instance.Start();
+}
+
+void Pool::StopThread()
+{
+  instance.Stop(true);
+  instance.Finalise();
 }
 
 // end
 }
 
 #ifdef DB_POOL_TEST
+
 #include <mongo/client/dbclient.h>
 #include <boost/thread/future.hpp>
 #include "db/interface.hpp"
@@ -44,10 +95,16 @@ void Pool::Run()
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include <iostream>
+#include <sstream>
+
+void ThreadMain()
+{
+  for (int i = 0; i < 20; ++i)
+    db::GetNewUserID();
+}
+
 int main()
 {
-  db::Pool::StartThread();
-
   db::Initalize();
 
   acl::UserCache::Initalize();
@@ -57,10 +114,19 @@ int main()
   acl::GroupCache::Create("TESTGRP");
   acl::UserCache::Create("test2", "wowow", "");
   acl::UserCache::SetPrimaryGID("iotest", 
-    acl::GroupCache::Group("TESTGRP").GID());
+  acl::GroupCache::Group("TESTGRP").GID());
+
+  boost::thread threads[20];
+
+  for (int i = 0; i < 20; ++i)
+  {
+    threads[i] = boost::thread(&ThreadMain);
+  }  
   
+  for (int i = 0; i < 20; ++i)
+    threads[i].join();
   
-  db::Pool::JoinThread();
+  db::Pool::StopThread();
   
 }
 #endif 

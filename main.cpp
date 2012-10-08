@@ -1,4 +1,3 @@
-#ifndef TEST
 #include <memory>
 #include "ftp/listener.hpp"
 #include "util/net/tlscontext.hpp"
@@ -20,6 +19,7 @@
 extern const std::string programName = "ebftpd";
 extern const std::string programFullname = programName + " " + std::string(version);
 
+#ifndef TEST
 int main(int argc, char** argv)
 {
   std::cout << "Starting " << programFullname << " .. " << std::endl;

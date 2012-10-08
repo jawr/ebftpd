@@ -11,11 +11,12 @@
 #include "util/thread.hpp"
 #include "util/net/tcplistener.hpp"
 #include "util/net/tcpsocket.hpp"
+#include "util/pipe.hpp"
 
 namespace ftp
 {
 
-class Listener : public util::ThreadSelect
+class Listener : public util::Thread
 {
   typedef boost::ptr_list<Client> ClientList;
 
@@ -23,6 +24,7 @@ class Listener : public util::ThreadSelect
   boost::ptr_list<Client> clients;
   std::vector<std::string> validIPs;
   int32_t port;
+  util::Pipe interruptPipe;
   
   void AcceptClients();
   void AcceptClient(util::net::TCPListener& server);
@@ -32,6 +34,8 @@ class Listener : public util::ThreadSelect
 public:
   Listener() : port(-1) { }
   bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
+  
+  void Stop();
 };
 
 }

@@ -25,7 +25,7 @@ public:
   }
 
   int ReadFd() const { return fds[0]; }
-  int WriteFd() const { return fds[1]; }
+  int WriteFd() const { return fds[1]; }  
 };
 
 } /* util namespace */

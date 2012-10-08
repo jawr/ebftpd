@@ -7,21 +7,33 @@
 namespace util
 {
 
-ThreadSelect::ThreadSelect()
-{
-  if (pipe(interruptPipe) < 0) throw SystemError(errno);
-}
-
-
-ThreadSelect::~ThreadSelect()
-{
-  if (interruptPipe[0] >= 0) close(interruptPipe[0]);
-  if (interruptPipe[1] >= 0) close(interruptPipe[1]);
-}
-
 void Thread::Start()
 { 
+  assert(!started);
   thread = boost::thread(&Thread::Main, this);  
+  started = true;
+}
+
+void Thread::Stop(bool join)
+{
+  if (started)
+  {
+    thread.interrupt();
+    if (join)
+    {
+      thread.join();
+      started = false;
+    }
+  }
+}
+
+void Thread::Join()
+{
+  if (started) 
+  {
+    thread.join();
+    started = false;
+  }
 }
 
 void Thread::Main()
@@ -34,24 +46,6 @@ void Thread::Main()
   {
     // interrupted, expected
   }
-}
-
-void ThreadConsumer::Stop()
-{
-  thread.interrupt();
-  thread.join();
-}
-
-void ThreadSelect::Stop()
-{
-  thread.interrupt();
-  write(interruptPipe[1], "1", 1);
-  thread.join();
-}
-
-void Thread::Join()
-{
-  thread.join();
 }
 
 // end util namespace

@@ -63,11 +63,11 @@ bool UserCache::Exists(UserID uid)
 util::Error UserCache::Create(const std::string& name, const std::string& password,
                               const std::string& flags)
 {
+  acl::UserID uid = db::GetNewUserID();
+
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   if (instance.byName.find(name) != instance.byName.end())
     return util::Error::Failure("User already exists");
-
-  acl::UserID uid = db::GetNewUserID();
 
   std::unique_ptr<acl::User> user(new acl::User(name, uid, password, flags));
     

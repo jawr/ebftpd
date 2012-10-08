@@ -12,16 +12,9 @@
 #include "fs/path.hpp"
 #include "cmd/dirlist.hpp"
 #include "ftp/replycodes.hpp"
-//#include "cmd/command.hpp"
 #include "ftp/data.hpp"
 #include "ftp/control.hpp"
-/*
-namespace cmd
-{
-class STORCommand;
-class RETRCommand;
-}
-*/
+
 namespace ftp 
 {
 
@@ -35,7 +28,7 @@ enum class ClientState : uint8_t
   AnyState
 };
 
-class Client : public util::ThreadSelect
+class Client : public util::Thread
 {
   mutable boost::mutex mutex;
   
@@ -54,6 +47,7 @@ class Client : public util::ThreadSelect
   void ExecuteCommand(const std::string& commandLine);
   void Handle();
   bool CheckState(ClientState reqdState);
+  void Run();
   
 public:
   Client() :
@@ -69,7 +63,6 @@ public:
      
   const fs::Path& WorkDir() const { return workDir; }
   const acl::User& User() const { return user; }
-  void Run();
   
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;
@@ -87,9 +80,6 @@ public:
   ::ftp::Data& Data() { return data; }
   
   bool IsFxp(const util::net::Endpoint& ep) const;
-              
-//  friend class cmd::STORCommand; // ugly
-//  friend class cmd::RETRCommand; // ugly, interface needs improving so this isnt necessary
 };
 
 } /* ftp namespace */
