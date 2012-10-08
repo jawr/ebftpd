@@ -12,16 +12,16 @@
 #include "fs/path.hpp"
 #include "cmd/dirlist.hpp"
 #include "ftp/replycodes.hpp"
-#include "cmd/command.hpp"
+//#include "cmd/command.hpp"
 #include "ftp/data.hpp"
 #include "ftp/control.hpp"
-
+/*
 namespace cmd
 {
 class STORCommand;
 class RETRCommand;
 }
-
+*/
 namespace ftp 
 {
 
@@ -88,8 +88,8 @@ public:
   
   bool IsFxp(const util::net::Endpoint& ep) const;
               
-  friend class cmd::STORCommand; // ugly
-  friend class cmd::RETRCommand; // ugly, interface needs improving so this isnt necessary
+//  friend class cmd::STORCommand; // ugly
+//  friend class cmd::RETRCommand; // ugly, interface needs improving so this isnt necessary
 };
 
 } /* ftp namespace */
