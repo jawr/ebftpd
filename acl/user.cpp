@@ -7,7 +7,7 @@ namespace acl
 {
 
 User::User(const std::string& name,
-           uid_t uid,
+           UserID uid,
            const std::string& password,
            const std::string& flags) :
   name(name),
@@ -70,17 +70,17 @@ bool User::CheckFlag(Flag flag) const
   return this->flags.find(flag) != std::string::npos;
 }
 
-void User::AddSecondaryGID(gid_t gid)
+void User::AddSecondaryGID(GroupID gid)
 {
   secondaryGids.insert(gid);
 }
 
-void User::DelSecondaryGID(gid_t gid)
+void User::DelSecondaryGID(GroupID gid)
 {
   secondaryGids.erase(gid);
 }
 
-bool User::CheckGID(gid_t gid)
+bool User::CheckGID(GroupID gid)
 {
   return primaryGid == gid || secondaryGids.find(gid) != secondaryGids.end();
 }

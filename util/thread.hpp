@@ -11,8 +11,8 @@ class Thread
 protected:
   boost::thread thread;
 public:
-  Thread() : thread() {};
-  virtual ~Thread() {};
+  Thread() : thread() {}
+  virtual ~Thread() {}
   void Start();
   void Join();
   virtual void Run() = 0;
@@ -26,10 +26,10 @@ protected:
   boost::mutex mtx;
 
 public:
-  ThreadConsumer() : cond(), mtx() {};
-  virtual ~ThreadConsumer() {};
+  ThreadConsumer() : cond(), mtx() {}
+  virtual ~ThreadConsumer() {}
   void Stop();
-  virtual void Run() {};
+  virtual void Run() {}
 };
 
 class ThreadSelect : public Thread
@@ -40,7 +40,7 @@ public:
   ThreadSelect();
   virtual ~ThreadSelect();
   void Stop();
-  virtual void Run() {};
+  virtual void Run() {}
 };
 
 // end util namespace

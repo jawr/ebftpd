@@ -20,8 +20,8 @@ namespace fs
 
 class Owner
 {
-  uid_t uid;
-  gid_t gid;
+  acl::UserID uid;
+  acl::GroupID gid;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version)
@@ -35,10 +35,10 @@ class Owner
   Owner() : uid(0), gid(0) { }
   
 public:
-  Owner(uid_t uid, gid_t gid) : uid(uid), gid(gid) { }
+  Owner(acl::UserID uid, acl::GroupID gid) : uid(uid), gid(gid) { }
   
-  uid_t UID() const { return uid; }
-  gid_t GID() const { return gid; }
+  acl::UserID UID() const { return uid; }
+  acl::GroupID GID() const { return gid; }
 
   friend class boost::serialization::access;
 };

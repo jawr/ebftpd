@@ -2,6 +2,7 @@
 #define __ACL_CHECK_HPP
 
 #include "util/error.hpp"
+#include "ftp/client.hpp"
 
 namespace fs
 {
@@ -37,6 +38,9 @@ template <Type type>
 util::Error DirAllowed(const User& user, std::string path);
 
 } /* PathPermission namespace */
+
+bool AllowFxp(ftp::TransferType::Enum transferType,
+              const User& user, bool& logging);
 
 } /* acl namespace */
 

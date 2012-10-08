@@ -16,7 +16,7 @@ namespace cfg { namespace setting
 class Setting // a base class might be useful in the future.. maybe
 {
 public:
-  virtual ~Setting() {};
+  virtual ~Setting() {}
 };
 
 // generics
@@ -26,8 +26,11 @@ class Right : public Setting
   // includes wildcards and possibley regex so can't be fs::Path path;
   acl::ACL acl;
 public:
-  Right() {};
+  Right() {}
   Right(std::vector<std::string>& toks);
+  
+  const std::string& Path() const { return path; }
+  const acl::ACL& ACL() const { return acl; }
 };
 
 class ACLInt : public Setting
@@ -35,7 +38,7 @@ class ACLInt : public Setting
   int arg;
   acl::ACL acl;
 public:
-  ACLInt() {};
+  ACLInt() {}
   ACLInt(std::vector<std::string>& toks);
 };
 
@@ -82,7 +85,7 @@ class SecurePass : public Setting
   std::string mask;
   acl::ACL acl;
 public:
-  SecurePass() {};
+  SecurePass() {}
   SecurePass(std::vector<std::string>& toks);
 };
 
@@ -90,7 +93,7 @@ class BouncerIp : public Setting
 {
   std::vector<std::string> addrs;
 public:
-  BouncerIp() {};
+  BouncerIp() {}
   BouncerIp(std::vector<std::string>& toks);
 };
 
@@ -101,7 +104,7 @@ class SpeedLimit : public Setting
   long ulLimit;
   acl::ACL acl;
 public:
-  SpeedLimit() {};
+  SpeedLimit() {}
   SpeedLimit(std::vector<std::string>& toks);
 };
 
@@ -110,7 +113,7 @@ class SimXfers : public Setting
   int maxDownloads;
   int maxUploads;
 public:
-  SimXfers() {};
+  SimXfers() {}
   SimXfers(std::vector<std::string>& toks);
 };
 
@@ -119,7 +122,7 @@ class PasvAddr : public Setting
   std::string addr;
   bool nat;
 public:
-  PasvAddr() {};
+  PasvAddr() {}
   PasvAddr(std::vector<std::string>& toks);
 };
 
@@ -128,8 +131,11 @@ class PortRange
   int from;
   int to;
 public:
-  PortRange(int from) : from(from), to(from) {};
-  PortRange(int from, int to) : from(from), to(to) {};
+  PortRange(int from) : from(from), to(from) {}
+  PortRange(int from, int to) : from(from), to(to) {}
+  
+  int From() const { return from; }
+  int To() const { return to; }
 };
  
 // active/pasv ports
@@ -137,8 +143,10 @@ class Ports : public Setting
 {
   std::vector<PortRange> ranges;
 public:
-  Ports() {};
+  Ports() {}
   Ports(std::vector<std::string>& toks);
+  
+  const std::vector<PortRange>& Ranges() const { return ranges; }
 };
 // end
 
@@ -149,8 +157,13 @@ class AllowFxp : public Setting
   bool logging;
   acl::ACL acl;
 public:
-  AllowFxp() {};
+  AllowFxp() {}
   AllowFxp(std::vector<std::string>& toks);
+  
+  bool Downloads() const { return downloads; }
+  bool Uploads() const { return uploads; }
+  bool Logging() const { return logging; }
+  const acl::ACL& ACL() const { return acl; }
 };
 
 class Alias : public Setting
@@ -158,7 +171,7 @@ class Alias : public Setting
   std::string alias;
   fs::Path path;
 public:
-  Alias() {};
+  Alias() {}
   Alias(std::vector<std::string>& toks);
 };
 
@@ -168,7 +181,7 @@ class StatSection : public Setting
   std::string path;
   bool seperateCredits;
 public:
-  StatSection() {};
+  StatSection() {}
   StatSection(std::vector<std::string>& toks);
 };
 
@@ -178,7 +191,7 @@ class PathFilter : public Setting
   std::string path;
   std::vector<std::string> filters;
 public:
-  PathFilter() {};
+  PathFilter() {}
   PathFilter(std::vector<std::string>& toks);
 };
 
@@ -187,7 +200,7 @@ class MaxUsers : public Setting
   int maxUsers;
   int maxExemptUsers;
 public:
-  MaxUsers() : maxUsers(10), maxExemptUsers(5) {};
+  MaxUsers() : maxUsers(10), maxExemptUsers(5) {}
   MaxUsers(std::vector<std::string>& toks);
 };
 
@@ -196,7 +209,7 @@ class ShowTotals : public Setting
   int maxLines;
   std::vector<std::string> paths;
 public:
-  ShowTotals() {};
+  ShowTotals() {}
   ShowTotals(std::vector<std::string>& toks);
 };
 
@@ -205,7 +218,7 @@ class DupeCheck : public Setting
   int days;
   bool ignoreCase;
 public:
-  DupeCheck() {};
+  DupeCheck() {}
   DupeCheck(std::vector<std::string>& toks);
 };
 
@@ -216,18 +229,20 @@ class Script : public Setting
   fs::Path script;
   std::vector<std::string> masks;
 public:
-  Script() {};
+  Script() {}
   Script(std::vector<std::string>& toks);
 };
 
 class Lslong : public Setting
 {
-  fs::Path bin;
-  std::vector<std::string> options;
+  std::string options;
   int maxRecursion;
 public:
-  Lslong() {};
+  Lslong(): maxRecursion(2) {}
   Lslong(std::vector<std::string>& toks);
+  
+  const std::string& Options() const { return options; }
+  int MaxRecursion() const { return maxRecursion; }
 };
 
 class HiddenFiles : public Setting
@@ -235,7 +250,7 @@ class HiddenFiles : public Setting
   fs::Path path;
   std::vector<std::string> masks;
 public:
-  HiddenFiles() {};
+  HiddenFiles() {}
   HiddenFiles(std::vector<std::string>& toks);
 };
 
@@ -244,7 +259,7 @@ class Requests : public Setting
   fs::Path path;
   int max;
 public:
-  Requests() : path("/ftp-data/misc/requests"), max(10) {};
+  Requests() : path("/ftp-data/misc/requests"), max(10) {}
   Requests(std::vector<std::string>& toks);
 };
 
@@ -254,7 +269,7 @@ class Lastonline : public Setting
   Type type;
   int max;
 public:
-  Lastonline() : type(ALL), max(10) {};
+  Lastonline() : type(ALL), max(10) {}
   Lastonline(std::vector<std::string>& toks);
 };
 
@@ -264,7 +279,7 @@ class Creditcheck : public Setting
   int ratio;
   acl::ACL acl;
 public:
-  Creditcheck() {};
+  Creditcheck() {}
   Creditcheck(std::vector<std::string>& toks);
 };
 
@@ -275,7 +290,7 @@ class Creditloss : public Setting
   fs::Path path;
   acl::ACL acl;
 public:
-  Creditloss() {};
+  Creditloss() {}
   Creditloss(std::vector<std::string>& toks);
 };
 
@@ -286,7 +301,7 @@ class NukedirStyle : public Setting
   Type type;
   int minBytes;
 public:
-  NukedirStyle() {};
+  NukedirStyle() {}
   NukedirStyle(std::vector<std::string>& toks);
 };
 
@@ -295,7 +310,7 @@ class Privgroup : public Setting
   std::string group;
   std::string description;
 public:
-  Privgroup() : group("STAFF"), description("Staff Group") {};
+  Privgroup() : group("STAFF"), description("Staff Group") {}
   Privgroup(std::vector<std::string>& toks);
 };
 
@@ -305,7 +320,7 @@ class Msgpath : public Setting
   fs::Path file;
   acl::ACL acl;
 public:
-  Msgpath() {};
+  Msgpath() {}
   Msgpath(std::vector<std::string>& toks);
 };
 
@@ -314,8 +329,11 @@ class Privpath : public Setting
   fs::Path path; // no wildcards to avoid slowing down listing
   acl::ACL acl;
 public:
-  Privpath() {};
+  Privpath() {}
   Privpath(std::vector<std::string>& toks);
+  
+  const fs::Path& Path() const { return path; }
+  const acl::ACL& ACL() const { return acl; }
 };
 
 class SiteCmd : public Setting
@@ -326,7 +344,7 @@ class SiteCmd : public Setting
   std::string script;
   std::vector<std::string> arguments;
 public:
-  SiteCmd() {};
+  SiteCmd() {}
   SiteCmd(std::vector<std::string>& toks);
 };
 
@@ -337,7 +355,7 @@ class Cscript : public Setting
   Type type;
   fs::Path script;
 public:
-  Cscript() {};
+  Cscript() {}
   Cscript(std::vector<std::string>& toks);
 };
 

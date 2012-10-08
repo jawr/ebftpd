@@ -237,7 +237,7 @@ void LISTCommand::Execute()
 
   try
   {
-    client.DataOpen();
+    client.DataOpen(ftp::TransferType::List);
   }
   catch (const util::net::NetworkError&e )
   {
@@ -261,7 +261,11 @@ void LISTCommand::Execute()
     boost::trim(path);
   }
   
-  DirectoryList dirList(client, path, ListOptions(options, "l"), true);
+  const cfg::Config& config = cfg::Get();
+  std::string forcedOptions = "l" + config.Lslong().Options();
+  
+  DirectoryList dirList(client, path, ListOptions(options, forcedOptions),
+                        true, config.Lslong().MaxRecursion());
 
   try
   {
@@ -352,7 +356,7 @@ void MDTMCommand::Execute()
     return;
   }
   
-  const std::string& Sitepath = cfg::Get()->Sitepath();
+  const std::string& Sitepath = cfg::Get().Sitepath();
   fs::Path real = fs::Path(Sitepath) + absolute;
   
   fs::Status status;
@@ -427,7 +431,7 @@ void NLSTCommand::Execute()
 
   try
   {
-    client.DataOpen();
+    client.DataOpen(ftp::TransferType::List);
   }
   catch (const util::net::NetworkError&e )
   {
@@ -451,7 +455,8 @@ void NLSTCommand::Execute()
     boost::trim(path);
   }
   
-  DirectoryList dirList(client, path, ListOptions(options, ""), true);
+  DirectoryList dirList(client, path, ListOptions(options, ""),
+                        true, cfg::Get().Lslong().MaxRecursion());
 
   try
   {
@@ -656,7 +661,7 @@ void RETRCommand::Execute()
 
   try
   {
-    client.DataOpen();
+    client.DataOpen(ftp::TransferType::Download);
   }
   catch (const util::net::NetworkError&e )
   {
@@ -810,7 +815,7 @@ void SIZECommand::Execute()
   fs::Status status;
   try
   {
-    status.Reset(cfg::Get()->Sitepath() + absolute);
+    status.Reset(cfg::Get().Sitepath() + absolute);
   }
   catch (const util::SystemError& e)
   {
@@ -846,9 +851,13 @@ void STATCommand::Execute()
   
   std::string path(argStr, optOffset);
   boost::trim(path);
+  
+  const cfg::Config& config = cfg::Get();
+  std::string forcedOptions = "l" + config.Lslong().Options();
     
   client.PartReply(ftp::DirectoryStatus, "Status of " + path + ":");
-  DirectoryList dirList(client, path, ListOptions(options, "l"), false);
+  DirectoryList dirList(client, path, ListOptions(options, forcedOptions),
+                        false, config.Lslong().MaxRecursion());
   dirList.Execute();
   
   client.Reply("End of status.");
@@ -880,7 +889,7 @@ void STORCommand::Execute()
 
   try
   {
-    client.DataOpen();
+    client.DataOpen(ftp::TransferType::Upload);
   }
   catch (const util::net::NetworkError&e )
   {

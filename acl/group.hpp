@@ -4,21 +4,29 @@
 #include <string>
 #include "acl/types.hpp"
 
+namespace db { namespace bson
+{
+struct Group;
+}
+}
+
 namespace acl
 {
 
 class Group
 {
   std::string name;
-  gid_t gid;
+  GroupID gid;
   
 public:
-  Group(const std::string& name, gid_t gid) : name(name), gid(gid) { }
+  Group(const std::string& name, GroupID gid) : name(name), gid(gid) { }
   
   const std::string& Name() const { return name; }
   void SetName(const std::string& name) { this->name = name; }
   
-  gid_t GID() const { return gid; }
+  GroupID GID() const { return gid; }
+  
+  friend struct db::bson::Group;
 };
 
 } /* acl namespace */
