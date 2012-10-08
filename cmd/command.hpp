@@ -36,51 +36,6 @@ public:
   virtual void Execute() = 0;
 };
 
-class ABORCommand : public Command
-{
-public:
-  ABORCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) { }
-
-  void Execute();
-};
-
-class ACCTCommand : public Command
-{
-public:
-  ACCTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) { }
-
-  void Execute();
-};
-
-class ADATCommand : public Command
-{
-public:
-  ADATCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) { }
-
-  void Execute();
-};
-
-class ALLOCommand : public Command
-{
-public:
-  ALLOCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) { }
-
-  void Execute();
-};
-
-class APPECommand : public Command
-{
-public:
-  APPECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) { }
-
-  void Execute();
-};
-
 class AUTHCommand : public Command
 {
 public:

@@ -7,18 +7,69 @@ INCLUDE = -include pch.hpp -I.
 
 OBJECTS = \
 	main.o \
-	cmd/factory.o \
-	cmd/command.o \
 	cmd/dirlist.o \
+	cmd/rfc/abor.o \
+	cmd/rfc/acct.o \
+	cmd/rfc/adat.o \
+	cmd/rfc/allo.o \
+	cmd/rfc/appe.o \
+	cmd/rfc/auth.o \
+	cmd/rfc/ccc.o \
+	cmd/rfc/cdup.o \
+	cmd/rfc/conf.o \
+	cmd/rfc/cwd.o \
+	cmd/rfc/dele.o \
+	cmd/rfc/enc.o \
+	cmd/rfc/eprt.o \
+	cmd/rfc/epsv.o \
+	cmd/rfc/feat.o \
+	cmd/rfc/help.o \
+	cmd/rfc/lang.o \
+	cmd/rfc/list.o \
+	cmd/rfc/lprt.o \
+	cmd/rfc/lpsv.o \
+	cmd/rfc/mdtm.o \
+	cmd/rfc/mic.o \
+	cmd/rfc/mkd.o \
+	cmd/rfc/mlsd.o \
+	cmd/rfc/mlst.o \
+	cmd/rfc/mode.o \
+	cmd/rfc/nlst.o \
+	cmd/rfc/noop.o \
+	cmd/rfc/opts.o \
+	cmd/rfc/pass.o \
+	cmd/rfc/pasv.o \
+	cmd/rfc/pbsz.o \
+	cmd/rfc/port.o \
+	cmd/rfc/prot.o \
+	cmd/rfc/pwd.o \
+	cmd/rfc/quit.o \
+	cmd/rfc/rein.o \
+	cmd/rfc/rest.o \
+	cmd/rfc/retr.o \
+	cmd/rfc/rmd.o \
+	cmd/rfc/rnfr.o \
+	cmd/rfc/rnto.o \
+	cmd/rfc/site.o \
+	cmd/rfc/size.o \
+	cmd/rfc/smnt.o \
+	cmd/rfc/stat.o \
+	cmd/rfc/stor.o \
+	cmd/rfc/stou.o \
+	cmd/rfc/stru.o \
+	cmd/rfc/syst.o \
+	cmd/rfc/type.o \
+	cmd/rfc/user.o \
+	cmd/factory.o \
 	cfg/config.o \
 	cfg/get.o \
 	cfg/setting.o \
 	db/bson/user.o \
 	db/bson/group.o \
-  db/interface.o \
-  db/pool.o \
-  db/worker.o \
-  db/task.o \
+	db/interface.o \
+	db/pool.o \
+	db/worker.o \
+	db/task.o \
 	ftp/listener.o \
 	ftp/client.o \
 	ftp/portallocator.o \
@@ -72,7 +123,9 @@ all:
 	echo "all" > .state; \
 	VERSION=`git log --decorate | grep "^commit " | grep -n "tag: " | \
 		sed -r 's|^([0-9]+):.+tag: ([^),]+).+$$|\2-\1|p' | head -n1`; \
-	echo "const char* version = \"$$VERSION\";" > version.hpp
+	if ! grep -q "\"$$VERSION\"" version.hpp; then \
+    echo "const char* version = \"$$VERSION\";" > version.hpp; \
+    fi; \
 	$(MAKE) $(MAKEFILE) ftpd
 
 test: 
