@@ -1,20 +1,24 @@
 
 CXX = g++
-CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x
+CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++11
 LIBS = -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle -lssl -lboost_filesystem
 INCLUDE = -include pch.hpp -I.
 
 OBJECTS = \
 	main.o \
-	db/bson/user.o \
-	db/bson/group.o \
 	cmd/factory.o \
 	cmd/command.o \
 	cmd/dirlist.o \
 	cfg/config.o \
 	cfg/get.o \
 	cfg/setting.o \
+	db/bson/user.o \
+	db/bson/group.o \
+  db/interface.o \
+  db/pool.o \
+  db/worker.o \
+  db/task.o \
 	ftp/listener.o \
 	ftp/client.o \
 	ftp/portallocator.o \

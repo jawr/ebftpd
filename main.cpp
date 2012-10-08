@@ -12,6 +12,10 @@
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
 #include "version.hpp"
+#include "db/interface.hpp"
+#include "db/exception.hpp"
+#include "acl/usercache.hpp"
+#include "acl/groupcache.hpp"
 
 extern const std::string programName = "ebftpd";
 extern const std::string programFullname = programName + " " + std::string(version);
@@ -29,6 +33,16 @@ int main(int argc, char** argv)
   catch (const cfg::ConfigError& e)
   {
     logger::error << e.Message() << logger::endl;
+    return 1;
+  }
+
+  try
+  {
+    db::Initalize();
+  }
+  catch (const db::DBError& e)
+  {
+    logger::error << "DB failed to initialise: " << e.Message() << logger::endl;
     return 1;
   }
   

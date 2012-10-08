@@ -1,11 +1,12 @@
 #include <memory>
+#include <vector>
 #include "acl/usercache.hpp"
-
+#include "db/interface.hpp"
+#include "logger/logger.hpp"
 // only for generating dodgy random uid
 // until we can retrieve one from db
 #include <ctime>
 #include <cstdlib>
-
 namespace acl
 {
 
@@ -20,10 +21,31 @@ UserCache::~UserCache()
   }
 }
 
+void UserCache::Initalize()
+{
+  // grab all user's from the database and populate the map
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  std::vector<acl::User*> users;
+  try
+  {
+    db::GetUsers(users);
+    for (auto user: users)
+    {
+      instance.byName.insert(std::make_pair(user->Name(), user));
+      instance.byUID.insert(std::make_pair(user->UID(), user));
+    }
+  } 
+  catch (const std::runtime_error& e)
+  {
+    logger::error << "acl::UserCache::Initalize error: " << e.what() << logger::endl;
+    for (auto ptr: users) delete ptr; // cleanup
+  }
+  
+}
+
 void UserCache::Save(const acl::User& user)
 {
-  // create task holding a copy of user for db connection pool to 
-  // save into database
+  db::SaveUser(user);
 }
 
 bool UserCache::Exists(const std::string& name)
@@ -41,21 +63,11 @@ bool UserCache::Exists(UserID uid)
 util::Error UserCache::Create(const std::string& name, const std::string& password,
                               const std::string& flags)
 {
-  // somewhere here we need to query the db connection pool
-  // for a new uid  
-  
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   if (instance.byName.find(name) != instance.byName.end())
     return util::Error::Failure("User already exists");
 
-  // dummy random uid
-  UserID uid;
-  while (true)
-  {
-    uid = rand() % 10000 + 1; /* 1 to 10000 */
-    if (instance.byUID.find(uid) == instance.byUID.end())
-      break;
-  }
+  acl::UserID uid = db::GetNewUserID();
 
   std::unique_ptr<acl::User> user(new acl::User(name, uid, password, flags));
     
@@ -196,7 +208,7 @@ util::Error UserCache::DelSecondaryGID(const std::string& name, GroupID gid)
   return util::Error::Success();
 }
 
-const acl::User UserCache::User(const std::string& name)
+const acl::User& UserCache::User(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
@@ -204,12 +216,20 @@ const acl::User UserCache::User(const std::string& name)
   return *it->second;
 }
 
-const acl::User UserCache::User(UserID uid)
+const acl::User& UserCache::User(UserID uid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByUIDMap::iterator it = instance.byUID.find(uid);
   if (it == instance.byUID.end()) throw util::RuntimeError("User doesn't exist");
   return *it->second;
+}
+
+acl::User* UserCache::UserPtr(const std::string& name)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) throw util::RuntimeError("User does't exist");
+  return it->second;
 }
 
 } /* acl namespace */

@@ -2,6 +2,7 @@
 #include "db/bson/user.hpp"
 #include "acl/user.hpp"
 #include "db/bson/bson.hpp"
+#include <tr1/memory>
 
 namespace db { namespace bson
 {
@@ -19,19 +20,19 @@ mongo::BSONObj User::Serialize(const acl::User& user)
   return bob.obj();
 }
 
-acl::User User::Unserialize(const mongo::BSONObj& bo)
+acl::User* User::Unserialize(const mongo::BSONObj& bo)
 {
-  acl::User user;
-  user.name = bo["name"].String();
-  user.salt = bo["salt"].String();
-  user.password = bo["password"].String();
-  user.flags = bo["flags"].String();
-  user.uid = bo["uid"].Int();
-  user.primaryGid = bo["primary gid"].Int();
+  std::unique_ptr<acl::User> user(new acl::User);
+  user->name = bo["name"].String();
+  user->salt = bo["salt"].String();
+  user->password = bo["password"].String();
+  user->flags = bo["flags"].String();
+  user->uid = bo["uid"].Int();
+  user->primaryGid = bo["primary gid"].Int();
   std::vector<mongo::BSONElement> secondaryGids;
-  for (const auto& elem : secondaryGids)
-    user.secondaryGids.insert(elem.Int());
-  return user;
+  for (const auto& el: secondaryGids)
+    user->secondaryGids.insert(el.Int());
+  return user.release();
 }
   
 } /* bson namespace */

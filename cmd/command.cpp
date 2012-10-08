@@ -19,11 +19,13 @@
 #include "util/misc.hpp"
 #include "util/net/ftp.hpp"
 #include "acl/check.hpp"
+#include "acl/usercache.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "main.hpp"
 
 #include <iostream>
+#include "logger/logger.hpp"
 
 namespace PP = acl::PathPermission;
 
@@ -258,9 +260,10 @@ void LISTCommand::Execute()
       optOffset += args[1].length();
     }
     
-    std::string path(argStr, optOffset);
+    path = std::string(argStr, optOffset);
     boost::trim(path);
   }
+
   
   const cfg::Config& config = cfg::Get();
   std::string forcedOptions = "l" + config.Lslong().Options();
@@ -989,8 +992,19 @@ void USERCommand::Execute()
     client.Reply(ftp::SyntaxError, "Wrong number of arguments.");
     return;
   }
-  
-  if (argStr != client.User().Name())
+
+  // 
+  try
+  {
+    client.user = std::shared_ptr<acl::User>(acl::UserCache::UserPtr(argStr));
+  }
+  catch (const util::RuntimeError& e)
+  {
+    client.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
+    return;
+  }
+
+  if (!client.user || argStr != client.User().Name())
   {
     client.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
     return;

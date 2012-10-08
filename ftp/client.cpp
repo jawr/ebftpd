@@ -86,7 +86,7 @@ bool Client::CheckState(ClientState reqdState)
 bool Client::VerifyPassword(const std::string& password)
 {
   ++passwordAttemps;
-  return user.VerifyPassword(password);
+  return user->VerifyPassword(password);
 }
 
 bool Client::PasswordAttemptsExceeded() const
@@ -400,14 +400,14 @@ void Client::DataOpen(TransferType transferType)
       data.RemoteEndpoint().IP() != control.RemoteEndpoint().IP())
   {
     bool logging;
-    if (!acl::AllowFxp(transferType, user, logging))
+    if (!acl::AllowFxp(transferType, *user, logging))
     {
       data.Close();
       std::string type = transferType == TransferType::Upload ?
                          "upload" : "download";
       if (logging)
       {
-        logger::access << "User " << user.Name() << " attempted to fxp " << type
+        logger::access << "User " << user->Name() << " attempted to fxp " << type
                        << " to " << data.RemoteEndpoint() << logger::endl;
       }
       

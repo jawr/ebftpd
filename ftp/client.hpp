@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cstdint>
+#include <memory>
 #include <boost/thread/mutex.hpp>
 #include "acl/user.hpp"
 #include "util/net/tcpsocket.hpp"
@@ -12,6 +13,7 @@
 #include "fs/path.hpp"
 #include "cmd/dirlist.hpp"
 #include "ftp/replycodes.hpp"
+#include "cmd/command.hpp"
 
 namespace cmd
 {
@@ -63,7 +65,7 @@ class Client : public util::ThreadSelect
 
   mutable boost::mutex mutex;
   fs::Path workDir;
-  acl::User user;
+  std::shared_ptr<acl::User> user;
   util::net::TCPSocket control;
   ::ftp::ClientState state;
   ReplyCode lastCode;
@@ -90,15 +92,16 @@ class Client : public util::ThreadSelect
   bool CheckState(ClientState reqdState);
   
 public:
-  Client() : workDir("/"), user("root", 69, "password", "1"),
+  Client() : workDir("/"), user(new acl::User()),
      control(15), state(ClientState::LoggedOut), lastCode(CodeNotSet),
      passwordAttemps(0), data(15), dataProtected(false),
      passiveMode(false), epsvMode(::ftp::EPSVMode::Normal) { }
   
   ~Client();
      
-  const fs::Path& WorkDir() const { return workDir; }
-  const acl::User& User() const { return user; }
+  const fs::Path& WorkDir() const { return workDir; };
+  const acl::User& User() const { return *user; }
+
   void Run();
   
   void PartReply(ReplyCode code, const std::string& message);
@@ -139,7 +142,8 @@ public:
               const ListOptions& options, bool dataOutput, int maxRecursion);
               
   bool IsFxp(const util::net::Endpoint& ep) const;
-              
+ 
+  friend class cmd::USERCommand; // ugly...             
   friend class cmd::STORCommand; // ugly
   friend class cmd::RETRCommand; // ugly, interface needs improving so this isnt necessary
 };

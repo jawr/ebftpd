@@ -39,11 +39,14 @@ public:
   static util::Error SetPrimaryGID(const std::string& name, GroupID primaryGID);
   static util::Error AddSecondaryGID(const std::string& name, GroupID secondaryGID);
   static util::Error DelSecondaryGID(const std::string& name, GroupID secondaryGID);
+
+  static void Initalize();
   
   // these return const as the user objects should NEVER
   // be modified except via the above functions'
-  static const acl::User User(const std::string& name);
-  static const acl::User User(UserID uid);
+  static const acl::User& User(const std::string& name);
+  static const acl::User& User(UserID uid);
+  static acl::User* UserPtr(const std::string& name);
 };
 
 } /* acl namespace */

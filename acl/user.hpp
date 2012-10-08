@@ -26,9 +26,9 @@ class User
   GroupID primaryGid;
   std::unordered_set<GroupID> secondaryGids;
   
-  User() : uid(-1), primaryGid(-1) { }
   
 public:
+  User() : uid(-1), primaryGid(-1) { }
   User(const std::string& name, UserID uid, const std::string& password,
        const std::string& flags);
        
