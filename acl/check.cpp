@@ -285,28 +285,6 @@ template util::Error DirAllowed<Hideinwho>(const User& user, std::string path);
 
 } /* PathPermission namespace */
 
-
-bool AllowFxp(ftp::TransferType transferType,
-              const User& user, bool& logging)
-{
-  assert(transferType != ftp::TransferType::List);
-
-  const cfg::Config& config = cfg::Get();
-  for (const auto& af : config.AllowFxp())
-  {
-    if (af.ACL().Evaluate(user))
-    {
-      logging = af.Logging();
-      if (transferType == ftp::TransferType::Download)
-        return af.Downloads();
-      else
-        return af.Uploads();
-    }
-  }
-  
-  return false;
-}
-
 namespace Message
 {
 

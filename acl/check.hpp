@@ -41,10 +41,6 @@ template <Type type>
 util::Error DirAllowed(const User& user, std::string path);
 
 } /* PathPermission namespace */
-
-bool AllowFxp(ftp::TransferType transferType,
-              const User& user, bool& logging);
-
               
 namespace Message
 {

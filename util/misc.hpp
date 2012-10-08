@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <vector>
+#include <fstream>
 
 namespace util
 {

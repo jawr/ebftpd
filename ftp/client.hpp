@@ -3,7 +3,6 @@
 
 #include <string>
 #include <cstdint>
-#include <memory>
 #include <boost/thread/mutex.hpp>
 #include "acl/user.hpp"
 #include "util/net/tcpsocket.hpp"
@@ -14,6 +13,8 @@
 #include "cmd/dirlist.hpp"
 #include "ftp/replycodes.hpp"
 #include "cmd/command.hpp"
+#include "ftp/data.hpp"
+#include "ftp/control.hpp"
 
 namespace cmd
 {
@@ -34,116 +35,59 @@ enum class ClientState : uint8_t
   AnyState
 };
 
-enum class EPSVMode : uint8_t
-{
-  Normal,
-  Full
-};
-
-enum class DataType : uint8_t
-{
-  ASCII,
-  Binary
-};
-
-enum class TransferType : uint8_t
-{
-  Upload,
-  Download,
-  List
-};
-
-enum class PassiveType : uint8_t
-{
-  PASV,
-  EPSV,
-  LPSV
-};
-
 class Client : public util::ThreadSelect
 {
-
   mutable boost::mutex mutex;
+  
+  ::ftp::Control control;
+  ::ftp::Data data;
+  
   fs::Path workDir;
-  std::shared_ptr<acl::User> user;
-  util::net::TCPSocket control;
+  acl::User user;
   ::ftp::ClientState state;
-  ReplyCode lastCode;
-  std::string commandLine;
   int passwordAttemps;
   fs::Path renameFrom;
-
-  // data connections
-  util::net::TCPListener dataListen;
-  util::net::TCPSocket data;
-  bool dataProtected;
-  bool passiveMode;
-  util::net::Endpoint portEndpoint;
-  ::ftp::EPSVMode epsvMode;
-  ::ftp::DataType dataType;
-  
+ 
   static const int maxPasswordAttemps = 3;
   
-  void SendReply(ReplyCode code, bool part, const std::string& message);
   void DisplayBanner();
-  void NextCommand();
-  void ExecuteCommand();
+  void ExecuteCommand(const std::string& commandLine);
   void Handle();
   bool CheckState(ClientState reqdState);
   
 public:
-  Client() : workDir("/"), user(new acl::User()),
-     control(15), state(ClientState::LoggedOut), lastCode(CodeNotSet),
-     passwordAttemps(0), data(15), dataProtected(false),
-     passiveMode(false), epsvMode(::ftp::EPSVMode::Normal) { }
+  Client() :
+    data(*this), 
+    workDir("/"), 
+    user("root", 69, "password", "1"),
+    state(ClientState::LoggedOut),
+    passwordAttemps(0)
+  {
+  }
   
   ~Client();
      
-  const fs::Path& WorkDir() const { return workDir; };
-  const acl::User& User() const { return *user; }
-
+  const fs::Path& WorkDir() const { return workDir; }
+  const acl::User& User() const { return user; }
   void Run();
   
-  void PartReply(ReplyCode code, const std::string& message);
-  void PartReply(const std::string& message);
-  void Reply(ReplyCode code, const std::string& message);
-  void Reply(const std::string& message);
-  void MultiReply(ReplyCode code, const std::string& messages);
-
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;
   void SetFinished();
   void SetLoggedIn();
   void SetLoggedOut();
-  void SetWaitingPassword();
+  void SetWaitingPassword(const acl::User& user);
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
   void SetWorkDir(const fs::Path& workDir);
   void SetRenameFrom(const fs::Path& path) { this->renameFrom = path; }
   const fs::Path& RenameFrom() const { return renameFrom; }
-  void NegotiateTLS();
   
-  bool DataProtected() const { return dataProtected; }
-  void SetDataProtected(bool dataProtected) { this->dataProtected = dataProtected; }
-
-  ::ftp::EPSVMode EPSVMode() const { return epsvMode; }
-  void SetEPSVMode(::ftp::EPSVMode epsvMode) { this->epsvMode = epsvMode; }
-
-  ::ftp::DataType DataType() const { return dataType; }
-  void SetDataType(::ftp::DataType dataType) { this->dataType = dataType; }
+  ::ftp::Control& Control() { return control; }
+  ::ftp::Data& Data() { return data; }
   
-  void DataInitPassive(util::net::Endpoint& ep, PassiveType pasvType);
-  void DataInitActive(const util::net::Endpoint& ep);
-  void DataOpen(TransferType transferType);
-  void DataClose() { data.Close(); }
-  
-  friend cmd::DirectoryList::DirectoryList(
-              ftp::Client& client, const fs::Path& path, 
-              const ListOptions& options, bool dataOutput, int maxRecursion);
-              
   bool IsFxp(const util::net::Endpoint& ep) const;
- 
-  friend class cmd::USERCommand; // ugly...             
+              
   friend class cmd::STORCommand; // ugly
   friend class cmd::RETRCommand; // ugly, interface needs improving so this isnt necessary
 };
