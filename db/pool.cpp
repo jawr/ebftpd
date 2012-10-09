@@ -49,7 +49,7 @@ int main()
     mongo::Query query;
     db::QueryResults results;
     boost::unique_future<bool> future;
-    db::TaskPtr task(new db::Select("ebftpd.users", query, results, future));
+    db::TaskPtr task(new db::Select("users", query, results, future));
     db::Pool::Queue(task);
   }
   db::Pool::JoinThread();

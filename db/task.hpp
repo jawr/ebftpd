@@ -27,6 +27,7 @@ public:
   virtual void Execute(Worker& worker);
 };
 
+
 // end
 }
 #endif

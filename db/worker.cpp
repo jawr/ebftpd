@@ -4,7 +4,8 @@
 #include "db/taskqueue.hpp"
 namespace db
 {
-Worker::Worker(const std::string& host, TaskQueue& queue) : host(host), queue(queue)
+Worker::Worker(const std::string& host, TaskQueue& queue) : 
+  host(host), queue(queue), database("ebftpd")
 {
   try
   {
@@ -30,7 +31,7 @@ void Worker::Insert(const std::string& container, const mongo::BSONObj& obj)
   try
   {
     boost::mutex::scoped_lock lock(mtx);
-    conn.insert(container, obj);
+    conn.insert(database + container, obj);
     const std::string& err = conn.getLastError();
     if (err.size() > 0) throw DBError(err);
   }
@@ -46,7 +47,8 @@ void Worker::Get(const std::string& container, const mongo::Query& query,
   try
   {
     boost::mutex::scoped_lock lock(mtx);
-    std::unique_ptr<mongo::DBClientCursor> cursor = conn.query(container, query);
+    std::unique_ptr<mongo::DBClientCursor> cursor =
+      conn.query(database + container, query);
     while (cursor->more())
       results.push_back(cursor->nextSafe().copy());
     const std::string& err = conn.getLastError();

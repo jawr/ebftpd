@@ -13,6 +13,7 @@ class Worker : public util::ThreadConsumer
 {
   mongo::DBClientConnection conn;
   std::string host;
+  std::string database;
 
   TaskQueue& queue;
 

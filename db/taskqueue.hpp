@@ -1,6 +1,7 @@
 #ifndef __DB_TASKQUEUE_HPP
 #define __DB_TASKQUEUE_HPP
 
+#include "db/types.hpp"
 #include <memory>
 #include <queue>
 #include <boost/thread/mutex.hpp>
@@ -8,9 +9,6 @@
 
 namespace db
 {
-
-class Task;
-typedef std::shared_ptr<Task> TaskPtr;
 
 class TaskQueue
 {
