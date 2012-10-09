@@ -1,12 +1,11 @@
 #include <iomanip>
 #include <ctime>
 #include <cmath>
-#include <tr1/memory>
+#include <memory>
 #include <cstring>
 #include <algorithm>
 #include <dirent.h>
 #include <fnmatch.h>
-#include <boost/bind.hpp>
 #include <boost/tokenizer.hpp>
 #include "cmd/dirlist.hpp"
 #include "ftp/client.hpp"
@@ -49,8 +48,7 @@ ListOptions::ListOptions(const std::string& userDefined,
   std::string combined(forced);
   combined += userDefined;
 
-  std::for_each(combined.begin(), combined.end(), 
-                boost::bind(&ListOptions::ParseOption, this, _1));
+  for (char ch : combined) ParseOption(ch);
 }
 
 void ListOptions::ParseOption(char option)
@@ -121,7 +119,7 @@ DirectoryList::DirectoryList(ftp::Client& client, const fs::Path& path,
 void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
                               std::queue<std::string>& masks)
 {  
-  typedef boost::tokenizer<boost::char_separator<char> >  tokenizer;
+  typedef boost::tokenizer<boost::char_separator<char>>  tokenizer;
   static const char* wildcardChars = "*?[]";
 
   if (path.Absolute()) parent = "/";
@@ -129,17 +127,17 @@ void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
 
   boost::char_separator<char> sep("/");
   tokenizer toks(std::string(path), sep);
-  for (tokenizer::iterator it = toks.begin(); it != toks.end(); ++it)
+  for (const auto& token : toks)
   {
     if (foundWildcards ||
-       it->find_first_of(wildcardChars) != std::string::npos)
+       token.find_first_of(wildcardChars) != std::string::npos)
     {
-      masks.push(*it);
+      masks.push(token);
       foundWildcards = true;
     }
     else
     {
-      parent /= *it;
+      parent /= token;
     }
   }
 }
@@ -227,30 +225,29 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
 
   if (masks.empty())
   {
-    for (fs::DirEnumerator::const_iterator it =
-         dirEnum.begin(); it != dirEnum.end(); ++it)
+    for (const auto& de : dirEnum)
     {
-      const std::string& pathStr = it->Path();      
+      const std::string& pathStr = de.Path();      
       if (pathStr[0] == '.' && !options.All()) continue;
       if (!mask.empty() && fnmatch(mask.c_str(), pathStr.c_str(), 0)) continue;
       
       if (options.LongFormat())
       {
-        message << Permissions(it->Status()) << " "
-                << std::setw(3) << it->Status().Native().st_nlink << " "
-                << std::left << std::setw(8) << it->Owner().UID() << " "
-                << std::left << std::setw(8) << it->Owner().GID() << " "
-                << std::right << std::setw(8) << it->Status().Size() << " "
-                << Timestamp(it->Status()) << " "
-                << it->Path();
-        if (options.SlashDirs() && it->Status().IsDirectory()) message << "/";
+        message << Permissions(de.Status()) << " "
+                << std::setw(3) << de.Status().Native().st_nlink << " "
+                << std::left << std::setw(8) << de.Owner().UID() << " "
+                << std::left << std::setw(8) << de.Owner().GID() << " "
+                << std::right << std::setw(8) << de.Status().Size() << " "
+                << Timestamp(de.Status()) << " "
+                << de.Path();
+        if (options.SlashDirs() && de.Status().IsDirectory()) message << "/";
         message << "\r\n";
         Output(message.str());
         message.str("");
       }
       else
       {
-        message << it->Path() << "\r\n";
+        message << de.Path() << "\r\n";
         Output(message.str());
         message.str("");
       }
@@ -259,18 +256,17 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
   
   if (options.Recursive() || !mask.empty())
   {
-    for (fs::DirEnumerator::const_iterator it =
-         dirEnum.begin(); it != dirEnum.end(); ++it)
+    for (const auto& de : dirEnum)
     {
-      if (!it->Status().IsDirectory() ||
-           it->Status().IsSymLink()) continue;
+      if (!de.Status().IsDirectory() ||
+           de.Status().IsSymLink()) continue;
            
-      const std::string& pathStr = it->Path();      
+      const std::string& pathStr = de.Path();      
       if (pathStr[0] == '.' && !options.All()) continue;
       if (!mask.empty() && fnmatch(mask.c_str(), pathStr.c_str(), 0)) continue;
 
       fs::Path fullPath(path);
-      fullPath /= it->Path();
+      fullPath /= de.Path();
    
       ListPath(fullPath, masks, depth + 1);
     }

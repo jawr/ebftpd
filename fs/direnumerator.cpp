@@ -1,5 +1,5 @@
 #include <cassert>
-#include <tr1/memory>
+#include <memory>
 #include <cstring>
 #include <dirent.h>
 #include "fs/direnumerator.hpp"
@@ -15,13 +15,13 @@ namespace fs
 {
 
 DirEnumerator::DirEnumerator() :
-  client(0),
+  client(nullptr),
   totalBytes(0)
 {
 }
 
 DirEnumerator::DirEnumerator(const fs::Path& path) :
-  client(0),
+  client(nullptr),
   path(path),
   totalBytes(0)
 {
@@ -61,7 +61,7 @@ void DirEnumerator::Readdir()
     real = cfg::Get().Sitepath() + absolute;
   }
 
-  std::tr1::shared_ptr<DIR> dp(opendir(real.CString()), closedir);
+  std::shared_ptr<DIR> dp(opendir(real.CString()), closedir);
   if (!dp.get()) throw util::SystemError(errno);
   
   size_t siteRootLen = cfg::Get().Sitepath().ToString().length();
@@ -94,7 +94,7 @@ void DirEnumerator::Readdir()
       
       totalBytes += status.Size();
       fs::Owner owner(OwnerCache::Owner(fullPath));
-      entries.push_back(new DirEntry(de.d_name, status, owner));
+      entries.emplace_back(fs::Path(de.d_name), status, owner);
     }
     catch (const util::SystemError&)
     {

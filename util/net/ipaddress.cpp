@@ -12,8 +12,8 @@ IPAddress::IPAddress(IPFamily family) :
   dataLen(0),
   family(family)
 {
-  if (family == IPv4) FromString("0.0.0.0");
-  else if (family == IPv6) FromString("::");
+  if (family == IPFamily::IPv4) FromString("0.0.0.0");
+  else if (family == IPFamily::IPv6) FromString("::");
   else throw InvalidIPAddressError();
 }
 
@@ -34,22 +34,24 @@ IPAddress::IPAddress(const void *addr, socklen_t addrLen) :
   dataLen(addrLen)
 {
   memcpy(data, addr, addrLen);
-  if (addrLen == sizeof(in_addr)) family = IPv4;
-  else if (addrLen == sizeof(in6_addr)) family = IPv6;
+  if (addrLen == sizeof(in_addr)) family = IPFamily::IPv4;
+  else if (addrLen == sizeof(in6_addr)) family = IPFamily::IPv6;
   else throw InvalidIPAddressError();
 }
 
 void IPAddress::FromString(const std::string& addr)
 {
   memset(data, 0, sizeof(data));
-  if (inet_pton(IPv4, addr.c_str(), (struct in_addr*) data))
+  if (inet_pton(static_cast<int>(IPFamily::IPv4), 
+                addr.c_str(), (struct in_addr*) data))
   {
-    family = IPv4;
+    family = IPFamily::IPv4;
     dataLen = sizeof(struct in_addr);
   }
-  else if (inet_pton(IPv6, addr.c_str(), (struct in6_addr*) data))
+  else if (inet_pton(static_cast<int>(IPFamily::IPv6), 
+                     addr.c_str(), (struct in6_addr*) data))
   {
-    family = IPv6;
+    family = IPFamily::IPv6;
     dataLen = sizeof(struct in6_addr);
   }
   else
@@ -63,7 +65,8 @@ void IPAddress::FromString(const std::string& addr)
 void IPAddress::ToStringv4() const
 {
   char str[INET_ADDRSTRLEN];
-  if (!inet_ntop(IPv4, data, str, sizeof(str))) 
+  if (!inet_ntop(static_cast<int>(IPFamily::IPv4),
+                 data, str, sizeof(str))) 
     throw NetworkSystemError(errno);
   asString = str;
 }
@@ -71,7 +74,8 @@ void IPAddress::ToStringv4() const
 void IPAddress::ToStringv6() const
 {
   char str[INET6_ADDRSTRLEN];
-  if (!inet_ntop(IPv6, data, str, sizeof(str)))
+  if (!inet_ntop(static_cast<int>(IPFamily::IPv6),
+                 data, str, sizeof(str)))
     throw NetworkSystemError(errno);
   asString = str;
 }
@@ -79,16 +83,30 @@ void IPAddress::ToStringv6() const
 const std::string& IPAddress::ToString() const
 {
   if (!asString.empty()) return asString;
-  if (family == IPv4) ToStringv4();
+  if (family == IPFamily::IPv4) ToStringv4();
   else ToStringv6();
   return asString;
+}
+
+bool IPAddress::IsMappedv4() const
+{
+  if (family != IPFamily::IPv4) return false;
+  return IN6_IS_ADDR_V4MAPPED(data);
+}
+
+IPAddress IPAddress::ToUnmappedv4() const
+{
+  struct in_addr addr;
+  socklen_t len = sizeof(addr);
+  memcpy(&addr, data + (sizeof(in6_addr) - len), len);
+  return IPAddress(&addr, len);
 }
 
 bool IPAddress::Validv6(const std::string& addr)
 {
   try
   {
-    return IPAddress(addr).Family() == IPv6;
+    return IPAddress(addr).Family() == IPFamily::IPv6;
   }
   catch (const InvalidIPAddressError&)
   {
@@ -101,7 +119,7 @@ bool IPAddress::Validv4(const std::string& addr)
 {
   try
   {
-    return IPAddress(addr).Family() == IPv4;
+    return IPAddress(addr).Family() == IPFamily::IPv4;
   }
   catch (const InvalidIPAddressError&)
   {

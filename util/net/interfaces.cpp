@@ -36,7 +36,7 @@ void Interfaces::Load()
     std::string name = ifa->ifa_name;
     std::map<std::string, Interface>::iterator it =
       interfaces.insert(std::make_pair(name, Interface(name))).first;
-    it->second.addresses.push_back(ip);
+    it->second.addresses.emplace_back(ip);
   }
 }
 
@@ -56,7 +56,7 @@ bool FindPartnerIP(const IPAddress& ip, IPAddress& partner)
     for (Interface::const_iterator it2 = it->second.begin();
          it2 != it->second.end(); ++it2)
     {
-      if (it2->Family() == IPAddress::IPv4)
+      if (it2->Family() == IPFamily::IPv4)
       {
         partner = *it2;
         return true;

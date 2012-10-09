@@ -1,13 +1,13 @@
 #ifndef __FS_FILELOCK_HPP
 #define __FS_FILELOCK_HPP
 
-#include <tr1/memory>
+#include <memory>
 
 namespace fs
 {
 
 class FileLock;
-typedef std::tr1::shared_ptr<FileLock> FileLockPtr;
+typedef std::shared_ptr<FileLock> FileLockPtr;
 
 class FileLock
 {

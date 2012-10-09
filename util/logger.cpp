@@ -54,7 +54,7 @@ Logger& Logger::Flush(bool newLine)
   
   {
     boost::lock_guard<boost::mutex> lock(outMutex);
-    if (out == &std::clog && !path.empty()) out = 0;
+    if (out == &std::clog && !path.empty()) out = nullptr;
     if (!out)
     {
       std::ofstream* fout(new std::ofstream(path.c_str(), std::ios::app));
@@ -62,7 +62,7 @@ Logger& Logger::Flush(bool newLine)
       else
       {
         delete fout;
-        fout = 0;
+        fout = nullptr;
         out = &std::clog;
       }
     }

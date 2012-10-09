@@ -23,8 +23,8 @@ protected:
   std::string certificate;
   std::string ciphers;
     
-  static std::auto_ptr<TLSServerContext> server;
-  static std::auto_ptr<TLSClientContext> client;
+  static std::unique_ptr<TLSServerContext> server;
+  static std::unique_ptr<TLSClientContext> client;
   static boost::mutex* mutexes;
   
   

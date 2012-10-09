@@ -57,7 +57,7 @@ util::Error UserCache::Create(const std::string& name, const std::string& passwo
       break;
   }
 
-  std::auto_ptr<acl::User> user(new acl::User(name, uid, password, flags));
+  std::unique_ptr<acl::User> user(new acl::User(name, uid, password, flags));
     
   instance.byName.insert(std::make_pair(name, user.get()));
   instance.byUID.insert(std::make_pair(uid, user.get()));

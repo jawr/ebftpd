@@ -9,12 +9,8 @@ namespace db { namespace bson
 template <typename Container>
 mongo::BSONArray SerializeContainer(const Container& c)
 {
-  typedef typename Container::const_iterator const_iterator;
-
   mongo::BSONArrayBuilder bab;
-  for (const_iterator it = c.begin(); it != c.end(); ++it)
-    bab.append(*it);
-
+  for (const auto& elem : c) bab.append(elem);
   return bab.arr();
 }
 

@@ -19,7 +19,7 @@ void SplitToType(const std::string& s, char delim, Collection& result)
   typename Collection::value_type value;
   while (is >> value)
   {
-    result.push_back(value);
+    result.emplace_back(value);
     if (is.peek() == delim)
       is.ignore();
   }

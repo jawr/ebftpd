@@ -1,7 +1,7 @@
 #ifndef __FS_FILE_HPP
 #define __FS_FILE_HPP
 
-#include <tr1/memory>
+#include <memory>
 #include <string>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
@@ -19,12 +19,12 @@ namespace fs
 typedef boost::iostreams::stream<
         boost::iostreams::file_descriptor_sink> OutStream;
         
-typedef std::tr1::shared_ptr<OutStream> OutStreamPtr;
+typedef std::shared_ptr<OutStream> OutStreamPtr;
 
 typedef boost::iostreams::stream<
         boost::iostreams::file_descriptor_source> InStream;
         
-typedef std::tr1::shared_ptr<InStream> InStreamPtr;
+typedef std::shared_ptr<InStream> InStreamPtr;
         
 util::Error DeleteFile(ftp::Client& client, const Path& path);
 util::Error RenameFile(ftp::Client& client, const Path& oldPath,

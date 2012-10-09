@@ -3,8 +3,8 @@
 
 #include <cassert>
 #include <iterator>
-#include <boost/cstdint.hpp>
-#include <boost/unordered_map.hpp>
+#include <cstdint>
+#include <unordered_map>
 
 namespace util
 {
@@ -17,7 +17,7 @@ class LRUCache
 {
   struct Entry;
   
-  typedef boost::unordered_map<KeyType, Entry*> EntriesMap;
+  typedef std::unordered_map<KeyType, Entry*> EntriesMap;
 
   EntriesMap entries;
   Entry* first;
@@ -32,7 +32,7 @@ class LRUCache
     Entry* prev;
     
     Entry(LRUCache& cache, const KeyType& key, const ValueType& value) :
-      cache(cache), pair(std::make_pair(key, value)), next(0), prev(0)
+      cache(cache), pair(std::make_pair(key, value)), next(nullptr), prev(nullptr)
     {
       Entry* temp = cache.first;
       cache.first = this;
@@ -59,7 +59,7 @@ class LRUCache
   }
   
 public:
-  typedef typename boost::unordered_map<KeyType, ValueType>::size_type size_type;
+  typedef typename std::unordered_map<KeyType, ValueType>::size_type size_type;
 
   class const_iterator;
   
@@ -136,7 +136,7 @@ public:
   };
 
   LRUCache(uint16_t capacity) :
-    first(0), last(0), capacity(capacity)
+    first(nullptr), last(nullptr), capacity(capacity)
   {
     if (!capacity) throw std::logic_error("Capacity must be larger than zero");
   }
@@ -171,9 +171,9 @@ public:
   }
   
   iterator begin() { return iterator(first); }
-  iterator end() { return iterator(0); }
+  iterator end() { return iterator(nullptr); }
   const_iterator begin() const { return const_iterator(first); }
-  const_iterator end() const { return const_iterator(0); }  
+  const_iterator end() const { return const_iterator(nullptr); }  
   
   friend struct Entry;
 };

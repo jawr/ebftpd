@@ -37,7 +37,7 @@ Resolver::~Resolver()
 
 void Resolver::Resolve()
 {
-  const char* charService = 0;
+  const char* charService = nullptr;
   if (port >= 0)
   {
     std::string service;
@@ -58,9 +58,9 @@ void Resolver::Resolve()
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = PF_UNSPEC;
   hints.ai_flags = AI_PASSIVE;
-  hints.ai_socktype = socketType;
+  hints.ai_socktype = static_cast<int>(socketType);
 
-  const char* charHostname = 0;
+  const char* charHostname = nullptr;
   if (!hostname.empty()) charHostname = hostname.c_str();
   
   int error = getaddrinfo(charHostname, charService, &hints, &res);
@@ -73,12 +73,12 @@ void Resolver::Resolve()
   struct addrinfo* current = res;
   while (current)
   {
-    results.push_back(Endpoint(*current->ai_addr, current->ai_addrlen));
+    results.emplace_back(Endpoint(*current->ai_addr, current->ai_addrlen));
     current = current->ai_next;
   }
 
   freeaddrinfo(res);
-  res = 0;
+  res = nullptr;
 }
 
 void Resolver::Resolve(const std::string& hostname, int32_t port)

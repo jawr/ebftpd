@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
-#include <boost/bind.hpp>
 #include "util/net/tlscontext.hpp"
 #include "util/net/tlserror.hpp"
 
@@ -12,8 +11,8 @@
 namespace util { namespace net
 {
 
-std::auto_ptr<TLSClientContext> TLSContext::client;
-std::auto_ptr<TLSServerContext> TLSContext::server;
+std::unique_ptr<TLSClientContext> TLSContext::client;
+std::unique_ptr<TLSServerContext> TLSContext::server;
 boost::mutex* TLSContext::mutexes = new boost::mutex[CRYPTO_num_locks()];
 
 namespace
@@ -103,7 +102,7 @@ TLSContext::~TLSContext()
 }
 
 TLSContext::TLSContext(const std::string& certificate, const std::string& ciphers) :
-  context(0),
+  context(nullptr),
   certificate(certificate),
   ciphers(ciphers)
 {
@@ -250,7 +249,7 @@ void TLSServerContext::InitialiseDHKeyExchange()
   // if this fails, ciphers requiring DH key exchange
   // will not work
   bool failed = false;
-  DH* dh = 0;
+  DH* dh = nullptr;
   
   BIO *bio = BIO_new_file(certificate.c_str(), "r");
   if (!bio)

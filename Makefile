@@ -1,8 +1,8 @@
 CXX = g++
-CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb
+CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x
 LIBS = -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle -lssl -lboost_filesystem
-INCLUDE = -include stdafx.hpp -I.
+INCLUDE = -include pch.hpp -I.
 
 OBJECTS = \
 	main.o \
@@ -16,6 +16,8 @@ OBJECTS = \
 	cfg/setting.o \
 	ftp/listener.o \
 	ftp/client.o \
+	ftp/portallocator.o \
+	ftp/addrallocator.o \
 	fs/direnumerator.o \
 	fs/filelock.o \
 	fs/owner.o \
@@ -29,7 +31,6 @@ OBJECTS = \
 	acl/user.o \
 	acl/usercache.o \
 	acl/permission.o \
-	acl/repository.o \
 	acl/handler.o \
 	acl/flags.o \
 	logger/logger.o \
@@ -74,11 +75,11 @@ test:
 	echo "$(TEST)" > .state
 	$(MAKE) $(MAKEFILE) ftpd CXXFLAGS="$(CXXFLAGS) -DTEST -D$(TEST)"
 
-ftpd: stdafx.hpp.gch $(OBJECTS)
+ftpd: pch.hpp.gch $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd
 
-stdafx.hpp.gch:
-	$(CXX) -c $(CXXFLAGS) stdafx.hpp
+pch.hpp.gch:
+	$(CXX) -c $(CXXFLAGS) pch.hpp
 	
 strip:
 	@strip -s ftpd

@@ -2,8 +2,8 @@
 #define __UTIL_FS_DIRENUMERATOR_HPP
 
 #include <string>
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/cstdint.hpp>
+#include <vector>
+#include <cstdint>
 #include "fs/path.hpp"
 #include "fs/status.hpp"
 #include "fs/owner.hpp"
@@ -38,14 +38,14 @@ class DirEnumerator
   fs::Path path;
   uintmax_t totalBytes;
   
-  boost::ptr_vector<DirEntry> entries;
+  std::vector<DirEntry> entries;
   
   void Readdir();
   
 public:
-  typedef boost::ptr_vector<DirEntry>::const_iterator const_iterator;
-  typedef boost::ptr_vector<DirEntry>::iterator iterator;
-  typedef boost::ptr_vector<DirEntry>::size_type size_type;
+  typedef std::vector<DirEntry>::const_iterator const_iterator;
+  typedef std::vector<DirEntry>::iterator iterator;
+  typedef std::vector<DirEntry>::size_type size_type;
 
   DirEnumerator();
   DirEnumerator(const fs::Path& path);

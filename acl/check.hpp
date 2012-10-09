@@ -39,7 +39,7 @@ util::Error DirAllowed(const User& user, std::string path);
 
 } /* PathPermission namespace */
 
-bool AllowFxp(ftp::TransferType::Enum transferType,
+bool AllowFxp(ftp::TransferType transferType,
               const User& user, bool& logging);
 
 } /* acl namespace */

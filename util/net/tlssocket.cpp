@@ -15,12 +15,12 @@ TLSSocket::~TLSSocket()
 }
 
 TLSSocket::TLSSocket() :
-  session(0)
+  session(nullptr)
 {
 }
 
 TLSSocket::TLSSocket(TCPSocket& socket, HandshakeRole role) :
-  session(0)
+  session(nullptr)
 {
   Handshake(socket, role);
 }
@@ -109,7 +109,7 @@ void TLSSocket::Close()
   {
     SSL_shutdown(session);
     SSL_free(session);
-    session = 0;
+    session = nullptr;
   }
 }
 

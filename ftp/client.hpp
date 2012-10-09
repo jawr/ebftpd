@@ -2,6 +2,7 @@
 #define __FTP_CLIENT_HPP
 
 #include <string>
+#include <cstdint>
 #include <boost/thread/mutex.hpp>
 #include "acl/user.hpp"
 #include "util/net/tcpsocket.hpp"
@@ -21,46 +22,41 @@ class RETRCommand;
 namespace ftp 
 {
 
-namespace ClientState
+enum class ClientState : uint8_t
 {
-  enum Enum
-  {
-    LoggedOut,
-    WaitingPassword,
-    LoggedIn,
-    Finished,
-    NotBeforeAuth,
-    AnyState
-  };
+  LoggedOut,
+  WaitingPassword,
+  LoggedIn,
+  Finished,
+  NotBeforeAuth,
+  AnyState
 };
 
-namespace EPSVMode
+enum class EPSVMode : uint8_t
 {
-  enum Enum
-  {
-    Normal,
-    Full
-  };
+  Normal,
+  Full
 };
 
-namespace DataType
+enum class DataType : uint8_t
 {
-  enum Enum
-  {
-    ASCII,
-    Binary
-  };
+  ASCII,
+  Binary
 };
 
-namespace TransferType
+enum class TransferType : uint8_t
 {
-  enum Enum
-  {
-    Upload,
-    Download,
-    List
-  };
-}
+  Upload,
+  Download,
+  List
+};
+
+enum class PassiveType : uint8_t
+{
+  PASV,
+  EPSV,
+  LPSV
+};
 
 class Client : public util::ThreadSelect
 {
@@ -69,7 +65,7 @@ class Client : public util::ThreadSelect
   fs::Path workDir;
   acl::User user;
   util::net::TCPSocket control;
-  ::ftp::ClientState::Enum state;
+  ::ftp::ClientState state;
   ReplyCode lastCode;
   std::string commandLine;
   int passwordAttemps;
@@ -81,8 +77,8 @@ class Client : public util::ThreadSelect
   bool dataProtected;
   bool passiveMode;
   util::net::Endpoint portEndpoint;
-  ::ftp::EPSVMode::Enum epsvMode;
-  ::ftp::DataType::Enum dataType;
+  ::ftp::EPSVMode epsvMode;
+  ::ftp::DataType dataType;
   
   static const int maxPasswordAttemps = 3;
   
@@ -91,7 +87,7 @@ class Client : public util::ThreadSelect
   void NextCommand();
   void ExecuteCommand();
   void Handle();
-  bool CheckState(ClientState::Enum reqdState);
+  bool CheckState(ClientState reqdState);
   
 public:
   Client() : workDir("/"), user("root", 69, "password", "1"),
@@ -101,7 +97,7 @@ public:
   
   ~Client();
      
-  const fs::Path& WorkDir() const { return workDir; };
+  const fs::Path& WorkDir() const { return workDir; }
   const acl::User& User() const { return user; }
   void Run();
   
@@ -127,15 +123,15 @@ public:
   bool DataProtected() const { return dataProtected; }
   void SetDataProtected(bool dataProtected) { this->dataProtected = dataProtected; }
 
-  ::ftp::EPSVMode::Enum EPSVMode() const { return epsvMode; }
-  void SetEPSVMode(::ftp::EPSVMode::Enum epsvMode) { this->epsvMode = epsvMode; }
+  ::ftp::EPSVMode EPSVMode() const { return epsvMode; }
+  void SetEPSVMode(::ftp::EPSVMode epsvMode) { this->epsvMode = epsvMode; }
 
-  ::ftp::DataType::Enum DataType() const { return dataType; }
-  void SetDataType(::ftp::DataType::Enum dataType) { this->dataType = dataType; }
+  ::ftp::DataType DataType() const { return dataType; }
+  void SetDataType(::ftp::DataType dataType) { this->dataType = dataType; }
   
-  void DataInitPassive(util::net::Endpoint& ep, bool ipv4Only);
+  void DataInitPassive(util::net::Endpoint& ep, PassiveType pasvType);
   void DataInitActive(const util::net::Endpoint& ep);
-  void DataOpen(TransferType::Enum transferType);
+  void DataOpen(TransferType transferType);
   void DataClose() { data.Close(); }
   
   friend cmd::DirectoryList::DirectoryList(

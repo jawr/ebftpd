@@ -6,7 +6,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>                                   
-#include <boost/bind.hpp>                                     
 #include "cfg/config.hpp"
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
@@ -54,23 +53,24 @@ Config::Config(const std::string& config) : version(++latestVersion), config(con
 void Config::Parse(const std::string& line) {
   std::vector<std::string> toks;
   boost::split(toks, line, boost::is_any_of("\t "), boost::token_compress_on);
-  for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
-    ++it)
-    boost::replace_all((*it), "[:space:]", " ");
+  for (auto& token : toks) 
+    boost::replace_all(token, "[:space:]", " ");
   
   if (toks.size() == 0) return;
   std::string opt = toks.at(0);
   if (opt.size() == 0) return;
+  
   // remove setting from args
   toks.erase(toks.begin());
+  
+  // not too sure this is necessary with token_compress_on??
   std::vector<std::string>::iterator it;
   for (it = toks.begin(); it != toks.end();)
-    if ((*it).size() == 0)
+    if (it->size() == 0)
       it = toks.erase(it);
     else
       ++it;
     
-
   // parse string
   boost::algorithm::to_lower(opt);
 
@@ -179,7 +179,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "use_dir_size")
   {
-    useDirSize.push_back(setting::UseDirSize(toks)); 
+    useDirSize.emplace_back(setting::UseDirSize(toks)); 
   }
   else if (opt == "timezone")
   {
@@ -239,9 +239,8 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "ignore_type")
   { 
-    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
-      ++it)
-      ignoreType.push_back((*it));
+    for (const auto& token : toks)
+      ignoreType.emplace_back(token);
   }
   else if (opt == "banned_users")
   {
@@ -253,33 +252,32 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "noretrieve")
   {
-    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end();
-      ++it)
-      ignoreType.push_back((*it));
+    for (const auto& token : toks)
+      ignoreType.emplace_back(token);
   }
   else if (opt == "tagline")
   {
-    tagline.push_back(toks[0]);
+    tagline.emplace_back(toks[0]);
   }
   else if (opt == "speed_limit")
   {
-    speedLimit.push_back(setting::SpeedLimit(toks));
+    speedLimit.emplace_back(setting::SpeedLimit(toks));
   }
   else if (opt == "sim_xfers")
   {
-    simXfers.push_back(setting::SimXfers(toks));
+    simXfers.emplace_back(setting::SimXfers(toks));
   }
   else if (opt == "secure_ip")
   {
-    secureIp.push_back(setting::SecureIp(toks));
+    secureIp.emplace_back(setting::SecureIp(toks));
   }
   else if (opt == "secure_pass")
   {
-    securePass.push_back(setting::SecurePass(toks));
+    securePass.emplace_back(setting::SecurePass(toks));
   }
   else if (opt == "pasv_addr")
   {
-    pasvAddr.push_back(setting::PasvAddr(toks));
+    pasvAddr.emplace_back(toks.at(0));
   }
   else if (opt == "active_ports")
   {
@@ -291,107 +289,107 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "allow_fxp")
   {
-    allowFxp.push_back(setting::AllowFxp(toks));
+    allowFxp.emplace_back(setting::AllowFxp(toks));
   }
   else if (opt == "welcome_msg")
   {
-    welcomeMsg.push_back(fs::Path(toks.at(0))); 
+    welcomeMsg.emplace_back(fs::Path(toks.at(0))); 
   }
   else if (opt == "goodbye_msg")
   {
-    goodbyeMsg.push_back(fs::Path(toks.at(0))); 
+    goodbyeMsg.emplace_back(fs::Path(toks.at(0))); 
   }
   else if (opt == "newsfile")
   {
-    newsfile.push_back(fs::Path(toks.at(0))); 
+    newsfile.emplace_back(fs::Path(toks.at(0))); 
   }
   else if (opt == "cdpath")
   {
-    cdpath.push_back(fs::Path(toks.at(0)));
+    cdpath.emplace_back(fs::Path(toks.at(0)));
   }
   else if (opt == "nodupecheck")
   {
-    nodupecheck.push_back(fs::Path(toks.at(0)));
+    nodupecheck.emplace_back(fs::Path(toks.at(0)));
   }
   else if (opt == "alias")
   {
-    alias.push_back(setting::Alias(toks)); 
+    alias.emplace_back(setting::Alias(toks)); 
   }
   else if (opt == "delete")
   {
-    delete_.push_back(setting::Right(toks));
+    delete_.emplace_back(setting::Right(toks));
   }
   else if (opt == "deleteown")
   {
-    deleteown.push_back(setting::Right(toks));
+    deleteown.emplace_back(setting::Right(toks));
   }
   else if (opt == "overwrite")
   {
-    overwrite.push_back(setting::Right(toks));
+    overwrite.emplace_back(setting::Right(toks));
   }
   else if (opt == "resume")
   {
-    resume.push_back(setting::Right(toks));
+    resume.emplace_back(setting::Right(toks));
   }
   else if (opt == "rename")
   {
-    rename.push_back(setting::Right(toks));
+    rename.emplace_back(setting::Right(toks));
   }
   else if (opt == "renameown")
   {
-    renameown.push_back(setting::Right(toks));
+    renameown.emplace_back(setting::Right(toks));
   }
   else if (opt == "filemove")
   {
-    filemove.push_back(setting::Right(toks));
+    filemove.emplace_back(setting::Right(toks));
   }
   else if (opt == "makedir")
   {
-    makedir.push_back(setting::Right(toks));
+    makedir.emplace_back(setting::Right(toks));
   }
   else if (opt == "upload")
   {
-    upload.push_back(setting::Right(toks));
+    upload.emplace_back(setting::Right(toks));
   }
   else if (opt == "download")
   {
-    download.push_back(setting::Right(toks));
+    download.emplace_back(setting::Right(toks));
   }
   else if (opt == "nuke")
   {
-    nuke.push_back(setting::Right(toks));
+    nuke.emplace_back(setting::Right(toks));
   }
   else if (opt == "dirlog")
   {
-    dirlog.push_back(setting::Right(toks));
+    dirlog.emplace_back(setting::Right(toks));
   }
   else if (opt == "hideinwho")
   {
-    hideinwho.push_back(setting::Right(toks));
+    hideinwho.emplace_back(setting::Right(toks));
   }
   else if (opt == "freefile")
   {
-    freefile.push_back(setting::Right(toks));
+    freefile.emplace_back(setting::Right(toks));
   }
   else if (opt == "nostats")
   {
-    nostats.push_back(setting::Right(toks));
+    nostats.emplace_back(setting::Right(toks));
   }
   else if (opt == "show_diz")
   {
-    showDiz.push_back(setting::Right(toks));
+    showDiz.emplace_back(setting::Right(toks));
   }
   else if (opt == "stat_section")
   {
-    statSection.push_back(setting::StatSection(toks));
+    statSection.emplace_back(setting::StatSection(toks));
   }
   else if (opt == "path-filter")
   {
-    pathFilter.push_back(setting::PathFilter(toks));
+    pathFilter.emplace_back(setting::PathFilter(toks));
   }
   else if (opt == "max_users")
   {
-    maxUsers.push_back(setting::MaxUsers(toks));
+    maxUsers.emplace_back(setting::MaxUsers(toks));
   }
   else if (opt == "max_ustats")
   {
@@ -403,7 +401,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "show_totals")
   {
-    showTotals.push_back(setting::ShowTotals(toks)); 
+    showTotals.emplace_back(setting::ShowTotals(toks)); 
   }
   else if (opt == "dupe_check")
   {
@@ -411,7 +409,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "script")
   {
-    script.push_back(setting::Script(toks));
+    script.emplace_back(setting::Script(toks));
   }
   else if (opt == "lslong")
   {
@@ -419,15 +417,15 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "hidden_files")
   {
-    hiddenFiles.push_back(setting::HiddenFiles(toks));
+    hiddenFiles.emplace_back(setting::HiddenFiles(toks));
   }
   else if (opt == "creditcheck")
   {
-    creditcheck.push_back(setting::Creditcheck(toks));
+    creditcheck.emplace_back(setting::Creditcheck(toks));
   }
   else if (opt == "creditloss")
   {
-    creditloss.push_back(setting::Creditloss(toks));
+    creditloss.emplace_back(setting::Creditloss(toks));
   }
   else if (opt == "nukedir_style")
   {
@@ -435,23 +433,23 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "privgroup")
   {
-    privgroup.push_back(setting::Privgroup(toks));
+    privgroup.emplace_back(setting::Privgroup(toks));
   }
   else if (opt == "msg_path")
   {
-    msgpath.push_back(setting::Msgpath(toks));
+    msgpath.emplace_back(setting::Msgpath(toks));
   }
   else if (opt == "privpath")
   {
-    privpath.push_back(setting::Privpath(toks)); 
+    privpath.emplace_back(setting::Privpath(toks)); 
   }
   else if (opt == "site_cmd")
   {
-    siteCmd.push_back(setting::SiteCmd(toks));
+    siteCmd.emplace_back(setting::SiteCmd(toks));
   }
   else if (opt == "cscript")
   {
-    cscript.push_back(setting::Cscript(toks));
+    cscript.emplace_back(setting::Cscript(toks));
   }
   else if (opt == "requests")
   {
