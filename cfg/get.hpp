@@ -2,6 +2,7 @@
 #define __CFG_GET_HPP
 
 #include "cfg/config.hpp"
+#include <tr1/memory>
 
 namespace cfg
 {

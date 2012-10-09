@@ -2,6 +2,7 @@
 #include <iterator>
 #include "util/passwd.hpp"
 #include "acl/user.hpp"
+#include "acl/types.hpp"
 
 namespace acl
 {
@@ -87,13 +88,12 @@ bool User::CheckGID(GroupID gid)
 #ifdef ACL_USER_TEST
 
 #include <iostream>
-#include <mongo/client/dbclient.h>
 
 int main()
 {
   using namespace acl;
   
-  User u("bioboy", "password", "1");
+  User u("bioboy", acl::UserID(1), "password", "1");
   
   std::cout << u.VerifyPassword("test1234") << std::endl;
   std::cout << u.VerifyPassword("password") << std::endl;
@@ -109,16 +109,6 @@ int main()
   u.DelFlags("17");
   std::cout << u.Flags() << std::endl;
 
-  try
-  {
-    mongo::DBClientConnection c;
-    c.connect("localhost");
-    c.insert("ftpd.users", u.ToBSON());
-  }
-  catch (const mongo::DBException& e)
-  {
-    std::cout << "db connect: " << e.what() << std::endl;
-  }
 }
 
 #endif

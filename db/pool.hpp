@@ -20,11 +20,15 @@ class Pool : public util::ThreadConsumer
   virtual void Run();
 
   std::string host;
+
+  static Pool instance;
+
 public:
-  Pool() {};
   ~Pool() {};
 
-  void Queue(TaskPtr task) { queue.Push(task); };
+  static void Queue(TaskPtr task) { instance.queue.Push(task); };
+  static void StartThread() { instance.Start(); };
+  static void JoinThread() { instance.Join(); };
 
 };
 

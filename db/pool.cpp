@@ -1,6 +1,5 @@
 #include "db/pool.hpp"
 #include "db/exception.hpp"
-#include "db/get.hpp"
 #include "logger/logger.hpp"
 #include "cfg/get.hpp"
 #include <tr1/memory>
@@ -8,11 +7,13 @@
 namespace db
 {
 
+Pool Pool::instance;
+
 void Pool::Run()
 {
   logger::ftpd << "db::Pool started" << logger::endl;
 
-  for (int i = 0; i < 5; ++i)
+  for (int i = 0; i < 8; ++i)
   {
     try
     {
@@ -42,16 +43,16 @@ void Pool::Run()
 
 int main()
 {
-  std::tr1::shared_ptr<db::Pool> pool(new db::Pool());
-  pool->Start();
-  db::UpdateShared(pool);
-  db::Pool& poolRef = db::Get();
-  mongo::Query query;
-  db::QueryResults results;
-  boost::unique_future<bool> future;
-  db::TaskPtr task(new db::Select("ebftpd.users", query, results, future));
-  poolRef.Queue(task);
-  pool->Join();
+  db::Pool::StartThread();
+  for (int i = 0; i < 10; ++i)
+  {
+    mongo::Query query;
+    db::QueryResults results;
+    boost::unique_future<bool> future;
+    db::TaskPtr task(new db::Select("ebftpd.users", query, results, future));
+    db::Pool::Queue(task);
+  }
+  db::Pool::JoinThread();
   
 }
 #endif 
