@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <boost/function.hpp>                             
-#include <boost/bind.hpp>                                  
 #include <boost/algorithm/string/join.hpp>                
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
@@ -51,8 +50,8 @@ class AsciiDownloads : public Setting
   std::vector<std::string> masks;
 public:
   AsciiDownloads() : size(20000) {
-    masks.push_back("*.[Tt][Xx][Tt]");
-    masks.push_back("*.[Dd][Ii][Zz]");
+    masks.emplace_back("*.[Tt][Xx][Tt]");
+    masks.emplace_back("*.[Dd][Ii][Zz]");
   };
   AsciiDownloads(std::vector<std::string>& toks);
   int Size() const { return size; };
@@ -65,7 +64,7 @@ class UseDirSize : public Setting
   std::vector<fs::Path> paths;
 public:
   UseDirSize() : unit('m') {
-    paths.push_back(fs::Path("/"));
+    paths.emplace_back(fs::Path("/"));
   };
   UseDirSize(std::vector<std::string>& toks);
   char Unit() const { return unit; };

@@ -36,19 +36,17 @@ util::Error RemoveDirectory(const Path& path)
     return util::Error::Failure(e.Errno());
   }
   
-  for (DirEnumerator::const_iterator it =
-       dirEnum.begin(); it != dirEnum.end(); ++it)
+  for (const DirEntry& de : dirEnum)
   {
-    if (it->Path().ToString()[0] != '.' ||
-        it->Status().IsDirectory() ||
-        !it->Status().IsWriteable())
+    if (de.Path().ToString()[0] != '.' ||
+        de.Status().IsDirectory() ||
+        !de.Status().IsWriteable())
       return util::Error::Failure(ENOTEMPTY);
   }
   
-  for (DirEnumerator::const_iterator it =
-       dirEnum.begin(); it != dirEnum.end(); ++it)
+  for (const DirEntry& de : dirEnum)
   {
-    fs::Path fullPath = real / it->Path();
+    fs::Path fullPath = real / de.Path();
     if (unlink(fullPath.CString()) < 0)
       return util::Error::Failure(errno);
     OwnerCache::Delete(fullPath);
@@ -93,17 +91,16 @@ util::Error ChangeDirectory(ftp::Client& client, Path& path)
       return util::Error::Failure(ENOENT);
     }
     
-    for (DirEnumerator::const_iterator it =
-         dirEnum.begin(); it != dirEnum.end(); ++it)
+    for (const DirEntry& de : dirEnum)
     {
-      if (boost::istarts_with(it->Path().ToString(), real.Basename().ToString()) &&
-          it->Status().IsDirectory())
+      if (boost::istarts_with(de.Path().ToString(), real.Basename().ToString()) &&
+          de.Status().IsDirectory())
       {
         if (!PP::DirAllowed<PP::View>(client.User(), path))
           return util::Error::Failure(ENOENT);
 
-        path = absolute = absolute.Dirname() / it->Path();
-        if (!it->Status().IsExecutable()) return util::Error::Failure(EACCES);
+        path = absolute = absolute.Dirname() / de.Path();
+        if (!de.Status().IsExecutable()) return util::Error::Failure(EACCES);
       }
     }
   }

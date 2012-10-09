@@ -1,6 +1,7 @@
 #ifndef __UTIL_NET_TLSSOCKET_HPP
 #define __UTIL_NET_TLSSOCKET_HPP
 
+#include <cstdint>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <boost/noncopyable.hpp>
@@ -17,7 +18,7 @@ class TLSSocket : private boost::noncopyable
   void EvaluateResult(int result);  
   
 public:
-  enum HandshakeRole
+  enum HandshakeRole : uint8_t
   {
     Server,
     Client

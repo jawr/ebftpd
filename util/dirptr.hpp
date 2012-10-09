@@ -15,7 +15,7 @@ namespace util
 
   public:
     dirptr() throw() :
-      dp(0)
+      dp(nullptr)
     {
     }
 
@@ -44,7 +44,7 @@ namespace util
     DIR* release() throw()
     {
       DIR* dp = this->dp;
-      this->dp = 0;
+      this->dp = nullptr;
       return dp;
     }
 
@@ -53,7 +53,7 @@ namespace util
       if (dp)
       {
         closedir(dp);
-        dp = 0;
+        dp = nullptr;
       }
     }
   };

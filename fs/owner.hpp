@@ -3,10 +3,10 @@
 
 #include <string>
 #include <ostream>
+#include <unordered_map>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/string.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include "boost/serialization/unordered_map.hpp"
@@ -76,7 +76,7 @@ struct OwnerFile
   std::string parent;
   std::string ownerFile;
   
-  boost::unordered_map<std::string, OwnerEntry> entries;
+  std::unordered_map<std::string, OwnerEntry> entries;
   
   void Create(const std::string& name, const Owner& owner);
 

@@ -18,15 +18,14 @@ public:
     std::runtime_error("Invalid IP address or family") { }
 };
 
+enum class IPFamily : int
+{
+  IPv4 = AF_INET,
+  IPv6 = AF_INET6
+};
+
 class IPAddress
 {
-public:
-  enum IPFamily
-  {
-    IPv4 = AF_INET,
-    IPv6 = AF_INET6
-  };
-
 private:
   char data[sizeof(in6_addr)];
   socklen_t dataLen;
@@ -39,7 +38,7 @@ private:
   bool Equals(const IPAddress& addr) const;
   
 public:
-  IPAddress(IPFamily family = IPv4);
+  IPAddress(IPFamily family = IPFamily::IPv4);
   /* Throws InvalidIPAddressError */
   
   IPAddress(const IPAddress& addr);
@@ -56,6 +55,10 @@ public:
   
   const std::string& ToString() const;
   /* Throws util::NetworkSystemError */
+
+  bool IsMappedv4() const;
+  
+  IPAddress ToUnmappedv4() const;
   
   const void* Addr() const { return static_cast<const void*>(data); }
   /* No exceptions */

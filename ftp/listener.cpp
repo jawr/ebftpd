@@ -45,7 +45,7 @@ void Listener::HandleClients()
 
 void Listener::AcceptClient()
 {
-  std::auto_ptr<ftp::Client> client(new ftp::Client());
+  std::unique_ptr<ftp::Client> client(new ftp::Client());
   if (client->Accept(server)) 
   {
     client->Start();

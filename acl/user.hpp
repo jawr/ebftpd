@@ -2,7 +2,7 @@
 #define __ACL_USER_HPP
 
 #include <string>
-#include <boost/unordered_set.hpp>
+#include <unordered_set>
 #include <sys/types.h>
 #include "acl/flags.hpp"
 #include "acl/types.hpp"
@@ -24,7 +24,7 @@ class User
 
   UserID uid;
   GroupID primaryGid;
-  boost::unordered_set<GroupID> secondaryGids;
+  std::unordered_set<GroupID> secondaryGids;
   
   User() : uid(-1), primaryGid(-1) { }
   
@@ -44,7 +44,7 @@ public:
   void DelFlags(const std::string& flags);
   bool CheckFlags(const std::string& flags) const;
   bool CheckFlag(Flag flag) const;
-  bool Deleted() const { return CheckFlag(FlagDeleted); }
+  bool Deleted() const { return CheckFlag(Flag::Deleted); }
   
   UserID UID() const { return uid; }
   /* should never need to modify UID, can mongodb provide the id?
@@ -53,7 +53,7 @@ public:
   GroupID PrimaryGID() const { return primaryGid; }
   void SetPrimaryGID(GroupID primaryGid) { this->primaryGid = primaryGid; }
   
-  const boost::unordered_set<GroupID> SecondaryGIDs() const { return secondaryGids; }
+  const std::unordered_set<GroupID> SecondaryGIDs() const { return secondaryGids; }
   void AddSecondaryGID(GroupID gid);
   void DelSecondaryGID(GroupID gid);
   

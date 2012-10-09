@@ -158,7 +158,7 @@ void EPRTCommand::Execute()
   catch (const util::net::NetworkError& e)
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to open data connection to " + ep.ToString());
+                 "Unable to open data connection: " + e.Message());
     return;
   }
   
@@ -176,12 +176,12 @@ void EPSVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataInitPassive(ep, false);
+    client.DataInitPassive(ep, ftp::PassiveType::EPSV);
   }
   catch (const util::net::NetworkError& e)
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to listen for data connection.");
+                 "Unable to listen for data connection: " + e.Message());
     return;
   }
 
@@ -306,7 +306,7 @@ void LPRTCommand::Execute()
   catch (const util::net::NetworkError& e)
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to open data connection to " + ep.ToString());
+                 "Unable to open data connection: " + e.Message());
     return;
   }
   
@@ -324,12 +324,12 @@ void LPSVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataInitPassive(ep, false);
+    client.DataInitPassive(ep, ftp::PassiveType::LPSV);
   }
   catch (const util::net::NetworkError& e)
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to listen for data connection.");
+                 "Unable to listen for data connection: " + e.Message());
     return;
   }
   
@@ -521,12 +521,12 @@ void PASVCommand::Execute()
   util::net::Endpoint ep;
   try
   {
-    client.DataInitPassive(ep, true);
+    client.DataInitPassive(ep, ftp::PassiveType::PASV);
   }
   catch (const util::net::NetworkError& e)
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to listen for data connection.");
+                 "Unable to listen for data connection: " + e.Message());
     return;
   }
 
@@ -578,7 +578,7 @@ void PORTCommand::Execute()
   catch (const util::net::NetworkError& e)
   {
     client.Reply(ftp::CantOpenDataConnection,
-                 "Unable to open data connection to " + ep.ToString());
+                 "Unable to open data connection: " + e.Message());
     return;
   }
   
@@ -942,12 +942,12 @@ void STOUCommand::Execute()
   
   argStr = uniquePath.ToString();
   args.clear();
-  args.push_back("STOR");
-  args.push_back(argStr);
+  args.emplace_back("STOR");
+  args.emplace_back(argStr);
   
-  ftp::ClientState::Enum reqdState;
+  ftp::ClientState reqdState;
 
-  std::auto_ptr<cmd::Command>
+  std::unique_ptr<cmd::Command>
     command(cmd::Factory::Create(client, argStr, args, reqdState));
   assert(command.get());
   command->Execute();

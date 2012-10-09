@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #include <boost/noncopyable.hpp>
 #include <sys/socket.h>
 #include "util/net/endpoint.hpp"
@@ -15,10 +15,10 @@ struct addrinfo;
 namespace util { namespace net
 {
 
-enum SocketType
+enum class SocketType : int
 {
-  SockStream,
-  SockDatagram
+  Stream = SOCK_STREAM,
+  Datagram = SOCK_DGRAM,
 };
 
 class ResolverError : public NetworkError
@@ -68,11 +68,11 @@ class Resolver : boost::noncopyable
 class TCPResolver : public Resolver
 {
 public:
-  TCPResolver() : Resolver(SockStream) { }
+  TCPResolver() : Resolver(SocketType::Stream) { }
   /* No exceptions */
   
   TCPResolver(const std::string& hostname, int32_t port) : 
-    Resolver(SockStream, hostname, port) { }
+    Resolver(SocketType::Stream, hostname, port) { }
   /* Throws ResolverError, NetworkSystemError, InvalidIPAddressError */
 
 };
@@ -80,11 +80,11 @@ public:
 class UDPResolver : public Resolver
 {
 public:
-  UDPResolver() : Resolver(SockDatagram) { }
+  UDPResolver() : Resolver(SocketType::Datagram) { }
   /* No exceptions */
   
   UDPResolver(const std::string& hostname, int32_t port) : 
-    Resolver(SockDatagram, hostname, port) { }
+    Resolver(SocketType::Datagram, hostname, port) { }
   /* Throws ResolverError, NetworkSystemError, InvalidIPAddressError */
 };
 

@@ -1,6 +1,6 @@
 #include <vector>
 #include <sstream>
-#include <boost/cstdint.hpp>
+#include <cstdint>
 #include <boost/lexical_cast.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -99,7 +99,7 @@ util::Error EndpointToPORTv4(const Endpoint& ep, std::string& portString)
 
 util::Error EndpointToPORT(const Endpoint& ep, std::string& portString)
 {
-  if (ep.IP().Family() != IPAddress::IPv4)
+  if (ep.IP().Family() != IPFamily::IPv4)
   {
     const struct sockaddr_in6* addr6 = 
       reinterpret_cast<const struct sockaddr_in6*>(ep.Addr());
@@ -264,7 +264,7 @@ void EndpointToLPRTv6(const Endpoint& ep, std::string& portString)
 
 void EndpointToLPRT(const Endpoint& ep, std::string& portString)
 {
-  if (ep.IP().Family() == IPAddress::IPv4)
+  if (ep.IP().Family() == IPFamily::IPv4)
     EndpointToLPRTv4(ep, portString);
   else
     EndpointToLPRTv6(ep, portString);
@@ -313,7 +313,7 @@ util::Error EndpointFromEPRT(const std::string& portString, util::net::Endpoint&
 
 void EndpointToEPRT(const Endpoint& ep, std::string& portString, bool full)
 {
-  int16_t family = ep.IP().Family() == util::net::IPAddress::IPv4 ? 1 : 2;
+  int16_t family = ep.IP().Family() == util::net::IPFamily::IPv4 ? 1 : 2;
   
   std::ostringstream os;
   if (full)

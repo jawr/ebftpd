@@ -21,13 +21,10 @@ namespace
 bool Evaluate(const std::vector<cfg::setting::Right>& rights, 
               const User& user, const std::string& path)
 {
-  for (std::vector<cfg::setting::Right>::const_iterator it =
-       rights.begin(); it != rights.end(); ++it)
+  for (const auto& right : rights)
   {
-    if (util::string::WildcardMatch(it->Path(), path))
-    {
-      return it->ACL().Evaluate(user);
-    }
+    if (util::string::WildcardMatch(right.Path(), path))
+      return right.ACL().Evaluate(user);
   }
   return false;
 }
@@ -250,22 +247,21 @@ template util::Error DirAllowed<View>(const User& user, std::string path);
 } /* PathPermission namespace */
 
 
-bool AllowFxp(ftp::TransferType::Enum transferType,
+bool AllowFxp(ftp::TransferType transferType,
               const User& user, bool& logging)
 {
   assert(transferType != ftp::TransferType::List);
 
   const cfg::Config& config = cfg::Get();
-  for (std::vector<cfg::setting::AllowFxp>::const_iterator it =
-       config.AllowFxp().begin(); it != config.AllowFxp().end(); ++it)
+  for (const auto& af : config.AllowFxp())
   {
-    if (it->ACL().Evaluate(user))
+    if (af.ACL().Evaluate(user))
     {
-      logging = it->Logging();
+      logging = af.Logging();
       if (transferType == ftp::TransferType::Download)
-        return it->Downloads();
+        return af.Downloads();
       else
-        return it->Uploads();
+        return af.Uploads();
     }
   }
   
