@@ -3,6 +3,7 @@
 #include <mongo/client/dbclient.h>
 #include <boost/thread/future.hpp>
 #include "db/worker.hpp"
+#include <iostream>
 
 namespace db
 {
@@ -14,16 +15,44 @@ public:
   virtual void Execute(Worker& worker) = 0;
 };
 
+class EnsureIndex : public Task
+{
+  std::string container;
+  std::string key;
+public:
+  EnsureIndex(const std::string& container, const std::string& key) :
+      container(container), key(key) {};
+  virtual void Execute(Worker& worker);
+};
+
 class Select : public Task
 {
-  const std::string& container;
+  std::string container;
   const mongo::Query& query;
   QueryResults& results;
   boost::unique_future<bool>& future;
+  boost::promise<bool> promise;
+  int limit;
 public:
   Select(const std::string& container, const mongo::Query& query,
-    QueryResults& results, boost::unique_future<bool>& future) : 
-      container(container), query(query), results(results), future(future) {};
+    QueryResults& results, boost::unique_future<bool>& future, int limit = 0) : 
+      container(container), query(query), results(results), future(future),
+      promise(), limit(limit) { future = promise.get_future(); }
+
+  virtual void Execute(Worker& worker);
+};
+
+class Update : public Task
+{
+protected:
+  std::string container;
+  mongo::BSONObj obj;
+  mongo::Query query;
+  bool upsert;
+public:
+  Update(const std::string& container, const mongo::BSONObj& obj,
+    const mongo::Query& query, bool upsert=false) :
+    container(container), obj(obj), query(query), upsert(upsert) {};
   virtual void Execute(Worker& worker);
 };
 

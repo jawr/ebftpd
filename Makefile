@@ -14,6 +14,7 @@ OBJECTS = \
 	cfg/setting.o \
 	db/bson/user.o \
 	db/bson/group.o \
+  db/interface.o \
   db/pool.o \
   db/worker.o \
   db/task.o \

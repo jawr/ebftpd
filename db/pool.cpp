@@ -40,18 +40,19 @@ void Pool::Run()
 #ifdef DB_POOL_TEST
 #include <mongo/client/dbclient.h>
 #include <boost/thread/future.hpp>
-
+#include "db/interface.hpp"
+#include "acl/types.hpp"
+#include "acl/usercache.hpp"
+#include <iostream>
 int main()
 {
   db::Pool::StartThread();
-  for (int i = 0; i < 10; ++i)
-  {
-    mongo::Query query;
-    db::QueryResults results;
-    boost::unique_future<bool> future;
-    db::TaskPtr task(new db::Select("users", query, results, future));
-    db::Pool::Queue(task);
-  }
+
+  db::Initalize();
+
+  acl::UserCache::Create("iotest", "password", "123");
+  acl::UserCache::AddSecondaryGID("iotest", acl::GroupID(5));
+  
   db::Pool::JoinThread();
   
 }

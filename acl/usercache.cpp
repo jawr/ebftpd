@@ -1,6 +1,6 @@
 #include <memory>
 #include "acl/usercache.hpp"
-
+#include "db/interface.hpp"
 // only for generating dodgy random uid
 // until we can retrieve one from db
 #include <ctime>
@@ -24,6 +24,7 @@ void UserCache::Save(const acl::User& user)
 {
   // create task holding a copy of user for db connection pool to 
   // save into database
+  db::SaveUser(user);
 }
 
 bool UserCache::Exists(const std::string& name)
@@ -48,14 +49,7 @@ util::Error UserCache::Create(const std::string& name, const std::string& passwo
   if (instance.byName.find(name) != instance.byName.end())
     return util::Error::Failure("User already exists");
 
-  // dummy random uid
-  UserID uid;
-  while (true)
-  {
-    uid = rand() % 10000 + 1; /* 1 to 10000 */
-    if (instance.byUID.find(uid) == instance.byUID.end())
-      break;
-  }
+  acl::UserID uid = db::GetNewUserID();
 
   std::unique_ptr<acl::User> user(new acl::User(name, uid, password, flags));
     
