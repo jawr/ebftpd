@@ -50,8 +50,11 @@ int main()
 
   db::Initalize();
 
+  acl::UserCache::Sync();
+
   acl::UserCache::Create("iotest", "password", "123");
   acl::UserCache::AddSecondaryGID("iotest", acl::GroupID(5));
+  
   
   db::Pool::JoinThread();
   

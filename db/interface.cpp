@@ -26,6 +26,7 @@ bool Initalize()
   tasks.emplace_back(new db::EnsureIndex("users", "name"));
   for (auto task: tasks)
     Pool::Queue(task);
+  return true; // needed?
 }
 
 acl::UserID GetNewUserID()
@@ -55,6 +56,24 @@ void SaveUser(const acl::User& user)
   mongo::Query query = QUERY("uid" << user.UID());
   TaskPtr task(new db::Update("users", obj, query, true));
   Pool::Queue(task);
+}
+
+void GetUsers(std::vector<acl::User*>& users)
+{
+  QueryResults results;
+  mongo::Query query;
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("users", query, results, future));
+  Pool::Queue(task);
+
+  future.wait();
+
+  logger::ftpd << "results: " << results.size() << logger::endl;
+
+  if (results.size() == 0) return;
+
+  for (auto obj: results)
+    users.push_back(bson::User::Unserialize(obj));
 }
 
 

@@ -19,18 +19,18 @@ mongo::BSONObj User::Serialize(const acl::User& user)
   return bob.obj();
 }
 
-acl::User User::Unserialize(const mongo::BSONObj& bo)
+acl::User* User::Unserialize(const mongo::BSONObj& bo)
 {
-  acl::User user;
-  user.name = bo["name"].String();
-  user.salt = bo["salt"].String();
-  user.password = bo["password"].String();
-  user.flags = bo["flags"].String();
-  user.uid = bo["uid"].Int();
-  user.primaryGid = bo["primary gid"].Int();
+  acl::User* user = new acl::User();
+  user->name = bo["name"].String();
+  user->salt = bo["salt"].String();
+  user->password = bo["password"].String();
+  user->flags = bo["flags"].String();
+  user->uid = bo["uid"].Int();
+  user->primaryGid = bo["primary gid"].Int();
   std::vector<mongo::BSONElement> secondaryGids;
   for (const auto& elem : secondaryGids)
-    user.secondaryGids.insert(elem.Int());
+    user->secondaryGids.insert(elem.Int());
   return user;
 }
   

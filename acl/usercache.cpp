@@ -1,11 +1,11 @@
 #include <memory>
+#include <vector>
 #include "acl/usercache.hpp"
 #include "db/interface.hpp"
 // only for generating dodgy random uid
 // until we can retrieve one from db
 #include <ctime>
 #include <cstdlib>
-
 namespace acl
 {
 
@@ -20,10 +20,22 @@ UserCache::~UserCache()
   }
 }
 
+void UserCache::Sync()
+{
+  // grab all user's from the database and populate the map
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  std::vector<acl::User*> users;
+  db::GetUsers(users);
+  for (auto user: users)
+  {
+    instance.byName.insert(std::make_pair(user->Name(), user));
+    instance.byUID.insert(std::make_pair(user->UID(), user));
+  }
+  
+}
+
 void UserCache::Save(const acl::User& user)
 {
-  // create task holding a copy of user for db connection pool to 
-  // save into database
   db::SaveUser(user);
 }
 
@@ -42,9 +54,6 @@ bool UserCache::Exists(UserID uid)
 util::Error UserCache::Create(const std::string& name, const std::string& password,
                               const std::string& flags)
 {
-  // somewhere here we need to query the db connection pool
-  // for a new uid  
-  
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   if (instance.byName.find(name) != instance.byName.end())
     return util::Error::Failure("User already exists");

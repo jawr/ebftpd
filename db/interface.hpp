@@ -2,6 +2,7 @@
 #define __DB_INTERFACE_HPP
 #include <mongo/client/dbclient.h>
 #include <vector>
+#include <memory>
 #include "acl/types.hpp"
 #include "acl/user.hpp"
 namespace db 
@@ -12,6 +13,7 @@ namespace db
   // user functions
   acl::UserID GetNewUserID();
   void SaveUser(const acl::User& user);    
+  void GetUsers(std::vector<acl::User*>& users);
 // end
 }
 #endif
