@@ -1,7 +1,7 @@
 #ifndef __ACL_TYPES_HPP
 #define __ACL_TYPES_HPP
 
-#include <cstdint>
+#include <boost/cstdint.hpp>
 
 namespace acl
 {

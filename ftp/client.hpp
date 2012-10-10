@@ -99,13 +99,9 @@ public:
   
   ~Client();
      
-<<<<<<< HEAD
-  const fs::Path& WorkDir() const { return workDir; }
-  const acl::User& User() const { return user; }
-=======
   const fs::Path& WorkDir() const { return workDir; };
   const acl::User& User() const { return *user; }
->>>>>>> Tied main.cpp into the db as well as Client (had to modify UserCache to be able to return a non const pointer, also changed Client to have a shared_ptr - worried that even if the client goes out of scope it will delete the pointer as the ref count isn't counted int he container in the cache, might have to store it as a raw pointer instead)
+
   void Run();
   
   void PartReply(ReplyCode code, const std::string& message);

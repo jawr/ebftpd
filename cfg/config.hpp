@@ -146,7 +146,7 @@ public:
   const acl::ACL& Shutdown() const { return shutdown; }
   int FreeSpace() const { return freeSpace; }
   const std::vector<setting::UseDirSize>& UseDirSize() const { return useDirSize; }
-  const setting::Timezone& Timezone() const { return timezone; }
+  int Timezone() const { return timezone; }
   bool ColorMode() const { return colorMode; }
   const std::string& SitenameLong() const { return sitenameLong; }
   const std::string& SitenameShort() const { return sitenameShort; }
