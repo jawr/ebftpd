@@ -5,6 +5,7 @@
 #include <memory>
 #include "acl/types.hpp"
 #include "acl/user.hpp"
+#include <boost/ptr_container/ptr_vector.hpp>
 namespace db 
 {
   // initalize

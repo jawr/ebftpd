@@ -2,6 +2,7 @@
 #include <vector>
 #include "acl/usercache.hpp"
 #include "db/interface.hpp"
+#include "logger/logger.hpp"
 // only for generating dodgy random uid
 // until we can retrieve one from db
 #include <ctime>
@@ -25,11 +26,19 @@ void UserCache::Sync()
   // grab all user's from the database and populate the map
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   std::vector<acl::User*> users;
-  db::GetUsers(users);
-  for (auto user: users)
+  try
   {
-    instance.byName.insert(std::make_pair(user->Name(), user));
-    instance.byUID.insert(std::make_pair(user->UID(), user));
+    db::GetUsers(users);
+    for (auto user: users)
+    {
+      instance.byName.insert(std::make_pair(user->Name(), user));
+      instance.byUID.insert(std::make_pair(user->UID(), user));
+    }
+  } 
+  catch (const std::runtime_error& e)
+  {
+    logger::error << "acl::UserCache::Sync error: " << e.what() << logger::endl;
+    for (auto ptr: users) delete ptr; // cleanup
   }
   
 }

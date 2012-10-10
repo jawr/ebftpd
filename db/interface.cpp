@@ -10,6 +10,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 namespace db
 {
 namespace
