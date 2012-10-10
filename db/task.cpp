@@ -14,7 +14,7 @@ void Update::Execute(Worker& worker)
   }
   catch (const DBError& e)
   {
-    logger::error << e.what() << logger::endl;
+    logger::error << e.Message() << logger::endl;
   }
 }
 
@@ -27,7 +27,7 @@ void Select::Execute(Worker& worker)
   }
   catch (const DBError& e)
   {
-    logger::error << e.what() << logger::endl;
+    logger::error << e.Message() << logger::endl;
   }
 }
 
@@ -39,7 +39,7 @@ void EnsureIndex::Execute(Worker& worker)
   }
   catch(const DBError& e)
   {
-    logger::error << e.what() << logger::endl;
+    logger::error << e.Message() << logger::endl;
   }
 }
 
