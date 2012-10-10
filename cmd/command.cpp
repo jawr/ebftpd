@@ -257,7 +257,7 @@ void LISTCommand::Execute()
       optOffset += args[1].length();
     }
     
-    std::string path(argStr, optOffset);
+    path = std::string(argStr, optOffset);
     boost::trim(path);
   }
   
