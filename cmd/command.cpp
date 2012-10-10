@@ -23,6 +23,7 @@
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include <iostream>
+#include "logger/logger.hpp"
 
 namespace PP = acl::PathPermission;
 
@@ -260,7 +261,10 @@ void LISTCommand::Execute()
     
     path = std::string(argStr, optOffset);
     boost::trim(path);
+    logger::ftpd << "path: " << path << logger::endl;
   }
+
+  logger::ftpd << "Options: " << options << " Path: " << path << " Arg.size(): " << args.size() << " ArgStr: " << argStr << " args[0]: " << args.at(0) << logger::endl;
   
   const cfg::Config& config = cfg::Get();
   std::string forcedOptions = "l" + config.Lslong().Options();

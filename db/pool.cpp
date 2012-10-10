@@ -11,8 +11,6 @@ Pool Pool::instance;
 
 void Pool::Run()
 {
-  logger::ftpd << "db::Pool started" << logger::endl;
-
   for (int i = 0; i < 8; ++i)
   {
     try
