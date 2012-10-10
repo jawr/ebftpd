@@ -6,7 +6,7 @@
 namespace db
 {
 Worker::Worker(const std::string& host, TaskQueue& queue) : 
-  host(host), queue(queue), database("ebftpd.")
+  host(host), database("ebftpd."), queue(queue)
 {
   try
   {
@@ -48,7 +48,7 @@ void Worker::Update(const std::string& container, mongo::BSONObj& obj,
   try
   {
     boost::mutex::scoped_lock lock(mtx);
-    conn.update(database + container, query, obj, true, false);
+    conn.update(database + container, query, obj, upsert, false);
     const std::string& err = conn.getLastError();
     if (err.size() > 0) throw DBError(err);
   }

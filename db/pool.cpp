@@ -28,6 +28,7 @@ void Pool::Run()
   while (true)
   {
     TaskQueue::size_type size = queue.WaitChanged();
+    (void)size;
   }
     
 }
