@@ -224,6 +224,14 @@ const acl::User& UserCache::User(UserID uid)
   return *it->second;
 }
 
+acl::User* UserCache::UserPtr(const std::string& name)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) throw util::RuntimeError("User does't exist");
+  return it->second;
+}
+
 } /* acl namespace */
 
 

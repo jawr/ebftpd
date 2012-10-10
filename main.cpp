@@ -10,6 +10,10 @@
 #include "cfg/exception.hpp"
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
+#include "db/interface.hpp"
+#include "db/exception.hpp"
+#include "acl/usercache.hpp"
+#include "acl/groupcache.hpp"
 
 #ifndef TEST
 
@@ -24,6 +28,16 @@ int main(int argc, char** argv)
   catch (const cfg::ConfigError& e)
   {
     logger::error << e.what() << logger::endl;
+    return 1;
+  }
+
+  try
+  {
+    db::Initalize();
+  }
+  catch (const db::DBError& e)
+  {
+    logger::error << "DB failed to initialise: " << e.Message() << logger::endl;
     return 1;
   }
   

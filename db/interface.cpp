@@ -5,6 +5,8 @@
 #include "db/bson/user.hpp"
 #include "db/bson/group.hpp"
 #include "acl/types.hpp"
+#include "acl/usercache.hpp"
+#include "acl/groupcache.hpp"
 #include "logger/logger.hpp"
 #include <mongo/client/dbclient.h>
 #include <boost/thread/future.hpp>
@@ -22,7 +24,10 @@ boost::mutex getNewGroupIdMtx;
 
 void Initalize()
 {
-  logger::ftpd << "Initalizing DB" << logger::endl;
+  db::Pool::StartThread();
+  acl::UserCache::Initalize();
+  acl::GroupCache::Initalize();
+
   std::vector<TaskPtr> tasks;
   
   tasks.emplace_back(new db::EnsureIndex("users", "uid"));
@@ -50,8 +55,6 @@ acl::UserID GetNewUserID()
 
   if (results.size() == 0) return acl::UserID(1);
 
-  logger::ftpd << results.back().toString() << logger::endl;
-
   int uid = results.back().getIntField("uid");
   return acl::UserID(++uid);
 }
@@ -73,8 +76,6 @@ void GetUsers(std::vector<acl::User*>& users)
   Pool::Queue(task);
 
   future.wait();
-
-  logger::ftpd << "results: " << results.size() << logger::endl;
 
   if (results.size() == 0) return;
 
@@ -99,8 +100,6 @@ acl::GroupID GetNewGroupID()
 
   if (results.size() == 0) return acl::GroupID(1);
 
-  logger::ftpd << results.back().toString() << logger::endl;
-
   int gid = results.back().getIntField("gid");
   return acl::GroupID(++gid);
 }
@@ -122,8 +121,6 @@ void GetGroups(std::vector<acl::Group*>& groups)
   Pool::Queue(task);
 
   future.wait();
-
-  logger::ftpd << "group results: " << results.size() << logger::endl;
 
   if (results.size() == 0) return;
 
