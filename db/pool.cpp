@@ -43,6 +43,7 @@ void Pool::Run()
 #include "db/interface.hpp"
 #include "acl/types.hpp"
 #include "acl/usercache.hpp"
+#include "acl/groupcache.hpp"
 #include <iostream>
 int main()
 {
@@ -50,10 +51,14 @@ int main()
 
   db::Initalize();
 
-  acl::UserCache::Sync();
+  acl::UserCache::Initalize();
+  acl::GroupCache::Initalize();
 
   acl::UserCache::Create("iotest", "password", "123");
-  acl::UserCache::AddSecondaryGID("iotest", acl::GroupID(5));
+  acl::GroupCache::Create("TESTGRP");
+  acl::UserCache::Create("test2", "wowow", "");
+  acl::UserCache::SetPrimaryGID("iotest", 
+    acl::GroupCache::Group("TESTGRP").GID());
   
   
   db::Pool::JoinThread();

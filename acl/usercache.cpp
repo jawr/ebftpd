@@ -21,7 +21,7 @@ UserCache::~UserCache()
   }
 }
 
-void UserCache::Sync()
+void UserCache::Initalize()
 {
   // grab all user's from the database and populate the map
   boost::lock_guard<boost::mutex> lock(instance.mutex);
@@ -37,7 +37,7 @@ void UserCache::Sync()
   } 
   catch (const std::runtime_error& e)
   {
-    logger::error << "acl::UserCache::Sync error: " << e.what() << logger::endl;
+    logger::error << "acl::UserCache::Initalize error: " << e.what() << logger::endl;
     for (auto ptr: users) delete ptr; // cleanup
   }
   
@@ -208,7 +208,7 @@ util::Error UserCache::DelSecondaryGID(const std::string& name, GroupID gid)
   return util::Error::Success();
 }
 
-const acl::User UserCache::User(const std::string& name)
+const acl::User& UserCache::User(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
@@ -216,7 +216,7 @@ const acl::User UserCache::User(const std::string& name)
   return *it->second;
 }
 
-const acl::User UserCache::User(UserID uid)
+const acl::User& UserCache::User(UserID uid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByUIDMap::iterator it = instance.byUID.find(uid);

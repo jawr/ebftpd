@@ -26,6 +26,8 @@ class GroupCache
   static void Save(const acl::Group& group);
   
 public:
+  static void Initalize();
+
   static bool Exists(const std::string& name);
   static bool Exists(GroupID gid);
   static util::Error Create(const std::string& name);
@@ -34,8 +36,8 @@ public:
   
   // these return const as the group objects should NEVER
   // be modified except via the above functions'
-  static const acl::Group Group(const std::string& name);
-  static const acl::Group Group(GroupID gid);
+  static const acl::Group& Group(const std::string& name);
+  static const acl::Group& Group(GroupID gid);
 };
 
 } /* acl namespace */

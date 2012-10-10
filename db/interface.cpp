@@ -1,8 +1,9 @@
 #include "db/interface.hpp"
 #include "db/task.hpp"
 #include "db/pool.hpp"
-#include "db/bson/user.hpp"
 #include "db/types.hpp"
+#include "db/bson/user.hpp"
+#include "db/bson/group.hpp"
 #include "acl/types.hpp"
 #include "logger/logger.hpp"
 #include <mongo/client/dbclient.h>
@@ -16,20 +17,24 @@ namespace db
 namespace
 {
 boost::mutex getNewUserIdMtx;
+boost::mutex getNewGroupIdMtx;
 }
 
-bool Initalize()
+void Initalize()
 {
   logger::ftpd << "Initalizing DB" << logger::endl;
   std::vector<TaskPtr> tasks;
   
   tasks.emplace_back(new db::EnsureIndex("users", "uid"));
   tasks.emplace_back(new db::EnsureIndex("users", "name"));
+  tasks.emplace_back(new db::EnsureIndex("groups", "gid"));
+  tasks.emplace_back(new db::EnsureIndex("groups", "name"));
   for (auto task: tasks)
     Pool::Queue(task);
-  return true; // needed?
 }
 
+
+// user functions
 acl::UserID GetNewUserID()
 {
   boost::lock_guard<boost::mutex> lock(getNewUserIdMtx);
@@ -77,6 +82,54 @@ void GetUsers(std::vector<acl::User*>& users)
     users.push_back(bson::User::Unserialize(obj));
 }
 
+
+// group functions
+acl::GroupID GetNewGroupID()
+{
+  boost::lock_guard<boost::mutex> lock(getNewGroupIdMtx);
+  
+  QueryResults results;
+  boost::unique_future<bool> future;
+  mongo::Query query;
+  query.sort("gid", 0);
+  TaskPtr task(new db::Select("groups", query, results, future, 1));
+  Pool::Queue(task);
+
+  future.wait();
+
+  if (results.size() == 0) return acl::GroupID(1);
+
+  logger::ftpd << results.back().toString() << logger::endl;
+
+  int gid = results.back().getIntField("gid");
+  return acl::GroupID(++gid);
+}
+
+void SaveGroup(const acl::Group& group)
+{
+  mongo::BSONObj obj = db::bson::Group::Serialize(group);
+  mongo::Query query = QUERY("gid" << group.GID());
+  TaskPtr task(new db::Update("groups", obj, query, true));
+  Pool::Queue(task);
+}
+
+void GetGroups(std::vector<acl::Group*>& groups)
+{
+  QueryResults results;
+  mongo::Query query;
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("groups", query, results, future));
+  Pool::Queue(task);
+
+  future.wait();
+
+  logger::ftpd << "group results: " << results.size() << logger::endl;
+
+  if (results.size() == 0) return;
+
+  for (auto obj: results)
+    groups.push_back(bson::Group::Unserialize(obj));
+}
 
 // end
 }

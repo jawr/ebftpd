@@ -1,5 +1,7 @@
 #include <memory>
 #include "acl/groupcache.hpp"
+#include "db/interface.hpp"
+#include "logger/logger.hpp"
 
 // only for generating dodgy random gid
 // until we can retrieve one from db
@@ -20,10 +22,30 @@ GroupCache::~GroupCache()
   }
 }
 
+void GroupCache::Initalize()
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  std::vector<acl::Group*> groups;
+  try
+  {
+    db::GetGroups(groups);
+    for (auto group: groups)
+    {
+      instance.byName.insert(std::make_pair(group->Name(), group));
+      instance.byGID.insert(std::make_pair(group->GID(), group));
+    }
+  } 
+  catch (const std::runtime_error& e)
+  {
+    logger::error << "acl::GroupCache::Initalize error: " << e.what() << logger::endl;
+    for (auto ptr: groups) delete ptr; // cleanup
+  }
+  
+}
+
 void GroupCache::Save(const acl::Group& group)
 {
-  // create task holding a copy of group for db connection pool to 
-  // save into database
+  db::SaveGroup(group);
 }
 
 bool GroupCache::Exists(const std::string& name)
@@ -40,21 +62,11 @@ bool GroupCache::Exists(GroupID gid)
 
 util::Error GroupCache::Create(const std::string& name)
 {
-  // somewhere here we need to query the db connection pool
-  // for a new gid  
-  
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   if (instance.byName.find(name) != instance.byName.end())
     return util::Error::Failure("Group already exists");
 
-  // dummy random gid
-  GroupID gid;
-  while (true)
-  {
-    gid = rand() % 10000 + 1; /* 1 to 10000 */
-    if (instance.byGID.find(gid) == instance.byGID.end())
-      break;
-  }
+  acl::GroupID gid = db::GetNewGroupID();
 
   std::unique_ptr<acl::Group> group(new acl::Group(name, gid));
     
@@ -100,7 +112,7 @@ util::Error GroupCache::Rename(const std::string& oldName, const std::string& ne
   return util::Error::Success();
 }
 
-const acl::Group GroupCache::Group(const std::string& name)
+const acl::Group& GroupCache::Group(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
@@ -108,7 +120,7 @@ const acl::Group GroupCache::Group(const std::string& name)
   return *it->second;
 }
 
-const acl::Group GroupCache::Group(GroupID gid)
+const acl::Group& GroupCache::Group(GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByGIDMap::iterator it = instance.byGID.find(gid);
