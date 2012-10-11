@@ -1,3 +1,4 @@
+#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/rfc/site.hpp"
 
 namespace cmd { namespace rfc

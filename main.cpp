@@ -10,11 +10,12 @@
 #include "cfg/exception.hpp"
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
-#include "version.hpp"
 #include "db/interface.hpp"
 #include "db/exception.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
+
+#include "version.hpp"
 
 extern const std::string programName = "ebftpd";
 extern const std::string programFullname = programName + " " + std::string(version);
@@ -38,16 +39,6 @@ int main(int argc, char** argv)
 
   try
   {
-    db::Initalize();
-  }
-  catch (const db::DBError& e)
-  {
-    logger::error << "DB failed to initialise: " << e.Message() << logger::endl;
-    return 1;
-  }
-  
-  try
-  {
     const std::string& certificate = cfg::Get().TlsCertificate().ToString();
     util::net::TLSServerContext::Initialise(certificate, "");
   }
@@ -61,6 +52,16 @@ int main(int argc, char** argv)
   ftp::AddrAllocator<ftp::AddrType::Passive>::SetAddrs(config->PasvAddr());
   ftp::PortAllocator<ftp::PortType::Active>::SetPorts(config->ActivePorts());
   ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(config->PasvPorts());
+  
+  try
+  {
+    db::Initalize();
+  }
+  catch (const db::DBError& e)
+  {
+    logger::error << "DB failed to initialise: " << e.Message() << logger::endl;
+    return 1;
+  }
   
   fs::OwnerCache::Start();
   

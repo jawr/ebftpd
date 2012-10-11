@@ -1,5 +1,5 @@
-#ifndef __CMD_COMMAND_HPP
-#define __CMD_COMMAND_HPP
+#ifndef __CMD_RFC_COMMAND_HPP
+#define __CMD_RFC_COMMAND_HPP
 
 #include <vector>
 #include <string>

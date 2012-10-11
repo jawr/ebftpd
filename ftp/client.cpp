@@ -11,7 +11,7 @@
 #include "util/error.hpp"
 #include "util/scopeguard.hpp"
 #include "util/net/tcplistener.hpp"
-#include "cmd/factory.hpp"
+#include "cmd/rfc/factory.hpp"
 #include "acl/check.hpp"
 #include "cfg/get.hpp"
 #include "util/misc.hpp"
@@ -145,7 +145,7 @@ void Client::ExecuteCommand(const std::string& commandLine)
   
   ClientState reqdState;
   std::unique_ptr<cmd::Command>
-    command(cmd::Factory::Create(*this, argStr, args, reqdState));
+    command(cmd::rfc::Factory::Create(*this, argStr, args, reqdState));
   if (!command.get()) control.Reply(ftp::CommandUnrecognised, "Command not understood");
   else if (!CheckState(reqdState));
   else command->Execute();

@@ -1,6 +1,6 @@
 #include "cmd/rfc/stou.hpp"
 #include "fs/file.hpp"
-#include "cmd/factory.hpp"
+#include "cmd/rfc/factory.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -32,7 +32,7 @@ void STOUCommand::Execute()
   ftp::ClientState reqdState;
 
   std::unique_ptr<cmd::Command>
-    command(cmd::Factory::Create(client, argStr, args, reqdState));
+    command(cmd::rfc::Factory::Create(client, argStr, args, reqdState));
   assert(command.get());
   command->Execute();
 }

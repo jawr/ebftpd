@@ -8,59 +8,10 @@ INCLUDE = -include pch.hpp -I.
 OBJECTS = \
 	main.o \
 	cmd/dirlist.o \
-	cmd/rfc/abor.o \
-	cmd/rfc/acct.o \
-	cmd/rfc/adat.o \
-	cmd/rfc/allo.o \
-	cmd/rfc/appe.o \
-	cmd/rfc/auth.o \
-	cmd/rfc/ccc.o \
-	cmd/rfc/cdup.o \
-	cmd/rfc/conf.o \
-	cmd/rfc/cwd.o \
-	cmd/rfc/dele.o \
-	cmd/rfc/enc.o \
-	cmd/rfc/eprt.o \
-	cmd/rfc/epsv.o \
-	cmd/rfc/feat.o \
-	cmd/rfc/help.o \
-	cmd/rfc/lang.o \
-	cmd/rfc/list.o \
-	cmd/rfc/lprt.o \
-	cmd/rfc/lpsv.o \
-	cmd/rfc/mdtm.o \
-	cmd/rfc/mic.o \
-	cmd/rfc/mkd.o \
-	cmd/rfc/mlsd.o \
-	cmd/rfc/mlst.o \
-	cmd/rfc/mode.o \
-	cmd/rfc/nlst.o \
-	cmd/rfc/noop.o \
-	cmd/rfc/opts.o \
-	cmd/rfc/pass.o \
-	cmd/rfc/pasv.o \
-	cmd/rfc/pbsz.o \
-	cmd/rfc/port.o \
-	cmd/rfc/prot.o \
-	cmd/rfc/pwd.o \
-	cmd/rfc/quit.o \
-	cmd/rfc/rein.o \
-	cmd/rfc/rest.o \
-	cmd/rfc/retr.o \
-	cmd/rfc/rmd.o \
-	cmd/rfc/rnfr.o \
-	cmd/rfc/rnto.o \
-	cmd/rfc/site.o \
-	cmd/rfc/size.o \
-	cmd/rfc/smnt.o \
-	cmd/rfc/stat.o \
-	cmd/rfc/stor.o \
-	cmd/rfc/stou.o \
-	cmd/rfc/stru.o \
-	cmd/rfc/syst.o \
-	cmd/rfc/type.o \
-	cmd/rfc/user.o \
-	cmd/factory.o \
+	cmd/rfc/bulk.o \
+	cmd/rfc/factory.o \
+	cmd/site/bulk.o \
+	cmd/site/factory.o \
 	cfg/config.o \
 	cfg/get.o \
 	cfg/setting.o \
@@ -114,6 +65,9 @@ OBJECTS = \
 	util/net/interfaces.o \
 	util/net/ftp.o 
 
+CMD_RFC_SOURCE := $(shell ls cmd/rfc/*.cpp | grep -v -E "/(factory.cpp|bulk.cpp)$$")
+CMD_SITE_SOURCE := $(shell ls cmd/site/*.cpp | grep -v -E "/(factory.cpp|bulk.cpp)$$")
+
 .PHONY: test clean strip
 
 all: 
@@ -124,8 +78,9 @@ all:
 	VERSION=`git log --decorate | grep "^commit " | grep -n "tag: " | \
 		sed -r 's|^([0-9]+):.+tag: ([^),]+).+$$|\2-\1|p' | head -n1`; \
 	if ! grep -q "\"$$VERSION\"" version.hpp; then \
-    echo "const char* version = \"$$VERSION\";" > version.hpp1; \
-    fi; \
+	echo "const char* version = \"$$VERSION\";" > version.hpp; \
+	echo "version updated"; \
+	fi; \
 	$(MAKE) $(MAKEFILE) ftpd
 
 test: 
@@ -139,11 +94,19 @@ test:
 	echo "$(TEST)" > .state
 	$(MAKE) $(MAKEFILE) ftpd CXXFLAGS="$(CXXFLAGS) -DTEST -D$(TEST)"
 
-ftpd: pch.hpp.gch $(OBJECTS)
+ftpd: cmd/rfc/bulk.cpp cmd/site/bulk.cpp pch.hpp.gch $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd
 
 pch.hpp.gch:
 	$(CXX) -c $(CXXFLAGS) pch.hpp
+
+cmd/rfc/bulk.cpp: $(CMD_RFC_SOURCE)
+	@echo "RFC command implementation files changed, regenerating $@ .."
+	@cat $(CMD_RFC_SOURCE) > cmd/rfc/bulk.cpp
+
+cmd/site/bulk.cpp: $(CMD_SITE_SOURCE)
+	@echo "SITE command implementation files changed, regenerating $@ .."
+	@cat $(CMD_SITE_SOURCE) > cmd/site/bulk.cpp
 	
 strip:
 	@strip -s ftpd
@@ -159,3 +122,4 @@ clean:
 	@find -iname "*.gch" -exec rm '{}' ';'
 	@rm -f ftpd
 	@rm -f .state
+	@rm -f cmd/rfc/bulk.cpp cmd/site/bulk.cpp

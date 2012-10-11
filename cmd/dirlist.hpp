@@ -3,6 +3,7 @@
 
 #include <string>
 #include <queue>
+#include <unordered_map>
 #include "fs/path.hpp"
 #include "fs/status.hpp"
 #include "acl/types.hpp"
