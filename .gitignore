@@ -18,7 +18,6 @@ tmp
 .state
 glftpd.conf
 *.pem
-site
 *.conf
 bulk.cpp
 
