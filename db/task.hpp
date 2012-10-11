@@ -50,8 +50,8 @@ protected:
   mongo::Query query;
   bool upsert;
 public:
-  Update(const std::string& container, const mongo::BSONObj& obj,
-    const mongo::Query& query, bool upsert=false) :
+  Update(const std::string& container, const mongo::Query& query, 
+    const mongo::BSONObj& obj, bool upsert=false) :
     container(container), obj(obj), query(query), upsert(upsert) {};
   virtual void Execute(Worker& worker);
 };
