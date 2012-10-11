@@ -1,3 +1,4 @@
+#include <boost/lexical_cast.hpp>
 #include "cmd/rfc/size.hpp"
 #include "acl/check.hpp"
 #include "cfg/get.hpp"

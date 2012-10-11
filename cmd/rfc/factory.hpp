@@ -1,12 +1,12 @@
-#ifndef __CMD_FACTORY_HPP
-#define __CMD_FACTORY_HPP
+#ifndef __CMD_RFC_FACTORY_HPP
+#define __CMD_RFC_FACTORY_HPP
 
 #include <memory>
 #include <tr1/unordered_map>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 
-namespace cmd
+namespace cmd { namespace rfc
 {
 
 template <class BaseT>
@@ -24,12 +24,12 @@ public:
 };
 
 template <class CommandT>
-class Creator : public CreatorBase<Command>
+class Creator : public CreatorBase<cmd::Command>
 {
 public:
   Creator(ftp::ClientState reqdState) : CreatorBase(reqdState) { }
-  Command *Create(ftp::Client& client, const std::string& argStr,
-                  const Args& args)
+  cmd::Command *Create(ftp::Client& client, const std::string& argStr,
+                       const Args& args)
   {
     return new CommandT(client, argStr, args);
   }
@@ -38,22 +38,23 @@ public:
 class Factory
 {
   typedef std::tr1::unordered_map<std::string,
-                  CreatorBase<Command>* > CreatorsMap;
+                  CreatorBase<cmd::Command>* > CreatorsMap;
                                    
   CreatorsMap creators;
    
   Factory();
   ~Factory();
   
-  void Register(const std::string& command, CreatorBase<Command>* creator);
+  void Register(const std::string& command, CreatorBase<cmd::Command>* creator);
   
   static Factory factory;
   
 public:
-  static Command* Create(ftp::Client& client, const std::string& argStr,
-                         const Args& args, ftp::ClientState& reqdState);
+  static cmd::Command* Create(ftp::Client& client, const std::string& argStr,
+                              const Args& args, ftp::ClientState& reqdState);
 };
 
+} /* rfc namespace */
 } /* cmd namespace */
 
 #endif

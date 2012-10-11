@@ -1,6 +1,5 @@
 #include <boost/algorithm/string.hpp>
-#include "cmd/factory.hpp"
-#include "cmd/command.hpp"
+#include "cmd/rfc/factory.hpp"
 #include "cmd/rfc/abor.hpp"
 #include "cmd/rfc/acct.hpp"
 #include "cmd/rfc/adat.hpp"
@@ -54,7 +53,7 @@
 #include "cmd/rfc/type.hpp"
 #include "cmd/rfc/user.hpp"
 
-namespace cmd
+namespace cmd { namespace rfc
 {
 
 Factory Factory::factory;
@@ -141,10 +140,10 @@ Command* Factory::Create(ftp::Client& client, const std::string& argStr, const A
   return it->second->Create(client, argStr, args);
 }
 
-
+} /* rfc namespace */
 } /* cmd namespace */
 
-#ifdef CMD_FACTORY_TEST
+#ifdef CMD_RFC_FACTORY_TEST
 
 #include <iostream>
 #include <memory>
