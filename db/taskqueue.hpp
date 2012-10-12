@@ -48,10 +48,10 @@ public:
     changed.notify_one();
   }
   
-  size_type WaitChanged()
+  size_type WaitChanged(size_type lastSize)
   {
     boost::unique_lock<boost::mutex> lock(mutex);
-    changed.wait(lock);
+    if (queue.size() == lastSize) changed.wait(lock);
     return queue.size();
   }
   

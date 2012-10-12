@@ -29,10 +29,12 @@ void Pool::LaunchWorker()
   {
     throw e;
   }
+std::cout << "launch worker" << std::endl;
 }
 
 void Pool::KillWorker()
 {
+std::cout << "killworker" << std::endl;
   workers.back().Stop(true);
   workers.pop_back();
 }
@@ -60,10 +62,10 @@ void Pool::Run()
 {
   LaunchWorker();
 
-  TaskQueue::size_type queueSize;
+  TaskQueue::size_type queueSize = 0;
   while (true)
   {
-    queueSize = queue.WaitChanged();
+    queueSize = queue.WaitChanged(queueSize);
 
     {
       boost::this_thread::disable_interruption noInterrupt;
