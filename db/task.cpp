@@ -18,12 +18,36 @@ void Update::Execute(Worker& worker)
   }
 }
 
+void Delete::Execute(Worker& worker)
+{
+  try
+  {
+    worker.Delete(container, query);
+  }
+  catch (const DBError& e)
+  {
+    logger::error << e.Message() << logger::endl;
+  }
+}
+
 void Select::Execute(Worker& worker)
 {
   try
   {
     worker.Get(container, query, results, limit);
     promise.set_value(true);
+  }
+  catch (const DBError& e)
+  {
+    logger::error << e.Message() << logger::endl;
+  }
+}
+
+void Insert::Execute(Worker& worker)
+{
+  try
+  {
+    worker.Insert(container, obj);
   }
   catch (const DBError& e)
   {

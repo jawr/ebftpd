@@ -38,10 +38,10 @@ void Initalize()
     BSON("uid" << 1 << "name" << 1)));
   tasks.emplace_back(new db::EnsureIndex("groups",
     BSON("gid" << 1 << "name" << 1)));
-  tasks.emplate_back(new db::EnsureIndex("stats", BSON("uid" << 1 << 
+  tasks.emplace_back(new db::EnsureIndex("transfers", BSON("uid" << 1 << 
     "direction" << 1 << "day" << 1 << "week" << 1 << "month" << 1 << 
-    "year" << 1));
-  tasks.emplace_back(new db::EnsureIndex("masks",
+    "year" << 1)));
+  tasks.emplace_back(new db::EnsureIndex("ipmasks",
     BSON("uid" << 1 << "mask" << 1)));
 
   for (auto task: tasks)
@@ -96,6 +96,15 @@ void GetUsers(std::vector<acl::User*>& users)
 void AddIpMask(const acl::User& user, const std::string& mask)
 {
   mongo::BSONObj obj = BSON("uid" << user.UID() << "mask" << mask);
+  TaskPtr task(new db::Insert("ipmasks", obj));
+  Pool::Queue(task);
+}
+
+void DelIpMask(const acl::User& user, const std::string& mask)
+{
+  mongo::Query query = QUERY("uid" << user.UID() << "mask" << mask);
+  TaskPtr task(new db::Delete("ipmasks", query));
+  Pool::Queue(task);  
 }
 
 // group functions

@@ -29,6 +29,20 @@ void Worker::Run()
   }
 } 
 
+void Worker::Delete(const std::string& container, mongo::Query& query)
+{
+  try
+  {
+    conn.remove(database + container, query);
+    const std::string& err = conn.getLastError();
+    if (err.size() > 0) throw DBError(err);
+  }
+  catch (const mongo::DBException& e)
+  {
+    throw DBError(e.what());
+  }
+}
+
 void Worker::Insert(const std::string& container, const mongo::BSONObj& obj)
 {
   try

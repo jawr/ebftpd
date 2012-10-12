@@ -126,6 +126,15 @@ int main()
   db::IncrementStats(acl::UserCache::User("iotest"),
     474836, 213.3, stats::Direction::Download);
 
+  db::AddIpMask(acl::UserCache::User("iotest"),
+    "*@*");
+  db::AddIpMask(acl::UserCache::User("iotest"),
+    "*@*");
+  db::AddIpMask(acl::UserCache::User("iotest"),
+    "*@127.0.0.1");
+
+  db::DelIpMask(acl::UserCache::User("iotest"), "*@*");
+
   boost::thread threads[20];
 
   for (int i = 0; i < 20; ++i)
@@ -135,6 +144,7 @@ int main()
   
   for (int i = 0; i < 20; ++i)
     threads[i].join();
+
   
   db::Pool::StopThread();
   

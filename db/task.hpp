@@ -22,7 +22,7 @@ class EnsureIndex : public Task
 public:
   EnsureIndex(const std::string& container, const mongo::BSONObj& obj) :
       container(container), obj(obj) {};
-  virtual void Execute(Worker& worker);
+  void Execute(Worker& worker);
 };
 
 class Select : public Task
@@ -39,9 +39,28 @@ public:
       container(container), query(query), results(results), future(future),
       promise(), limit(limit) { future = promise.get_future(); }
 
-  virtual void Execute(Worker& worker);
+  void Execute(Worker& worker);
 };
 
+class Delete : public Task
+{
+  std::string container;
+  mongo::Query query;
+public:
+  Delete(const std::string& container, const mongo::Query& query) :
+    container(container), query(query) {};
+  void Execute(Worker& worker);
+};
+
+class Insert : public Task
+{
+  std::string container;
+  mongo::BSONObj obj;
+public:
+  Insert(const std::string& container, const mongo::BSONObj& obj) :
+    container(container), obj(obj) {};
+  void Execute(Worker& worker);
+};
 
 class Update : public Task
 {
@@ -54,7 +73,7 @@ public:
   Update(const std::string& container, const mongo::Query& query, 
     const mongo::BSONObj& obj, bool upsert=false) :
     container(container), obj(obj), query(query), upsert(upsert) {};
-  virtual void Execute(Worker& worker);
+  void Execute(Worker& worker);
 };
 
 

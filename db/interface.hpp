@@ -18,6 +18,7 @@ namespace db
   void SaveUser(const acl::User& user);    
   void GetUsers(std::vector<acl::User*>& users);
   void AddIpMask(const acl::User& user, const std::string& mask);
+  void DelIpMask(const acl::User& user, const std::string& mask);
 
   // group functions
   acl::GroupID GetNewGroupID();
