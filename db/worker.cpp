@@ -88,12 +88,12 @@ void Worker::Get(const std::string& container, const mongo::Query& query,
 }
 
   
-void Worker::EnsureIndex(const std::string& container, const std::string& key)
+void Worker::EnsureIndex(const std::string& container, const mongo::BSONObj& obj)
 {
   try
   {
     //boost::mutex::scoped_lock lock(mtx);
-    conn.ensureIndex(database + container, BSON(key << 1), true); // unique
+    conn.ensureIndex(database + container, obj, true); // unique
     // no need to check for error
   }
   catch (const mongo::DBException& e)

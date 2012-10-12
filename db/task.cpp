@@ -35,7 +35,7 @@ void EnsureIndex::Execute(Worker& worker)
 {
   try
   {
-    worker.EnsureIndex(container, key);
+    worker.EnsureIndex(container, obj);
   }
   catch(const DBError& e)
   {

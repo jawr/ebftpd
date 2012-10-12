@@ -29,7 +29,7 @@ public:
     QueryResults& results, int limit=0);
   void Update(const std::string&, mongo::BSONObj&, 
     mongo::Query& query, bool upsert);
-  void EnsureIndex(const std::string& container, const std::string& key);
+  void EnsureIndex(const std::string& container, const mongo::BSONObj& ob);
   
 };
 

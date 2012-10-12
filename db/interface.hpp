@@ -17,6 +17,7 @@ namespace db
   acl::UserID GetNewUserID();
   void SaveUser(const acl::User& user);    
   void GetUsers(std::vector<acl::User*>& users);
+  void AddIpMask(const acl::User& user, const std::string& mask);
 
   // group functions
   acl::GroupID GetNewGroupID();
@@ -25,6 +26,8 @@ namespace db
 
   // stats functions
   void IncrementStats(const acl::User& user,
+    long  long kbytes, double xfertime, stats::Direction direction);
+  void DecrementStats(const acl::User& user,
     long long kbytes, double xfertime, stats::Direction direction);
 
 

@@ -18,10 +18,10 @@ public:
 class EnsureIndex : public Task
 {
   std::string container;
-  std::string key;
+  mongo::BSONObj obj;
 public:
-  EnsureIndex(const std::string& container, const std::string& key) :
-      container(container), key(key) {};
+  EnsureIndex(const std::string& container, const mongo::BSONObj& obj) :
+      container(container), obj(obj) {};
   virtual void Execute(Worker& worker);
 };
 
@@ -41,6 +41,7 @@ public:
 
   virtual void Execute(Worker& worker);
 };
+
 
 class Update : public Task
 {
