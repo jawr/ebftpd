@@ -126,14 +126,11 @@ int main()
   db::IncrementStats(acl::UserCache::User("iotest"),
     474836, 213.3, stats::Direction::Download);
 
-  db::AddIpMask(acl::UserCache::User("iotest"),
-    "*@*");
-  db::AddIpMask(acl::UserCache::User("iotest"),
-    "*@*");
-  db::AddIpMask(acl::UserCache::User("iotest"),
-    "*@127.0.0.1");
+  db::AddIpMask(acl::UserCache::User("iotest"), "*@*");
+  db::AddIpMask(acl::UserCache::User("iotest"), "*@5.*");
+  db::AddIpMask(acl::UserCache::User("iotest"), "*@192.*");
+  db::AddIpMask(acl::UserCache::User("iotest"), "*@127.0.0.1");
 
-  db::DelIpMask(acl::UserCache::User("iotest"), "*@*");
 
   boost::thread threads[20];
 
