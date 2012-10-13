@@ -27,6 +27,16 @@ void PASSCommand::Execute()
     return;
   }
   
+  fs::Path rootPath("/");
+  util::Error e = fs::ChangeDirectory(client, rootPath);
+  if (!e) 
+  {
+    control.Reply(ftp::ServiceUnavailable, 
+      "Unable to change to site root directory: " + e.Message());
+    client.SetFinished();
+    return;
+  }
+  
   control.Reply(ftp::UserLoggedIn, "User " + client.User().Name() + " logged in.");
   client.SetLoggedIn();
 }

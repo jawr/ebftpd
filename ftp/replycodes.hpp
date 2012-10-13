@@ -21,7 +21,7 @@ enum ReplyCode
   HelpMessage = 214,
   SystemType = 215,
   ClosingControl = 221,
-  ServiceUnavailable = 412,
+  ServiceUnavailable = 421,
   DataAlreadyOpen = 125,
   DataOpenNoTransfer = 225,
   CantOpenDataConnection = 425,

@@ -12,8 +12,6 @@
 #include "acl/check.hpp"
 #include "cfg/get.hpp"
 
-#include <iostream>
-
 namespace PP = acl::PathPermission;
 
 namespace fs
@@ -70,7 +68,6 @@ util::Error ChangeDirectory(ftp::Client& client, Path& path)
   if (!e) return e;
 
   Path real = cfg::Get().Sitepath() + path;
-  
   try
   {
     Status stat(real);
@@ -91,11 +88,13 @@ util::Error ChangeDirectory(ftp::Client& client, Path& path)
       return util::Error::Failure(ENOENT);
     }
     
+    bool match = false;
     for (const DirEntry& de : dirEnum)
     {
       if (boost::istarts_with(de.Path().ToString(), real.Basename().ToString()) &&
           de.Status().IsDirectory())
       {
+        match = true;
         if (!PP::DirAllowed<PP::View>(client.User(), path))
           return util::Error::Failure(ENOENT);
 
@@ -103,6 +102,7 @@ util::Error ChangeDirectory(ftp::Client& client, Path& path)
         if (!de.Status().IsExecutable()) return util::Error::Failure(EACCES);
       }
     }
+    if (!match) return util::Error::Failure(ENOENT);
   }
   catch (const util::RuntimeError& e)
   {
