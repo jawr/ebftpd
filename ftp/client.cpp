@@ -15,6 +15,7 @@
 #include "acl/check.hpp"
 #include "cfg/get.hpp"
 #include "util/misc.hpp"
+#include "acl/ipmaskcache.hpp"
 #include "main.hpp"
 #include "util/net/identclient.hpp"
 
@@ -114,6 +115,10 @@ bool Client::Accept(util::net::TCPListener& server)
   try
   {
     control.Accept(server);
+    // get ident
+    LookupIdent(); 
+    const util::net::Endpoint& ep = control.RemoteEndpoint();
+    return acl::IpMaskCache::Check(ident + "@" + ep.IP().ToString()); 
   }
   catch(const util::net::NetworkError& e)
   {
@@ -121,7 +126,6 @@ bool Client::Accept(util::net::TCPListener& server)
     logger::error << "Error while accepting new client: " << e.Message() << logger::endl;
     return false;
   }
-  return true;
 }
 
 void Client::DisplayBanner()

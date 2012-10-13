@@ -1,4 +1,5 @@
 #include "cmd/rfc/pass.hpp"
+#include "fs/directory.hpp"
 
 namespace cmd { namespace rfc
 {
