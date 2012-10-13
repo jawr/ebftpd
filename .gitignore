@@ -21,4 +21,5 @@ glftpd.conf
 *.conf
 unity.cpp
 siteroot
+unity-*.cpp
 

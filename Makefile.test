@@ -1,9 +1,0 @@
-all:
-	(cd ..; $(MAKE))
-
-test:
-	(cd .. ; $(MAKE) test TEST=$(TEST))
-
-clean:
-	(cd .. ; $(MAKE) clean)
-

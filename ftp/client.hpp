@@ -40,7 +40,8 @@ class Client : public util::Thread
   ::ftp::ClientState state;
   int passwordAttemps;
   fs::Path renameFrom;
- 
+  std::string ident;
+  
   static const int maxPasswordAttemps = 3;
   
   void DisplayBanner();
@@ -48,6 +49,7 @@ class Client : public util::Thread
   void Handle();
   bool CheckState(ClientState reqdState);
   void Run();
+  void LookupIdent();
   
 public:
   Client() :
@@ -55,7 +57,8 @@ public:
     workDir("/"), 
     user("root", 69, "password", "1"),
     state(ClientState::LoggedOut),
-    passwordAttemps(0)
+    passwordAttemps(0),
+    ident("*")
   {
   }
   

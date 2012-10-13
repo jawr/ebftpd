@@ -2,7 +2,7 @@ CXX := g++
 CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x
 LIBS := -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lpthread -lssl -lboost_filesystem
-INCLUDE := -include pch.hpp -I.
+INCLUDE := -I. -include pch.hpp
 
 UNITY := false
 STATE := other
@@ -55,7 +55,11 @@ endif
 endif
 endif
 
+$(shell ./version.sh >/dev/null)
+
 OBJECTS := $(SOURCE:.cpp=.o)
+
+.PHONY: all unity test unitytest state strip clean
 
 all: ftpd
 
@@ -65,26 +69,7 @@ test:  ftpd
 
 unitytest: ftpd
 
-version:
-	@VERSION=`git log --decorate | grep "^commit " | grep -n "tag: " | \
-                sed -r 's|^([0-9]+):.+tag: ([^),]+).+$$|\2-\1|p' | head -n1`; \
-	if ! grep -q "\"$$VERSION\"" version.hpp; then \
-		echo "const char* version = \"$$VERSION\";" > version.hpp; \
-		echo "Version updated to $$VERSION"; \
-	fi
-
-state:
-	@if [ "$(ISTEST)" = false ]; then \
-		if [ -f .state ] && [ `cat .state` != normal ]; then \
-			echo "You must run make clean before changing between build states"; \
-		fi; \
-	else \
-		if [ -f .state ] && [ `cat .state` != "$(TEST)" ]; then \
-			echo "You must run make clean before changing between build states"; \
-		fi; \
-	fi
-
-ftpd: version pch.hpp.gch $(OBJECTS)
+ftpd: pch.hpp.gch $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd
 
 pch.hpp.gch:
@@ -106,6 +91,4 @@ clean:
 	@rm -f ftpd
 	@rm -f .state
 	@rm -f unity/*
-
-.PHONY: all unity test unitytest version state strip clean
 

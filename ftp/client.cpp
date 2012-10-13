@@ -16,6 +16,7 @@
 #include "cfg/get.hpp"
 #include "util/misc.hpp"
 #include "main.hpp"
+#include "util/net/identclient.hpp"
 
 namespace ftp
 {
@@ -155,18 +156,36 @@ void Client::Handle()
   }
 }
 
+
+void Client::LookupIdent()
+{
+  try
+  {
+    util::net::IdentClient identClient(control.LocalEndpoint(), 
+                                       control.RemoteEndpoint());
+    ident = identClient.Ident();
+  }
+  catch (util::net::NetworkError& e)
+  {
+    logger::error << "Unable to lookup ident for connection from "
+                  << control.RemoteEndpoint() << ":  " << e.Message();
+  }
+}
+
 void Client::Run()
 {
   using util::scope_guard;
   using util::make_guard;
   
-  scope_guard finishedGuard = make_guard(std::bind(&Client::SetFinished, this));
+  scope_guard finishedGuard = make_guard([this]{ SetFinished(); });
 
+  LookupIdent();
+  
+  logger::ftpd << "Servicing client connected from "
+               << ident << "@" << control.RemoteEndpoint() << logger::endl;
+    
   try
   {
-    logger::ftpd << "Servicing client connected from "
-                 << control.RemoteEndpoint() << logger::endl;
-  
     DisplayBanner();
     Handle();
   }
