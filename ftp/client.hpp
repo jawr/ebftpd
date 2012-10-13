@@ -15,6 +15,7 @@
 #include "ftp/replycodes.hpp"
 #include "ftp/data.hpp"
 #include "ftp/control.hpp"
+#include "ftp/xdupe.hpp"
 
 namespace ftp 
 {
@@ -42,6 +43,7 @@ class Client : public util::Thread
   int passwordAttemps;
   fs::Path renameFrom;
   std::string ident;
+  ::ftp::XDupeMode xdupeMode;
   
   boost::posix_time::ptime idleExpires;
   boost::posix_time::seconds idleTimeout;
@@ -82,6 +84,10 @@ public:
   { this->idleTimeout = idleTimeout; }
   const boost::posix_time::seconds& IdleTimeout() const
   { return idleTimeout; }
+  
+  void SetXDupeMode(XDupeMode xdupeMode)
+  { this->xdupeMode = xdupeMode; }
+  ::ftp::XDupeMode XDupeMode() const { return xdupeMode; }
   
   bool IsFxp(const util::net::Endpoint& ep) const;
 };

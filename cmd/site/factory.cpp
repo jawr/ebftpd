@@ -2,6 +2,8 @@
 #include "cmd/site/factory.hpp"
 #include "cmd/site/epsv.hpp"
 #include "cmd/site/idle.hpp"
+#include "cmd/site/vers.hpp"
+#include "cmd/site/xdupe.hpp"
 
 namespace cmd { namespace site
 {
@@ -12,6 +14,8 @@ Factory::Factory()
 {
   Register("EPSV", new Creator<site::EPSVCommand>());
   Register("IDLE", new Creator<site::IDLECommand>());
+  Register("VERS", new Creator<site::VERSCommand>());
+  Register("XDUPE", new Creator<site::XDUPECommand>());
 }
 
 Factory::~Factory()
