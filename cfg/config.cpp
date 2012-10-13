@@ -260,6 +260,7 @@ void Config::Parse(const std::string& line) {
   else if (opt == "idle_commands")
   {
     idleCommands = toks;
+    for (auto& cmd : idleCommands) boost::to_upper(cmd);
   }
   else if (opt == "noretrieve")
   {
@@ -465,6 +466,10 @@ void Config::Parse(const std::string& line) {
   else if (opt == "requests")
   {
     requests = setting::Requests(toks);
+  }
+  else if (opt == "idle_timeout")
+  {
+    idleTimeout = setting::IdleTimeout(toks);
   }
 
   // update cache for sanity check

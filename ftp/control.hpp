@@ -2,6 +2,7 @@
 #define __FTP_CONTROL_HPP
 
 #include <string>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "ftp/readwriteable.hpp"
 #include "ftp/replycodes.hpp"
 #include "util/net/tcpsocket.hpp"
@@ -34,9 +35,8 @@ public:
   ~Control() { }
   
   void Accept(util::net::TCPListener& listener);
-
-  std::string NextCommand();
-
+ 
+  std::string NextCommand(const boost::posix_time::time_duration& timeout);
   void PartReply(ReplyCode code, const std::string& message);
   void PartReply(const std::string& message);
   void Reply(ReplyCode code, const std::string& message);

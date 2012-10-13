@@ -21,6 +21,17 @@
 namespace ftp
 {
 
+Client::Client() :
+  data(*this), 
+  workDir("/"), 
+  user("root", 69, "password", "1"),
+  state(ClientState::LoggedOut),
+  passwordAttemps(0),
+  ident("*"),
+  idleTimeout(boost::posix_time::seconds(cfg::Get().IdleTimeout().Timeout()))
+{
+}
+
 Client::~Client()
 {
 }
@@ -130,6 +141,18 @@ void Client::DisplayBanner()
         " connected.");
 }
 
+void Client::IdleReset(const std::string& commandLine)
+{
+  for (auto & cmd : cfg::Get().IdleCommands())
+    if (boost::starts_with(commandLine, cmd) &&
+        (commandLine.length() == cmd.length() ||
+         (commandLine.length() >= cmd.length() &&
+          commandLine[cmd.length()] == ' ')))
+      return;
+      
+  idleExpires = boost::posix_time::second_clock::local_time() + idleTimeout;
+}
+
 void Client::ExecuteCommand(const std::string& commandLine)
 {
   std::vector<std::string> args;
@@ -146,13 +169,17 @@ void Client::ExecuteCommand(const std::string& commandLine)
   if (!command.get()) control.Reply(ftp::CommandUnrecognised, "Command not understood");
   else if (!CheckState(reqdState));
   else command->Execute();
+  IdleReset(commandLine);
 }
 
 void Client::Handle()
 {
+  namespace pt = boost::posix_time;
+
   while (!IsFinished())
   {
-    ExecuteCommand(control.NextCommand());
+    pt::time_duration timeout = idleExpires - pt::second_clock::local_time();
+    ExecuteCommand(control.NextCommand(timeout));
   }
 }
 

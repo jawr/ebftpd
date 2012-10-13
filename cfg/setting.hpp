@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/join.hpp>                
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/acl.hpp"
 #include "fs/path.hpp"
 
@@ -26,7 +27,7 @@ class Right : public Setting
   acl::ACL acl;
 public:
   Right() {}
-  Right(std::vector<std::string>& toks);
+  Right(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
   const std::string& Path() const { return path; }
 };
@@ -37,7 +38,7 @@ class ACLInt : public Setting
   acl::ACL acl;
 public:
   ACLInt() {}
-  ACLInt(std::vector<std::string>& toks);
+  ACLInt(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
   int Int() const { return arg; }
 };
@@ -53,7 +54,7 @@ public:
     masks.emplace_back("*.[Tt][Xx][Tt]");
     masks.emplace_back("*.[Dd][Ii][Zz]");
   }
-  AsciiDownloads(std::vector<std::string>& toks);
+  AsciiDownloads(std::vector<std::string> toks);
   int Size() const { return size; }
   const std::vector<std::string>& Masks() const { return masks; }
 };
@@ -66,7 +67,7 @@ public:
   UseDirSize() : unit('m') {
     paths.emplace_back(fs::Path("/"));
   }
-  UseDirSize(std::vector<std::string>& toks);
+  UseDirSize(std::vector<std::string> toks);
   char Unit() const { return unit; }
   const std::vector<fs::Path>& Paths() const { return paths; }
 };
@@ -81,7 +82,7 @@ public:
   SecureIp() : minFields(2), allowHostname(false), needIdent(true) {
     acl = acl::ACL::FromString("*");
   } 
-  SecureIp(std::vector<std::string>& toks);
+  SecureIp(std::vector<std::string> toks);
   int MinFields() const { return minFields; }
   bool AllowHostname() const { return allowHostname; }
   bool NeedIdent() const { return needIdent; }
@@ -94,7 +95,7 @@ class SecurePass : public Setting
   acl::ACL acl;
 public:
   SecurePass() {}
-  SecurePass(std::vector<std::string>& toks);
+  SecurePass(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
   const std::string& Mask() const { return mask; }
 };
@@ -104,7 +105,7 @@ class BouncerIp : public Setting
   std::vector<std::string> addrs;
 public:
   BouncerIp() {}
-  BouncerIp(std::vector<std::string>& toks);
+  BouncerIp(const std::vector<std::string>& toks);
   const std::vector<std::string>& Addrs() const { return addrs; }
 };
 
@@ -116,7 +117,7 @@ class SpeedLimit : public Setting
   acl::ACL acl;
 public:
   SpeedLimit() {}
-  SpeedLimit(std::vector<std::string>& toks);
+  SpeedLimit(std::vector<std::string> toks);
   const fs::Path& Path() const { return path; }
   long DlLimit() const { return dlLimit; }
   long UlLimit() const { return ulLimit; }
@@ -129,7 +130,7 @@ class SimXfers : public Setting
   int maxUploads;
 public:
   SimXfers() {}
-  SimXfers(std::vector<std::string>& toks);
+  SimXfers(std::vector<std::string> toks);
   int MaxDownloads() const { return maxDownloads; }
   int MaxUploads() const { return maxUploads; }
 };
@@ -140,7 +141,7 @@ class PasvAddr : public Setting
   bool nat;
 public:
   PasvAddr() {}
-  PasvAddr(std::vector<std::string>& toks);
+  PasvAddr(const std::vector<std::string>& toks);
   bool Nat() const { return nat; }
   const std::string& Addr() const { return addr; }
 };
@@ -161,7 +162,7 @@ class Ports : public Setting
   std::vector<PortRange> ranges;
 public:
   Ports() {}
-  Ports(std::vector<std::string>& toks);
+  Ports(const std::vector<std::string>& toks);
   const std::vector<PortRange>& Ranges() const { return ranges; }
 };
 // end
@@ -174,7 +175,7 @@ class AllowFxp : public Setting
   acl::ACL acl;
 public:
   AllowFxp() {}
-  AllowFxp(std::vector<std::string>& toks);
+  AllowFxp(std::vector<std::string> toks);
   bool Downloads() const { return downloads; }
   bool Uploads() const { return uploads; }
   bool Logging() const { return logging; }
@@ -187,7 +188,7 @@ class Alias : public Setting
   fs::Path path;
 public:
   Alias() {}
-  Alias(std::vector<std::string>& toks);
+  Alias(const std::vector<std::string>& toks);
   const std::string& Name() const { return name; }
   const fs::Path& Path() const { return path; }
 };
@@ -199,7 +200,7 @@ class StatSection : public Setting
   bool seperateCredits;
 public:
   StatSection() {}
-  StatSection(std::vector<std::string>& toks);
+  StatSection(const std::vector<std::string>& toks);
   const std::string& Keyword() const { return keyword; }
   const std::string& Path() const { return path; }
   bool SeperateCredits() const { return seperateCredits; }
@@ -212,7 +213,7 @@ class PathFilter : public Setting
   std::vector<std::string> filters;
 public:
   PathFilter() {}
-  PathFilter(std::vector<std::string>& toks);
+  PathFilter(std::vector<std::string> toks);
   const std::string& Group() const { return group; }
   const std::string& Path() const { return path; }
   const std::vector<std::string>& Filters() const { return filters; }
@@ -225,7 +226,7 @@ class MaxUsers : public Setting
   int exemptUsers;
 public:
   MaxUsers() : users(10), exemptUsers(5) {}
-  MaxUsers(std::vector<std::string>& toks);
+  MaxUsers(const std::vector<std::string>& toks);
   int Users() const { return users; }
   int ExemptUsers() const { return exemptUsers; }
 };
@@ -236,7 +237,7 @@ class ShowTotals : public Setting
   std::vector<std::string> paths;
 public:
   ShowTotals() {}
-  ShowTotals(std::vector<std::string>& toks);
+  ShowTotals(std::vector<std::string> toks);
   int MaxLines() const { return maxLines; }
 };
 
@@ -246,7 +247,7 @@ class DupeCheck : public Setting
   bool ignoreCase;
 public:
   DupeCheck() {}
-  DupeCheck(std::vector<std::string>& toks);
+  DupeCheck(const std::vector<std::string>& toks);
   int Days() const { return days; }
   bool IgnoreCase() const { return ignoreCase; }
 };
@@ -259,7 +260,7 @@ class Script : public Setting
   std::vector<std::string> masks;
 public:
   Script() {}
-  Script(std::vector<std::string>& toks);
+  Script(std::vector<std::string> toks);
   const fs::Path& Path() const { return path; }
   const std::vector<std::string>& Masks() const { return masks; }
 };
@@ -271,7 +272,7 @@ class Lslong : public Setting
   int maxRecursion;
 public:
   Lslong() {}
-  Lslong(std::vector<std::string>& toks);
+  Lslong(std::vector<std::string> toks);
   const fs::Path& Bin() const { return bin; }
   const std::string& Options() const { return options; }
   int MaxRecursion() const { return maxRecursion; }
@@ -283,7 +284,7 @@ class HiddenFiles : public Setting
   std::vector<std::string> masks;
 public:
   HiddenFiles() {}
-  HiddenFiles(std::vector<std::string>& toks);
+  HiddenFiles(std::vector<std::string> toks);
   const fs::Path& Path() const { return path; }
   const std::vector<std::string>& Masks() const { return masks; }
 };
@@ -294,7 +295,7 @@ class Requests : public Setting
   int max;
 public:
   Requests() : path("/ftp-data/misc/requests"), max(10) {}
-  Requests(std::vector<std::string>& toks);
+  Requests(const std::vector<std::string>& toks);
   const fs::Path& Path() const { return path; }                              
   int Max() const { return max; }
 };
@@ -306,7 +307,7 @@ class Lastonline : public Setting
   int max;
 public:
   Lastonline() : type(ALL), max(10) {}
-  Lastonline(std::vector<std::string>& toks);
+  Lastonline(const std::vector<std::string>& toks);
   Type GetType() const { return type; } // anonymous enum?
   int Max() const { return max; }
 };
@@ -318,7 +319,7 @@ class Creditcheck : public Setting
   acl::ACL acl;
 public:
   Creditcheck() {}
-  Creditcheck(std::vector<std::string>& toks);
+  Creditcheck(std::vector<std::string> toks);
   const fs::Path& Path() const { return path; }
   int Ratio() const { return ratio; }
   const acl::ACL& ACL() const { return acl; }
@@ -332,7 +333,7 @@ class Creditloss : public Setting
   acl::ACL acl;
 public:
   Creditloss() {}
-  Creditloss(std::vector<std::string>& toks);
+  Creditloss(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
   int Multiplier() const { return multiplier; }
   bool AllowLeechers() const { return allowLeechers; }
@@ -347,7 +348,7 @@ class NukedirStyle : public Setting
   int minBytes;
 public:
   NukedirStyle() {}
-  NukedirStyle(std::vector<std::string>& toks);
+  NukedirStyle(const std::vector<std::string>& toks);
   const std::string& Format() const { return format; }
   int MinBytes() const { return minBytes; }
   Type GetType() const { return type; } // anonymous enum?
@@ -359,7 +360,7 @@ class Privgroup : public Setting
   std::string description;
 public:
   Privgroup() : group("STAFF"), description("Staff Group") {}
-  Privgroup(std::vector<std::string>& toks);
+  Privgroup(const std::vector<std::string>& toks);
   const std::string& Group() const { return group; }
   const std::string& Description() const { return description; }
 };
@@ -371,7 +372,7 @@ class Msgpath : public Setting
   acl::ACL acl;
 public:
   Msgpath() {}
-  Msgpath(std::vector<std::string>& toks);
+  Msgpath(const std::vector<std::string>& toks);
   const std::string& Path() const { return path; }
   const acl::ACL& ACL() const { return acl; }
   const fs::Path& File() const { return file; }
@@ -383,7 +384,7 @@ class Privpath : public Setting
   acl::ACL acl;
 public:
   Privpath() {}
-  Privpath(std::vector<std::string>& toks);
+  Privpath(std::vector<std::string> toks);
   const fs::Path& Path() const { return path; }
   const acl::ACL& ACL() const { return acl; }
 };
@@ -397,7 +398,7 @@ class SiteCmd : public Setting
   std::vector<std::string> arguments;
 public:
   SiteCmd() {}
-  SiteCmd(std::vector<std::string>& toks);
+  SiteCmd(std::vector<std::string> toks);
   const std::string& Command() const { return command; }
   Type GetType() const { return type; } // anonymous enum?                 
   const std::vector<std::string>& Arguments() const { return arguments; }
@@ -412,10 +413,32 @@ class Cscript : public Setting
   fs::Path script;
 public:
   Cscript() {}
-  Cscript(std::vector<std::string>& toks);
+  Cscript(const std::vector<std::string>& toks);
   const std::string& Command() const { return command; }                       
   const fs::Path& Script() const { return script; }
   Type GetType() const { return type; } // anonymous enum?
+};
+
+class IdleTimeout : public Setting
+{
+  boost::posix_time::seconds maximum;
+  boost::posix_time::seconds minimum;
+  boost::posix_time::seconds timeout;
+  
+  static const boost::posix_time::seconds defaultMaximum;
+  static const boost::posix_time::seconds defaultMinimum;
+  static const boost::posix_time::seconds defaultTimeout;
+  
+public:
+  IdleTimeout() :
+    maximum(defaultMaximum), minimum(defaultMinimum),
+    timeout(defaultTimeout) { }
+    
+  IdleTimeout(const std::vector<std::string>& toks);
+    
+  boost::posix_time::seconds Maximum() const { return maximum; }
+  boost::posix_time::seconds Minimum() const { return minimum; }
+  boost::posix_time::seconds Timeout() const { return timeout; }
 };
 
 // end namespace

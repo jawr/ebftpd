@@ -36,7 +36,7 @@ public:
   };
   
 private:
-  static const util::TimePair defaultTimeout;
+  static const util::TimePair defaultTimeout; // 60 seconds
   static const size_t defaultBufferSize = BUFSIZ;
 
   int socket;

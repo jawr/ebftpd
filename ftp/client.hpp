@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdint>
 #include <boost/thread/mutex.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/user.hpp"
 #include "util/net/tcpsocket.hpp"
 #include "util/net/tcplistener.hpp"
@@ -42,6 +43,9 @@ class Client : public util::Thread
   fs::Path renameFrom;
   std::string ident;
   
+  boost::posix_time::ptime idleExpires;
+  boost::posix_time::seconds idleTimeout;
+  
   static const int maxPasswordAttemps = 3;
   
   void DisplayBanner();
@@ -50,18 +54,10 @@ class Client : public util::Thread
   bool CheckState(ClientState reqdState);
   void Run();
   void LookupIdent();
+  void IdleReset(const std::string& commandLine)  ;
   
 public:
-  Client() :
-    data(*this), 
-    workDir("/"), 
-    user("root", 69, "password", "1"),
-    state(ClientState::LoggedOut),
-    passwordAttemps(0),
-    ident("*")
-  {
-  }
-  
+  Client();
   ~Client();
      
   const fs::Path& WorkDir() const { return workDir; }
@@ -81,6 +77,11 @@ public:
   
   ::ftp::Control& Control() { return control; }
   ::ftp::Data& Data() { return data; }
+
+  void SetIdleTimeout(const boost::posix_time::seconds& idleTimeout)
+  { this->idleTimeout = idleTimeout; }
+  const boost::posix_time::seconds& IdleTimeout() const
+  { return idleTimeout; }
   
   bool IsFxp(const util::net::Endpoint& ep) const;
 };

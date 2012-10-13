@@ -70,7 +70,7 @@ void Control::NegotiateTLS()
   socket.HandshakeTLS(util::net::TLSSocket::Server);
 }
 
-std::string Control::NextCommand()
+std::string Control::NextCommand(const boost::posix_time::time_duration& timeout)
 {
   fd_set readSet;
   FD_ZERO(&readSet);
@@ -78,7 +78,7 @@ std::string Control::NextCommand()
   FD_SET(interruptPipe.ReadFd(), &readSet);
   
   struct timeval tv;
-  tv.tv_sec = 1800;
+  tv.tv_sec = std::max(0, timeout.total_seconds());
   tv.tv_usec = 0;
   
   int max = std::max(socket.Socket(), interruptPipe.ReadFd());

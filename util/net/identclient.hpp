@@ -21,13 +21,17 @@ class IdentClient
   std::string ident;
   
   static const uint16_t identPort = 113;
+  static const util::TimePair defaultTimeout; // 15 seconds
   
   void Request();
   
 public:
-  IdentClient() { }
-  IdentClient(const Endpoint& localEndpoint, const Endpoint& remoteEndpoint);
-  IdentClient(const TCPSocket& client);
+  IdentClient(const util::TimePair& timeout = defaultTimeout) :
+    socket(timeout) { }
+  IdentClient(const Endpoint& localEndpoint, const Endpoint& remoteEndpoint,
+              const util::TimePair& timeout = defaultTimeout);
+  IdentClient(const TCPSocket& client,
+              const util::TimePair& timeout = defaultTimeout);
     
   void Request(const Endpoint& localEndpoint, const Endpoint& remoteEndpoint);
     

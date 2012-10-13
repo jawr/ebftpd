@@ -8,17 +8,20 @@
 namespace util { namespace net
 {
 
+const util::TimePair IdentClient::defaultTimeout(15, 0);
+
 IdentClient::IdentClient(const Endpoint& localEndpoint,
-                         const Endpoint& remoteEndpoint) :
-  socket(Endpoint(remoteEndpoint.IP(), identPort)),
+                         const Endpoint& remoteEndpoint,
+                         const util::TimePair& timeout) :
+  socket(Endpoint(remoteEndpoint.IP(), identPort), timeout),
 	localEndpoint(localEndpoint),
 	remoteEndpoint(remoteEndpoint)
 {
   Request();
 }
 
-IdentClient::IdentClient(const TCPSocket& client) :
-	socket(Endpoint(client.RemoteEndpoint().IP(), identPort)),
+IdentClient::IdentClient(const TCPSocket& client, const util::TimePair& timeout) :
+	socket(Endpoint(client.RemoteEndpoint().IP(), identPort), timeout),
   localEndpoint(client.LocalEndpoint()),
   remoteEndpoint(client.RemoteEndpoint())
 {

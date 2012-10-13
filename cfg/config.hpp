@@ -125,6 +125,7 @@ class Config
   std::vector<setting::SiteCmd> siteCmd;
   int maxSitecmdLines;
   std::vector<setting::Cscript> cscript;
+  setting::IdleTimeout idleTimeout;
   
   Config(const Config&) = default;
   Config& operator=(const Config&) = default;
@@ -235,6 +236,7 @@ public:
   const std::vector<setting::SiteCmd>& SiteCmd() const { return siteCmd; }
   int MaxSitecmdLines() const { return maxSitecmdLines; }
   const std::vector<setting::Cscript>& Cscript() const { return cscript; }
+  const setting::IdleTimeout& IdleTimeout() const { return idleTimeout; }
 
   friend const Config& Get(bool update);
 };

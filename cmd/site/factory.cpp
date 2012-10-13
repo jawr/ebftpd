@@ -1,6 +1,7 @@
 #include <boost/algorithm/string.hpp>
 #include "cmd/site/factory.hpp"
 #include "cmd/site/epsv.hpp"
+#include "cmd/site/idle.hpp"
 
 namespace cmd { namespace site
 {
@@ -10,6 +11,7 @@ Factory Factory::factory;
 Factory::Factory()
 {
   Register("EPSV", new Creator<site::EPSVCommand>());
+  Register("IDLE", new Creator<site::IDLECommand>());
 }
 
 Factory::~Factory()

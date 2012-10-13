@@ -16,6 +16,7 @@ for source in $SOURCE; do \
 done
 
 if [ ! -f $DIRNAME/$PREFIX.cpp ] || \
+   [ `ls -l $DIRNAME/$PREFIX-*.cpp | wc -l` -ne $PARTS ] || \
    ! diff $DIRNAME/$PREFIX.cpp $DIRNAME/$PREFIX.new.cpp >/dev/null; then
    
   mv $DIRNAME/$PREFIX.new.cpp $DIRNAME/$PREFIX.cpp
