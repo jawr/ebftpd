@@ -19,5 +19,6 @@ tmp
 glftpd.conf
 *.pem
 *.conf
-bulk.cpp
+unity.cpp
+siteroot
 

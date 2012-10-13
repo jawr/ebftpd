@@ -1,3 +1,5 @@
+#ifdef UTIL_LRUCACHE_TEST
+
 #include <sstream>
 #include <iostream>
 #include "util/lrucache.hpp"
@@ -23,3 +25,6 @@ int main()
       std::cout << it->first << std::endl;
     }
 }
+
+#endif
+

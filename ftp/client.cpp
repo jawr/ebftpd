@@ -136,12 +136,8 @@ void Client::ExecuteCommand(const std::string& commandLine)
                boost::token_compress_on);
   if (args.empty()) throw util::net::NetworkError("FTP protocal violation");
   
-  std::string argStr;
-  if (args[0].length() < commandLine.length())
-  {
-    argStr = commandLine.substr(args[0].length() + 1);
-    boost::trim(argStr);
-  }
+  std::string argStr(commandLine.substr(args[0].length()));
+  boost::trim(argStr);
   
   ClientState reqdState;
   std::unique_ptr<cmd::Command>

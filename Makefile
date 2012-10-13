@@ -1,125 +1,111 @@
+CXX := g++
+CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x
+LIBS := -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lboost_serialization
+LIBS += -lboost_iostreams -lboost_system -lpthread -lssl -lboost_filesystem
+INCLUDE := -include pch.hpp -I.
 
-CXX = g++
-CXXFLAGS = -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x
-LIBS = -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lgnutls -lboost_serialization
-LIBS += -lboost_iostreams -lboost_system -lpthread -lnettle -lssl -lboost_filesystem
-INCLUDE = -include pch.hpp -I.
+UNITY := false
+STATE := other
 
-OBJECTS = \
-	main.o \
-	cmd/dirlist.o \
-	cmd/rfc/bulk.o \
-	cmd/rfc/factory.o \
-	cmd/site/bulk.o \
-	cmd/site/factory.o \
-	cfg/config.o \
-	cfg/get.o \
-	cfg/setting.o \
-	db/bson/user.o \
-	db/bson/group.o \
-	db/interface.o \
-	db/pool.o \
-	db/worker.o \
-	db/task.o \
-	ftp/listener.o \
-	ftp/client.o \
-	ftp/portallocator.o \
-	ftp/addrallocator.o \
-	ftp/data.o \
-	ftp/control.o \
-	fs/direnumerator.o \
-	fs/filelock.o \
-	fs/owner.o \
-	fs/status.o \
-	fs/file.o \
-	fs/directory.o \
-	fs/path.o \
-	acl/allowfxp.o \
-	acl/groupcache.o \
-	acl/check.o \
-	acl/acl.o \
-	acl/user.o \
-	acl/usercache.o \
-	acl/permission.o \
-	acl/handler.o \
-	acl/flags.o \
-	logger/logger.o \
-	util/misc.o \
-	util/path.o \
-	util/verify.o \
-	util/passwd.o \
-	util/error.o \
-	util/logger.o \
-	util/string.o \
-	util/thread.o \
-	util/net/endpoint.o \
-	util/net/error.o \
-	util/net/ipaddress.o \
-	util/net/resolver.o \
-	util/net/tcplistener.o \
-	util/net/tcpsocket.o \
-	util/net/test.o \
-	util/net/tlscontext.o \
-	util/net/tlserror.o \
-	util/net/tlssocket.o \
-	util/net/interfaces.o \
-	util/net/ftp.o 
+MAKECMDGOALS ?= all
 
-CMD_RFC_SOURCE := $(shell ls cmd/rfc/*.cpp | grep -v -E "/(factory.cpp|bulk.cpp)$$")
-CMD_SITE_SOURCE := $(shell ls cmd/site/*.cpp | grep -v -E "/(factory.cpp|bulk.cpp)$$")
+ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),unity unitytest))
+UNITY := true
+ifndef UNITY_PARTS
+$(warning UNITY_PARTS=NUM environment variable not setting, using default of a single unity file)
+UNITY_PARTS := 1
+endif
+endif
 
-.PHONY: test clean strip
+ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),test unitytest))
+STATE := test
+endif
 
-all: 
-	@if [ -f .state ] && [ `cat .state` != 'all' ]; then \
-	$(MAKE) $(MAKEFILE) clean; \
-	fi; \
-	echo "all" > .state; \
-	VERSION=`git log --decorate | grep "^commit " | grep -n "tag: " | \
-		sed -r 's|^([0-9]+):.+tag: ([^),]+).+$$|\2-\1|p' | head -n1`; \
+ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),all unity ftpd))
+STATE := normal
+endif
+
+ifeq ($(UNITY),false)
+SOURCE := $(shell find . -type f -name "*.cpp" -printf "%P\n" | grep -v "^unity/")
+else
+SOURCE := $(shell ./unity.sh $(UNITY_PARTS))
+endif
+
+ifeq ($(STATE),test)
+CXXFLAGS += -DTEST -D$(TEST)
+ifndef TEST
+$(error You must specify test macro as TEST=MACRO after make command)
+endif
+ifeq ($(wildcard .state),)
+$(shell echo $(TEST) > .state)
+else
+ifneq ($(shell cat .state 2>/dev/null),$(TEST))
+$(error You must run make clean before changing build states)
+endif
+endif
+endif
+
+ifeq ($(STATE),normal)
+ifeq ($(wildcard .state),)
+$(shell echo normal > .state)
+else
+ifneq ($(shell cat .state 2>/dev/null),normal)
+$(error You must run make clean before changing build states)
+endif
+endif
+endif
+
+OBJECTS := $(SOURCE:.cpp=.o)
+
+all: ftpd
+
+unity: ftpd
+
+test:  ftpd
+
+unitytest: ftpd
+
+version:
+	@VERSION=`git log --decorate | grep "^commit " | grep -n "tag: " | \
+                sed -r 's|^([0-9]+):.+tag: ([^),]+).+$$|\2-\1|p' | head -n1`; \
 	if ! grep -q "\"$$VERSION\"" version.hpp; then \
-	echo "const char* version = \"$$VERSION\";" > version.hpp; \
-	echo "version updated"; \
-	fi; \
-	$(MAKE) $(MAKEFILE) ftpd
+		echo "const char* version = \"$$VERSION\";" > version.hpp; \
+		echo "Version updated to $$VERSION"; \
+	fi
 
-test: 
-	@if [ -z $(TEST) ]; then \
-	echo "Must specify test macro as TEST=DEFINE"; \
-	exit 1; \
-	fi; \
-	if [ -f .state ] && [ `cat .state` != "$(TEST)" ]; then \
-	$(MAKE) $(MAKEFILE) clean; \
-	fi; \
-	echo "$(TEST)" > .state
-	$(MAKE) $(MAKEFILE) ftpd CXXFLAGS="$(CXXFLAGS) -DTEST -D$(TEST)"
+state:
+	@if [ "$(ISTEST)" = false ]; then \
+		if [ -f .state ] && [ `cat .state` != normal ]; then \
+			echo "You must run make clean before changing between build states"; \
+		fi; \
+	else \
+		if [ -f .state ] && [ `cat .state` != "$(TEST)" ]; then \
+			echo "You must run make clean before changing between build states"; \
+		fi; \
+	fi
 
-ftpd: cmd/rfc/bulk.cpp cmd/site/bulk.cpp pch.hpp.gch $(OBJECTS)
+ftpd: version pch.hpp.gch $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd
 
 pch.hpp.gch:
 	$(CXX) -c $(CXXFLAGS) pch.hpp
 
-cmd/rfc/bulk.cpp: $(CMD_RFC_SOURCE)
-	@echo "RFC command implementation files changed, regenerating $@ .."
-	@cat $(CMD_RFC_SOURCE) > cmd/rfc/bulk.cpp
-
-cmd/site/bulk.cpp: $(CMD_SITE_SOURCE)
-	@echo "SITE command implementation files changed, regenerating $@ .."
-	@cat $(CMD_SITE_SOURCE) > cmd/site/bulk.cpp
-	
-strip:
-	@strip -s ftpd
 
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDE) -MD -o $@ $<
 
-DEPS = $(OBJECTS:.o=.d)
+DEPS := $(OBJECTS:.o=.d)
 -include $(DEPS)
+
+strip:
+	@strip -s ftpd
 
 clean:
 	@find -iname "*.[od]" -exec rm '{}' ';'
 	@find -iname "*.gch" -exec rm '{}' ';'
 	@rm -f ftpd
 	@rm -f .state
-	@rm -f cmd/rfc/bulk.cpp cmd/site/bulk.cpp
+	@rm -f unity/*
+
+.PHONY: all unity test unitytest version state strip clean
+
