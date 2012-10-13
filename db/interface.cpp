@@ -1,3 +1,11 @@
+#include <ctime>
+#include <mongo/client/dbclient.h>
+#include <boost/thread/future.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "db/interface.hpp"
 #include "db/task.hpp"
 #include "db/pool.hpp"
@@ -8,12 +16,8 @@
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include "logger/logger.hpp"
-#include <mongo/client/dbclient.h>
-#include <boost/thread/future.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include "stats/stat.hpp"
+
 namespace db
 {
 namespace
@@ -63,7 +67,7 @@ void SaveUser(const acl::User& user)
 {
   mongo::BSONObj obj = db::bson::User::Serialize(user);
   mongo::Query query = QUERY("uid" << user.UID());
-  TaskPtr task(new db::Update("users", obj, query, true));
+  TaskPtr task(new db::Update("users", query, obj, true));
   Pool::Queue(task);
 }
 
@@ -108,7 +112,7 @@ void SaveGroup(const acl::Group& group)
 {
   mongo::BSONObj obj = db::bson::Group::Serialize(group);
   mongo::Query query = QUERY("gid" << group.GID());
-  TaskPtr task(new db::Update("groups", obj, query, true));
+  TaskPtr task(new db::Update("groups", query, obj, true));
   Pool::Queue(task);
 }
 
@@ -126,6 +130,30 @@ void GetGroups(std::vector<acl::Group*>& groups)
 
   for (auto obj: results)
     groups.push_back(bson::Group::Unserialize(obj));
+}
+
+// stats function
+
+void IncrementStats(const acl::User& user,
+  long long kbytes, double xfertime, stats::Direction direction)
+{
+  std::string direction_;
+  if (direction == stats::Direction::Upload)
+    direction_ = "up";
+  else direction_ = "dn";
+
+  using namespace boost::posix_time;
+  auto now = second_clock::local_time();
+  mongo::Query query = QUERY("uid" << user.UID() << "day" << now.date().day()
+    << "week" << now.date().week_number() << "month" 
+    << now.date().month().as_number() << "year" << now.date().year()
+    << "direction" << direction_);
+  mongo::BSONObj obj = BSON(
+    "$inc" << BSON("files" << 1) <<
+    "$inc" << BSON("kbytes" << kbytes) <<
+    "$inc" << BSON("xfertime" << xfertime));
+  TaskPtr task(new db::Update("transfers", query, obj, true));
+  Pool::Queue(task);
 }
 
 // end

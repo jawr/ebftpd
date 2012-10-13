@@ -90,14 +90,15 @@ void Pool::StopThread()
 
 #ifdef DB_POOL_TEST
 
+#include <iostream>
+#include <sstream>
 #include <mongo/client/dbclient.h>
 #include <boost/thread/future.hpp>
 #include "db/interface.hpp"
 #include "acl/types.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
-#include <iostream>
-#include <sstream>
+#include "stats/stat.hpp"
 
 void ThreadMain()
 {
@@ -117,6 +118,13 @@ int main()
   acl::UserCache::Create("test2", "wowow", "");
   acl::UserCache::SetPrimaryGID("iotest", 
   acl::GroupCache::Group("TESTGRP").GID());
+
+  db::IncrementStats(acl::UserCache::User("iotest"),
+    21474836, 23.3, stats::Direction::Upload);
+  db::IncrementStats(acl::UserCache::User("iotest"),
+    836, 2.3, stats::Direction::Upload);
+  db::IncrementStats(acl::UserCache::User("iotest"),
+    474836, 213.3, stats::Direction::Download);
 
   boost::thread threads[20];
 
