@@ -2,7 +2,7 @@ CXX := g++
 CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x
 LIBS := -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lpthread -lssl -lboost_filesystem
-INCLUDE := -I. -include pch.hpp
+INCLUDE := -Isrc -include src/pch.hpp
 
 UNITY := false
 STATE := other
@@ -21,14 +21,14 @@ ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),test unitytest))
 STATE := test
 endif
 
-ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),all unity ftpd))
+ifeq ($(MAKECMDGOALS),$(filter $(MAKECMDGOALS),all unity ebftpd))
 STATE := normal
 endif
 
 ifeq ($(UNITY),false)
-SOURCE := $(shell find . -type f -name "*.cpp" -printf "%P\n" | grep -v "^unity/")
+SOURCE := $(shell find src/ -type f -name "*.cpp" -printf "src/%P\n" | grep -v "^unity/")
 else
-SOURCE := $(shell ./unity.sh $(UNITY_PARTS))
+SOURCE := $(shell ./scripts/unity.sh $(UNITY_PARTS))
 endif
 
 ifeq ($(STATE),test)
@@ -55,25 +55,25 @@ endif
 endif
 endif
 
-$(shell ./version.sh >/dev/null)
+$(shell ./scripts/version.sh >/dev/null)
 
 OBJECTS := $(SOURCE:.cpp=.o)
 
 .PHONY: all unity test unitytest state strip clean
 
-all: ftpd
+all: ebftpd
 
-unity: ftpd
+unity: ebftpd
 
-test:  ftpd
+test:  ebftpd
 
-unitytest: ftpd
+unitytest: ebftpd
 
-ftpd: pch.hpp.gch $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ftpd
+ebftpd: pch.hpp.gch $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ebftpd
 
 pch.hpp.gch:
-	$(CXX) -c $(CXXFLAGS) pch.hpp
+	$(CXX) -c $(CXXFLAGS) src/pch.hpp
 
 
 %.o: %.cpp
@@ -83,12 +83,12 @@ DEPS := $(OBJECTS:.o=.d)
 -include $(DEPS)
 
 strip:
-	@strip -s ftpd
+	@strip -s ebftpd
 
 clean:
-	@find -iname "*.[od]" -exec rm '{}' ';'
-	@find -iname "*.gch" -exec rm '{}' ';'
-	@rm -f ftpd
+	@find src/ -iname "*.[od]" -exec rm '{}' ';'
+	@find src/ -iname "*.gch" -exec rm '{}' ';'
+	@rm -f ebftpd
 	@rm -f .state
 	@rm -f unity/*
 

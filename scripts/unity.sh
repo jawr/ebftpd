@@ -6,7 +6,7 @@ PREFIX=unity
 
 #rm -f $DIRNAME/*
 
-SOURCE=`find . -type f -name "*.cpp" -printf "%P\n" | grep -v "^$DIRNAME/"`
+SOURCE=`find src/ -type f -name "*.cpp" -printf "%P\n" | grep -v "^$DIRNAME/"`
 
 PARTS=$1
 TOTAL=0

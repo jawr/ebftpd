@@ -22,4 +22,5 @@ glftpd.conf
 unity.cpp
 siteroot
 unity-*.cpp
+ebftpd
 
