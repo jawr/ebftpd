@@ -10,9 +10,6 @@
 namespace util
 {
 
-std::string RandomString(size_t len, const std::string& validChars = 
-                         "abcdefghijklmnopqrstuvwxyz0123456789");
-
 template<class Collection>
 void SplitToType(const std::string& s, char delim, Collection& result)
 {

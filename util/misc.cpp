@@ -5,21 +5,6 @@
 namespace util
 {
 
-std::string RandomString(size_t len, const std::string& validChars)
-{
-
-  struct timeval tv;
-  gettimeofday(&tv,NULL);
-  srand(tv.tv_usec * tv.tv_sec);
-
-  std::string s;
-  s.reserve(len);
-  for (size_t i = 0; i < len; ++i)
-    s += validChars[rand() % validChars.length()];
-
-  return s;
-}
-
 } /* misc namespace */
 
 #ifdef UTIL_MISC_TEST

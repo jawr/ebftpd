@@ -12,6 +12,7 @@
 #include "acl/check.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
+#include "util/randomstring.hpp"
 
 namespace PP = acl::PathPermission;
 
@@ -101,7 +102,8 @@ util::Error UniqueFile(ftp::Client& client, const Path& path,
 
   for (int i = 0; i < 1000; ++i)
   {
-    std::string filename = util::RandomString(filenameLength);
+    std::string filename =
+        util::RandomString(filenameLength, util::RandomString::alphaNumeric);
     Path realUniquePath = real / filename;
     try
     {
