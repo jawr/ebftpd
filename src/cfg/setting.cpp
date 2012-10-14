@@ -1,9 +1,9 @@
-#include <stdlib.h>
+#include <cstdlib>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include "cfg/setting.hpp"
 #include "cfg/exception.hpp"
 #include "util/string.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/join.hpp>
 
 #include <iostream>
 
@@ -40,9 +40,10 @@ SecureIp::SecureIp(std::vector<std::string> toks)
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
-SecurePass::SecurePass(std::vector<std::string> toks)
+SecurePass::SecurePass(std::vector<std::string> toks) :
+  strength(toks[0])
 {
-  mask = toks.at(0);
+  if (toks.size() < 2) throw ConfigError("Wrong number of parameters for secure_pass");
   toks.erase(toks.begin());
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }

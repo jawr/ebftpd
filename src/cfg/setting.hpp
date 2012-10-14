@@ -10,9 +10,11 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/acl.hpp"
 #include "fs/path.hpp"
+#include "acl/passwdstrength.hpp"
 
 namespace cfg { namespace setting
 {
+
 class Setting // a base class might be useful in the future.. maybe
 {
 public:
@@ -91,13 +93,12 @@ public:
 
 class SecurePass : public Setting
 {
-  std::string mask;
+  acl::PasswdStrength strength;
   acl::ACL acl;
 public:
-  SecurePass() {}
   SecurePass(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
-  const std::string& Mask() const { return mask; }
+  const acl::PasswdStrength& Strength() const { return strength; }
 };
 
 class BouncerIp : public Setting

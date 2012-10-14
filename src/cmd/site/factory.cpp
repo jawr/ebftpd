@@ -4,6 +4,7 @@
 #include "cmd/site/idle.hpp"
 #include "cmd/site/vers.hpp"
 #include "cmd/site/xdupe.hpp"
+#include "cmd/site/passwd.hpp"
 
 namespace cmd { namespace site
 {
@@ -16,6 +17,7 @@ Factory::Factory()
   Register("IDLE", new Creator<site::IDLECommand>());
   Register("VERS", new Creator<site::VERSCommand>());
   Register("XDUPE", new Creator<site::XDUPECommand>());
+  Register("PASSWD", new Creator<site::PASSWDCommand>());
 }
 
 Factory::~Factory()
