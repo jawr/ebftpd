@@ -115,10 +115,6 @@ bool Client::Accept(util::net::TCPListener& server)
   try
   {
     control.Accept(server);
-    // get ident
-    LookupIdent(); 
-    const util::net::Endpoint& ep = control.RemoteEndpoint();
-    return acl::IpMaskCache::Check(ident + "@" + ep.IP().ToString()); 
   }
   catch(const util::net::NetworkError& e)
   {
@@ -126,6 +122,7 @@ bool Client::Accept(util::net::TCPListener& server)
     logger::error << "Error while accepting new client: " << e.Message() << logger::endl;
     return false;
   }
+  return true;
 }
 
 void Client::DisplayBanner()
@@ -211,6 +208,9 @@ void Client::Run()
   scope_guard finishedGuard = make_guard([this]{ SetFinished(); });
 
   LookupIdent();
+  const util::net::Endpoint& ep = control.RemoteEndpoint();
+  if (!acl::IpMaskCache::Check(ident + "@" + ep.IP().ToString()))
+    return; // need to output to logger
   
   logger::ftpd << "Servicing client connected from "
                << ident << "@" << control.RemoteEndpoint() << logger::endl;
