@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <boost/optional.hpp>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 
@@ -12,23 +13,19 @@ namespace cmd { namespace site
 template <class BaseT>
 class CreatorBase
 {
-  std::string aclKeyword;
 public:  
-  CreatorBase(const std::string& aclKeyword) :
-    aclKeyword(aclKeyword) { }
+  CreatorBase() { }
   virtual ~CreatorBase() { }
   
   virtual BaseT *Create(ftp::Client& client, const std::string& argStr,
                         const Args& args) = 0;
-  const std::string& ACLKeyword() const { return aclKeyword; }
 };
 
 template <class CommandT>
 class Creator : public CreatorBase<cmd::Command>
 {
 public:
-  Creator(const std::string& aclKeyword = "") :
-    CreatorBase(aclKeyword) { }
+  Creator() { }
   cmd::Command *Create(ftp::Client& client, const std::string& argStr,
                   const Args& args)
   {
@@ -36,23 +33,68 @@ public:
   }
 };
 
+typedef std::shared_ptr<CreatorBase<cmd::Command>> CreatorBasePtr;
+
+class CommandDef
+{
+  int minimumArgs;
+  int maximumArgs;
+  std::string aclKeyword;
+  CreatorBasePtr creator;
+  std::string syntax;
+  std::string description;
+
+public:
+  CommandDef() :
+    minimumArgs(-1), maximumArgs(-1), creator(nullptr) { }
+  
+  CommandDef(int minimumArgs, int maximumArgs,
+             const std::string& aclKeyword,
+             CreatorBase<cmd::Command>* creator,
+             const std::string& syntax,
+             const std::string& description) :
+    minimumArgs(minimumArgs),
+    maximumArgs(maximumArgs),
+    aclKeyword(aclKeyword),
+    creator(creator),
+    syntax(syntax),
+    description(description)
+  { }
+  
+  bool CheckArgs(const std::vector<std::string>& args) const
+  {
+    int argsSize = static_cast<int>(args.size()) - 1;
+    return (argsSize >= minimumArgs &&
+            (maximumArgs == -1 || argsSize <= maximumArgs));
+  }
+  
+  cmd::Command* Create(ftp::Client& client, const std::string& argStr,
+                       const Args& args) const
+  {
+    return creator->Create(client, argStr, args);
+  }
+  
+  const std::string& Syntax() const { return syntax; }
+  const std::string& Description() const { return description; }
+  const std::string& ACLKeyword() const { return aclKeyword; }
+};
+
+typedef boost::optional<const CommandDef&> CommandDefOptRef;
+
 class Factory
 {
-  typedef std::unordered_map<std::string,
-                  CreatorBase<cmd::Command>* > CreatorsMap;
+  typedef std::unordered_map<std::string, CommandDef> CommandDefsMap;
                                    
-  CreatorsMap creators;
+  CommandDefsMap defs;
    
   Factory();
-  ~Factory();
   
-  void Register(const std::string& command, CreatorBase<cmd::Command>* creator);
+  //void Register(const std::string& command, CreatorBase<cmd::Command>* creator);
   
   static Factory factory;
   
 public:
-  static cmd::Command* Create(ftp::Client& client, const std::string& argStr,
-                         const Args& args, std::string& aclKeyword);
+  static CommandDefOptRef Lookup(const std::string& command);
 };
 
 } /* site namespace */

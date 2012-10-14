@@ -15,13 +15,18 @@ void SITECommand::Execute()
   args.erase(args.begin());
   boost::to_upper(args[0]);
   std::string aclKeyword;
-  std::unique_ptr<cmd::Command>
-    command(cmd::site::Factory::Create(client, argStr, args, aclKeyword));
-  if (!command.get()) control.Reply(ftp::CommandUnrecognised, "Command not understood");
-  else if (!acl::AllowSiteCmd(client.User(), aclKeyword))
+  cmd::site::CommandDefOptRef def = cmd::site::Factory::Lookup(args[0]);
+  if (!def)
+    control.Reply(ftp::CommandUnrecognised, "Command not understood");
+  else if (!acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
     control.Reply(ftp::ActionNotOkay,  "SITE " + args[0] + ": Permission denied");
+  else if (!def->CheckArgs(args))
+    control.Reply(ftp::SyntaxError, def->Syntax());
   else
+  {
+    std::unique_ptr<cmd::Command> command(def->Create(client, argStr, args));
     command->Execute();
+  }
 }
 
 } /* rfc namespace */

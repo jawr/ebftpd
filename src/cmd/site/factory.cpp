@@ -11,6 +11,8 @@
 #include "cmd/site/purge.hpp"
 #include "cmd/site/renuser.hpp"
 
+#include <iostream>
+
 namespace cmd { namespace site
 {
 
@@ -18,42 +20,56 @@ Factory Factory::factory;
 
 Factory::Factory()
 {
-  Register("EPSV", new Creator<site::EPSVCommand>("epsv"));
-  Register("IDLE", new Creator<site::IDLECommand>());
-  Register("VERS", new Creator<site::VERSCommand>());
-  Register("XDUPE", new Creator<site::XDUPECommand>());
-  Register("PASSWD", new Creator<site::PASSWDCommand>("passwd"));
-  Register("CHPASS", new Creator<site::CHPASSCommand>("chpass"));
-  Register("DELUSER", new Creator<site::DELUSERCommand>("deluser"));
-  Register("READD", new Creator<site::READDCommand>("readd"));
-  Register("PURGE", new Creator<site::PURGECommand>("purge"));
-  Register("RENUSER", new Creator<site::RENUSERCommand>("renuser"));
-}
-
-Factory::~Factory()
-{
-  while (!creators.empty())
+  defs =
   {
-    delete creators.begin()->second;
-    creators.erase(creators.begin());
-  }
+    { "EPSV",       { 0,  1,  "",
+                      new Creator<site::EPSVCommand>(),  
+                      "Syntax: SITE EPSV normal|full",
+                      "Change EPSV command mode between normal and full (fxp support)"  }, },
+    { "IDLE",       { 0,  1,  "",
+                      new Creator<site::IDLECommand>(),
+                      "Syntax: SITE IDLE [<seconds>]",
+                      "Changes idle timeout" }, },
+    { "VERS",       { 0,  0,  "",
+                      new Creator<site::VERSCommand>(),
+                      "Syntax: SITE VERS",
+                      "Display server version" }, },
+    { "XDUPE",      { 0,  1,  "",
+                      new Creator<site::XDUPECommand>(),
+                      "Syntax: SITE XDUPE [<mode>]",
+                      "Display / change extended dupe mode" }, },
+    { "PASSWD",     { 1,  1,  "passwd",
+                      new Creator<site::PASSWDCommand>(),
+                      "Syntax: SITE PASSWD <password>",
+                      "Change your password" }, },
+    { "CHPASS",     { 2,  2,  "chpass",
+                      new Creator<site::CHPASSCommand>(),
+                      "Syntax: SITE CHPASS <user> <password>",
+                      "Change another user's password" }, },
+    { "DELUSER",    { 1,  1,  "deluser",
+                      new Creator<site::DELUSERCommand>(),
+                      "Syntax: SITE DELUSER <user>",
+                      "Delete a user" }, },
+    { "READD",      { 1,  1,  "readd",
+                      new Creator<site::READDCommand>(),
+                      "Syntax: SITE READD <user>",
+                      "Readd a deleted user" }, },
+    { "PURGE",      { 1,  1,  "purge",
+                      new Creator<site::PURGECommand>(),
+                      "Syntax: SITE PURGE <user>",
+                      "Purge a deleted user" }, },
+    { "RENUSER",    { 2,  2,  "renuser",
+                      new Creator<site::RENUSERCommand>(),
+                      "Syntax: SITE RENUSER <old user> <new user>",
+                      "Rename a user" }, }
+  };
 }
 
-void Factory::Register(const std::string& command,
-                       CreatorBase<cmd::Command>* creator)
+CommandDefOptRef Factory::Lookup(const std::string& command)
 {
-  creators.insert(std::make_pair(command, creator));
-}  
-
-cmd::Command* Factory::Create(ftp::Client& client, const std::string& argStr,
-                              const Args& args, std::string& aclKeyword)
-{
-  std::string cmd = args[0];
-  boost::to_upper(cmd);
-  CreatorsMap::const_iterator it = factory.creators.find(cmd);
-  if (it == factory.creators.end()) return nullptr;
-  aclKeyword = it->second->ACLKeyword();
-  return it->second->Create(client, argStr, args);
+  CommandDefsMap::const_iterator it = factory.defs.find(command);
+  if (it != factory.defs.end()) return CommandDefOptRef(it->second);
+  return CommandDefOptRef();
 }
 
 } /* site namespace */

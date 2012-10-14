@@ -22,10 +22,9 @@ void PASSWDCommand::Execute()
     
     std::vector<std::string> cpArgs;
     boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
-
-    std::string aclKeyword;
+    
     std::unique_ptr<cmd::Command>
-      command(cmd::site::Factory::Create(client, cpArgStr, cpArgs, aclKeyword));
+      command(cmd::site::Factory::Lookup(args[0])->Create(client, cpArgStr, cpArgs));
     assert(command.get());
     command->Execute();
   }
