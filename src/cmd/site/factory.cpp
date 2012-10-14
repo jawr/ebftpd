@@ -28,6 +28,7 @@ Factory::Factory()
   Register("READD", new Creator<site::READDCommand>("readd"));
   Register("PURGE", new Creator<site::PURGECommand>("purge"));
   Register("RENUSER", new Creator<site::RENUSERCommand>("renuser"));
+  Register("ADDUSER", new Creator<site::ADDUSERCommand>());
 }
 
 Factory::~Factory()
