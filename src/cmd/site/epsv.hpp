@@ -1,5 +1,5 @@
-#ifndef __CMD_SITE_SITE_HPP
-#define __CMD_SITE_SITE_HPP
+#ifndef __CMD_SITE_EPSV_HPP
+#define __CMD_SITE_EPSV_HPP
 
 #include "cmd/command.hpp"
 
