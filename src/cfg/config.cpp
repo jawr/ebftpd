@@ -21,6 +21,7 @@ Config::Config(const std::string& config) :
   version(++latestVersion),
   config(config),
   port(-1),
+  defaultFlags("3"),
   freeSpace(100),
   timezone(0),
   colorMode(false),
@@ -103,6 +104,10 @@ void Config::Parse(const std::string& line) {
   {
     ParameterCheck(opt, toks, 1);
     port = boost::lexical_cast<int>(toks.at(0));
+  }
+  else if (opt == "default_flags")
+  {
+    defaultFlags = toks.at(0);
   }
   else if (opt == "tls_certificate")
   {
