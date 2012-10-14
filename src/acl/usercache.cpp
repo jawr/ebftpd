@@ -96,11 +96,13 @@ util::Error UserCache::Purge(const std::string& name)
   if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
   if (!it->second->Deleted()) return util::Error::Failure("User has not been deleted");
   instance.byUID.erase(instance.byUID.find(it->second->UID()));
+
+  acl::UserID uid = it->second->UID();
+
   delete it->second;
   instance.byName.erase(it);
   
-  // create a task for the db connection pool to execute
-  // telling it to delete this user frmo database
+  db::DeleteUser(uid);
   
   return util::Error::Success();
 }

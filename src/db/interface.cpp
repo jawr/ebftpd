@@ -82,6 +82,18 @@ void SaveUser(const acl::User& user)
   Pool::Queue(task);
 }
 
+void DeleteUser(const acl::UserID& uid)
+{
+  mongo::Query query = QUERY("uid" << uid);
+  std::vector<TaskPtr> tasks;
+  tasks.emplace_back(new db::Delete("users", query));
+  tasks.emplace_back(new db::Delete("ipmasks", query));
+  tasks.emplace_back(new db::Delete("transfers", query));
+
+  for (auto& task: tasks)
+    Pool::Queue(task);      
+}
+
 void GetUsers(std::vector<acl::User*>& users)
 {
   QueryResults results;
