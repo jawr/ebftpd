@@ -30,6 +30,7 @@ Factory::Factory()
   Register("RENUSER", new Creator<site::RENUSERCommand>("renuser"));
   Register("ADDUSER", new Creator<site::ADDUSERCommand>());
   Register("ADDIP", new Creator<site::ADDIPCommand>());
+  Register("CHPASS", new Creator<site::CHPASSCommand>());
 }
 
 Factory::~Factory()
