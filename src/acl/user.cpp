@@ -45,6 +45,11 @@ void User::AddFlags(const std::string& flags)
   std::sort(this->flags.begin(), this->flags.end());
 }
 
+void User::AddFlag(Flag flag)
+{
+  AddFlags(std::string(1, static_cast<char>(flag)));
+}
+
 void User::DelFlags(const std::string& flags)
 {
   for (char ch: flags)
@@ -52,6 +57,11 @@ void User::DelFlags(const std::string& flags)
     std::string::size_type pos = this->flags.find(ch);
     if (pos != std::string::npos) this->flags.erase(pos, 1);
   }  
+}
+
+void User::DelFlag(Flag flag)
+{
+  DelFlags(std::string(1, static_cast<char>(flag)));
 }
 
 bool User::CheckFlags(const std::string& flags) const

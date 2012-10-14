@@ -28,6 +28,13 @@ void PASSCommand::Execute()
     return;
   }
   
+  if (client.User().Deleted())
+  {
+    control.Reply(ftp::ServiceUnavailable, "You have been deleted. Goodbye.");
+    client.SetFinished();
+    return;
+  }
+  
   fs::Path rootPath("/");
   util::Error e = fs::ChangeDirectory(client, rootPath);
   if (!e) 

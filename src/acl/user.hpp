@@ -41,7 +41,9 @@ public:
   const std::string& Flags() const { return flags; }
   void SetFlags(const std::string& flags) { this->flags = flags; }
   void AddFlags(const std::string& flags);
+  void AddFlag(Flag flag);
   void DelFlags(const std::string& flags);
+  void DelFlag(Flag flag);
   bool CheckFlags(const std::string& flags) const;
   bool CheckFlag(Flag flag) const;
   bool Deleted() const { return CheckFlag(Flag::Deleted); }

@@ -1,8 +1,8 @@
-#include <sstream>
+#include <cassert>
+#include <memory>
+#include <boost/algorithm/string/split.hpp>
 #include "cmd/site/passwd.hpp"
-#include "acl/usercache.hpp"
-#include "acl/securepass.hpp"
-#include "acl/passwdstrength.hpp"
+#include "cmd/site/factory.hpp"
 
 namespace cmd { namespace site
 {
@@ -15,27 +15,18 @@ void PASSWDCommand::Execute()
     control.Reply(ftp::SyntaxError, syntax);
   else
   {
-    acl::PasswdStrength strength;
+    std::string cpArgStr("CHPASS ");
+    cpArgStr += client.User().Name();
+    cpArgStr += " ";
+    cpArgStr += args[1];
     
-    if (!acl::SecurePass(client.User(), args[1], strength))
-    {
-      std::ostringstream os;
-      os << "Password not strong enough. Must meet the following minimum criteria:\n"
-         << strength.UpperCase() << " uppercase, "
-         << strength.LowerCase() << " lowercase, "
-         << strength.Digits() << " digits, "
-         << strength.Others() << " others, "
-         << strength.Length() << " length.";
-      control.MultiReply(ftp::ActionNotOkay, os.str());
-      return;
-    }
-  
-    util::Error e = acl::UserCache::SetPassword(client.User().Name(), args[1]);
-    if (!e)
-      control.Reply(ftp::ActionNotOkay, 
-                    "Unable to change password: " + e.Message());
-    else
-      control.Reply(ftp::CommandOkay, "Password changed.");
+    std::vector<std::string> cpArgs;
+    boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
+
+    std::unique_ptr<cmd::Command>
+      command(cmd::site::Factory::Create(client, cpArgStr, cpArgs));
+    assert(command.get());
+    command->Execute();
   }
 }
 

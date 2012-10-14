@@ -5,6 +5,9 @@
 #include "cmd/site/vers.hpp"
 #include "cmd/site/xdupe.hpp"
 #include "cmd/site/passwd.hpp"
+#include "cmd/site/chpass.hpp"
+#include "cmd/site/deluser.hpp"
+#include "cmd/site/readd.hpp"
 
 namespace cmd { namespace site
 {
@@ -18,6 +21,9 @@ Factory::Factory()
   Register("VERS", new Creator<site::VERSCommand>());
   Register("XDUPE", new Creator<site::XDUPECommand>());
   Register("PASSWD", new Creator<site::PASSWDCommand>());
+  Register("CHPASS", new Creator<site::CHPASSCommand>());
+  Register("DELUSER", new Creator<site::DELUSERCommand>());
+  Register("READD", new Creator<site::READDCommand>());
 }
 
 Factory::~Factory()

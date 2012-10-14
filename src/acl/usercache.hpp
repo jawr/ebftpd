@@ -31,6 +31,8 @@ public:
   static util::Error Create(const std::string& name, const std::string& password,
                      const std::string& flags);
   static util::Error Delete(const std::string& name);
+  static util::Error Purge(const std::string& name);
+  static util::Error Readd(const std::string& name);
   static util::Error Rename(const std::string& oldName, const std::string& newName);
   static util::Error SetPassword(const std::string& name, const std::string& password);
   static util::Error SetFlags(const std::string& name, const std::string& flags);

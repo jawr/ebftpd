@@ -2,6 +2,7 @@
 #define __ACL_PASSWDSTRENGTH_HPP
 
 #include <string>
+#include <cctype>
 
 namespace acl
 {

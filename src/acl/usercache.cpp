@@ -80,7 +80,7 @@ util::Error UserCache::Create(const std::string& name, const std::string& passwo
   return util::Error::Success();
 }
 
-util::Error UserCache::Delete(const std::string& name)
+util::Error UserCache::Purge(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
@@ -92,6 +92,34 @@ util::Error UserCache::Delete(const std::string& name)
   
   // create a task for the db connection pool to execute
   // telling it to delete this user frmo database
+  
+  return util::Error::Success();
+}
+
+util::Error UserCache::Delete(const std::string& name)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  
+  if (it->second->Deleted()) return util::Error::Failure("User already deleted");
+  it->second->AddFlag(Flag::Deleted);
+  
+  Save(*it->second);
+  
+  return util::Error::Success();
+}
+
+util::Error UserCache::Readd(const std::string& name)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  
+  if (!it->second->Deleted()) return util::Error::Failure("User not deleted");
+  it->second->DelFlag(Flag::Deleted);
+  
+  Save(*it->second);
   
   return util::Error::Success();
 }
