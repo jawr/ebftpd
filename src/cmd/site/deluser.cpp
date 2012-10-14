@@ -21,6 +21,7 @@ void DELUSERCommand::Execute()
       control.Reply(ftp::ActionNotOkay, "Unable to delete user: " + e.Message());
     else
       control.Reply(ftp::CommandOkay, "User " + args[1] + " has been deleted.");
+    // need to kick user
   }
 }
 
