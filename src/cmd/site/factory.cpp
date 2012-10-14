@@ -16,6 +16,7 @@
 #include "cmd/site/deluser.hpp"
 #include "cmd/site/purge.hpp"
 #include "cmd/site/readd.hpp"
+#include "cmd/site/renuser.hpp"
 
 namespace cmd { namespace site
 {
@@ -41,7 +42,7 @@ Factory::Factory()
   Register("DELUSER", new Creator<site::DELUSERCommand>());
   Register("PURGE", new Creator<site::PURGECommand>());
   Register("READD", new Creator<site::READDCommand>());
-
+  Register("RENUSER", new Creator<site::RENUSERCommand>());
 }
 
 Factory::~Factory()
