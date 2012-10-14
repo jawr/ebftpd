@@ -64,18 +64,14 @@ void ADDUSERCommand::Execute()
         continue;
       }
 
-      os << "\n\tAdded IP Mask: " << (*it);
+      os << "\nIP '" << (*it) << "' successfully added to " << args[1] << ".";
       if (deleted.size() > 0)
-      {
-        os << "\n\tAdding broader mask, deleted (" << deleted.size() << "):";
         for (auto& del: deleted)
-          os << "\n\t" << del; 
-      }
+          os << "\nAuto-removing useless IP '" << del << "'..."; 
     }
   }
 
   control.MultiReply(ftp::CommandOkay, os.str());
-    return;
 }
 
 // end
