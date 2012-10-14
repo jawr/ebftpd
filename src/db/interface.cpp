@@ -31,8 +31,8 @@ boost::mutex getNewGroupIdMtx;
 void Initalize()
 {
   db::Pool::StartThread();
-  acl::UserCache::Initalize();
   acl::GroupCache::Initalize();
+  acl::UserCache::Initalize();
   acl::IpMaskCache::Initalize();
 
   std::vector<TaskPtr> tasks;

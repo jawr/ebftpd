@@ -20,6 +20,7 @@ class UserCache
   ByUIDMap byUID;
   
   static UserCache instance;
+  static bool initalized;
   
   ~UserCache();
   

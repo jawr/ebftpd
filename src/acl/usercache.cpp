@@ -1,16 +1,15 @@
 #include <memory>
 #include <vector>
 #include "acl/usercache.hpp"
+#include "acl/groupcache.hpp"
 #include "db/interface.hpp"
 #include "logs/logs.hpp"
-// only for generating dodgy random uid
-// until we can retrieve one from db
-#include <ctime>
-#include <cstdlib>
+
 namespace acl
 {
 
 UserCache UserCache::instance;
+bool UserCache::initalized = false;
 
 UserCache::~UserCache()
 {
@@ -24,7 +23,12 @@ UserCache::~UserCache()
 void UserCache::Initalize()
 {
   // grab all user's from the database and populate the map
+  if (instance.initalized) return;
   boost::lock_guard<boost::mutex> lock(instance.mutex);
+
+  // need to initalize group cache first
+  acl::GroupCache::Initalize();
+
   std::vector<acl::User*> users;
   try
   {
@@ -33,6 +37,10 @@ void UserCache::Initalize()
     {
       instance.byName.insert(std::make_pair(user->Name(), user));
       instance.byUID.insert(std::make_pair(user->UID(), user));
+      // populate GroupCache groupToUsers map
+      acl::GroupCache::AddUIDToGroup(user->PrimaryGID(), user->UID());
+      for (auto gid: user->SecondaryGIDs())
+        acl::GroupCache::AddUIDToGroup(gid, user->UID());
     }
   } 
   catch (const util::RuntimeError& e)
@@ -41,6 +49,7 @@ void UserCache::Initalize()
                 << e.Message() << logs::endl;
     for (auto& ptr: users) delete ptr;
   }
+  instance.initalized = true;
   
 }
 
