@@ -12,6 +12,8 @@
 #include "cmd/site/adduser.hpp"
 #include "cmd/site/addip.hpp"
 #include "cmd/site/chpass.hpp"
+#include "cmd/site/delip.hpp"
+#include "cmd/site/deluser.hpp"
 
 namespace cmd { namespace site
 {
@@ -34,6 +36,7 @@ Factory::Factory()
   Register("ADDIP", new Creator<site::ADDIPCommand>());
   Register("CHPASS", new Creator<site::CHPASSCommand>());
   Register("DELIP", new Creator<site::DELIPCommand>());
+  Register("DELUSER", new Creator<site::DELUSERCommand>());
 
 }
 
