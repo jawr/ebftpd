@@ -1,15 +1,15 @@
-#ifndef __CMD_SITE_XDUPE_HPP
-#define __CMD_SITE_XDUPE_HPP
+#ifndef __CMD_SITE_RENUSER_HPP
+#define __CMD_SITE_RENUSER_HPP
 
 #include "cmd/command.hpp"
 
 namespace cmd { namespace site
 {
 
-class XDUPECommand : public Command
+class RENUSERCommand : public Command
 {
 public:
-  XDUPECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+  RENUSERCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
     Command(client, client.Control(), client.Data(), argStr, args) { }
 
   void Execute();

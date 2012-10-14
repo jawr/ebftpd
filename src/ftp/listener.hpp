@@ -3,7 +3,7 @@
 
 #include <ostream>
 #include <vector>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <boost/thread.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>

@@ -2,7 +2,7 @@
 #define __CMD_RFC_FACTORY_HPP
 
 #include <memory>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 
@@ -37,7 +37,7 @@ public:
 
 class Factory
 {
-  typedef std::tr1::unordered_map<std::string,
+  typedef std::unordered_map<std::string,
                   CreatorBase<cmd::Command>* > CreatorsMap;
                                    
   CreatorsMap creators;

@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
 #include "fs/path.hpp"
@@ -26,7 +26,7 @@ class Config
   void SanityCheck();
   void SetDefaults(const std::string& opt); 
 
-  std::tr1::unordered_map<std::string, int> settingsCache;
+  std::unordered_map<std::string, int> settingsCache;
 
   // containers
   fs::Path sitepath;
@@ -36,7 +36,6 @@ class Config
   setting::AsciiDownloads asciiDownloads;
   acl::ACL shutdown;
   long freeSpace;
-  std::vector<setting::UseDirSize> useDirSize;
   int timezone;
   bool colorMode;
   std::string sitenameLong;
@@ -102,20 +101,20 @@ class Config
   bool dlIncomplete;
   //bool fileDlCount;
   setting::DupeCheck dupeCheck;
-  std::vector<setting::Script> script;
+  std::vector<setting::Cscript> cscript;
   std::vector<std::string> idleCommands;
   int totalUsers;
   setting::Lslong lslong;
   std::vector<setting::HiddenFiles> hiddenFiles;
   std::vector<std::string> noretrieve;
-  std::vector<std::string> tagline;
+  std::string tagline;
   std::string email;
   int multiplierMax;
   int oneliners;
   setting::Requests requests;
   setting::Lastonline lastonline;
   long emptyNuke;
-  std::vector<fs::Path> nodupecheck;
+  std::string nodupecheck;
   std::vector<setting::Creditcheck> creditcheck;
   std::vector<setting::Creditloss> creditloss;
   setting::NukedirStyle nukedirStyle;
@@ -125,14 +124,23 @@ class Config
   std::vector<setting::Privpath> privpath;
   std::vector<setting::SiteCmd> siteCmd;
   int maxSitecmdLines;
-  std::vector<setting::Cscript> cscript;
   setting::IdleTimeout idleTimeout;
+  
+  std::unordered_map<std::string, acl::ACL> commandACLs;
   
   Config(const Config&) = default;
   Config& operator=(const Config&) = default;
   
   void NotImplemented(const std::string& opt);
-
+  void ParameterCheck(const std::string& opt,
+                      const std::vector<std::string>& toks, 
+                      int minimum, int maximum);
+  void ParameterCheck(const std::string& opt,
+                      const std::vector<std::string>& toks, 
+                      int minimum)
+  { ParameterCheck(opt, toks, minimum, minimum); }
+        
+  
 public:
   Config(const std::string& configFile);
   ~Config() {}  
@@ -147,7 +155,6 @@ public:
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
   const acl::ACL& Shutdown() const { return shutdown; }
   long FreeSpace() const { return freeSpace; }
-  const std::vector<setting::UseDirSize>& UseDirSize() const { return useDirSize; }
   int Timezone() const { return timezone; }
   bool ColorMode() const { return colorMode; }
   const std::string& SitenameLong() const { return sitenameLong; }
@@ -214,20 +221,20 @@ public:
   bool DlIncomplete() const { return dlIncomplete; }
   //bool FileDlCount() const { return fileDlCount; }
   const setting::DupeCheck& DupeCheck() const { return dupeCheck; }
-  const std::vector<setting::Script>& Script() const { return script; }
+  const std::vector<setting::Cscript>& Cscript() const { return cscript; }
   const std::vector<std::string>& IdleCommands() const { return idleCommands; }
   int TotalUsers() const { return totalUsers; }
   const setting::Lslong& Lslong() const { return lslong; }
   const std::vector<setting::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
   const std::vector<std::string>& Noretrieve() const { return noretrieve; }
-  const std::vector<std::string>& Tagline() const { return tagline; }
+  const std::string& Tagline() const { return tagline; }
   const std::string& Email() const { return email; }
   int MultiplierMax() const { return multiplierMax; }
   int Oneliners() const { return oneliners; }
   const setting::Requests& Requests() const { return requests; }
   const setting::Lastonline& Lastonline() const { return lastonline; }
   long EmptyNuke() const { return emptyNuke; }
-  const std::vector<fs::Path>& Nodupecheck() const { return nodupecheck; }
+  const std::string& Nodupecheck() const { return nodupecheck; }
   const std::vector<setting::Creditcheck>& Creditcheck() const { return creditcheck; }
   const std::vector<setting::Creditloss>& Creditloss() const { return creditloss; }
   const setting::NukedirStyle& NukedirStyle() const { return nukedirStyle; }
@@ -237,9 +244,12 @@ public:
   const std::vector<setting::Privpath>& Privpath() const { return privpath; }
   const std::vector<setting::SiteCmd>& SiteCmd() const { return siteCmd; }
   int MaxSitecmdLines() const { return maxSitecmdLines; }
-  const std::vector<setting::Cscript>& Cscript() const { return cscript; }
   const setting::IdleTimeout& IdleTimeout() const { return idleTimeout; }
 
+  const acl::ACL& CommandACL(const std::string& keyword) const
+  { return commandACLs.at(keyword); }
+  
+  
   friend const Config& Get(bool update);
 };
 

@@ -86,29 +86,32 @@ void Config::Parse(const std::string& line) {
 
   // plan to rehaul this area in the future to sway from glftpd's inconsitencies
   // check if we have a perm to parse
-  if (opt.at(0) == '-' || opt.find("custom-") != std::string::npos)
+  if (opt[0] == '-' || boost::starts_with(opt, "custom-"))
   {
-    std::vector<std::string> temp;
-    boost::split(temp, opt, boost::is_any_of("-"));
-    if (temp.size() > 1) temp.erase(temp.begin());
-    // loop and update
-    return;
+    ParameterCheck(opt, toks, 1, -1);
+    std::string keyword(opt[0] == '-' ? opt.substr(1) : opt.substr(7));
+    commandACLs.insert(std::make_pair(keyword, 
+        acl::ACL::FromString(boost::join(toks, " "))));
   }
 
   if (opt == "sitepath")
   {
+    ParameterCheck(opt, toks, 1);
     sitepath = fs::Path(toks.at(0));
   }
   else if (opt == "port")
   {
+    ParameterCheck(opt, toks, 1);
     port = boost::lexical_cast<int>(toks.at(0));
   }
   else if (opt == "tls_certificate")
   {
+    ParameterCheck(opt, toks, 1);
     tlsCertificate = fs::Path(toks.at(0));
   }
   else if (opt == "rootpath")
   {
+    ParameterCheck(opt, toks, 1);
     rootpath = fs::Path(toks.at(0));
   }
   else if (opt == "reload_config")
@@ -117,6 +120,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "datapath")
   {
+    ParameterCheck(opt, toks, 1);
     datapath = fs::Path(toks.at(0));
   }
   else if (opt == "pwd_path")
@@ -129,10 +133,12 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "botscript_path")
   {
+    ParameterCheck(opt, toks, 1);
     botscriptPath = fs::Path(toks.at(0));
   }
   else if (opt == "banner")
   {
+    ParameterCheck(opt, toks, 1);
     banner = fs::Path(toks.at(0));
   }
   else if (opt == "ascii_downloads")
@@ -141,6 +147,7 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "free_space")
   {
+    ParameterCheck(opt, toks, 1);
     freeSpace = boost::lexical_cast<int>(toks.at(0));
   }
   else if (opt == "mmap_amount")
@@ -157,46 +164,55 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "total_users")
   {
+    ParameterCheck(opt, toks, 1);
     totalUsers = boost::lexical_cast<int>(toks.at(0));
   }
   else if (opt == "multiplier_max")
   {
+    ParameterCheck(opt, toks, 1);
     multiplierMax = boost::lexical_cast<int>(toks.at(0));
   }
   else if (opt == "oneliners")
   {
+    ParameterCheck(opt, toks, 1);
     oneliners = boost::lexical_cast<int>(toks.at(0));
   }
   else if (opt == "empty_nuke")
   {
+    ParameterCheck(opt, toks, 1);
     emptyNuke = boost::lexical_cast<int>(toks.at(0));
   }
   else if (opt == "max_sitecmd_lines")
   {
+    ParameterCheck(opt, toks, 1);
     maxSitecmdLines = boost::lexical_cast<int>(toks.at(0));
   }
   else if (opt == "shutdown")
   {
+    ParameterCheck(opt, toks, 1, -1);
     shutdown = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
   }
   else if (opt == "hideuser")
   {
+    ParameterCheck(opt, toks, 1, -1);
     hideuser = acl::ACL::FromString(boost::algorithm::join(toks, " "));
   }
   else if (opt == "use_dir_size")
   {
-    useDirSize.emplace_back(setting::UseDirSize(toks)); 
+    NotImplemented(opt);
   }
   else if (opt == "timezone")
   {
+    ParameterCheck(opt, toks, 1);
     timezone = boost::lexical_cast<int>(toks[0]);
   }
   else if (opt == "color_mode")
   {
-    colorMode = util::string::BoolLexicalCast(toks.at(0));
+    NotImplemented(opt);
   }
   else if (opt == "dl_incomplete")
   {
+    ParameterCheck(opt, toks, 1);
     dlIncomplete = util::string::BoolLexicalCast(toks.at(0));
   }
   else if (opt == "file_dl_count")
@@ -205,89 +221,108 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "sitename_long")
   {
+    ParameterCheck(opt, toks, 1);
     sitenameLong = toks[0];
   }
   else if (opt == "sitename_short")
   {
+    ParameterCheck(opt, toks, 1);
     sitenameShort = toks[0];
   }
   else if (opt == "login_prompt")
   {
+    ParameterCheck(opt, toks, 1);
     loginPrompt = toks[0];
   }
   else if (opt == "email")
   {
+    ParameterCheck(opt, toks, 1);
     email = toks[0];
   }
   else if (opt == "master")
   {
-    master = toks; 
+    ParameterCheck(opt, toks, 1, -1);
+    master.insert(master.end(), toks.begin(), toks.end());
   }
   else if (opt == "bouncer_ip")
   {
-    bouncerIp = toks;
+    ParameterCheck(opt, toks, 1, -1);
+    bouncerIp.insert(bouncerIp.end(), toks.begin(), toks.end());
   }
   else if (opt == "calc_crc")
   {
-    calcCrc = toks;
+    ParameterCheck(opt, toks, 1, -1);
+    calcCrc.insert(calcCrc.end(), toks.begin(), toks.end());
   }
   else if (opt == "xdupe")
   {
-    xdupe = toks;
+    ParameterCheck(opt, toks, 1, -1);
+    xdupe.insert(xdupe.end(), toks.begin(), toks.end());
   }
   else if (opt == "valid_ip")
   {
-    validIp = toks;
+    ParameterCheck(opt, toks, 1, -1);
+    validIp.insert(validIp.end(), toks.begin(), toks.end());
   }
   else if (opt == "active_addr")
   {
-    activeAddr = toks; 
+    ParameterCheck(opt, toks, 1, -1);
+    activeAddr.insert(activeAddr.end(), toks.begin(), toks.end());
   }
   else if (opt == "ignore_type")
   { 
-    for (const auto& token : toks)
-      ignoreType.emplace_back(token);
+    ParameterCheck(opt, toks, 1, -1);
+    ignoreType.insert(ignoreType.end(), toks.begin(), toks.end());
   }
   else if (opt == "banned_users")
   {
-    bannedUsers = toks;
+    ParameterCheck(opt, toks, 1, -1);
+    bannedUsers.insert(bannedUsers.end(), toks.begin(), toks.end());
   }
   else if (opt == "idle_commands")
   {
-    idleCommands = toks;
+    ParameterCheck(opt, toks, 1, -1);
+    idleCommands.insert(idleCommands.end(), toks.begin(), toks.end());
     for (auto& cmd : idleCommands) boost::to_upper(cmd);
   }
   else if (opt == "noretrieve")
   {
-    for (const auto& token : toks)
-      ignoreType.emplace_back(token);
+    ParameterCheck(opt, toks, 1, -1);
+    noretrieve.insert(noretrieve.end(), toks.begin(), toks.end());
   }
   else if (opt == "tagline")
   {
-    tagline.emplace_back(toks[0]);
+    ParameterCheck(opt, toks, 1);
+    tagline = toks[0];
   }
   else if (opt == "speed_limit")
   {
-    speedLimit.emplace_back(setting::SpeedLimit(toks));
+    ParameterCheck(opt, toks, 4, -1);
+    speedLimit.emplace_back(toks);
   }
   else if (opt == "sim_xfers")
   {
-    simXfers.emplace_back(setting::SimXfers(toks));
+    ParameterCheck(opt, toks, 2);
+    simXfers.emplace_back(toks);
   }
   else if (opt == "secure_ip")
   {
-    secureIp.emplace_back(setting::SecureIp(toks));
+    ParameterCheck(opt, toks, 4, -1);
+    secureIp.emplace_back(toks);
   }
   else if (opt == "secure_pass")
   {
-    securePass.emplace_back(setting::SecurePass(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    securePass.emplace_back(toks);
   }
   else if (opt == "pasv_addr")
   {
+    ParameterCheck(opt, toks, 1);
     pasvAddr.emplace_back(toks.at(0));
   }
   else if (opt == "active_ports")
   {
+    ParameterCheck(opt, toks, 1, -1);
     activePorts = setting::Ports(toks);
   }
   else if (opt == "pasv_ports")
@@ -296,178 +331,216 @@ void Config::Parse(const std::string& line) {
   }
   else if (opt == "allow_fxp")
   {
-    allowFxp.emplace_back(setting::AllowFxp(toks));
+    ParameterCheck(opt, toks, 4, -1);
+    allowFxp.emplace_back(toks);
   }
   else if (opt == "welcome_msg")
   {
-    welcomeMsg.emplace_back(setting::Right(toks)); 
+    ParameterCheck(opt, toks, 2, -1);
+    welcomeMsg.emplace_back(toks); 
   }
   else if (opt == "goodbye_msg")
   {
-    goodbyeMsg.emplace_back(setting::Right(toks)); 
+    ParameterCheck(opt, toks, 2, -1);
+    goodbyeMsg.emplace_back(toks); 
   }
   else if (opt == "newsfile")
   {
-    newsfile.emplace_back(setting::Right(toks)); 
+    ParameterCheck(opt, toks, 2, -1);
+    newsfile.emplace_back(toks); 
   }
   else if (opt == "cdpath")
   {
-    cdpath.emplace_back(fs::Path(toks.at(0)));
+    NotImplemented(opt);
   }
   else if (opt == "nodupecheck")
   {
-    nodupecheck.emplace_back(fs::Path(toks.at(0)));
+    ParameterCheck(opt, toks, 1);
+    nodupecheck = fs::Path(toks.at(0));
   }
   else if (opt == "alias")
   {
-    alias.emplace_back(setting::Alias(toks)); 
+    ParameterCheck(opt, toks, 2);
+    alias.emplace_back(toks); 
   }
   else if (opt == "delete")
   {
-    delete_.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    delete_.emplace_back(toks);
   }
   else if (opt == "deleteown")
   {
-    deleteown.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    deleteown.emplace_back(toks);
   }
   else if (opt == "overwrite")
   {
-    overwrite.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    overwrite.emplace_back(toks);
   }
   else if (opt == "resume")
   {
-    resume.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    resume.emplace_back(toks);
   }
   else if (opt == "rename")
   {
-    rename.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    rename.emplace_back(toks);
   }
   else if (opt == "renameown")
   {
-    renameown.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    renameown.emplace_back(toks);
   }
   else if (opt == "filemove")
   {
-    filemove.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    filemove.emplace_back(toks);
   }
   else if (opt == "makedir")
   {
-    makedir.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    makedir.emplace_back(toks);
   }
   else if (opt == "upload")
   {
-    upload.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    upload.emplace_back(toks);
   }
   else if (opt == "download")
   {
-    download.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    download.emplace_back(toks);
   }
   else if (opt == "nuke")
   {
-    nuke.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    nuke.emplace_back(toks);
   }
   else if (opt == "dirlog")
   {
-    dirlog.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    dirlog.emplace_back(toks);
   }
   else if (opt == "hideinwho")
   {
-    hideinwho.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    hideinwho.emplace_back(toks);
   }
   else if (opt == "freefile")
   {
-    freefile.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    freefile.emplace_back(toks);
   }
   else if (opt == "nostats")
   {
-    nostats.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    nostats.emplace_back(toks);
   }
   else if (opt == "hideowner")
   {
-    hideowner.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    hideowner.emplace_back(toks);
   }
   else if (opt == "show_diz")
   {
-    showDiz.emplace_back(setting::Right(toks));
+    ParameterCheck(opt, toks, 2, -1);
+    showDiz.emplace_back(toks);
   }
   else if (opt == "stat_section")
   {
-    statSection.emplace_back(setting::StatSection(toks));
+    ParameterCheck(opt, toks, 3);
+    statSection.emplace_back(toks);
   }
   else if (opt == "path-filter")
   {
-    pathFilter.emplace_back(setting::PathFilter(toks));
+    ParameterCheck(opt, toks, 3, -1);
+    pathFilter.emplace_back(toks);
   }
   else if (opt == "max_users")
   {
-    maxUsers.emplace_back(setting::MaxUsers(toks));
+    ParameterCheck(opt, toks, 2);
+    maxUsers.emplace_back(toks);
   }
   else if (opt == "max_ustats")
   {
+    ParameterCheck(opt, toks, 2, -1);
     maxUstats = setting::ACLInt(toks);
   }
   else if (opt == "max_gstats")
   {
+    ParameterCheck(opt, toks, 2, -1);
     maxGstats = setting::ACLInt(toks);
   }
   else if (opt == "show_totals")
   {
-    showTotals.emplace_back(setting::ShowTotals(toks)); 
+    ParameterCheck(opt, toks, 2, -1);
+    showTotals.emplace_back(toks); 
   }
   else if (opt == "dupe_check")
   {
+    ParameterCheck(opt, toks, 1, 2);
     dupeCheck = setting::DupeCheck(toks);
   }
-  else if (opt == "script")
+  else if (opt == "cscript")
   {
-    script.emplace_back(setting::Script(toks));
+    ParameterCheck(opt, toks, 3);
+    cscript.emplace_back(toks);
   }
   else if (opt == "lslong")
   {
+    ParameterCheck(opt, toks, 2);
     lslong = setting::Lslong(toks);
   }
   else if (opt == "hidden_files")
   {
-    hiddenFiles.emplace_back(setting::HiddenFiles(toks));
+    ParameterCheck(opt, toks, 1);
+    hiddenFiles.emplace_back(toks);
   }
   else if (opt == "creditcheck")
   {
-    creditcheck.emplace_back(setting::Creditcheck(toks));
+    ParameterCheck(opt, toks, 3, -1);
+    creditcheck.emplace_back(toks);
   }
   else if (opt == "creditloss")
   {
-    creditloss.emplace_back(setting::Creditloss(toks));
+    ParameterCheck(opt, toks, 4, -1);
+    creditloss.emplace_back(toks);
   }
   else if (opt == "nukedir_style")
   {
+    ParameterCheck(opt, toks, 3);
     nukedirStyle = setting::NukedirStyle(toks);
   }
   else if (opt == "privgroup")
   {
-    privgroup.emplace_back(setting::Privgroup(toks));
+    ParameterCheck(opt, toks, 2);
+    privgroup.emplace_back(toks);
   }
   else if (opt == "msg_path")
   {
-    msgpath.emplace_back(setting::Msgpath(toks));
+    ParameterCheck(opt, toks, 1, -1);
+    msgpath.emplace_back(toks);
   }
   else if (opt == "privpath")
   {
-    privpath.emplace_back(setting::Privpath(toks)); 
+    ParameterCheck(opt, toks, 1, -1);
+    privpath.emplace_back(toks); 
   }
   else if (opt == "site_cmd")
   {
-    siteCmd.emplace_back(setting::SiteCmd(toks));
-  }
-  else if (opt == "cscript")
-  {
-    cscript.emplace_back(setting::Cscript(toks));
+    ParameterCheck(opt, toks, 3);
+    siteCmd.emplace_back(toks);
   }
   else if (opt == "requests")
   {
+    ParameterCheck(opt, toks, 2);
     requests = setting::Requests(toks);
   }
   else if (opt == "idle_timeout")
   {
+    ParameterCheck(opt, toks, 3);
     idleTimeout = setting::IdleTimeout(toks);
   }
 
@@ -480,9 +553,18 @@ void Config::NotImplemented(const std::string& opt)
   logs::error << "Ignring not implemented config option: " << opt << logs::endl;
 }
 
+void Config::ParameterCheck(const std::string& opt,
+                            const std::vector<std::string>& toks, int minimum,
+                            int maximum)
+{
+  int toksSize = static_cast<int>(toks.size());
+  if (toksSize < minimum || (maximum != -1 && toksSize > maximum))
+    throw ConfigError("Wrong numer of Parameters for " + opt);
+}
+
 bool Config::CheckSetting(const std::string& name)
 {
-  std::tr1::unordered_map<std::string, int>::const_iterator it;
+  std::unordered_map<std::string, int>::const_iterator it;
   it = settingsCache.find(name);
   return (it != settingsCache.end());
 }

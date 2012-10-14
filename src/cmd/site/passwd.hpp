@@ -1,5 +1,5 @@
-#ifndef __CMD_PASSWD_ABOR_HPP
-#define __CMD_PASSWD_ABOR_HPP
+#ifndef __CMD_SITE_PASSWD_HPP
+#define __CMD_SITE_PASSWD_HPP
 
 #include "cmd/command.hpp"
 

@@ -8,6 +8,8 @@
 #include "cmd/site/chpass.hpp"
 #include "cmd/site/deluser.hpp"
 #include "cmd/site/readd.hpp"
+#include "cmd/site/purge.hpp"
+#include "cmd/site/renuser.hpp"
 
 namespace cmd { namespace site
 {
@@ -16,14 +18,16 @@ Factory Factory::factory;
 
 Factory::Factory()
 {
-  Register("EPSV", new Creator<site::EPSVCommand>());
+  Register("EPSV", new Creator<site::EPSVCommand>("epsv"));
   Register("IDLE", new Creator<site::IDLECommand>());
   Register("VERS", new Creator<site::VERSCommand>());
   Register("XDUPE", new Creator<site::XDUPECommand>());
-  Register("PASSWD", new Creator<site::PASSWDCommand>());
-  Register("CHPASS", new Creator<site::CHPASSCommand>());
-  Register("DELUSER", new Creator<site::DELUSERCommand>());
-  Register("READD", new Creator<site::READDCommand>());
+  Register("PASSWD", new Creator<site::PASSWDCommand>("passwd"));
+  Register("CHPASS", new Creator<site::CHPASSCommand>("chpass"));
+  Register("DELUSER", new Creator<site::DELUSERCommand>("deluser"));
+  Register("READD", new Creator<site::READDCommand>("readd"));
+  Register("PURGE", new Creator<site::PURGECommand>("purge"));
+  Register("RENUSER", new Creator<site::RENUSERCommand>("renuser"));
 }
 
 Factory::~Factory()
@@ -42,12 +46,13 @@ void Factory::Register(const std::string& command,
 }  
 
 cmd::Command* Factory::Create(ftp::Client& client, const std::string& argStr,
-                              const Args& args)
+                              const Args& args, std::string& aclKeyword)
 {
   std::string cmd = args[0];
   boost::to_upper(cmd);
   CreatorsMap::const_iterator it = factory.creators.find(cmd);
   if (it == factory.creators.end()) return nullptr;
+  aclKeyword = it->second->ACLKeyword();
   return it->second->Create(client, argStr, args);
 }
 

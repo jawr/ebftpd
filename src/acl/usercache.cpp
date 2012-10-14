@@ -85,7 +85,7 @@ util::Error UserCache::Purge(const std::string& name)
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
-
+  if (!it->second->Deleted()) return util::Error::Failure("User has not been deleted");
   instance.byUID.erase(instance.byUID.find(it->second->UID()));
   delete it->second;
   instance.byName.erase(it);

@@ -52,26 +52,16 @@ class AsciiDownloads : public Setting
   int size;
   std::vector<std::string> masks;
 public:
-  AsciiDownloads() : size(20000) {
+  AsciiDownloads() :
+    size(20000)
+  {
     masks.emplace_back("*.[Tt][Xx][Tt]");
     masks.emplace_back("*.[Dd][Ii][Zz]");
+    masks.emplace_back("*.[Nn][Ff][Oo]");
   }
-  AsciiDownloads(std::vector<std::string> toks);
+  AsciiDownloads(const std::vector<std::string>& toks);
   int Size() const { return size; }
   const std::vector<std::string>& Masks() const { return masks; }
-};
-
-class UseDirSize : public Setting
-{
-  char unit;
-  std::vector<fs::Path> paths;
-public:
-  UseDirSize() : unit('m') {
-    paths.emplace_back(fs::Path("/"));
-  }
-  UseDirSize(std::vector<std::string> toks);
-  char Unit() const { return unit; }
-  const std::vector<fs::Path>& Paths() const { return paths; }
 };
 
 class SecureIp : public Setting
@@ -253,19 +243,6 @@ public:
   bool IgnoreCase() const { return ignoreCase; }
 };
 
-// in built scripts
-// i.e. pre, pre_dir, post
-class Script : public Setting
-{
-  fs::Path path;
-  std::vector<std::string> masks;
-public:
-  Script() {}
-  Script(std::vector<std::string> toks);
-  const fs::Path& Path() const { return path; }
-  const std::vector<std::string>& Masks() const { return masks; }
-};
-
 class Lslong : public Setting
 {
   fs::Path bin;
@@ -399,7 +376,7 @@ class SiteCmd : public Setting
   std::vector<std::string> arguments;
 public:
   SiteCmd() {}
-  SiteCmd(std::vector<std::string> toks);
+  SiteCmd(const std::vector<std::string>& toks);
   const std::string& Command() const { return command; }
   Type GetType() const { return type; } // anonymous enum?                 
   const std::vector<std::string>& Arguments() const { return arguments; }

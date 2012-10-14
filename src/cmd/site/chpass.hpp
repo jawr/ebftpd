@@ -1,5 +1,5 @@
-#ifndef __CMD_CHPASS_ABOR_HPP
-#define __CMD_CHPASS_ABOR_HPP
+#ifndef __CMD_SITE_CHPASS_HPP
+#define __CMD_SITE_CHPASS_HPP
 
 #include "cmd/command.hpp"
 

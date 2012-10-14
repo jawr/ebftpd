@@ -1,5 +1,5 @@
-#ifndef __CMD_READD_ABOR_HPP
-#define __CMD_READD_ABOR_HPP
+#ifndef __CMD_SITE_READD_HPP
+#define __CMD_SITE_READD_HPP
 
 #include "cmd/command.hpp"
 

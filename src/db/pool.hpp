@@ -1,7 +1,7 @@
 #ifndef __DB_POOL_HPP
 #define __DB_POOL_HPP
 
-#include <tr1/memory>
+#include <memory>
 #include <memory>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/ptr_container/ptr_deque.hpp>

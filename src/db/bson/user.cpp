@@ -2,7 +2,7 @@
 #include "db/bson/user.hpp"
 #include "acl/user.hpp"
 #include "db/bson/bson.hpp"
-#include <tr1/memory>
+#include <memory>
 
 namespace db { namespace bson
 {
