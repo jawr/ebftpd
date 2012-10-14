@@ -10,12 +10,12 @@ class READDCommand : public Command
 {
 public:
   READDCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) { }
+    Command(client, client.Control(), client.Data(), argStr, args) {}
 
   void Execute();
 };
 
-} /* site namespace */
-} /* cmd namespace */
-
+// end
+}
+}
 #endif

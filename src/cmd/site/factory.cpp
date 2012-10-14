@@ -15,6 +15,7 @@
 #include "cmd/site/delip.hpp"
 #include "cmd/site/deluser.hpp"
 #include "cmd/site/purge.hpp"
+#include "cmd/site/readd.hpp"
 
 namespace cmd { namespace site
 {
@@ -39,6 +40,7 @@ Factory::Factory()
   Register("DELIP", new Creator<site::DELIPCommand>());
   Register("DELUSER", new Creator<site::DELUSERCommand>());
   Register("PURGE", new Creator<site::PURGECommand>());
+  Register("READD", new Creator<site::READDCommand>());
 
 }
 
