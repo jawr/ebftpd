@@ -2,7 +2,7 @@
 #include "ftp/addrallocator.hpp"
 #include "util/net/interfaces.hpp"
 #include "ftp/data.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include "acl/allowfxp.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
@@ -144,8 +144,8 @@ void Data::Open(TransferType transferType)
                          "upload" : "download";
       if (logging)
       {
-        logger::access << "User " << client.User().Name() << " attempted to fxp " << type
-                       << " to " << socket.RemoteEndpoint() << logger::endl;
+        logs::security << "User " << client.User().Name() << " attempted to fxp " << type
+                       << " to " << socket.RemoteEndpoint() << logs::endl;
       }
       
       throw util::net::NetworkError("FXP " + type + " not allowed.");

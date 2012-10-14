@@ -5,7 +5,7 @@
 #include <sys/select.h>
 #include "ftp/listener.hpp"
 #include "ftp/client.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include "util/net/tlscontext.hpp"
 
 namespace ftp
@@ -21,13 +21,13 @@ bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port
     {
       ep = util::net::Endpoint(ip, port);
       servers.push_back(new util::net::TCPListener(ep));
-      logger::ftpd << "Listening for clients on " << ep << logger::endl;
+      logs::debug << "Listening for clients on " << ep << logs::endl;
     }
   }
   catch (const util::net::NetworkError& e)
   {
-    logger::error << "Unable to listen for clients on " << ep
-                  << ": " << e.Message() << logger::endl;
+    logs::error << "Unable to listen for clients on " << ep
+                  << ": " << e.Message() << logs::endl;
     return false;
   }
   
@@ -45,7 +45,7 @@ void Listener::HandleClients()
     {
       client.Join();
       clients.erase(it++);
-      logger::ftpd << "Client finished" << logger::endl;
+      logs::debug << "Client finished" << logs::endl;
     }
     else ++it;
   }
@@ -82,7 +82,7 @@ void Listener::AcceptClients()
   int n = select(max + 1, &readSet, NULL, NULL, &tv);
   if (n < 0)
   {
-    logger::error << "Listener select failed: " << util::Error::Failure(errno).Message() << logger::endl;
+    logs::error << "Listener select failed: " << util::Error::Failure(errno).Message() << logs::endl;
     // ensure we don't poll rapidly on repeated select failures
     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
   }

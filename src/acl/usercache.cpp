@@ -2,7 +2,7 @@
 #include <vector>
 #include "acl/usercache.hpp"
 #include "db/interface.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 // only for generating dodgy random uid
 // until we can retrieve one from db
 #include <ctime>
@@ -29,16 +29,17 @@ void UserCache::Initalize()
   try
   {
     db::GetUsers(users);
-    for (auto user: users)
+    for (auto& user: users)
     {
       instance.byName.insert(std::make_pair(user->Name(), user));
       instance.byUID.insert(std::make_pair(user->UID(), user));
     }
   } 
-  catch (const std::runtime_error& e)
+  catch (const util::RuntimeError& e)
   {
-    logger::error << "acl::UserCache::Initalize error: " << e.what() << logger::endl;
-    for (auto ptr: users) delete ptr; // cleanup
+    logs::error << "Failed to initialise user cache: " 
+                << e.Message() << logs::endl;
+    for (auto& ptr: users) delete ptr;
   }
   
 }

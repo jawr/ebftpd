@@ -10,7 +10,7 @@
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
 #include "util/string.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 
 namespace cfg
 {
@@ -52,13 +52,8 @@ Config::Config(const std::string& config) :
     } 
     catch (const NoSetting &e) // handle properly
     {
-      ::logger::ftpd << e.Message() << " (" << config << ":" << i << ")" << logger::endl;
-    }
-    catch (...)
-    {
-      logger::ftpd << "super error on line " << i << logger::endl;
-      logger::ftpd << line << logger::endl;
-      throw;
+      logs::error << "Invalid config setting: " << e.Message() 
+                  << " (" << config << ":" << i << ")" << logs::endl;
     }
   }
 
@@ -482,7 +477,7 @@ void Config::Parse(const std::string& line) {
 
 void Config::NotImplemented(const std::string& opt)
 {
-  logger::ftpd << opt << " config option not impmented. ignored.." << logger::endl;
+  logs::error << "Ignring not implemented config option: " << opt << logs::endl;
 }
 
 bool Config::CheckSetting(const std::string& name)
@@ -510,12 +505,12 @@ int main()
   try
   {
     cfg::Config config("ftpd.conf");
-    logger::ftpd << "Config loaded." << logger::endl;
-    logger::ftpd << "Download: " << config.Download().size() << logger::endl;
+    logs::debug << "Config loaded." << logs::endl;
+    logs::debug << "Download: " << config.Download().size() << logs::endl;
   }
   catch(const cfg::ConfigError& e)
   {
-    logger::ftpd << e.Message() << logger::endl;
+    logs::debug << e.Message() << logs::endl;
     return 1;
   }
   return 0;

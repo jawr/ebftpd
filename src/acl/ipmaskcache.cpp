@@ -16,7 +16,7 @@ bool IpMaskCache::Check(const std::string& addr)
 {
   boost::shared_lock<boost::shared_mutex> lock(instance.mtx);
   for (auto uid: instance.userMaskMap)
-    for (auto mask: uid.second)
+    for (auto& mask: uid.second)
     {
       if (util::string::WildcardMatch(mask, addr, false))
         return true; 
@@ -105,26 +105,26 @@ util::Error IpMaskCache::List(const acl::User& user,
 #include "db/interface.hpp"
 #include "db/pool.hpp"
 #include "acl/usercache.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 
 int main()
 {
   db::Initalize();
   acl::IpMaskCache::Initalize();
 
-  logger::ftpd << acl::IpMaskCache::Check("blah@192.168.1.1") << logger::endl;
-  logger::ftpd << acl::IpMaskCache::Check("*@hello.com") << logger::endl;
+  logs::debug << acl::IpMaskCache::Check("blah@192.168.1.1") << logs::endl;
+  logs::debug << acl::IpMaskCache::Check("*@hello.com") << logs::endl;
 
   acl::User user = acl::UserCache::User("iotest");
 
   std::vector<std::string> deleted;
   acl::IpMaskCache::Add(user, "*@*", deleted);
   util::Error err = acl::IpMaskCache::Add(user, "*@192.168.1.*", deleted);
-  if (!err) logger::error << err.Message() << logger::endl;
+  if (!err) logs::error << err.Message() << logs::endl;
 
   for (auto i: deleted)
-    logger::ftpd << "Deleted: " << i << logger::endl;
-  logger::ftpd << "Added: *@*" << logger::endl;
+    logs::debug << "Deleted: " << i << logs::endl;
+  logs::debug << "Added: *@*" << logs::endl;
 
   acl::IpMaskCache::Delete(user, "*@*");
 
@@ -134,7 +134,7 @@ int main()
  
   acl::IpMaskCache::List(user, deleted);
   for (auto i: deleted)
-    logger::ftpd << i << logger::endl;
+    logs::debug << i << logs::endl;
 
    
 

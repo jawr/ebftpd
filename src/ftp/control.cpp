@@ -4,7 +4,7 @@
 #include "ftp/control.hpp"
 #include "util/verify.hpp"
 #include "util/net/tcplistener.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 
 namespace ftp
 {
@@ -23,7 +23,7 @@ void Control::SendReply(ReplyCode code, bool part, const std::string& message)
   reply << message << "\r\n";
   const std::string& str = reply.str();
   socket.Write(str.c_str(), str.length());
-  logger::debug << str << logger::endl;
+  logs::debug << str << logs::endl;
   lastCode = code;
 }
 
@@ -91,7 +91,7 @@ std::string Control::NextCommand(const boost::posix_time::time_duration& timeout
   {
     std::string commandLine;
     socket.Getline(commandLine, true);
-    logger::debug << commandLine << logger::endl;
+    logs::debug << commandLine << logs::endl;
     return commandLine;
   }
 

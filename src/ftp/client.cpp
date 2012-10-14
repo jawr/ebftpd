@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <boost/optional.hpp>
 #include "ftp/client.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include "util/verify.hpp"
 #include "util/error.hpp"
 #include "util/scopeguard.hpp"
@@ -120,7 +120,7 @@ bool Client::Accept(util::net::TCPListener& server)
   catch(const util::net::NetworkError& e)
   {
     SetFinished();
-    logger::error << "Error while accepting new client: " << e.Message() << logger::endl;
+    logs::error << "Error while accepting new client: " << e.Message() << logs::endl;
     return false;
   }
 }
@@ -195,7 +195,7 @@ void Client::LookupIdent()
   }
   catch (util::net::NetworkError& e)
   {
-    logger::error << "Unable to lookup ident for connection from "
+    logs::error << "Unable to lookup ident for connection from "
                   << control.RemoteEndpoint() << ":  " << e.Message();
   }
 }
@@ -209,8 +209,8 @@ void Client::Run()
 
   LookupIdent();
   
-  logger::ftpd << "Servicing client connected from "
-               << ident << "@" << control.RemoteEndpoint() << logger::endl;
+  logs::debug << "Servicing client connected from "
+              << ident << "@" << control.RemoteEndpoint() << logs::endl;
     
   try
   {
@@ -219,13 +219,9 @@ void Client::Run()
   }
   catch (const util::net::NetworkError& e)
   {
-    logger::error << "Client from " << control.RemoteEndpoint()
-                  << " lost connection: " << e.Message() << logger::endl;
+    logs::debug << "Client from " << control.RemoteEndpoint()
+                  << " lost connection: " << e.Message() << logs::endl;
   }
-  /*catch (const std::exception& e)
-  {
-    logger::error << e.what() << logger::endl;
-  }*/
   
   (void) finishedGuard; /* silence unused variable warning */
 }

@@ -2,7 +2,7 @@
 #include "db/task.hpp"
 #include "db/exception.hpp"
 #include "db/taskqueue.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 
 namespace db
 {
@@ -128,10 +128,10 @@ int main()
   }
   catch(const db::DBError& e) 
   {
-    logger::error << e.what() << logger::endl;
+    logs::db << "Worker failed to connect: " << e.what() << logs::endl;
     return 1;
   }
-  logger::ftpd << "Worker connected" << logger::endl;
+  logs::debug << "Worker connected" << logs::endl;
   return 0;
 }
 #endif

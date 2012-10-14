@@ -8,7 +8,7 @@
 #include "ftp/client.hpp"
 #include "fs/owner.hpp"
 #include "fs/direnumerator.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include "acl/check.hpp"
 #include "cfg/get.hpp"
 

@@ -1,7 +1,7 @@
 #include <memory>
 #include "db/pool.hpp"
 #include "db/exception.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include "cfg/get.hpp"
 #include "db/task.hpp"
 

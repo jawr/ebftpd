@@ -1,7 +1,7 @@
 #include "db/task.hpp"
 #include "db/worker.hpp"
 #include "db/exception.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include <boost/thread/future.hpp>
 namespace db
 {
@@ -14,7 +14,7 @@ void Update::Execute(Worker& worker)
   }
   catch (const DBError& e)
   {
-    logger::error << e.Message() << logger::endl;
+    logs::db << "Update failure: " << e.Message() << logs::endl;
   }
 }
 
@@ -26,7 +26,7 @@ void Delete::Execute(Worker& worker)
   }
   catch (const DBError& e)
   {
-    logger::error << e.Message() << logger::endl;
+    logs::db << "Delete failure: " << e.Message() << logs::endl;
   }
 }
 
@@ -39,7 +39,7 @@ void Select::Execute(Worker& worker)
   }
   catch (const DBError& e)
   {
-    logger::error << e.Message() << logger::endl;
+    logs::db << "Select failure: " << e.Message() << logs::endl;
   }
 }
 
@@ -51,7 +51,7 @@ void Insert::Execute(Worker& worker)
   }
   catch (const DBError& e)
   {
-    logger::error << e.Message() << logger::endl;
+    logs::db << "Insert failure: " << e.Message() << logs::endl;
   }
 }
 
@@ -63,7 +63,7 @@ void EnsureIndex::Execute(Worker& worker)
   }
   catch(const DBError& e)
   {
-    logger::error << e.Message() << logger::endl;
+    logs::db << "Ensure index failure: " << e.Message() << logs::endl;
   }
 }
 

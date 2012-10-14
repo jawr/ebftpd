@@ -2,7 +2,7 @@
 #include "ftp/listener.hpp"
 #include "util/net/tlscontext.hpp"
 #include "util/net/error.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include "fs/owner.hpp"
 #include "fs/path.hpp"
 #include "cfg/config.hpp"
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
   }
   catch (const cfg::ConfigError& e)
   {
-    logger::error << e.Message() << logger::endl;
+    logs::error << "Failed to load config: " << e.Message() << logs::endl;
     return 1;
   }
 
@@ -44,7 +44,7 @@ int main(int argc, char** argv)
   }
   catch (const util::net::NetworkError& e)
   {
-    logger::error << "TLS failed to initialise: " << e.Message() << logger::endl;
+    logs::error << "TLS failed to initialise: " << e.Message() << logs::endl;
     return 1;
   }
   
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
   }
   catch (const db::DBError& e)
   {
-    logger::error << "DB failed to initialise: " << e.Message() << logger::endl;
+    logs::error << "DB failed to initialise: " << e.Message() << logs::endl;
     return 1;
   }
   
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
   ftp::Listener listener;  
   if (!listener.Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
-    logger::error << "Listener failed to initialise!" << logger::endl;
+    logs::error << "Listener failed to initialise!" << logs::endl;
     exitStatus = 1;
   }
   else

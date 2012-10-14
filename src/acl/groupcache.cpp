@@ -1,7 +1,7 @@
 #include <memory>
 #include "acl/groupcache.hpp"
 #include "db/interface.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 
 // only for generating dodgy random gid
 // until we can retrieve one from db
@@ -29,16 +29,17 @@ void GroupCache::Initalize()
   try
   {
     db::GetGroups(groups);
-    for (auto group: groups)
+    for (auto& group: groups)
     {
       instance.byName.insert(std::make_pair(group->Name(), group));
       instance.byGID.insert(std::make_pair(group->GID(), group));
     }
   } 
-  catch (const std::runtime_error& e)
+  catch (const util::RuntimeError& e)
   {
-    logger::error << "acl::GroupCache::Initalize error: " << e.what() << logger::endl;
-    for (auto ptr: groups) delete ptr; // cleanup
+    logs::error << "Failed to initialise group cache: "
+                << e.Message() << logs::endl;
+    for (auto& ptr: groups) delete ptr;
   }
   
 }

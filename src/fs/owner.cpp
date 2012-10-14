@@ -9,7 +9,7 @@
 #endif
 #include "fs/owner.hpp"
 #include "util/error.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include "fs/status.hpp"
 
 namespace fs
@@ -82,7 +82,7 @@ bool OwnerFile::Load(FileLockPtr& lock)
 {
   if (!InnerLoad(lock))
   {
-    logger::error << "Unable to load owner file: " << ownerFile << logger::endl;
+    logs::error << "Unable to load owner file: " << ownerFile << logs::endl;
     return false;
   }
   return true;
@@ -124,7 +124,7 @@ bool OwnerFile::Save(FileLockPtr& lock)
 {
   if (!InnerSave(lock))
   {
-    logger::error << "Unable to save owner file: " << ownerFile << logger::endl;
+    logs::error << "Unable to save owner file: " << ownerFile << logs::endl;
     return false;
   }
   return true;

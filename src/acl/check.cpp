@@ -231,7 +231,7 @@ struct Traits<Hideowner>
   {
     if (Evaluate(cfg::Get().Hideowner(), user, path))
       return util::Error::Success();
-    else
+   else
       return util::Error::Failure(EACCES);
   }
 };

@@ -8,7 +8,7 @@
 #include "acl/check.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include <iostream>
 
 namespace fs
@@ -93,7 +93,7 @@ void DirEnumerator::Readdir()
         }
         else
         {
-          if (PP::FileAllowed<PP::View>(client->User(), absolute)) continue;
+          if (!PP::FileAllowed<PP::View>(client->User(), absolute)) continue;
           hideOwner = PP::FileAllowed<PP::Hideowner>(client->User(), absolute);
         }
         if (hideOwner)

@@ -17,7 +17,7 @@
 #include "acl/groupcache.hpp"
 #include "acl/ipmaskcache.hpp"
 #include "acl/types.hpp"
-#include "logger/logger.hpp"
+#include "logs/logs.hpp"
 #include "stats/stat.hpp"
 
 namespace db
@@ -94,7 +94,7 @@ void GetUsers(std::vector<acl::User*>& users)
 
   if (results.size() == 0) return;
 
-  for (auto obj: results)
+  for (auto& obj: results)
     users.push_back(bson::User::Unserialize(obj));
 }
 
@@ -124,7 +124,7 @@ void GetIpMasks(acl::UserMaskMap& userMaskMap)
 
   if (results.size() == 0) return;
 
-  for (auto obj: results)
+  for (auto& obj: results)
   {
     std::string mask = obj.getStringField("mask");
     acl::UserID uid = acl::UserID(obj.getIntField("uid"));
@@ -181,7 +181,7 @@ void GetGroups(std::vector<acl::Group*>& groups)
 
   if (results.size() == 0) return;
 
-  for (auto obj: results)
+  for (auto& obj: results)
     groups.push_back(bson::Group::Unserialize(obj));
 }
 
