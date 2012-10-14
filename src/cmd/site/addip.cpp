@@ -33,20 +33,20 @@ void ADDIPCommand::Execute()
   util::Error ipOkay;
   for (Args::iterator it = args.begin()+2; it != args.end(); ++it)
   {
+    if (it != args.begin()+2) os << "\n";
     deleted.clear();
     ipOkay = acl::IpMaskCache::Add(user, (*it), deleted);
 
     if (!ipOkay)
+      os << "Error adding " << (*it) << ": " << ipOkay.Message();
+    else
     {
-      os << "\n\tError adding " << (*it) << ": " << ipOkay.Message();
-      continue;
+      os << "IP '" << (*it) << "' successfully added to " << args[1] << ".";
+
+      if (deleted.size() > 0)
+        for (auto& del: deleted)
+          os << "Auto-removing useless IP '" << del << "'...";
     }
-
-    os << "\nIP '" << (*it) << "' successfully added to " << args[1] << ".";
-
-    if (deleted.size() > 0)
-      for (auto& del: deleted)
-        os << "\nAuto-removing useless IP '" << del << "'...";
   }
 
   control.MultiReply(ftp::CommandOkay, os.str());

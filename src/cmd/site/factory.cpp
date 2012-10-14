@@ -33,6 +33,8 @@ Factory::Factory()
   Register("ADDUSER", new Creator<site::ADDUSERCommand>());
   Register("ADDIP", new Creator<site::ADDIPCommand>());
   Register("CHPASS", new Creator<site::CHPASSCommand>());
+  Register("DELIP", new Creator<site::DELIPCommand>());
+
 }
 
 Factory::~Factory()
