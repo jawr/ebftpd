@@ -5,11 +5,13 @@
 #include "cmd/site/vers.hpp"
 #include "cmd/site/xdupe.hpp"
 #include "cmd/site/passwd.hpp"
-#include "cmd/site/chpass.hpp"
 #include "cmd/site/deluser.hpp"
 #include "cmd/site/readd.hpp"
 #include "cmd/site/purge.hpp"
 #include "cmd/site/renuser.hpp"
+#include "cmd/site/adduser.hpp"
+#include "cmd/site/addip.hpp"
+#include "cmd/site/chpass.hpp"
 
 namespace cmd { namespace site
 {
