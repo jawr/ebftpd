@@ -238,8 +238,10 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
       {
         message << Permissions(de.Status()) << " "
                 << std::setw(3) << de.Status().Native().st_nlink << " "
-                << std::left << std::setw(8) << UIDToName(de.Owner().UID()) << " "
-                << std::left << std::setw(8) << GIDToName(de.Owner().GID()) << " "
+                << std::left << std::setw(10) 
+                << UIDToName(de.Owner().UID()).substr(0, 10) << " "
+                << std::left << std::setw(10) 
+                << GIDToName(de.Owner().GID()).substr(0, 10) << " "
                 << std::right << std::setw(8) << de.Status().Size() << " "
                 << Timestamp(de.Status()) << " "
                 << de.Path();

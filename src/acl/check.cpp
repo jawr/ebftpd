@@ -224,6 +224,18 @@ struct Traits<Nostats>
   }
 };
 
+template <>
+struct Traits<Hideowner>
+{
+  static util::Error Allowed(const User& user, const std::string& path)
+  {
+    if (Evaluate(cfg::Get().Hideowner(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+};
+
 }
 
 bool HiddenFile(const std::string& path)
@@ -267,6 +279,7 @@ template util::Error FileAllowed<View>(const User& user, const std::string& path
 template util::Error FileAllowed<Hideinwho>(const User& user, const std::string& path);
 template util::Error FileAllowed<Freefile>(const User& user, const std::string& path);
 template util::Error FileAllowed<Nostats>(const User& user, const std::string& path);
+template util::Error FileAllowed<Hideowner>(const User& user, const std::string& path);
 
 template <Type type>
 util::Error DirAllowed(const User& user, std::string path)
@@ -282,6 +295,7 @@ template util::Error DirAllowed<Nuke>(const User& user, std::string path);
 template util::Error DirAllowed<Delete>(const User& user, std::string path);
 template util::Error DirAllowed<View>(const User& user, std::string path);
 template util::Error DirAllowed<Hideinwho>(const User& user, std::string path);
+template util::Error DirAllowed<Hideowner>(const User& user, std::string path);
 
 } /* PathPermission namespace */
 

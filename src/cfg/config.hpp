@@ -89,6 +89,7 @@ class Config
   std::vector<setting::Right> hideinwho;
   std::vector<setting::Right> freefile;
   std::vector<setting::Right> nostats;
+  std::vector<setting::Right> hideowner;
   // end rights
   std::vector<setting::StatSection> statSection;
   std::vector<setting::PathFilter> pathFilter;
@@ -201,6 +202,7 @@ public:
   const std::vector<setting::Right>& Hideinwho() const { return hideinwho; } 
   const std::vector<setting::Right>& Freefile() const { return freefile; } 
   const std::vector<setting::Right>& Nostats() const { return nostats; } 
+  const std::vector<setting::Right>& Hideowner() const { return hideowner; } 
 
   const std::vector<setting::StatSection>& StatSection() const { return statSection; }
   const std::vector<setting::PathFilter>& PathFilter() const { return pathFilter; }

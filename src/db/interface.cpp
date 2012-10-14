@@ -47,8 +47,10 @@ void Initalize()
   tasks.emplace_back(new db::EnsureIndex("ipmasks",
     BSON("uid" << 1 << "mask" << 1)));
 
-  for (auto task: tasks)
+  for (auto& task: tasks)
     Pool::Queue(task);
+    
+  acl::UserCache::Create("biohazard", "password", "1");
 }
 
 

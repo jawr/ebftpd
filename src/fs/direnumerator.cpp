@@ -80,21 +80,33 @@ void DirEnumerator::Readdir()
     try
     {
       fs::Status status(fullPath);
+      totalBytes += status.Size();
       
       if (client)
       {
         fs::Path absolute = fullPath.ToString().substr(siteRootLen);
-        util::Error e;
+        util::Error hideOwner;
         if (status.IsDirectory())
-          e = PP::DirAllowed<PP::View>(client->User(), absolute);
+        {
+          if (!PP::DirAllowed<PP::View>(client->User(), absolute)) continue;
+          hideOwner = PP::DirAllowed<PP::Hideowner>(client->User(), absolute);
+        }
         else
-          e = PP::FileAllowed<PP::View>(client->User(), absolute);
-        if (!e) continue;
+        {
+          if (PP::FileAllowed<PP::View>(client->User(), absolute)) continue;
+          hideOwner = PP::FileAllowed<PP::Hideowner>(client->User(), absolute);
+        }
+        if (hideOwner)
+          entries.emplace_back(fs::Path(de.d_name), status, fs::Owner(0,0));
+        else
+          entries.emplace_back(fs::Path(de.d_name), status, 
+                               OwnerCache::Owner(fullPath));
       }
-      
-      totalBytes += status.Size();
-      fs::Owner owner(OwnerCache::Owner(fullPath));
-      entries.emplace_back(fs::Path(de.d_name), status, owner);
+      else
+      {
+        fs::Owner owner(OwnerCache::Owner(fullPath));
+        entries.emplace_back(fs::Path(de.d_name), status, owner);
+      }
     }
     catch (const util::SystemError&)
     {

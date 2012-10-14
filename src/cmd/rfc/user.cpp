@@ -20,7 +20,7 @@ void USERCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     if (argStr == "root")
-      user = acl::User("root", 123, "password", "1");
+      user = acl::User("root", 0, "password", "1");
     else
     {
       control.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");

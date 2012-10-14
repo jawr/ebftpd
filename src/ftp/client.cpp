@@ -115,10 +115,7 @@ bool Client::Accept(util::net::TCPListener& server)
   try
   {
     control.Accept(server);
-    // get ident
-    LookupIdent(); 
-    const util::net::Endpoint& ep = control.RemoteEndpoint();
-    return acl::IpMaskCache::Check(ident + "@" + ep.IP().ToString()); 
+    return true;
   }
   catch(const util::net::NetworkError& e)
   {

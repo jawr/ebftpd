@@ -387,6 +387,10 @@ void Config::Parse(const std::string& line) {
   {
     nostats.emplace_back(setting::Right(toks));
   }
+  else if (opt == "hideowner")
+  {
+    hideowner.emplace_back(setting::Right(toks));
+  }
   else if (opt == "show_diz")
   {
     showDiz.emplace_back(setting::Right(toks));

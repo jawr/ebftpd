@@ -31,7 +31,8 @@ enum Type
   View,
   Hideinwho,
   Freefile,
-  Nostats
+  Nostats,
+  Hideowner
 };
 
 template <Type type>
