@@ -4,23 +4,17 @@
 namespace cmd { namespace rfc
 {
 
-void RNFRCommand::Execute()
+cmd::Result RNFRCommand::Execute()
 {
   namespace PP = acl::PathPermission;
   
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-
   fs::Path absolute = (client.WorkDir() / argStr).Expand();
   
   util::Error e(PP::FileAllowed<PP::Rename>(client.User(), absolute));
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
 
   try
@@ -30,12 +24,13 @@ void RNFRCommand::Execute()
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   control.PartReply(ftp::PendingMoreInfo, std::string(absolute));
   client.SetRenameFrom(absolute);
   control.Reply("File exists, ready for destination name."); 
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

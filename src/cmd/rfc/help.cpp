@@ -1,10 +1,20 @@
 #include "cmd/rfc/help.hpp"
+#include "cmd/rfc/factory.hpp"
 
 namespace cmd { namespace rfc
 {
 
-void HELPCommand::Execute()
+cmd::Result HELPCommand::Execute()
 {
+  if (args.size() == 2)
+  {
+    boost::to_upper(args[1]);
+    CommandDefOptRef def(Factory::Lookup(args[1]));
+    if (!def) control.Reply(ftp::CommandUnrecognised, "Command not understood");
+    else control.Reply(ftp::CommandOkay, "Syntax: " + def->Syntax());
+    return cmd::Result::Okay;
+  }
+
   static const char* reply =
     " ebftpd Command listing:\n"
     "------------------------------------------------------------------\n"
@@ -17,6 +27,7 @@ void HELPCommand::Execute()
     "End of list.                         (* Commands not implemented)";
     
   control.MultiReply(ftp::HelpMessage, reply);
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

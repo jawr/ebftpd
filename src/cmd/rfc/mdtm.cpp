@@ -5,23 +5,17 @@
 namespace cmd { namespace rfc
 {
 
-void MDTMCommand::Execute()
+cmd::Result MDTMCommand::Execute()
 {
   namespace PP = acl::PathPermission;
 
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
-  fs::Path absolute = client.WorkDir() / args[1];
+  fs::Path absolute = client.WorkDir() / argStr;
   
   util::Error e(PP::FileAllowed<PP::View>(client.User(), absolute));
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   const std::string& Sitepath = cfg::Get().Sitepath();
@@ -35,13 +29,14 @@ void MDTMCommand::Execute()
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   char timestamp[15];
   strftime(timestamp, sizeof(timestamp), "%Y%m%d%H%M%S",
            localtime(&status.Native().st_mtime));
   control.Reply(ftp::FileStatus, timestamp);
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

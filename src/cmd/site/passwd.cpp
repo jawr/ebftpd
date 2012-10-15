@@ -7,27 +7,21 @@
 namespace cmd { namespace site
 {
 
-void PASSWDCommand::Execute()
+cmd::Result PASSWDCommand::Execute()
 {
-  static const char* syntax = "Syntax: SITE PASSWD <password>";
+  std::string cpArgStr("CHPASS ");
+  cpArgStr += client.User().Name();
+  cpArgStr += " ";
+  cpArgStr += args[1];
   
-  if (args.size() != 2)
-    control.Reply(ftp::SyntaxError, syntax);
-  else
-  {
-    std::string cpArgStr("CHPASS ");
-    cpArgStr += client.User().Name();
-    cpArgStr += " ";
-    cpArgStr += args[1];
-    
-    std::vector<std::string> cpArgs;
-    boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
-    
-    std::unique_ptr<cmd::Command>
-      command(cmd::site::Factory::Lookup(args[0])->Create(client, cpArgStr, cpArgs));
-    assert(command.get());
-    command->Execute();
-  }
+  std::vector<std::string> cpArgs;
+  boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
+  
+  CommandPtr command(cmd::site::Factory::
+      Lookup(args[0])->Create(client, cpArgStr, cpArgs));
+  assert(command.get());
+  command->Execute();
+  return cmd::Result::Okay;
 }
 
 } /* site namespace */

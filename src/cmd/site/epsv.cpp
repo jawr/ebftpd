@@ -4,16 +4,14 @@
 namespace cmd { namespace site
 {
 
-void EPSVCommand::Execute()
+cmd::Result EPSVCommand::Execute()
 {
-  static const char* syntax = "Syntax: SITE EPSV normal|full";
   if (args.size() == 1)
   {
     control.Reply(ftp::CommandOkay, "Extended passive mode is currently '" +
                  std::string(data.EPSVMode() == ftp::EPSVMode::Normal ?
                  "normal" : "full") + "'.");
   }                
-  else if (args.size() != 2) control.Reply(ftp::SyntaxError, syntax);
   else
   {
     boost::to_upper(args[1]);
@@ -28,8 +26,9 @@ void EPSVCommand::Execute()
       control.Reply(ftp::SyntaxError, "Extended passive mode now set to 'full'.");
     }
     else
-      control.Reply(ftp::SyntaxError, syntax);
+      return cmd::Result::SyntaxError;
   }
+  return cmd::Result::Okay;
 }
 
 } /* site namespace */

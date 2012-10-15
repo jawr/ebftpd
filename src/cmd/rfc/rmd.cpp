@@ -4,17 +4,12 @@
 namespace cmd { namespace rfc
 {
 
-void RMDCommand::Execute()
+cmd::Result RMDCommand::Execute()
 {
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
   util::Error e = fs::RemoveDirectory(client,  argStr);
   if (!e) control.Reply(ftp::ActionNotOkay, "RMD failed: " + e.Message());
   else control.Reply(ftp::FileActionOkay, "RMD command successful."); 
+  return Result::Okay;
 }
 
 } /* rfc namespace */

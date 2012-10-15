@@ -68,10 +68,11 @@ public:
             (maximumArgs == -1 || argsSize <= maximumArgs));
   }
   
-  cmd::Command* Create(ftp::Client& client, const std::string& argStr,
-                       const Args& args) const
+  CommandPtr Create(ftp::Client& client, const std::string& argStr,
+                    const Args& args) const
   {
-    return creator->Create(client, argStr, args);
+    if (!creator) return nullptr;
+    return CommandPtr(creator->Create(client, argStr, args));
   }
   
   const std::string& Syntax() const { return syntax; }

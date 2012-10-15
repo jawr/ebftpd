@@ -4,9 +4,10 @@
 namespace cmd { namespace site
 {
 
-void VERSCommand::Execute()
+cmd::Result VERSCommand::Execute()
 {
   control.Reply(ftp::CommandOkay, "This server is running: " + programFullname);
+  return cmd::Result::Okay;
 }
 
 } /* site namespace */

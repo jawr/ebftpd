@@ -4,7 +4,7 @@
 namespace cmd { namespace rfc
 {
 
-void LISTCommand::Execute()
+cmd::Result LISTCommand::Execute()
 {
   control.Reply(ftp::TransferStatusOkay,
                "Opening data connection for directory listing.");
@@ -17,7 +17,7 @@ void LISTCommand::Execute()
   {
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   std::string options;
@@ -51,11 +51,12 @@ void LISTCommand::Execute()
     data.Close();
     control.Reply(ftp::DataCloseAborted,
                 "Error whiling writing to data connection: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   data.Close();
   control.Reply(ftp::DataClosedOkay, "End of directory listing."); 
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

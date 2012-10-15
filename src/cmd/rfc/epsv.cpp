@@ -4,14 +4,8 @@
 namespace cmd { namespace rfc
 {
 
-void EPSVCommand::Execute()
+cmd::Result EPSVCommand::Execute()
 {
-  if (!argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
   util::net::Endpoint ep;
   try
   {
@@ -21,7 +15,7 @@ void EPSVCommand::Execute()
   {
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to listen for data connection: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
 
   std::string portString;
@@ -30,6 +24,8 @@ void EPSVCommand::Execute()
   
   control.Reply(ftp::ExtendedPassiveMode, "Entering extended passive mode (" + 
                portString + ")");
+
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

@@ -8,14 +8,14 @@
 namespace cmd { namespace rfc
 {
 
-void SITECommand::Execute()
+cmd::Result SITECommand::Execute()
 {
   argStr = argStr.substr(args[0].length());
   boost::trim(argStr);
   args.erase(args.begin());
   boost::to_upper(args[0]);
   std::string aclKeyword;
-  cmd::site::CommandDefOptRef def = cmd::site::Factory::Lookup(args[0]);
+  cmd::site::CommandDefOptRef def(cmd::site::Factory::Lookup(args[0]));
   if (!def)
     control.Reply(ftp::CommandUnrecognised, "Command not understood");
   else if (!acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
@@ -24,9 +24,12 @@ void SITECommand::Execute()
     control.Reply(ftp::SyntaxError, def->Syntax());
   else
   {
-    std::unique_ptr<cmd::Command> command(def->Create(client, argStr, args));
-    command->Execute();
+    cmd::CommandPtr command(def->Create(client, argStr, args));
+    if (!command) control.Reply(ftp::NotImplemented, "Command not implemented");
+    else if (command->Execute() == cmd::Result::SyntaxError)
+      control.Reply(ftp::SyntaxError, def->Syntax());
   }
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

@@ -4,14 +4,8 @@
 namespace cmd { namespace rfc
 {
 
-void RETRCommand::Execute()
+cmd::Result RETRCommand::Execute()
 {
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-    
   fs::InStreamPtr fin;
   try
   {
@@ -21,7 +15,7 @@ void RETRCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay,
                  "Unable to open file: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
 
   control.Reply(ftp::TransferStatusOkay,
@@ -37,7 +31,7 @@ void RETRCommand::Execute()
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " +
                  e.Message());
-    return;
+    return cmd::Result::Okay;
   }
 
   try
@@ -56,7 +50,7 @@ void RETRCommand::Execute()
     data.Close();
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from disk.");
-    return;
+    return cmd::Result::Okay;
   }
   catch (const util::net::NetworkError& e)
   {
@@ -64,11 +58,12 @@ void RETRCommand::Execute()
     control.Reply(ftp::DataCloseAborted,
                  "Error while writing to data connection: " +
                  e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   data.Close();
   control.Reply(ftp::DataClosedOkay, "Transfer finished."); 
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

@@ -4,15 +4,9 @@
 namespace cmd { namespace rfc
 {
 
-void CWDCommand::Execute()
+cmd::Result CWDCommand::Execute()
 {
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
-  fs::Path path = argStr;
+  fs::Path path(argStr);
   
   util::Error e = fs::ChangeDirectory(client,  path);
   if (!e) control.Reply(ftp::ActionNotOkay, "CWD failed: " + e.Message());
@@ -21,6 +15,7 @@ void CWDCommand::Execute()
                  path.ToString() + ").");
   else
     control.Reply(ftp::FileActionOkay, "CWD command successful."); 
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

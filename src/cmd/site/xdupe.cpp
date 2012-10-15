@@ -5,9 +5,8 @@
 namespace cmd { namespace site
 {
 
-void XDUPECommand::Execute()
+cmd::Result XDUPECommand::Execute()
 {
-  static const char* syntax = "SITE XDUPE [<mode 0-4>]";
   if (args.size() == 1)
   {
     if (client.XDupeMode() == ftp::XDupeMode::Disabled)
@@ -19,13 +18,7 @@ void XDUPECommand::Execute()
          << " is enabled.";
       control.Reply(ftp::CommandOkay, os.str());
     }
-    return;
-  }
-  
-  if (args.size() != 2)
-  {
-    control.Reply(ftp::SyntaxError, syntax);
-    return;
+    return cmd::Result::Okay;
   }
   
   int mode;
@@ -35,20 +28,19 @@ void XDUPECommand::Execute()
   }
   catch (const boost::bad_lexical_cast&)
   {
-    control.Reply(ftp::SyntaxError, syntax);
-    return;
+    return cmd::Result::SyntaxError;
   }
   
   if (mode < 0 || mode > 4)
   {
-    control.Reply(ftp::SyntaxError, syntax);
-    return;
+    return cmd::Result::SyntaxError;
   }
   
   client.SetXDupeMode(static_cast<ftp::XDupeMode>(mode));
   std::ostringstream os;
   os << "Activated extended dupe mode " << mode << ".";
   control.Reply(ftp::CommandOkay, os.str());
+  return cmd::Result::Okay;
 }
 
 } /* site namespace */

@@ -6,7 +6,7 @@
 namespace cmd { namespace rfc
 {
 
-void SIZECommand::Execute()
+cmd::Result SIZECommand::Execute()
 {
   namespace PP = acl::PathPermission;
 
@@ -16,7 +16,7 @@ void SIZECommand::Execute()
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, "SIZE failed 2: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   fs::Status status;
@@ -27,10 +27,11 @@ void SIZECommand::Execute()
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, "SIZE failed 1: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   control.Reply(ftp::FileStatus, boost::lexical_cast<std::string>(status.Size())); 
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

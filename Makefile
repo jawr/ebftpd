@@ -69,10 +69,10 @@ test:  ebftpd
 
 unitytest: ebftpd
 
-ebftpd: pch.hpp.gch $(OBJECTS)
+ebftpd: src/pch.hpp.gch $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(OBJECTS) $(LIBS) -o ebftpd
 
-pch.hpp.gch:
+src/pch.hpp.gch:
 	$(CXX) -c $(CXXFLAGS) src/pch.hpp
 
 

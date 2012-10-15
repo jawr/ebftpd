@@ -5,14 +5,14 @@
 namespace cmd { namespace rfc
 {
 
-void STATCommand::Execute()
+cmd::Result STATCommand::Execute()
 {
   if (args.size() == 1)
   {
     control.PartReply(ftp::SystemStatus, programFullname + " status:");
     control.PartReply("< Insert status info here >");
     control.Reply("End of status.");
-    return;
+    return cmd::Result::Okay;
   }
 
   std::string options;
@@ -35,6 +35,7 @@ void STATCommand::Execute()
   dirList.Execute();
   
   control.Reply("End of status.");
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

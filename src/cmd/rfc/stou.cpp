@@ -5,23 +5,17 @@
 namespace cmd { namespace rfc
 {
 
-void STOUCommand::Execute()
+cmd::Result STOUCommand::Execute()
 {
   static size_t filenameLength = 10;
 
-  if (!argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
   fs::Path uniquePath;
   if (!fs::UniqueFile(client, client.WorkDir(),
                       filenameLength, uniquePath))
   {
     control.Reply(ftp::ActionNotOkay,
                  "Unable to generate a unique filename.");
-    return;
+    return cmd::Result::Okay;
   }
   
   argStr = uniquePath.ToString();
@@ -29,12 +23,10 @@ void STOUCommand::Execute()
   args.emplace_back("STOR");
   args.emplace_back(argStr);
   
-  ftp::ClientState reqdState;
-
-  std::unique_ptr<cmd::Command>
-    command(cmd::rfc::Factory::Create(client, argStr, args, reqdState));
+  
+  CommandPtr command(cmd::rfc::Factory::Lookup("STOU")->Create(client, argStr, args));
   assert(command.get());
-  command->Execute();
+  return command->Execute();
 }
 
 } /* rfc namespace */

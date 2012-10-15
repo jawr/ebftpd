@@ -3,14 +3,8 @@
 namespace cmd { namespace rfc
 {
 
-void PROTCommand::Execute()
+cmd::Result PROTCommand::Execute()
 {
-  if (args.size() != 2)
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
   if (args[1] == "P")
   {
     data.SetProtection(true);
@@ -29,6 +23,7 @@ void PROTCommand::Execute()
                  "Protection type 'confidential' not implemented.");
   else
     control.Reply(ftp::SyntaxError, "Unrecognised protection type.");
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

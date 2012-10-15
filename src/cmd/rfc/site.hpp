@@ -12,7 +12,7 @@ public:
   SITECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
     Command(client, client.Control(), client.Data(), argStr, args) { }
 
-  void Execute();
+  cmd::Result Execute();
 };
 
 } /* rfc namespace */

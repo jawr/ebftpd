@@ -4,22 +4,17 @@
 namespace cmd { namespace site
 {
 
-void READDCommand::Execute()
+cmd::Result READDCommand::Execute()
 {
-  static const char* syntax = "SITE READD <user>";
-  if (args.size() != 2)
-    control.Reply(ftp::SyntaxError, syntax);
+  // needs further checking to ensure
+  // gadmins can't exceed their slots
+  
+  util::Error e = acl::UserCache::Readd(args[1]);
+  if (!e)
+    control.Reply(ftp::ActionNotOkay, "Unable to readd user: " + e.Message());
   else
-  {
-    // needs further checking to ensure
-    // gadmins can't exceed their slots
-    
-    util::Error e = acl::UserCache::Readd(args[1]);
-    if (!e)
-      control.Reply(ftp::ActionNotOkay, "Unable to readd user: " + e.Message());
-    else
-      control.Reply(ftp::CommandOkay, "User " + args[1] + " has been readded.");
-  }
+    control.Reply(ftp::CommandOkay, "User " + args[1] + " has been readded.");
+  return cmd::Result::Okay;
 }
 
 } /* site namespace */

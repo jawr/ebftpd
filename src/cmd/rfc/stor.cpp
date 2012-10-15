@@ -4,14 +4,8 @@
 namespace cmd { namespace rfc
 {
 
-void STORCommand::Execute()
+cmd::Result STORCommand::Execute()
 {
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-
   fs::OutStreamPtr fout;
   try
   {
@@ -21,7 +15,7 @@ void STORCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay,
                  "Unable to create file: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
 
   control.Reply(ftp::TransferStatusOkay,
@@ -36,7 +30,7 @@ void STORCommand::Execute()
   {
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
 
   try
@@ -55,11 +49,12 @@ void STORCommand::Execute()
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from data connection: " +
                  e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   data.Close();
   control.Reply(ftp::DataClosedOkay, "Transfer finished."); 
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

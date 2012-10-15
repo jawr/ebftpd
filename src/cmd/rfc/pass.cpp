@@ -4,14 +4,8 @@
 namespace cmd { namespace rfc
 {
 
-void PASSCommand::Execute()
+cmd::Result PASSCommand::Execute()
 {
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;    
-  }
-  
   if (!client.VerifyPassword(argStr))
   {
     if (client.PasswordAttemptsExceeded())
@@ -25,14 +19,14 @@ void PASSCommand::Execute()
       control.Reply(ftp::NotLoggedIn, "Login incorrect.");
       client.SetLoggedOut();
     }
-    return;
+    return cmd::Result::Okay;
   }
   
   if (client.User().Deleted())
   {
     control.Reply(ftp::ServiceUnavailable, "You have been deleted. Goodbye.");
     client.SetFinished();
-    return;
+    return cmd::Result::Okay;
   }
   
   fs::Path rootPath("/");
@@ -42,11 +36,12 @@ void PASSCommand::Execute()
     control.Reply(ftp::ServiceUnavailable, 
       "Unable to change to site root directory: " + e.Message());
     client.SetFinished();
-    return;
+    return cmd::Result::Okay;
   }
   
   control.Reply(ftp::UserLoggedIn, "User " + client.User().Name() + " logged in.");
   client.SetLoggedIn();
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

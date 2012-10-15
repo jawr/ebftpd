@@ -163,14 +163,23 @@ void Client::ExecuteCommand(const std::string& commandLine)
   
   std::string argStr(commandLine.substr(args[0].length()));
   boost::trim(argStr);
-  
-  ClientState reqdState;
-  std::unique_ptr<cmd::Command>
-    command(cmd::rfc::Factory::Create(*this, argStr, args, reqdState));
-  if (!command.get()) control.Reply(ftp::CommandUnrecognised, "Command not understood");
-  else if (!CheckState(reqdState));
-  else command->Execute();
-  IdleReset(commandLine);
+  boost::to_upper(args[0]);
+  cmd::rfc::CommandDefOptRef def(cmd::rfc::Factory::Lookup(args[0]));
+  if (!def) control.Reply(ftp::CommandUnrecognised, "Command not understood");
+  else if (!def->CheckArgs(args))
+    control.Reply(ftp::SyntaxError, "Syntax: " + def->Syntax());
+  else if (CheckState(def->RequiredState()))
+  {
+    cmd::CommandPtr command(def->Create(*this, argStr, args));
+    if (!command)
+      control.Reply(ftp::NotImplemented, "Command not implemented");
+    else
+    {
+      if (command->Execute() == cmd::Result::SyntaxError)
+        control.Reply(ftp::SyntaxError, "Syntax: " + def->Syntax());
+      IdleReset(commandLine);
+    }
+  }
 }
 
 void Client::Handle()

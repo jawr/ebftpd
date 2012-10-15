@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <memory>
 #include "ftp/client.hpp"
 
 namespace ftp
@@ -14,6 +15,13 @@ class Data;
 
 namespace cmd
 {
+
+enum class Result : int
+{
+  SyntaxError,
+  Finished,
+  Okay
+};
 
 typedef std::vector<std::string> Args;
 
@@ -33,8 +41,11 @@ public:
 
   virtual ~Command() { }
     
-  virtual void Execute() = 0;
+  virtual Result Execute() = 0;
 };
+
+typedef std::shared_ptr<Command> CommandPtr;
+
 /*
 class AUTHCommand : public Command
 {

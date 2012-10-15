@@ -1,34 +1,22 @@
 #include <boost/algorithm/string.hpp>
 #include "cmd/rfc/factory.hpp"
 #include "cmd/rfc/abor.hpp"
-#include "cmd/rfc/acct.hpp"
-#include "cmd/rfc/adat.hpp"
-#include "cmd/rfc/allo.hpp"
-#include "cmd/rfc/appe.hpp"
 #include "cmd/rfc/auth.hpp"
-#include "cmd/rfc/ccc.hpp"
 #include "cmd/rfc/cdup.hpp"
-#include "cmd/rfc/conf.hpp"
 #include "cmd/rfc/cwd.hpp"
 #include "cmd/rfc/dele.hpp"
-#include "cmd/rfc/enc.hpp"
 #include "cmd/rfc/eprt.hpp"
 #include "cmd/rfc/epsv.hpp"
 #include "cmd/rfc/feat.hpp"
 #include "cmd/rfc/help.hpp"
-#include "cmd/rfc/lang.hpp"
 #include "cmd/rfc/list.hpp"
 #include "cmd/rfc/lprt.hpp"
 #include "cmd/rfc/lpsv.hpp"
 #include "cmd/rfc/mdtm.hpp"
-#include "cmd/rfc/mic.hpp"
 #include "cmd/rfc/mkd.hpp"
-#include "cmd/rfc/mlsd.hpp"
-#include "cmd/rfc/mlst.hpp"
 #include "cmd/rfc/mode.hpp"
 #include "cmd/rfc/nlst.hpp"
 #include "cmd/rfc/noop.hpp"
-#include "cmd/rfc/opts.hpp"
 #include "cmd/rfc/pass.hpp"
 #include "cmd/rfc/pasv.hpp"
 #include "cmd/rfc/pbsz.hpp"
@@ -36,19 +24,15 @@
 #include "cmd/rfc/prot.hpp"
 #include "cmd/rfc/pwd.hpp"
 #include "cmd/rfc/quit.hpp"
-#include "cmd/rfc/rein.hpp"
-#include "cmd/rfc/rest.hpp"
 #include "cmd/rfc/retr.hpp"
 #include "cmd/rfc/rmd.hpp"
 #include "cmd/rfc/rnfr.hpp"
 #include "cmd/rfc/rnto.hpp"
 #include "cmd/rfc/site.hpp"
 #include "cmd/rfc/size.hpp"
-#include "cmd/rfc/smnt.hpp"
 #include "cmd/rfc/stat.hpp"
 #include "cmd/rfc/stor.hpp"
 #include "cmd/rfc/stou.hpp"
-#include "cmd/rfc/stru.hpp"
 #include "cmd/rfc/syst.hpp"
 #include "cmd/rfc/type.hpp"
 #include "cmd/rfc/user.hpp"
@@ -60,84 +44,101 @@ Factory Factory::factory;
 
 Factory::Factory()
 {
-  Register("ABOR", new Creator<rfc::ABORCommand>(ftp::ClientState::AnyState));
-  Register("ACCT", new Creator<rfc::ACCTCommand>(ftp::ClientState::LoggedIn));
-  Register("ADAT", new Creator<rfc::ADATCommand>(ftp::ClientState::LoggedIn));
-  Register("ALLO", new Creator<rfc::ALLOCommand>(ftp::ClientState::LoggedIn));
-  Register("APPE", new Creator<rfc::APPECommand>(ftp::ClientState::LoggedIn));
-  Register("AUTH", new Creator<rfc::AUTHCommand>(ftp::ClientState::LoggedOut));
-  Register("CCC", new Creator<rfc::CCCCommand>(ftp::ClientState::LoggedIn));
-  Register("CDUP", new Creator<rfc::CDUPCommand>(ftp::ClientState::LoggedIn));
-  Register("CONF", new Creator<rfc::CONFCommand>(ftp::ClientState::LoggedIn));
-  Register("CWD", new Creator<rfc::CWDCommand>(ftp::ClientState::LoggedIn));
-  Register("DELE", new Creator<rfc::DELECommand>(ftp::ClientState::LoggedIn));
-  Register("ENC", new Creator<rfc::ENCCommand>(ftp::ClientState::LoggedIn));
-  Register("EPRT", new Creator<rfc::EPRTCommand>(ftp::ClientState::LoggedIn));
-  Register("EPSV", new Creator<rfc::EPSVCommand>(ftp::ClientState::LoggedIn));
-  Register("FEAT", new Creator<rfc::FEATCommand>(ftp::ClientState::AnyState));
-  Register("HELP", new Creator<rfc::HELPCommand>(ftp::ClientState::AnyState));
-  Register("LANG", new Creator<rfc::LANGCommand>(ftp::ClientState::LoggedIn));
-  Register("LIST", new Creator<rfc::LISTCommand>(ftp::ClientState::LoggedIn));
-  Register("LPRT", new Creator<rfc::LPRTCommand>(ftp::ClientState::LoggedIn));
-  Register("LPSV", new Creator<rfc::LPSVCommand>(ftp::ClientState::LoggedIn));
-  Register("MDTM", new Creator<rfc::MDTMCommand>(ftp::ClientState::LoggedIn));
-  Register("MIC", new Creator<rfc::MICCommand>(ftp::ClientState::LoggedIn));
-  Register("MKD", new Creator<rfc::MKDCommand>(ftp::ClientState::LoggedIn));
-  Register("MLSD", new Creator<rfc::MLSDCommand>(ftp::ClientState::LoggedIn));
-  Register("MLST", new Creator<rfc::MLSTCommand>(ftp::ClientState::LoggedIn));
-  Register("MODE", new Creator<rfc::MODECommand>(ftp::ClientState::LoggedIn));
-  Register("NLST", new Creator<rfc::NLSTCommand>(ftp::ClientState::LoggedIn));
-  Register("NOOP", new Creator<rfc::NOOPCommand>(ftp::ClientState::AnyState));
-  Register("OPTS", new Creator<rfc::OPTSCommand>(ftp::ClientState::LoggedIn));
-  Register("PASS", new Creator<rfc::PASSCommand>(ftp::ClientState::WaitingPassword));
-  Register("PASV", new Creator<rfc::PASVCommand>(ftp::ClientState::LoggedIn));
-  Register("PBSZ", new Creator<rfc::PBSZCommand>(ftp::ClientState::NotBeforeAuth));
-  Register("PORT", new Creator<rfc::PORTCommand>(ftp::ClientState::LoggedIn));
-  Register("PROT", new Creator<rfc::PROTCommand>(ftp::ClientState::NotBeforeAuth));
-  Register("PWD", new Creator<rfc::PWDCommand>(ftp::ClientState::LoggedIn));
-  Register("QUIT", new Creator<rfc::QUITCommand>(ftp::ClientState::AnyState));
-  Register("REIN", new Creator<rfc::REINCommand>(ftp::ClientState::LoggedIn));
-  Register("REST", new Creator<rfc::RESTCommand>(ftp::ClientState::LoggedIn));
-  Register("RETR", new Creator<rfc::RETRCommand>(ftp::ClientState::LoggedIn));
-  Register("RMD", new Creator<rfc::RMDCommand>(ftp::ClientState::LoggedIn));
-  Register("RNFR", new Creator<rfc::RNFRCommand>(ftp::ClientState::LoggedIn));
-  Register("RNTO", new Creator<rfc::RNTOCommand>(ftp::ClientState::LoggedIn));
-  Register("SITE", new Creator<rfc::SITECommand>(ftp::ClientState::LoggedIn));
-  Register("SIZE", new Creator<rfc::SIZECommand>(ftp::ClientState::LoggedIn));
-  Register("SMNT", new Creator<rfc::SMNTCommand>(ftp::ClientState::LoggedIn));
-  Register("STAT", new Creator<rfc::STATCommand>(ftp::ClientState::LoggedIn));
-  Register("STOR", new Creator<rfc::STORCommand>(ftp::ClientState::LoggedIn));
-  Register("STOU", new Creator<rfc::STOUCommand>(ftp::ClientState::LoggedIn));
-  Register("STRU", new Creator<rfc::STRUCommand>(ftp::ClientState::LoggedIn));
-  Register("SYST", new Creator<rfc::SYSTCommand>(ftp::ClientState::AnyState));
-  Register("TYPE", new Creator<rfc::TYPECommand>(ftp::ClientState::LoggedIn));
-  Register("USER", new Creator<rfc::USERCommand>(ftp::ClientState::LoggedOut));
-}
-
-Factory::~Factory()
-{
-  while (!creators.empty())
+  defs =
   {
-    delete creators.begin()->second;
-    creators.erase(creators.begin());
-  }
+    { "ABOR",   { 0,  0,  ftp::ClientState::AnyState,
+                  CreatorBasePtr(new Creator<rfc::ABORCommand>()), "SITE ABOR" }, },
+    { "ACCT",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "ADAT",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "ALLO",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "APPE",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "AUTH",   { 1,  1,  ftp::ClientState::LoggedOut,
+                  CreatorBasePtr(new Creator<rfc::AUTHCommand>()), "SITE AUTH TLS|SSL" }, },
+    { "CCC",    { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "CDUP",   { 0,  0,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::CDUPCommand>()), "CDUP" }, },
+    { "CWD",    { 1,  -1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::CWDCommand>()), "CWD <path>" }, },
+    { "DELE",   { 1,  -1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::DELECommand>()), "DELE <path>" }, },
+    { "ENC",    { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "EPRT",   { 1,  1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::EPRTCommand>()), "EPRT <port-string>" }, },
+    { "EPSV",   { 1,  1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::EPSVCommand>()), "EPSV <port-string>" }, },
+    { "FEAT",   { 0,  0,  ftp::ClientState::AnyState,
+                  CreatorBasePtr(new Creator<rfc::FEATCommand>()), "FEAT" }, },
+    { "HELP",   { 0,  1,  ftp::ClientState::AnyState,
+                  CreatorBasePtr(new Creator<rfc::HELPCommand>()), "HELP [<command>]" }, },
+    { "LANG",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "LIST",   { 0,  -1, ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::LISTCommand>()), "LIST [-<options>] [<path>]" }, },
+    { "LPRT",   { 1,  1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::LPRTCommand>()), "LPRT <port-string>" }, },
+    { "LPSV",   { 0,  0,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::LPSVCommand>()), "LPSV" }, },
+    { "MDTM",   { 1,  -1, ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::MDTMCommand>()), "MDTM <path>" }, },
+    { "MIC",    { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "MKD",    { 1,  -1, ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::MKDCommand>()), "MKD <path>" }, },
+    { "MLSD",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "MLST",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "MODE",   { 1,  1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::MODECommand>()), "MODE S|B|C" }, },
+    { "NLST",   { 0,  -1, ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::NLSTCommand>()), "NLST [-<options>] [<path>]" }, },
+    { "NOOP",   { 0,  0,  ftp::ClientState::AnyState,
+                  CreatorBasePtr(new Creator<rfc::NOOPCommand>()), "NOOP" }, },
+    { "OPTS",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "PASS",   { 0,  -1, ftp::ClientState::WaitingPassword,
+                  CreatorBasePtr(new Creator<rfc::PASSCommand>()), "PASS <password>" }, },
+    { "PASV",   { 0,  0,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::PASVCommand>()), "PASV" }, },
+    { "PORT",   { 1,  1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::PORTCommand>()), "PORT <port-string>" }, },
+    { "PROT",   { 1,  1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::PROTCommand>()), "PROT C|P" }, },
+    { "PWD",    { 0,  0,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::PWDCommand>()), "PWD" }, },
+    { "QUIT",   { 0,  0,  ftp::ClientState::AnyState,
+                  CreatorBasePtr(new Creator<rfc::QUITCommand>()), "QUIT" }, },
+    { "REIN",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "REST",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "RETR",   { 1,  1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::RETRCommand>()), "RETR <path>" }, },
+    { "RMD",    { 1,  -1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::RMDCommand>()), "RMD <path>" }, },
+    { "RNFR",   { 1,  -1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::RNFRCommand>()), "REFR <path>" }, },
+    { "RNTO",   { 1,  -1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::RNTOCommand>()), "RNTO <path>" }, },
+    { "SITE",   { 1,  -1, ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::SITECommand>()), "STIE <command> [<arguments>..]" }, },
+    { "SIZE",   { 1,  -1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::SIZECommand>()), "SIZE <path>" }, },
+    { "SMNT",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "STAT",   { 0,  -1, ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::STATCommand>()), "STAT [[-<options] [<path>]]" }, },
+    { "STOR",   { 1,  -1, ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::STORCommand>()), "STOR <path>" }, },
+    { "STOU",   { 0,  0,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::STOUCommand>()), "STOU" }, },
+    { "STRU",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT SPECIFIED" }, },
+    { "SYST",   { 0,  0,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::SYSTCommand>()), "SYST" }, },
+    { "TYPE",   { 1,  1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::TYPECommand>()), "TYPE I|A" }, },
+    { "USER",   { 1, -1,  ftp::ClientState::LoggedOut,
+                  CreatorBasePtr(new Creator<rfc::USERCommand>()), "USER <user>" }, }
+  };
 }
 
-void Factory::Register(const std::string& command,
-                       CreatorBase<Command>* creator)
+CommandDefOptRef Factory::Lookup(const std::string& command)
 {
-  creators.insert(std::make_pair(command, creator));
-}  
-
-Command* Factory::Create(ftp::Client& client, const std::string& argStr, const Args& args,
-                         ftp::ClientState& reqdState)
-{
-  std::string cmd = args[0];
-  boost::to_upper(cmd);
-  CreatorsMap::const_iterator it = factory.creators.find(cmd);
-  if (it == factory.creators.end()) return 0;
-  reqdState = it->second->ReqdState();
-  return it->second->Create(client, argStr, args);
+  CommandDefMap::const_iterator it = factory.defs.find(command);
+  if (it != factory.defs.end()) return CommandDefOptRef(it->second);
+  return CommandDefOptRef();
 }
 
 } /* rfc namespace */

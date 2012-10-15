@@ -4,14 +4,8 @@
 namespace cmd { namespace rfc
 {
 
-void LPSVCommand::Execute()
+cmd::Result LPSVCommand::Execute()
 {
-  if (!argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
   util::net::Endpoint ep;
   try
   {
@@ -21,13 +15,14 @@ void LPSVCommand::Execute()
   {
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to listen for data connection: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   std::string portString;
   util::net::ftp::EndpointToLPRT(ep, portString);
   
   control.Reply(ftp::LongPassiveMode, "Entering passive mode (" + portString + ")");
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

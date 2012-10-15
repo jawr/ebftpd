@@ -4,17 +4,12 @@
 namespace cmd { namespace rfc
 {
 
-void MKDCommand::Execute()
+cmd::Result MKDCommand::Execute()
 {
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
   util::Error e = fs::CreateDirectory(client,  argStr);
   if (!e) control.Reply(ftp::ActionNotOkay, "MKD failed: " + e.Message());
   else control.Reply(ftp::PathCreated, "MKD command successful."); 
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

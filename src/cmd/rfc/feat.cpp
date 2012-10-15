@@ -3,7 +3,7 @@
 namespace cmd { namespace rfc
 {
 
-void FEATCommand::Execute()
+cmd::Result FEATCommand::Execute()
 {
   control.PartReply(ftp::SystemStatus, "Extended feature support:");
   control.PartReply(ftp::NoCode, " AUTH TLS");
@@ -16,6 +16,7 @@ void FEATCommand::Execute()
   control.PartReply(ftp::NoCode, " MDTM");
   control.PartReply(ftp::NoCode, " SIZE");
   control.Reply(ftp::SystemStatus, "End.");
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

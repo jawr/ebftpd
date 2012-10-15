@@ -4,7 +4,7 @@
 namespace cmd { namespace rfc
 {
 
-void NLSTCommand::Execute()
+cmd::Result NLSTCommand::Execute()
 {
   control.Reply(ftp::TransferStatusOkay,
                "Opening data connection for directory listing.");
@@ -17,7 +17,7 @@ void NLSTCommand::Execute()
   {
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   std::string options;
@@ -50,6 +50,7 @@ void NLSTCommand::Execute()
   
   data.Close();
   control.Reply(ftp::DataClosedOkay, "End of directory listing."); 
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

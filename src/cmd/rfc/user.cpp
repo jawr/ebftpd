@@ -4,14 +4,8 @@
 namespace cmd { namespace rfc
 {
 
-void USERCommand::Execute()
+cmd::Result USERCommand::Execute()
 {
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-
   acl::User user;
   try
   {
@@ -24,18 +18,13 @@ void USERCommand::Execute()
     else
     {
       control.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
-      return;
+      return cmd::Result::Okay;
     }
   }
-
-/*  if (argStr != client.User().Name())
-  {
-    control.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
-    return;
-  }*/
   
   control.Reply(ftp::NeedPassword, "Password required for " + argStr + "."); 
   client.SetWaitingPassword(user);
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

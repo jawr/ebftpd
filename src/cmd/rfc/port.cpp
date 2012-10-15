@@ -4,20 +4,14 @@
 namespace cmd { namespace rfc
 {
 
-void PORTCommand::Execute()
+cmd::Result PORTCommand::Execute()
 {
-  if (args.size() != 2)
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-
   util::net::Endpoint ep;
   util::Error e = util::net::ftp::EndpointFromPORT(args[1], ep);
   if (!e)
   {
     control.Reply(ftp::SyntaxError, "Invalid port string.");
-    return;
+    return cmd::Result::Okay;
   }
   
   try
@@ -28,10 +22,11 @@ void PORTCommand::Execute()
   {
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
-    return;
+    return cmd::Result::Okay;
   }
   
   control.Reply(ftp::CommandOkay, "PORT command successful.");
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

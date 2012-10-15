@@ -3,23 +3,19 @@
 namespace cmd { namespace rfc
 {
 
-void AUTHCommand::Execute()
+cmd::Result AUTHCommand::Execute()
 {
-  if (argStr.empty())
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
-  if (argStr != "TLS" && argStr != "SSL")
+  if (args[1] != "TLS" && args[1] != "SSL")
   {
     control.Reply(ftp::ParameterNotImplemented,
-                 "AUTH " + argStr + " is unsupported.");
-    return;
+                 "AUTH " + args[1] + " is unsupported.");
+    return cmd::Result::Okay;
   }
   
-  control.Reply(ftp::SecurityExchangeOkay, "AUTH TLS successful."); 
-  control.NegotiateTLS();  
+  control.Reply(ftp::SecurityExchangeOkay, "AUTH " + args[1] + " successful."); 
+  control.NegotiateTLS();
+
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

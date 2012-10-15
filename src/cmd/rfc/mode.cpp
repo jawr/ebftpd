@@ -3,14 +3,8 @@
 namespace cmd { namespace rfc
 {
 
-void MODECommand::Execute()
+cmd::Result MODECommand::Execute()
 {
-  if (args.size() != 2)
-  {
-    control.Reply(ftp::SyntaxError, "Wrong number of arguments.");
-    return;
-  }
-  
   if (args[1] == "S")
     control.Reply(ftp::CommandOkay, "Transfer mode set to 'stream'.");
   else if (args[1] == "B")
@@ -21,6 +15,7 @@ void MODECommand::Execute()
                  "Transfer mode 'compressed' not implemented.");
   else
     control.Reply(ftp::SyntaxError, "Unrecognised transfer mode.");
+  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

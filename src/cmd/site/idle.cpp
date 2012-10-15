@@ -7,11 +7,10 @@
 namespace cmd { namespace site
 {
 
-void IDLECommand::Execute()
+cmd::Result IDLECommand::Execute()
 {
   namespace pt = boost::posix_time;
 
-  static const char* syntax = "Syntax: SITE IDLE [<seconds>]";
   if (args.size() == 1)
   {
     std::ostringstream os;
@@ -19,7 +18,6 @@ void IDLECommand::Execute()
        << client.IdleTimeout().total_seconds() << " seconds.";
     control.Reply(ftp::CommandOkay, os.str());
   }                
-  else if (args.size() != 2) control.Reply(ftp::SyntaxError, syntax);
   else
   {
     pt::seconds idleTimeout(0);
@@ -29,8 +27,7 @@ void IDLECommand::Execute()
     }
     catch (const boost::bad_lexical_cast&)
     {
-      control.Reply(ftp::SyntaxError, syntax);
-      return;
+      return cmd::Result::SyntaxError;
     }
     
     const cfg::Config& config = cfg::Get();
@@ -44,7 +41,7 @@ void IDLECommand::Execute()
          << " and " << config.IdleTimeout().Maximum().total_seconds()
          << " seconds.";
       control.Reply(ftp::SyntaxError, os.str());
-      return;
+      return cmd::Result::Okay;
     }
     
     client.SetIdleTimeout(idleTimeout);
@@ -53,6 +50,8 @@ void IDLECommand::Execute()
        << " seconds.";
     control.Reply(ftp::CommandOkay, os.str());
   }
+  
+  return cmd::Result::Okay;
 }
 
 } /* site namespace */
