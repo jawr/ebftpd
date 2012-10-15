@@ -39,7 +39,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<site::VERSCommand>()),
                       "Syntax: SITE VERS",
                       "Display server version" }, },
-    { "XDUPE",      { 0,  1,  "",
+    { "XDUPE",      { 0,  1,  "xdupe",
                       CreatorBasePtr(new Creator<site::XDUPECommand>()),
                       "Syntax: SITE XDUPE [<mode>]",
                       "Display / change extended dupe mode" }, },
