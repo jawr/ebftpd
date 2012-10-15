@@ -16,6 +16,7 @@ namespace db
   // user functions
   acl::UserID GetNewUserID();
   void SaveUser(const acl::User& user);    
+  void DeleteUser(const acl::UserID& uid);
   void GetUsers(std::vector<acl::User*>& users);
   void AddIpMask(const acl::User& user, const std::string& mask);
   void DelIpMask(const acl::User& user, const std::string& mask);

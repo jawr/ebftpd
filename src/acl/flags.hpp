@@ -29,7 +29,7 @@ enum class Flag : char
   Custom2 = 'K',
   Custom3 = 'L',
   Custom4 = 'M',
-  Custom6 = 'N'
+  Custom5 = 'N'
 };
 
 } /* acl namespace */

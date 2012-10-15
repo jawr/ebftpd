@@ -2,9 +2,11 @@
 #define __ACL_GROUPCACHE_HPP
 
 #include <utility>
+#include <unordered_set>
 #include <unordered_map>
 #include <boost/thread/mutex.hpp>
 #include "acl/group.hpp"
+#include "acl/types.hpp"
 #include "util/error.hpp"
 
 namespace acl
@@ -14,12 +16,15 @@ class GroupCache
 {
   typedef std::unordered_map<std::string, acl::Group*> ByNameMap;
   typedef std::unordered_map<GroupID, acl::Group*> ByGIDMap;
+  typedef std::unordered_map<GroupID, std::unordered_set<UserID>> GroupUIDsMap;
   
   mutable boost::mutex mutex;
   ByNameMap byName;
   ByGIDMap byGID;
+  GroupUIDsMap groupUIDsMap;
   
   static GroupCache instance;
+  static bool initalized;
   
   ~GroupCache();
   
@@ -27,6 +32,13 @@ class GroupCache
   
 public:
   static void Initalize();
+
+  static void AddUIDToGroup(const GroupID& gid, const UserID& uid);
+  static util::Error ListUIDs(const GroupID& gid, std::unordered_set<UserID>& uids);
+  static util::Error ListUIDs(const std::string& name, std::unordered_set<UserID>& uids)
+  {
+    return ListUIDs(Group(name).GID(), uids);
+  }
 
   static bool Exists(const std::string& name);
   static bool Exists(GroupID gid);

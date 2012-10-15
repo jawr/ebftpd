@@ -40,7 +40,7 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
 
   std::vector<std::string>::iterator it;
   for (it = masks->second.begin();
-    it != masks->second.end(); ++it)
+    it != masks->second.end();)
   {
     // check if there is a broader mask
     if (util::string::WildcardMatch((*it), mask, false))
@@ -54,7 +54,9 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
         boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
         it = masks->second.erase(it);
       }
+      continue;
     }
+    ++it;
   }   
 
   {

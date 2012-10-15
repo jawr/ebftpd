@@ -31,8 +31,8 @@ boost::mutex getNewGroupIdMtx;
 void Initalize()
 {
   db::Pool::StartThread();
-  acl::UserCache::Initalize();
   acl::GroupCache::Initalize();
+  acl::UserCache::Initalize();
   acl::IpMaskCache::Initalize();
 
   std::vector<TaskPtr> tasks;
@@ -80,6 +80,18 @@ void SaveUser(const acl::User& user)
   mongo::Query query = QUERY("uid" << user.UID());
   TaskPtr task(new db::Update("users", query, obj, true));
   Pool::Queue(task);
+}
+
+void DeleteUser(const acl::UserID& uid)
+{
+  mongo::Query query = QUERY("uid" << uid);
+  std::vector<TaskPtr> tasks;
+  tasks.emplace_back(new db::Delete("users", query));
+  tasks.emplace_back(new db::Delete("ipmasks", query));
+  tasks.emplace_back(new db::Delete("transfers", query));
+
+  for (auto& task: tasks)
+    Pool::Queue(task);      
 }
 
 void GetUsers(std::vector<acl::User*>& users)
