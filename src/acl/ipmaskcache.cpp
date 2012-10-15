@@ -9,13 +9,13 @@ IpMaskCache IpMaskCache::instance;
 void IpMaskCache::Initalize()
 {
   boost::unique_lock<boost::shared_mutex> lock(instance.mtx);
-  db::GetIpMasks(instance.userMaskMap);
+  db::GetIpMasks(instance.userIPMaskMap);
 }
 
 bool IpMaskCache::Check(const std::string& addr)
 {
   boost::shared_lock<boost::shared_mutex> lock(instance.mtx);
-  for (auto uid: instance.userMaskMap)
+  for (auto uid: instance.userIPMaskMap)
     for (auto& mask: uid.second)
     {
       if (util::string::WildcardMatch(mask, addr, false))
@@ -30,11 +30,11 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
 {
   deleted.clear();
   boost::upgrade_lock<boost::shared_mutex> lock(instance.mtx);
-  UserMaskMap::iterator masks = instance.userMaskMap.find(user.UID());
-  if (masks == instance.userMaskMap.end())
+  UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(user.UID());
+  if (masks == instance.userIPMaskMap.end())
   {
     boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
-    instance.userMaskMap.insert({user.UID(), {mask}});
+    instance.userIPMaskMap.insert({user.UID(), {mask}});
     return util::Error::Success();
   }
 
@@ -61,7 +61,7 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
 
   {
     boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
-    instance.userMaskMap[user.UID()].push_back(mask);
+    instance.userIPMaskMap[user.UID()].push_back(mask);
   }
   db::AddIpMask(user, mask);
   return util::Error::Success();
@@ -70,8 +70,8 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
 util::Error IpMaskCache::Delete(const acl::User& user, const std::string& mask)
 {
   boost::upgrade_lock<boost::shared_mutex> lock(instance.mtx);
-  UserMaskMap::iterator masks = instance.userMaskMap.find(user.UID());
-  if (masks == instance.userMaskMap.end())
+  UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(user.UID());
+  if (masks == instance.userIPMaskMap.end())
     return util::Error::Failure("User has no IP masks.");
   
   std::vector<std::string>::iterator it;
@@ -92,8 +92,8 @@ util::Error IpMaskCache::List(const acl::User& user,
 {
   masks.clear();
   boost::upgrade_lock<boost::shared_mutex> lock(instance.mtx);
-  UserMaskMap::iterator it = instance.userMaskMap.find(user.UID());
-  if (it == instance.userMaskMap.end())
+  UserIPMaskMap::iterator it = instance.userIPMaskMap.find(user.UID());
+  if (it == instance.userIPMaskMap.end())
     return util::Error::Failure("User has no IP masks.");            
   masks = it->second;
   return util::Error::Success();

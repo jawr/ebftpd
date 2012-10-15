@@ -75,8 +75,10 @@ typedef boost::optional<const CommandDef&> CommandDefOptRef;
 
 class Factory
 {
+public:
   typedef std::unordered_map<std::string, CommandDef> CommandDefMap;
-                                   
+
+private:                            
   CommandDefMap defs;
    
   Factory();
@@ -85,6 +87,8 @@ class Factory
   
 public:
   static CommandDefOptRef Lookup(const std::string& command);
+  static const CommandDefMap& Commands()
+  { return factory.defs; }
 };
 
 } /* rfc namespace */

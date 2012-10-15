@@ -4,22 +4,16 @@
 #include "util/error.hpp"
 #include "cfg/get.hpp"
 #include "cfg/config.hpp"
+#include "acl/securepass.hpp"
+#include "acl/passwdstrength.hpp"
+#include "acl/ipmaskcache.hpp"
 
 namespace cmd { namespace site
 {
 
-void ADDUSERCommand::Execute()
+cmd::Result ADDUSERCommand::Execute()
 {
-  static const char* syntax = "Syntax: SITE ADDUSER <user> <password> [<ident@ip#1> ... <ident@ip#n>]";
-
-  if (args.size() < 3)
-  {
-    control.Reply(ftp::SyntaxError, syntax);
-    return;
-  }
-
   acl::PasswdStrength strength;
-
   if (!acl::SecurePass(client.User(), args[2], strength))
   {
     std::ostringstream os;
@@ -30,7 +24,7 @@ void ADDUSERCommand::Execute()
       << strength.Others() << " others, "
       << strength.Length() << " length.";
     control.MultiReply(ftp::ActionNotOkay, os.str());
-    return;
+    return cmd::Result::Okay;
   }
   
   const cfg::Config& cfg = cfg::Get();
@@ -41,7 +35,7 @@ void ADDUSERCommand::Execute()
   if (!ok)
   {
     control.MultiReply(ftp::ActionNotOkay, ok.Message());
-    return;
+    return cmd::Result::Okay;
   }
 
   std::ostringstream os;
@@ -52,26 +46,21 @@ void ADDUSERCommand::Execute()
     const acl::User user = acl::UserCache::User(args[1]);
     std::vector<std::string> deleted;
     util::Error ipOkay;
-    for (Args::iterator it = args.begin()+3; it != args.end();
-      ++it)
+    for (Args::iterator it = args.begin()+3; it != args.end(); ++it)
     {
-      deleted.clear();
-      ipOkay = acl::IpMaskCache::Add(user, (*it), deleted);
-
+      ipOkay = acl::IpMaskCache::Add(user, *it, deleted);
       if (!ipOkay)
       {
-        os << "\n\tError adding " << (*it) << ": " << ipOkay.Message();
+        os << "\n\tError adding " << *it << ": " << ipOkay.Message();
         continue;
       }
 
-      os << "\nIP '" << (*it) << "' successfully added to " << args[1] << ".";
-      if (deleted.size() > 0)
-        for (auto& del: deleted)
-          os << "\nAuto-removing useless IP '" << del << "'..."; 
+      os << "\nIP '" << *it << "' successfully added to " << args[1] << ".";
     }
   }
 
   control.MultiReply(ftp::CommandOkay, os.str());
+  return cmd::Result::Okay;
 }
 
 // end

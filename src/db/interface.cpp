@@ -15,7 +15,6 @@
 #include "acl/types.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "acl/types.hpp"
 #include "logs/logs.hpp"
 #include "stats/stat.hpp"
@@ -124,7 +123,7 @@ void DelIpMask(const acl::User& user, const std::string& mask)
   Pool::Queue(task);  
 }
 
-void GetIpMasks(acl::UserMaskMap& userMaskMap)
+void GetIpMasks(acl::UserIPMaskMap& userIPMaskMap)
 {
   QueryResults results;
   mongo::Query query;
@@ -140,16 +139,11 @@ void GetIpMasks(acl::UserMaskMap& userMaskMap)
   {
     std::string mask = obj.getStringField("mask");
     acl::UserID uid = acl::UserID(obj.getIntField("uid"));
-    acl::UserMaskMap::iterator it = userMaskMap.find(uid);
-    if (it != userMaskMap.end())
-    {
-      userMaskMap[uid].emplace_back(mask);
-    }
-    else
-    {
-      std::vector<std::string> temp = {mask};
-      userMaskMap.insert(std::make_pair(uid, temp));
-    } 
+
+    std::vector<std::string> temp = {mask};
+    std::pair<acl::UserIPMaskMap::iterator, bool> result = 
+        userIPMaskMap.insert(std::make_pair(uid, temp));
+    if (!result.second) result.first->second.emplace_back(mask);
   }
 }
 

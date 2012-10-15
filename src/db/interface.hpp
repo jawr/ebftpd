@@ -7,9 +7,11 @@
 #include "acl/user.hpp"
 #include "acl/group.hpp"
 #include "stats/stat.hpp"
+#include "acl/ipmaskcache.hpp"
 
 namespace db 
 {
+  
   // initalize
   void Initalize(); // should only be called once by initial thread
   
@@ -20,7 +22,7 @@ namespace db
   void GetUsers(std::vector<acl::User*>& users);
   void AddIpMask(const acl::User& user, const std::string& mask);
   void DelIpMask(const acl::User& user, const std::string& mask);
-  void GetIpMasks(acl::UserMaskMap& userMaskMap);
+  void GetIpMasks(acl::UserIPMaskMap& userIPMaskMap);
 
   // group functions
   acl::GroupID GetNewGroupID();

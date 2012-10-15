@@ -10,14 +10,16 @@
 
 namespace acl
 {
+
+typedef std::unordered_map<acl::UserID, std::vector<std::string>> UserIPMaskMap;
+
 class IpMaskCache
 {
   boost::shared_mutex mtx;
-
-  UserMaskMap userMaskMap;
+  UserIPMaskMap userIPMaskMap;
 
   static IpMaskCache instance;
-  IpMaskCache() : mtx() {};
+  IpMaskCache() {}
 
 public:
   

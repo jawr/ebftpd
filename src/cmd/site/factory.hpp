@@ -50,7 +50,7 @@ public:
   
   CommandDef(int minimumArgs, int maximumArgs,
              const std::string& aclKeyword,
-             CreatorBase<cmd::Command>* creator,
+             const CreatorBasePtr& creator,
              const std::string& syntax,
              const std::string& description) :
     minimumArgs(minimumArgs),
@@ -84,18 +84,21 @@ typedef boost::optional<const CommandDef&> CommandDefOptRef;
 
 class Factory
 {
+public:
   typedef std::unordered_map<std::string, CommandDef> CommandDefsMap;
-                                   
+
+private:                                   
   CommandDefsMap defs;
    
   Factory();
-  
-  //void Register(const std::string& command, CreatorBase<cmd::Command>* creator);
   
   static Factory factory;
   
 public:
   static CommandDefOptRef Lookup(const std::string& command);
+  
+  static const CommandDefsMap& Commands()
+  { return factory.defs; }
 };
 
 } /* site namespace */

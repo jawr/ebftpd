@@ -10,18 +10,18 @@ namespace cmd { namespace rfc
 
 cmd::Result SITECommand::Execute()
 {
-  argStr = argStr.substr(args[0].length());
-  boost::trim(argStr);
   args.erase(args.begin());
   boost::to_upper(args[0]);
-  std::string aclKeyword;
+  argStr = argStr.substr(args[0].length());
+  boost::trim(argStr);
+
   cmd::site::CommandDefOptRef def(cmd::site::Factory::Lookup(args[0]));
   if (!def)
     control.Reply(ftp::CommandUnrecognised, "Command not understood");
   else if (!acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
     control.Reply(ftp::ActionNotOkay,  "SITE " + args[0] + ": Permission denied");
   else if (!def->CheckArgs(args))
-    control.Reply(ftp::SyntaxError, def->Syntax());
+    control.Reply(ftp::SyntaxError, "Syntax: SITE " + def->Syntax());
   else
   {
     cmd::CommandPtr command(def->Create(client, argStr, args));

@@ -2,20 +2,18 @@
 #include "cmd/site/addip.hpp"
 #include "util/error.hpp"
 #include "acl/usercache.hpp"
+#include "acl/ipmaskcache.hpp"
 
 namespace cmd { namespace site
 {
 
-void ADDIPCommand::Execute()
+cmd::Result ADDIPCommand::Execute()
 {
-  static const char* syntax = "Syntax: SITE ADDIP <user> [<ident@ip#1> ... <ident@ip#n>]";
 
-  if (args.size() < 3)
-  {
-    control.Reply(ftp::SyntaxError, syntax);
-    return;
-  }
-
+  // race condition between the check if user exists and adding ips
+  // possibly we should just start adding the ips to the cache and have 
+  // the cache throw an exception if user doesn't exist.
+  // makes it so it's all in one action -- atomic
   std::ostringstream os;
   acl::User user;
   try
@@ -26,7 +24,7 @@ void ADDIPCommand::Execute()
   {
     os << "Error: " << e.Message();
     control.Reply(ftp::ActionNotOkay, os.str());
-    return;
+    return cmd::Result::Okay;
   }
 
   std::vector<std::string> deleted;
@@ -35,21 +33,21 @@ void ADDIPCommand::Execute()
   {
     if (it != args.begin()+2) os << "\n";
     deleted.clear();
-    ipOkay = acl::IpMaskCache::Add(user, (*it), deleted);
+    ipOkay = acl::IpMaskCache::Add(user, *it, deleted);
 
     if (!ipOkay)
-      os << "Error adding " << (*it) << ": " << ipOkay.Message();
+      os << "Error adding " << *it << ": " << ipOkay.Message();
     else
     {
-      os << "IP '" << (*it) << "' successfully added to " << args[1] << ".";
+      os << "IP '" << *it << "' successfully added to " << args[1] << ".";
 
-      if (deleted.size() > 0)
-        for (auto& del: deleted)
-          os << "Auto-removing useless IP '" << del << "'...";
+      for (auto& del: deleted)
+        os << "Auto-removing useless IP '" << del << "'...";
     }
   }
 
   control.MultiReply(ftp::CommandOkay, os.str());
+  return cmd::Result::Okay;
 } 
 
 // end 

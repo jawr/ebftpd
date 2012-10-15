@@ -8,29 +8,24 @@
 namespace cmd { namespace site
 {
 
-void FLAGSCommand::Execute()
+cmd::Result FLAGSCommand::Execute()
 {
-  static const char* syntax = "Syntax: SITE FLAGS <user>";
-
-  if (args.size() != 2)
+  acl::User user(client.User());
+  if (args.size() == 2)
   {
-    control.Reply(ftp::SyntaxError, syntax);
-    return;
+    try
+    {
+      user = acl::UserCache::User(args[1]);
+    }
+    catch (const util::RuntimeError& e)
+    {
+      control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+      return cmd::Result::Okay;
+    }
   }
-
-  acl::User user;
-  try
-  {
-    user = acl::UserCache::User(args[1]);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
-    return;
-  }
-
+  
   std::ostringstream os;
-  os << "FLAGS for " << args[1] << "\n\n";
+  os << "FLAGS for " << user.Name() << "\n\n";
   os << CheckFlag(user, acl::Flag::FlagSiteop) << " Siteop -1-\n";
   os << CheckFlag(user, acl::Flag::Gadmin) << " Gadmin -2-\n";
   os << CheckFlag(user, acl::Flag::Glock) << " Glock -3-\n";
@@ -58,7 +53,7 @@ void FLAGSCommand::Execute()
   os << "Use SITE CHANGE <USER> FLAGS +/-VALUE to change.";
 
   control.MultiReply(ftp::CommandOkay, os.str());
-
+  return cmd::Result::Okay;
 }
 
 // end
