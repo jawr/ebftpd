@@ -23,11 +23,11 @@ cmd::Result HELPCommand::Syntax()
 
 cmd::Result HELPCommand::List()
 {
-  const Factory::CommandDefsMap& commands =
-    Factory::Commands();
+  const Factory::CommandDefsMap& commands = Factory::Commands();
 
   std::ostringstream os;
   os << " " << programFullname << " SITE command listing - \n\n";
+  
   size_t maxLen = 0;
   for (auto& kv : commands)
     maxLen = std::max(kv.first.length(), maxLen);
