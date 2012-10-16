@@ -17,6 +17,7 @@
 #include "cmd/site/help.hpp"
 #include "cmd/site/tagline.hpp"
 #include "cmd/site/chmod.hpp"
+#include "cmd/site/chown.hpp"
 
 namespace cmd { namespace site
 {
@@ -178,8 +179,8 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE NEW [<number>] [<path>|<section>]",
                       "Display latest directories" }, },
-    { "CHOWN",      { 2,  2,  "chown",
-                      nullptr,
+    { "CHOWN",      { 2,  -1,  "chown",
+                      CreatorBasePtr(new Creator<site::CHOWNCommand>()),
                       "Syntax: SITE CHOWN [-R] <owner> <pathmask>",
                       "Change file and/or directory ownership" }, },
     { "CHMOD",      { 2,  -1,  "chmod",

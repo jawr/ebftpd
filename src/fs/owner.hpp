@@ -18,6 +18,8 @@
 namespace fs
 {
 
+class OwnerEntry;
+
 class Owner
 {
   acl::UserID uid;
@@ -41,6 +43,7 @@ public:
   acl::GroupID GID() const { return gid; }
 
   friend class boost::serialization::access;
+  friend class OwnerEntry;
 };
   
 class OwnerEntry
@@ -61,12 +64,20 @@ public:
   OwnerEntry() : owner(-1, -1) { }
 
   OwnerEntry(const std::string& name, const fs::Owner& owner) :
-    name(name), owner(owner) { }
+    name(name), owner(owner)
+  {
+    if (this->owner.uid == -1) this->owner.uid = 0;
+    if (this->owner.gid == -1) this->owner.gid = 0;
+  }
     
   const std::string& Name() const { return name; }
   const fs::Owner& Owner() const { return owner; }
   
-  void Chown(const fs::Owner& owner) { this->owner = owner; }
+  void Chown(const fs::Owner& owner)
+  {
+    this->owner.uid = owner.uid == -1 ? this->owner.uid : owner.uid;
+    this->owner.gid = owner.gid == -1 ? this->owner.gid : owner.gid;
+  }
 
   friend class boost::serialization::access;
 };

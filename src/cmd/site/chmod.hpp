@@ -18,7 +18,7 @@ class CHMODCommand : public Command
   int files;
   int failed;
   
-  void Process(const std::string& pathmask, int depth = 1);
+  void Process(const std::string& pathmask);
   bool ParseArgs();
   
 public:

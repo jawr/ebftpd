@@ -12,7 +12,7 @@
 namespace cmd { namespace site
 {
 
-void CHMODCommand::Process(const std::string& pathmask, int depth)
+void CHMODCommand::Process(const std::string& pathmask)
 {
   using util::string::WildcardMatch;
   const cfg::Config& config = cfg::Get();
@@ -40,7 +40,7 @@ void CHMODCommand::Process(const std::string& pathmask, int depth)
       {
         ++dirs;
         if (recursive && !status.IsSymLink()) 
-          Process(fullPath / "*", depth + 1);
+          Process(fullPath / "*");
       }
       else ++files;
     }
