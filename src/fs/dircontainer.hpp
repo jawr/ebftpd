@@ -22,8 +22,8 @@ public:
   explicit DirContainer(const ftp::Client& client, const fs::Path& path) :
     it(client, path) { }
     
-  DirIterator& begin() { return it.Rewind(); }
-  DirIterator& end() { return endIt; }
+  DirIterator begin() { return it; }
+  DirIterator end() { return endIt; }
 };
 
 } /* fs namespace */

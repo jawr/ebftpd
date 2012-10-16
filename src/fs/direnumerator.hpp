@@ -23,8 +23,8 @@ class DirEntry
   fs::Owner owner;
   
 public:  
-  DirEntry(const fs::Path& path, const fs::Status& status,
-           const fs::Owner& owner) :
+  explicit DirEntry(const fs::Path& path, const fs::Status& status,
+                    const fs::Owner& owner) :
     path(path), status(status), owner(owner) { }
 
   const fs::Path& Path() const { return path; }
@@ -47,9 +47,9 @@ public:
   typedef std::vector<DirEntry>::iterator iterator;
   typedef std::vector<DirEntry>::size_type size_type;
 
-  DirEnumerator();
-  DirEnumerator(const fs::Path& path);
-  DirEnumerator(ftp::Client& client, const fs::Path& path);
+  explicit DirEnumerator();
+  explicit DirEnumerator(const fs::Path& path);
+  explicit DirEnumerator(ftp::Client& client, const fs::Path& path);
   
   void Readdir(const fs::Path& path);
   void Readdir(ftp::Client& client, const fs::Path& path);

@@ -1,3 +1,4 @@
+#include <cassert>
 #include "fs/diriterator.hpp"
 #include "ftp/client.hpp"
 #include "fs/path.hpp"
@@ -33,7 +34,7 @@ void DirIterator::Opendir()
   }
   else
     real = path;
-  
+
   dp.reset(opendir(real.CString()),closedir);
   if (!dp.get()) throw util::SystemError(errno);
   
@@ -48,7 +49,11 @@ void DirIterator::NextEntry()
     if (readdir_r(dp.get(), &de, &dep) < 0)
       throw util::SystemError(errno);
     if (!dep || !client) break;
-    
+
+    if (!strcmp(de.d_name, ".") ||
+        !strcmp(de.d_name, ".."))
+        continue;
+ 
     try
     {
       Status status(real / de.d_name);
@@ -63,10 +68,10 @@ void DirIterator::NextEntry()
             absolute / de.d_name)) continue;          
       }
     }
-    catch (const util::SystemError&)
-    { continue; }
+    catch (const util::SystemError& e)
+    {  continue; }
+    break;
   }
-
   current = de.d_name;
 }
 

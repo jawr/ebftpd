@@ -1,6 +1,7 @@
 #ifndef __FS_DIRITERATOR_HPP
 #define __FS_DIRITERATOR_HPP
 
+#include <iostream>
 #include <iterator>
 #include <string>
 #include <dirent.h>
