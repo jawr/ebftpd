@@ -21,6 +21,9 @@
 #include "cmd/site/logs.hpp"
 #include "cmd/site/wipe.hpp"
 #include "cmd/site/time.hpp"
+#include "cmd/site/grpadd.hpp"
+
+#include <iostream>
 
 namespace cmd { namespace site
 {
@@ -245,7 +248,7 @@ Factory::Factory()
                       "        SITE GRPCHANGE * <setting> <value>",
                       "Change settings for a group or groups" }, },
     { "GRPADD",     { 1, -1,  "grpadd",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GRPADDCommand>()),
                       "Syntax: SITE GRPADD <group> [<tagline>]",
                       "Add a group" }, },
     { "GRPDEL",     { 1,  1,  "grpdel",
