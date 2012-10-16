@@ -22,6 +22,7 @@
 #include "cmd/site/wipe.hpp"
 #include "cmd/site/time.hpp"
 #include "cmd/site/grpadd.hpp"
+#include "cmd/site/chgrp.hpp"
 
 #include <iostream>
 
@@ -138,7 +139,7 @@ Factory::Factory()
                       "Syntax: SITE SETPGRP <user> <group>",
                       "Set's a user's primary group" }, },
     { "CHGRP",      { 2, -1,  "chgrp",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::CHGRPCommand>()),
                       "Syntax: SITE CHGRP <user> [+|-|=] <group> [<group> ..]",
                       "Change user's groups" }, },
     { "RANKS",      { 3, -1,  "ranks",

@@ -242,6 +242,20 @@ util::Error UserCache::DelSecondaryGID(const std::string& name, GroupID gid)
   return util::Error::Success();
 }
 
+util::Error UserCache::ResetSecondaryGID(const std::string& name)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+
+  for (auto& gid: it->second->SecondaryGIDs())
+    DelSecondaryGID(name, gid);
+
+  Save(*it->second);
+
+  return util::Error::Success();
+}
+
 acl::User UserCache::User(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
