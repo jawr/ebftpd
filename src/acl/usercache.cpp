@@ -29,25 +29,19 @@ void UserCache::Initalize()
   // need to initalize group cache first
   acl::GroupCache::Initalize();
 
-  std::vector<acl::User*> users;
-  try
+  
+  boost::ptr_vector<acl::User> users;
+  db::GetUsers(users);
+  while (!users.empty())
   {
-    db::GetUsers(users);
-    for (auto& user: users)
-    {
-      instance.byName.insert(std::make_pair(user->Name(), user));
-      instance.byUID.insert(std::make_pair(user->UID(), user));
-      // populate GroupCache groupToUsers map
-      acl::GroupCache::AddUIDToGroup(user->PrimaryGID(), user->UID());
-      for (auto gid: user->SecondaryGIDs())
-        acl::GroupCache::AddUIDToGroup(gid, user->UID());
-    }
-  } 
-  catch (const util::RuntimeError& e)
-  {
-    logs::error << "Failed to initialise user cache: " 
-                << e.Message() << logs::endl;
-    for (auto& ptr: users) delete ptr;
+    auto user = users.release(users.begin());
+    acl::GroupCache::AddUIDToGroup(user->PrimaryGID(), user->UID());
+    for (auto gid: user->SecondaryGIDs())
+      acl::GroupCache::AddUIDToGroup(gid, user->UID());
+
+    instance.byUID.insert(std::make_pair(user->UID(), user.get()));
+    instance.byName.insert(std::make_pair(user->Name(), user.get()));
+    user.release(); 
   }
   instance.initalized = true;
   
