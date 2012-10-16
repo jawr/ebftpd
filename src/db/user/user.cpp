@@ -112,5 +112,21 @@ void SaveUserProfile(const acl::UserProfile& profile)
   Pool::Queue(task);
 }
 
+void GetUserProfiles(std::vector<acl::UserProfile*>& profiles)
+{
+  QueryResults results;
+  mongo::Query query;
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("userprofiles", query, results, future));
+  Pool::Queue(task);
+
+  future.wait();
+
+  if (results.size() == 0) return;
+
+  for (auto& obj: results)
+    profiles.push_back(bson::UserProfile::Unserialize(obj));
+}
+
 }
 

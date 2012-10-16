@@ -1,6 +1,5 @@
 #include "cmd/site/change.hpp"
 #include "acl/userprofilecache.hpp"
-#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -28,8 +27,6 @@ cmd::Result CHANGECommand::Execute()
   }
 
   util::Error ok;
-
-  logs::debug << args[0] << " " << args[1] << " " << args[2] << " Setting: " << setting << " Value: " << value << logs::endl;
 
   if (setting == "ratio" || setting == "changeratio")
     ok = acl::UserProfileCache::SetRatio(user.UID(), value);

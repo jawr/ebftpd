@@ -9,6 +9,25 @@ namespace acl
 
 UserProfileCache UserProfileCache::instance;
 
+void UserProfileCache::Initalize()
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  std::vector<acl::UserProfile*> profiles;
+  try
+  {
+    db::GetUserProfiles(profiles);
+    for (auto& profile: profiles)
+      instance.byUID.insert(std::make_pair(profile->UID(), profile));
+  }
+  catch (const util::RuntimeError& e)
+  {
+    logs::error << "Failed to initalize user profile cache: "
+      << e.Message() << logs::endl;
+    for (auto& ptr: profiles) delete ptr;
+  }
+}
+
+
 UserProfileCache::~UserProfileCache()
 {
   while (!byUID.empty())

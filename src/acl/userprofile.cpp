@@ -57,7 +57,14 @@ util::Error UserProfile::SetIdleTime(int idleTime)
 
 util::Error UserProfile::SetExpires(const std::string& date)
 {
-  this->expires = boost::gregorian::from_string(date);;
+  try
+  {
+    this->expires = boost::gregorian::from_string(date);;
+  }
+  catch (const boost::bad_lexical_cast& e)
+  {
+    return util::Error::Failure(e.what());
+  }
   return util::Error::Success();
 }
 

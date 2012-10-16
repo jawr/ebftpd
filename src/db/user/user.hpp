@@ -18,5 +18,6 @@ namespace db
   void GetIpMasks(acl::UserIPMaskMap& userIPMaskMap);
 
   void SaveUserProfile(const acl::UserProfile& profile);
+  void GetUserProfiles(std::vector<acl::UserProfile*>& profiles);
 }
 #endif
