@@ -1,4 +1,6 @@
 #include "db/user/user.hpp"
+#include "db/bson/user.hpp"
+#include "db/bson/userprofile.hpp"
 
 namespace db
 {
@@ -100,6 +102,14 @@ void GetIpMasks(acl::UserIPMaskMap& userIPMaskMap)
         userIPMaskMap.insert(std::make_pair(uid, temp));
     if (!result.second) result.first->second.emplace_back(mask);
   }
+}
+
+void SaveUserProfile(const acl::UserProfile& profile)
+{
+  mongo::BSONObj obj = db::bson::UserProfile::Serialize(profile);
+  mongo::Query query = QUERY("uid" << profile.UID());
+  TaskPtr task(new db::Update("userprofiles", query, obj, true));
+  Pool::Queue(task);
 }
 
 }

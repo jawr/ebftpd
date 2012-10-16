@@ -21,13 +21,13 @@ class UserProfile
 {
   UserID uid;
 
-  int8_t ratio;
-  signed int weeklyAllotment;
+  int ratio;
+  int weeklyAllotment;
   std::string homeDir;
   std::string startupDir;
-  signed int idleTime;
+  int idleTime;
   boost::gregorian::date expires;
-  signed int numLogins; // used to be # #, with the second int being logins
+  int numLogins; // used to be # #, with the second int being logins
   // from the same ip.
 
   std::string tagline;
@@ -41,13 +41,13 @@ class UserProfile
 public:
   UserProfile(acl::UserID uid); 
 
-  util::Error SetRatio(int8_t ratio);
-  util::Error SetWeeklyAllotment(signed int weeklyAllotment);
+  util::Error SetRatio(int ratio);
+  util::Error SetWeeklyAllotment(int weeklyAllotment);
   util::Error SetHomeDir(const std::string& homeDir);
   util::Error SetStartupDir(const std::string& startupDir);
-  util::Error SetIdleTime(signed int idleTime);
+  util::Error SetIdleTime(int idleTime);
   util::Error SetExpires(const std::string& date);
-  util::Error SetNumLogins(signed int numLogins);
+  util::Error SetNumLogins(int numLogins);
   util::Error SetTagline(const std::string& tagline);
   util::Error SetComment(const std::string& comment);
   util::Error SetMaxDlSpeed(int maxDlSpeed);
@@ -57,22 +57,23 @@ public:
 
 
   int8_t Ratio() const { return ratio; }
-  signed int WeeklyAllotment() const { return weeklyAllotment; }
+  int WeeklyAllotment() const { return weeklyAllotment; }
   const std::string& HomeDir() const { return homeDir; }
   const std::string& StartupDir() const { return startupDir; }
-  signed int IdleTime() const { return idleTime; }
+  int IdleTime() const { return idleTime; }
   const std::string Expires() const 
   { 
     return boost::gregorian::to_iso_extended_string(expires);
   }
   bool Expired(const std::string& date) const;
-  signed int NumLogins() const { return numLogins; }
+  int NumLogins() const { return numLogins; }
   const std::string& Tagline() const { return tagline; }
   const std::string& Comment() const { return comment; }
   int MaxDlSpeed() const { return maxDlSpeed; }
   int MaxUlSpeed() const { return maxUlSpeed; }
   int MaxSimDl() const { return maxSimDl; }
   int MaxSimUl() const { return maxSimUl; }
+  const acl::UserID& UID() const { return uid; }
 
   friend struct db::bson::UserProfile;
 };

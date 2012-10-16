@@ -22,24 +22,24 @@ class UserProfileCache
   
   ~UserProfileCache();
   
-  static void Save(const acl::UserProfile& user);
+  static void Save(const acl::UserID& uid);
 
   static util::Error Ensure(UserID uid); 
   
 public:
-  static util::Error SetRatio(UserID uid, int8_t ratio);
-  static util::Error SetWeeklyAllotment(UserID uid, signed int weeklyAllotment);
-  static util::Error SetHomeDir(UserID uid, const std::string& homeDir);
-  static util::Error SetStartupDir(UserID uid, const std::string& startupDir);
-  static util::Error SetIdleTime(UserID uid, signed int idleTime);
-  static util::Error SetExpires(UserID uid, const std::string& date);
-  static util::Error SetNumLogins(UserID uid, signed int numLogins);
-  static util::Error SetTagline(UserID uid, const std::string& tagline);
-  static util::Error SetComment(UserID uid, const std::string& comment);
-  static util::Error SetMaxDlSpeed(UserID uid, int maxDlSpeed);
-  static util::Error SetMaxUlSpeed(UserID uid, int maxUlSpeed);
-  static util::Error SetMaxSimDl(UserID uid, int maxSimDl);
-  static util::Error SetMaxSimUl(UserID uid, int maxSimUl);
+  static util::Error SetRatio(UserID uid, const std::string& value);
+  static util::Error SetWeeklyAllotment(UserID uid, const std::string& value);
+  static util::Error SetHomeDir(UserID uid, const std::string& value);
+  static util::Error SetStartupDir(UserID uid, const std::string& value);
+  static util::Error SetIdleTime(UserID uid, const std::string& value);
+  static util::Error SetExpires(UserID uid, const std::string& value);
+  static util::Error SetNumLogins(UserID uid, const std::string& value);
+  static util::Error SetTagline(UserID uid, const std::string& value);
+  static util::Error SetComment(UserID uid, const std::string& value);
+  static util::Error SetMaxDlSpeed(UserID uid, const std::string& value);
+  static util::Error SetMaxUlSpeed(UserID uid, const std::string& value);
+  static util::Error SetMaxSimDl(UserID uid, const std::string& value);
+  static util::Error SetMaxSimUl(UserID uid, const std::string& value);
 
   static void Initalize();
   

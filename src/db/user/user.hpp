@@ -3,7 +3,9 @@
 
 #include "acl/types.hpp"
 #include "acl/user.hpp"
+#include "acl/userprofile.hpp"
 #include "acl/ipmaskcache.hpp"
+
 
 namespace db
 {
@@ -14,5 +16,7 @@ namespace db
   void AddIpMask(const acl::User& user, const std::string& mask);
   void DelIpMask(const acl::User& user, const std::string& mask);
   void GetIpMasks(acl::UserIPMaskMap& userIPMaskMap);
+
+  void SaveUserProfile(const acl::UserProfile& profile);
 }
 #endif

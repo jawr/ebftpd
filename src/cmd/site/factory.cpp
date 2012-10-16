@@ -23,6 +23,7 @@
 #include "cmd/site/time.hpp"
 #include "cmd/site/grpadd.hpp"
 #include "cmd/site/chgrp.hpp"
+#include "cmd/site/change.hpp"
 
 #include <iostream>
 
@@ -93,7 +94,7 @@ Factory::Factory()
                       "Delete ident@ip from user" }, },
     { "CHANGE",     { 3,  3,  "change|changeallot|changeflags|"
                       "changeratio|changesratio|changehomedir", 
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::CHANGECommand>()),  
                       "Syntax: SITE CHANGE <user> <setting> <value>\n"
                       "        SITE CHANGE {<user> [<user> ..]} <setting> <value>\n"
                       "        SITE CHANGE * <setting> <value>",

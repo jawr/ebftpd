@@ -25,13 +25,13 @@ bool UserProfile::Expired(const std::string& date) const
   return false;
 }
 
-util::Error UserProfile::SetRatio(int8_t ratio)
+util::Error UserProfile::SetRatio(int ratio)
 {
   this->ratio = ratio;
   return util::Error::Success();
 }
 
-util::Error UserProfile::SetWeeklyAllotment(signed int weeklyAllotment)
+util::Error UserProfile::SetWeeklyAllotment(int weeklyAllotment)
 {
   this->weeklyAllotment = weeklyAllotment;
   return util::Error::Success();
@@ -49,7 +49,7 @@ util::Error UserProfile::SetStartupDir(const std::string& startupDir)
   return util::Error::Success();
 }
 
-util::Error UserProfile::SetIdleTime(signed int idleTime)
+util::Error UserProfile::SetIdleTime(int idleTime)
 {
   this->idleTime = idleTime;
   return util::Error::Success();
@@ -61,7 +61,7 @@ util::Error UserProfile::SetExpires(const std::string& date)
   return util::Error::Success();
 }
 
-util::Error UserProfile::SetNumLogins(signed int numLogins)
+util::Error UserProfile::SetNumLogins(int numLogins)
 {
   this->numLogins = numLogins;
   return util::Error::Success();
