@@ -21,7 +21,7 @@ cmd::Result SITECommand::Execute()
   else if (!acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
     control.Reply(ftp::ActionNotOkay,  "SITE " + args[0] + ": Permission denied");
   else if (!def->CheckArgs(args))
-    control.Reply(ftp::SyntaxError, "Syntax: SITE " + def->Syntax());
+    control.Reply(ftp::SyntaxError, def->Syntax());
   else
   {
     cmd::CommandPtr command(def->Create(client, argStr, args));

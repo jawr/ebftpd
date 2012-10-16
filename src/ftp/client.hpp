@@ -44,6 +44,7 @@ class Client : public util::Thread
   fs::Path renameFrom;
   std::string ident;
   ::ftp::XDupeMode xdupeMode;
+  std::string confirmCommand;
   
   boost::posix_time::ptime idleExpires;
   boost::posix_time::seconds idleTimeout;
@@ -90,6 +91,8 @@ public:
   ::ftp::XDupeMode XDupeMode() const { return xdupeMode; }
   
   bool IsFxp(const util::net::Endpoint& ep) const;
+  
+  bool ConfirmCommand(const std::string& argStr);
 };
 
 } /* ftp namespace */

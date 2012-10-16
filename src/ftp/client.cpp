@@ -18,6 +18,7 @@
 #include "acl/ipmaskcache.hpp"
 #include "main.hpp"
 #include "util/net/identclient.hpp"
+#include "util/string.hpp"
 
 namespace ftp
 {
@@ -165,18 +166,27 @@ void Client::ExecuteCommand(const std::string& commandLine)
   boost::trim(argStr);
   boost::to_upper(args[0]);
   cmd::rfc::CommandDefOptRef def(cmd::rfc::Factory::Lookup(args[0]));
-  if (!def) control.Reply(ftp::CommandUnrecognised, "Command not understood");
+  if (!def)
+  {
+    control.Reply(ftp::CommandUnrecognised, "Command not understood");
+  }
   else if (!def->CheckArgs(args))
+  {
     control.Reply(ftp::SyntaxError, "Syntax: " + def->Syntax());
+  }
   else if (CheckState(def->RequiredState()))
   {
     cmd::CommandPtr command(def->Create(*this, argStr, args));
     if (!command)
+    {
       control.Reply(ftp::NotImplemented, "Command not implemented");
+    }
     else
     {
       if (command->Execute() == cmd::Result::SyntaxError)
+      {
         control.Reply(ftp::SyntaxError, "Syntax: " + def->Syntax());
+      }
       IdleReset(commandLine);
     }
   }
@@ -207,6 +217,19 @@ void Client::LookupIdent()
     logs::error << "Unable to lookup ident for connection from "
                   << control.RemoteEndpoint() << ":  " << e.Message();
   }
+}
+
+bool Client::ConfirmCommand(const std::string& argStr)
+{
+  std::string command = 
+      util::string::CompressWhitespaceCopy(argStr);
+  if (command != confirmCommand)
+  {
+    confirmCommand = command;
+    return false;
+  }
+  confirmCommand.clear();
+  return true;
 }
 
 void Client::Run()

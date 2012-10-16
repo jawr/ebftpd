@@ -15,8 +15,8 @@
 #include "cmd/site/flags.hpp"
 #include "cmd/site/delip.hpp"
 #include "cmd/site/help.hpp"
-
-#include <iostream>
+#include "cmd/site/tagline.hpp"
+#include "cmd/site/chmod.hpp"
 
 namespace cmd { namespace site
 {
@@ -123,7 +123,7 @@ Factory::Factory()
                       "Syntax: SITE USER [<user>]",
                       "Display user's info" }, },
     { "TAGLINE",    { 0, -1,  "tagline",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::TAGLINECommand>()),
                       "Syntax: SITE TAGLINE <tagline>",
                       "Change your tagline" }, },
     { "SETPGRP",    { 2,  2,  "chgrp",
@@ -182,9 +182,9 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE CHOWN [-R] <owner> <pathmask>",
                       "Change file and/or directory ownership" }, },
-    { "CHMOD",      { 2,  2,  "chmod",
-                      nullptr,
-                      "Syntax: SITE CHMOD [-R] <mask> <pathmask>",
+    { "CHMOD",      { 2,  -1,  "chmod",
+                      CreatorBasePtr(new Creator<site::CHMODCommand>()),
+                      "Syntax: SITE CHMOD [-R] <symbolic-mode|octal-mode> <pathmask>",
                       "Change file and/or directory permissions" }, },
     { "EMULATE",    { 1,  1,  "emulate",
                       nullptr,
