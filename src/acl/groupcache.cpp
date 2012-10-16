@@ -1,6 +1,6 @@
 #include <memory>
 #include "acl/groupcache.hpp"
-#include "db/interface.hpp"
+#include "db/group/group.hpp"
 #include "logs/logs.hpp"
 
 namespace acl

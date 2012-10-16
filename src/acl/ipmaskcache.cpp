@@ -1,5 +1,5 @@
 #include "acl/ipmaskcache.hpp"
-#include "db/interface.hpp"
+#include "db/user/user.hpp"
 #include "util/string.hpp"
 
 namespace acl
