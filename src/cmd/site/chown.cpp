@@ -17,7 +17,6 @@ void CHOWNCommand::Process(const fs::Path& pathmask)
 {
   using util::string::WildcardMatch;
   const cfg::Config& config = cfg::Get();
-  fs::Path dirname = pathmask.Dirname();
   fs::Path absolute = (client.WorkDir() / pathmask).Expand();
   try
   {
@@ -28,7 +27,7 @@ void CHOWNCommand::Process(const fs::Path& pathmask)
         continue;
 
       fs::Path fullPath = (absolute.Dirname() / entry).Expand();
-      fs::Path relative = (dirname / entry).Expand();
+      fs::Path relative = (pathmask.Dirname() / entry).Expand();
       try
       {
         fs::Status status(config.Sitepath() + fullPath);
