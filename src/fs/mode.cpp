@@ -121,7 +121,7 @@ void Mode::Apply(mode_t oldMode, mode_t umask, mode_t& newMode) const
         newMode |= value;
         break;
       case Operator::Minus  :
-        newMode &= value;
+        newMode &= ~value;
         break;
     }
   }

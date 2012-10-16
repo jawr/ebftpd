@@ -29,7 +29,6 @@ void UserCache::Initalize()
   // need to initalize group cache first
   acl::GroupCache::Initalize();
 
-  
   boost::ptr_vector<acl::User> users;
   db::GetUsers(users);
   while (!users.empty())
