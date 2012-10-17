@@ -2,16 +2,17 @@
 #include <string>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
-#include "cmd/site/chmod.hpp"
-#include "fs/chmod.hpp"
+#include "cmd/site/wipe.hpp"
 #include "fs/dircontainer.hpp"
 #include "util/string.hpp"
 #include "cfg/get.hpp"
+#include "fs/directory.hpp"
+#include "fs/file.hpp"
 
 namespace cmd { namespace site
 {
 
-void CHMODCommand::Process(const fs::Path& pathmask)
+void WIPECommand::Process(const fs::Path& pathmask, int depth)
 {
   using util::string::WildcardMatch;
   const cfg::Config& config = cfg::Get();
@@ -28,22 +29,33 @@ void CHMODCommand::Process(const fs::Path& pathmask)
       fs::Path relative = (pathmask.Dirname() / entry).Expand();
       try
       {
-        fs::Status status(config.Sitepath() + fullPath);          
-        util::Error e = fs::Chmod(client, fullPath, *mode);
-        if (!e)
-        {
-          ++failed;
-          control.PartReply(ftp::CommandOkay, "CHOWN " + 
-              relative.ToString() + ": " + e.Message());        
-        }
-        else
+        fs::Status status(config.Sitepath() + fullPath);
         if (status.IsDirectory())
         {
-          ++dirs;
-          if (recursive && !status.IsSymLink()) 
-            Process((relative / "*").Expand());
+          if ((recursive || depth == 1) && !status.IsSymLink())
+            Process((relative / "*").Expand(), depth + 1);
+          util::Error e = fs::RemoveDirectory(client, fullPath);
+          if (!e)
+          {
+            control.PartReply(ftp::CommandOkay, "WIPE " + 
+                relative.ToString() + ": " + e.Message());
+            ++failed;
+          }
+          else
+            ++dirs;
         }
-        else ++files;
+        else
+        {
+          util::Error e = fs::DeleteFile(client, fullPath);
+          if (!e)
+          {
+            control.PartReply(ftp::CommandOkay, "WIPE " +
+                relative.ToString() + ": " + e.Message());
+            ++failed;
+          }
+          else
+            ++files;
+        }
       }
       catch (const util::SystemError& e)
       {
@@ -57,11 +69,11 @@ void CHMODCommand::Process(const fs::Path& pathmask)
   {
     ++failed;
     control.PartReply(ftp::CommandOkay, 
-        "CHMOD " + absolute.Dirname().ToString() + ": " + e.Message());
+        "WIPE " + absolute.Dirname().ToString() + ": " + e.Message());
   }
 }
 
-bool CHMODCommand::ParseArgs()
+bool WIPECommand::ParseArgs()
 {
   int n = 1;
   boost::to_lower(args[1]);
@@ -69,22 +81,16 @@ bool CHMODCommand::ParseArgs()
   {
     ++n;
     recursive = true;
-    boost::to_lower(args[n]);
+    pathmaskStr = argStr.substr(2);
   }
+  else
+    pathmaskStr = argStr;
   
-  modeStr = args[n];
-  
-  std::string::size_type pos =
-      util::string::FindNthNonConsecutiveChar(argStr, ' ', n);
-  if (pos == std::string::npos) return false;
-  
-  pathmaskStr = argStr.substr(pos);
   boost::trim(pathmaskStr);
   return true;
 }
 
-// SITE CHMOD [-R] <MODE> <PATHMASK.. ..>
-cmd::Result CHMODCommand::Execute()
+cmd::Result WIPECommand::Execute()
 {
   if (!ParseArgs()) return cmd::Result::SyntaxError;
 
@@ -92,25 +98,14 @@ cmd::Result CHMODCommand::Execute()
   {
     control.Reply(ftp::CommandOkay, 
         "Repeat the command to confirm you "
-        "want to do recursive chmod!");
-    return cmd::Result::Okay;
-  }
-
-  try
-  {
-    mode.reset(fs::Mode(modeStr));
-  }
-  catch (const fs::InvalidModeString& e)
-  {
-    control.Reply(ftp::ActionNotOkay, 
-        "Chmod failed: " + e.Message());
+        "want to do recursive wipe!");
     return cmd::Result::Okay;
   }
 
   Process(pathmaskStr);
   
   std::ostringstream os;
-  os << "CHMOD finished (okay on: "
+  os << "WIPE finished (okay on: "
      << dirs << " directories, " << files 
      << " files / failures: " << failed << ").";
   control.Reply(ftp::CommandOkay, os.str());

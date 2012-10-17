@@ -19,6 +19,7 @@
 #include "cmd/site/chmod.hpp"
 #include "cmd/site/chown.hpp"
 #include "cmd/site/logs.hpp"
+#include "cmd/site/wipe.hpp"
 
 namespace cmd { namespace site
 {
@@ -204,8 +205,8 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE SWHO",
                       "Display detailed who's online" }, },
-    { "WIPE",       { 1,  2,  "wipe",
-                      nullptr,
+    { "WIPE",       { 1,  -1,  "wipe",
+                      CreatorBasePtr(new Creator<site::WIPECommand>()),
                       "Syntax: SITE WIPE [-R] <pathmask>",
                       "Wipe a file or directory (and it's contents)" }, },
     { "LOGS",       { 1,  -1, "errorlog|securitylog|eventlog|dblog|sysoplog",
