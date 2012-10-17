@@ -4,13 +4,14 @@
 #include "cmd/site/factory.hpp"
 #include "cfg/get.hpp"
 #include "acl/allowsitecmd.hpp"
+#include "cmd/splitargs.hpp"
 
 namespace cmd { namespace rfc
 {
 
 cmd::Result SITECommand::Execute()
 {
-  args.erase(args.begin());
+  cmd::SplitArgs(argStr, args);
   boost::to_upper(args[0]);
   argStr = argStr.substr(args[0].length());
   boost::trim(argStr);
