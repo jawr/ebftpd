@@ -18,6 +18,7 @@
 #include "cmd/site/tagline.hpp"
 #include "cmd/site/chmod.hpp"
 #include "cmd/site/chown.hpp"
+#include "cmd/site/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -208,8 +209,8 @@ Factory::Factory()
                       "Syntax: SITE WIPE [-R] <pathmask>",
                       "Wipe a file or directory (and it's contents)" }, },
     { "LOGS",       { 1,  -1, "errorlog|securitylog|eventlog|dblog|sysoplog",
-                      nullptr,
-                      "Syntax: SITE LOGS ERROR|SECURITY|EVENTS|DB|SYSOP [<number>] [<string> ..]",
+                      CreatorBasePtr(new Creator<site::LOGSCommand>()),
+                      "Syntax: SITE -[-MAX <number>] LOGS ERROR|SECURITY|EVENTS|DB|SYSOP [<string> ..]",
                       "Display entries from a system log" }, },
     { "LASTON",     { 0,  -1, "laston",
                       nullptr,

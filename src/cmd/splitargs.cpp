@@ -10,7 +10,6 @@ bool SplitArgs(const std::string& command, std::vector<std::string>& args)
   std::string::size_type len = command.length();
   while (true)
   {
-    std::cout << command.substr(pos1) << std::endl;
     while (std::isspace(command[pos1])) ++pos1;
     if (pos1 == len) break;
     

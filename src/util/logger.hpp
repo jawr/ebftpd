@@ -46,6 +46,8 @@ public:
   Logger& operator<<(std::ostream& (*pf)(std::ostream&));
   Logger& operator<<(Logger& (*pf)(Logger&));
   
+  const std::string& Path() const { return path; }
+  
   friend Logger& flush(Logger& logger);
   friend Logger& endl(Logger& logger);
 };
