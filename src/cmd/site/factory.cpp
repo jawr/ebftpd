@@ -108,7 +108,7 @@ Factory::Factory()
                       "Syntax: SITE SEEN <user>",
                       "Display last time a user logged in" }, },
     { "USERS",      { 0,  -1, "users",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::USERSCommand>()),  
                       "Syntax: SITE USERS [<criteria> ..]",
                       "Detailed list of users" }, },
     { "GIVE",       { 2,  3,  "give",

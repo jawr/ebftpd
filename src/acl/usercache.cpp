@@ -34,9 +34,6 @@ void UserCache::Initalize()
   while (!users.empty())
   {
     auto user = users.release(users.begin());
-    acl::GroupCache::AddUIDToGroup(user->PrimaryGID(), user->UID());
-    for (auto gid: user->SecondaryGIDs())
-      acl::GroupCache::AddUIDToGroup(gid, user->UID());
 
     instance.byUID.insert(std::make_pair(user->UID(), user.get()));
     instance.byName.insert(std::make_pair(user->Name(), user.get()));

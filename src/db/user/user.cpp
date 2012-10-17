@@ -50,7 +50,7 @@ void DeleteUser(const acl::UserID& uid)
     Pool::Queue(task);      
 }
 
-void GetUsers(std::vector<acl::User*>& users)
+void GetUsers(boost::ptr_vector<acl::User>& users)
 {
   QueryResults results;
   mongo::Query query;

@@ -259,6 +259,11 @@ util::Error UserProfileCache::SetMaxSimUl(UserID uid, const std::string& value)
   return ok;
 }
 
+acl::UserProfile UserProfileCache::UserProfile(acl::UserID uid)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  return *instance.byUID[uid];
+}
 
 // end
 }
