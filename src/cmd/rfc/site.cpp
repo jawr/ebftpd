@@ -18,17 +18,28 @@ cmd::Result SITECommand::Execute()
 
   cmd::site::CommandDefOptRef def(cmd::site::Factory::Lookup(args[0]));
   if (!def)
+  {
     control.Reply(ftp::CommandUnrecognised, "Command not understood");
+  }
   else if (!acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
+  {
     control.Reply(ftp::ActionNotOkay,  "SITE " + args[0] + ": Permission denied");
+  }
   else if (!def->CheckArgs(args))
+  {
     control.Reply(ftp::SyntaxError, def->Syntax());
+  }
   else
   {
     cmd::CommandPtr command(def->Create(client, argStr, args));
-    if (!command) control.Reply(ftp::NotImplemented, "Command not implemented");
+    if (!command)
+    {
+      control.Reply(ftp::NotImplemented, "Command not implemented");
+    }
     else if (command->Execute() == cmd::Result::SyntaxError)
+    {
       control.Reply(ftp::SyntaxError, def->Syntax());
+    }
   }
   return cmd::Result::Okay;
 }
