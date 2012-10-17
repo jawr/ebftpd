@@ -45,7 +45,8 @@ class Client : public util::Thread
   std::string ident;
   ::ftp::XDupeMode xdupeMode;
   std::string confirmCommand;
-  
+
+  boost::posix_time::ptime loggedInAt;
   boost::posix_time::ptime idleExpires;
   boost::posix_time::seconds idleTimeout;
   
@@ -85,6 +86,9 @@ public:
   { this->idleTimeout = idleTimeout; }
   const boost::posix_time::seconds& IdleTimeout() const
   { return idleTimeout; }
+  
+  const boost::posix_time::ptime LoggedInAt() const
+  { return loggedInAt; }
   
   void SetXDupeMode(XDupeMode xdupeMode)
   { this->xdupeMode = xdupeMode; }

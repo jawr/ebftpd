@@ -48,6 +48,7 @@ void Client::SetLoggedIn()
 {
   boost::lock_guard<boost::mutex> lock(mutex);
   state = ClientState::LoggedIn;
+  loggedInAt = boost::posix_time::second_clock::local_time();
 }
 
 void Client::SetWaitingPassword(const acl::User& user)

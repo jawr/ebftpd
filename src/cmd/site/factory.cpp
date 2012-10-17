@@ -20,6 +20,7 @@
 #include "cmd/site/chown.hpp"
 #include "cmd/site/logs.hpp"
 #include "cmd/site/wipe.hpp"
+#include "cmd/site/time.hpp"
 
 namespace cmd { namespace site
 {
@@ -268,7 +269,7 @@ Factory::Factory()
                       "Syntax: SITE STAT",
                       "Display statline" }, },
     { "TIME",       { 0,  0,  "time",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::TIMECommand>()),
                       "Syntax: SITE TIME",
                       "Display local time" }, },
     { "SEARCH",     { 1,  -1, "search",
