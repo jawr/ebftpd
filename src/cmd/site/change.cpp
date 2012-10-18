@@ -1,22 +1,32 @@
+#include <sstream>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include "cmd/site/change.hpp"
 #include "acl/userprofilecache.hpp"
+#include "db/acl/acl.hpp"
 
 namespace cmd { namespace site
 {
 
 cmd::Result CHANGECommand::Execute()
 {
-  acl::User user;
-  try
+  boost::ptr_vector<acl::User> users;
+  std::string acl = args[1];
+  if (acl[0] != '=') acl = "-" + acl;
+
+  util::Error ok = db::GetUsersByACL(users, acl);
+
+  if (!ok)
   {
-    user = acl::UserCache::User(args[1]);
+    control.Reply(ftp::ActionNotOkay, "Error: " + ok.Message());
+    return cmd::Result::Okay;
   }
-  catch (const util::RuntimeError& e)
+  else if (users.size() == 0)
   {
-    control.Reply(ftp::ActionNotOkay, e.Message());
+    control.Reply(ftp::ActionNotOkay, "No user(s) found.");
     return cmd::Result::Okay;
   }
 
+  std::ostringstream os;
   std::string setting = args[2];
   std::string value = args[3];
   
@@ -26,45 +36,56 @@ cmd::Result CHANGECommand::Execute()
     value = args[2];
   }
 
-  util::Error ok;
-
-  if (setting == "ratio" || setting == "changeratio")
-    ok = acl::UserProfileCache::SetRatio(user.UID(), value);
-  else if (setting == "wkly_allotment" || setting == "changeallot")
-    ok = acl::UserProfileCache::SetWeeklyAllotment(user.UID(), value);
-  else if (setting == "homedir" || setting == "changehomedir")
-    ok = acl::UserProfileCache::SetHomeDir(user.UID(), value);
-  else if (setting == "startup_dir")
-    ok = acl::UserProfileCache::SetStartupDir(user.UID(), value);
-  else if (setting == "idle_time")
-    ok = acl::UserProfileCache::SetIdleTime(user.UID(), value);
-  else if (setting == "expires")
-    ok = acl::UserProfileCache::SetExpires(user.UID(), value);
-  else if (setting == "num_logins")
-    ok = acl::UserProfileCache::SetNumLogins(user.UID(), value);
-  else if (setting == "tagline")
-    ok = acl::UserProfileCache::SetTagline(user.UID(), value);
-  else if (setting == "comment")
-    ok = acl::UserProfileCache::SetComment(user.UID(), value);
-  else if (setting == "max_dlspeed")
-    ok = acl::UserProfileCache::SetMaxDlSpeed(user.UID(), value);
-  else if (setting == "max_ulspeed")
-    ok = acl::UserProfileCache::SetMaxUlSpeed(user.UID(), value);
-  else if (setting == "max_sim_down")
-    ok = acl::UserProfileCache::SetMaxSimDl(user.UID(), value);
-  else if (setting == "max_sim_up")
-    ok = acl::UserProfileCache::SetMaxSimUl(user.UID(), value);
-  else
+  int i = 0;
+  if (users.size() > 1)
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + setting + " field not found!");
-    return cmd::Result::Okay;
+    os << "Updating " << users.size() << " users:";
+    ++i;
   }
 
-  if (!ok)
-    control.Reply(ftp::ActionNotOkay, "Error: " + ok.Message());
-  else
-    control.Reply(ftp::CommandOkay, "Updated " + user.Name() + " " + setting + " to " + value + ".");
+  for (auto& user: users)
+  {
+    if (i++ != 0) os << "\n";
 
+    if (setting == "ratio" || setting == "changeratio")
+      ok = acl::UserProfileCache::SetRatio(user.UID(), value);
+    else if (setting == "wkly_allotment" || setting == "changeallot")
+      ok = acl::UserProfileCache::SetWeeklyAllotment(user.UID(), value);
+    else if (setting == "homedir" || setting == "changehomedir")
+      ok = acl::UserProfileCache::SetHomeDir(user.UID(), value);
+    else if (setting == "startup_dir")
+      ok = acl::UserProfileCache::SetStartupDir(user.UID(), value);
+    else if (setting == "idle_time")
+      ok = acl::UserProfileCache::SetIdleTime(user.UID(), value);
+    else if (setting == "expires")
+      ok = acl::UserProfileCache::SetExpires(user.UID(), value);
+    else if (setting == "num_logins")
+      ok = acl::UserProfileCache::SetNumLogins(user.UID(), value);
+    else if (setting == "tagline")
+      ok = acl::UserProfileCache::SetTagline(user.UID(), value);
+    else if (setting == "comment")
+      ok = acl::UserProfileCache::SetComment(user.UID(), value);
+    else if (setting == "max_dlspeed")
+      ok = acl::UserProfileCache::SetMaxDlSpeed(user.UID(), value);
+    else if (setting == "max_ulspeed")
+      ok = acl::UserProfileCache::SetMaxUlSpeed(user.UID(), value);
+    else if (setting == "max_sim_down")
+      ok = acl::UserProfileCache::SetMaxSimDl(user.UID(), value);
+    else if (setting == "max_sim_up")
+      ok = acl::UserProfileCache::SetMaxSimUl(user.UID(), value);
+    else
+    {
+      control.Reply(ftp::ActionNotOkay, "Error: " + setting + " field not found!");
+      return cmd::Result::Okay;
+    }
+
+    if (!ok)
+      os << "Error: " << ok.Message();
+    else
+      os << "Updated " << user.Name() << " " << setting << " to " << value << ".";
+  }
+
+  control.MultiReply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 
