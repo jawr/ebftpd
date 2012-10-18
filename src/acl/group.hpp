@@ -19,6 +19,7 @@ class Group
   GroupID gid;
   
 public:
+  Group() : gid(-1) {}
   Group(const std::string& name, GroupID gid) : name(name), gid(gid) { }
   
   const std::string& Name() const { return name; }

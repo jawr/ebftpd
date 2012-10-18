@@ -1,8 +1,9 @@
 #include <vector>
+#include <memory>
 #include "db/bson/user.hpp"
 #include "acl/user.hpp"
 #include "db/bson/bson.hpp"
-#include <memory>
+#include "logs/logs.hpp"
 
 namespace db { namespace bson
 {

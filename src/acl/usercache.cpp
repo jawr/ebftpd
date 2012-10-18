@@ -2,7 +2,7 @@
 #include <vector>
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
-#include "db/interface.hpp"
+#include "db/user/user.hpp"
 #include "logs/logs.hpp"
 
 namespace acl
@@ -34,9 +34,6 @@ void UserCache::Initalize()
   while (!users.empty())
   {
     auto user = users.release(users.begin());
-    acl::GroupCache::AddUIDToGroup(user->PrimaryGID(), user->UID());
-    for (auto gid: user->SecondaryGIDs())
-      acl::GroupCache::AddUIDToGroup(gid, user->UID());
 
     instance.byUID.insert(std::make_pair(user->UID(), user.get()));
     instance.byName.insert(std::make_pair(user->Name(), user.get()));
@@ -239,6 +236,20 @@ util::Error UserCache::DelSecondaryGID(const std::string& name, GroupID gid)
   
   Save(*it->second);
   
+  return util::Error::Success();
+}
+
+util::Error UserCache::ResetSecondaryGID(const std::string& name)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+
+  for (auto& gid: it->second->SecondaryGIDs())
+    DelSecondaryGID(name, gid);
+
+  Save(*it->second);
+
   return util::Error::Success();
 }
 

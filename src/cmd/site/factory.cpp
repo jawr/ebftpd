@@ -21,6 +21,11 @@
 #include "cmd/site/logs.hpp"
 #include "cmd/site/wipe.hpp"
 #include "cmd/site/time.hpp"
+#include "cmd/site/grpadd.hpp"
+#include "cmd/site/chgrp.hpp"
+#include "cmd/site/change.hpp"
+
+#include <iostream>
 
 namespace cmd { namespace site
 {
@@ -93,7 +98,7 @@ Factory::Factory()
                       "Delete ident@ip from user" }, },
     { "CHANGE",     { 3,  3,  "change|changeallot|changeflags|"
                       "changeratio|changesratio|changehomedir", 
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::CHANGECommand>()),  
                       "Syntax: SITE CHANGE <user> <setting> <value>\n"
                       "        SITE CHANGE {<user> [<user> ..]} <setting> <value>\n"
                       "        SITE CHANGE * <setting> <value>",
@@ -107,7 +112,7 @@ Factory::Factory()
                       "Syntax: SITE SEEN <user>",
                       "Display last time a user logged in" }, },
     { "USERS",      { 0,  -1, "users",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::USERSCommand>()),  
                       "Syntax: SITE USERS [<criteria> ..]",
                       "Detailed list of users" }, },
     { "GIVE",       { 2,  3,  "give",
@@ -139,7 +144,7 @@ Factory::Factory()
                       "Syntax: SITE SETPGRP <user> <group>",
                       "Set's a user's primary group" }, },
     { "CHGRP",      { 2, -1,  "chgrp",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::CHGRPCommand>()),
                       "Syntax: SITE CHGRP <user> [+|-|=] <group> [<group> ..]",
                       "Change user's groups" }, },
     { "RANKS",      { 3, -1,  "ranks",
@@ -253,7 +258,7 @@ Factory::Factory()
                       "        SITE GRPCHANGE * <setting> <value>",
                       "Change settings for a group or groups" }, },
     { "GRPADD",     { 1, -1,  "grpadd",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GRPADDCommand>()),
                       "Syntax: SITE GRPADD <group> [<tagline>]",
                       "Add a group" }, },
     { "GRPDEL",     { 1,  1,  "grpdel",

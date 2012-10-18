@@ -42,6 +42,7 @@ public:
   static util::Error SetPrimaryGID(const std::string& name, GroupID primaryGID);
   static util::Error AddSecondaryGID(const std::string& name, GroupID secondaryGID);
   static util::Error DelSecondaryGID(const std::string& name, GroupID secondaryGID);
+  static util::Error ResetSecondaryGID(const std::string& name);
 
   static void Initalize();
   

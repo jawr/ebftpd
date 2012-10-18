@@ -49,8 +49,6 @@ public:
   bool Deleted() const { return CheckFlag(Flag::Deleted); }
   
   UserID UID() const { return uid; }
-  /* should never need to modify UID, can mongodb provide the id?
-     possibly set this on first save to db */
   
   GroupID PrimaryGID() const { return primaryGid; }
   void SetPrimaryGID(GroupID primaryGid) { this->primaryGid = primaryGid; }

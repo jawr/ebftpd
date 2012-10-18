@@ -1,6 +1,6 @@
 #include <memory>
 #include "acl/groupcache.hpp"
-#include "db/interface.hpp"
+#include "db/group/group.hpp"
 #include "logs/logs.hpp"
 
 namespace acl
@@ -42,31 +42,6 @@ void GroupCache::Initalize()
   instance.initalized = true;
   
 }
-
-void GroupCache::AddUIDToGroup(const acl::GroupID& gid, const acl::UserID& uid)
-{
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
-  GroupUIDsMap::iterator it = instance.groupUIDsMap.find(gid);
-  if (it == instance.groupUIDsMap.end())
-    instance.groupUIDsMap.insert({gid, {uid}});
-  else
-    instance.groupUIDsMap[gid].insert(uid); 
-    
-}
-
-util::Error GroupCache::ListUIDs(const acl::GroupID& gid, std::unordered_set<UserID>& uids)
-{
-  uids.clear();
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
-  GroupUIDsMap::iterator it = instance.groupUIDsMap.find(gid);
-  if (it == instance.groupUIDsMap.end())
-  return util::Error::Failure("Group not found.");
-
-  uids = it->second;
-
-  return util::Error::Success();
-}
-  
 
 void GroupCache::Save(const acl::Group& group)
 {

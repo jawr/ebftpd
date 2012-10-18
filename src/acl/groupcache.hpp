@@ -16,12 +16,10 @@ class GroupCache
 {
   typedef std::unordered_map<std::string, acl::Group*> ByNameMap;
   typedef std::unordered_map<GroupID, acl::Group*> ByGIDMap;
-  typedef std::unordered_map<GroupID, std::unordered_set<UserID>> GroupUIDsMap;
   
   mutable boost::mutex mutex;
   ByNameMap byName;
   ByGIDMap byGID;
-  GroupUIDsMap groupUIDsMap;
   
   static GroupCache instance;
   static bool initalized;
@@ -32,13 +30,6 @@ class GroupCache
   
 public:
   static void Initalize();
-
-  static void AddUIDToGroup(const GroupID& gid, const UserID& uid);
-  static util::Error ListUIDs(const GroupID& gid, std::unordered_set<UserID>& uids);
-  static util::Error ListUIDs(const std::string& name, std::unordered_set<UserID>& uids)
-  {
-    return ListUIDs(Group(name).GID(), uids);
-  }
 
   static bool Exists(const std::string& name);
   static bool Exists(GroupID gid);
