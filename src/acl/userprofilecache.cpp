@@ -2,6 +2,7 @@
 #include "acl/userprofilecache.hpp"
 #include "acl/userprofile.hpp"
 #include "util/error.hpp"
+#include "logs/logs.hpp"
 #include "db/user/user.hpp"
 
 namespace acl

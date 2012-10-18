@@ -1,4 +1,10 @@
 #include "db/group/group.hpp"
+#include "db/types.hpp"
+#include "db/pool.hpp"
+#include "db/task.hpp"
+#include "db/bson/group.hpp"
+#include "acl/group.hpp"
+#include "acl/types.hpp"
 
 namespace db
 {

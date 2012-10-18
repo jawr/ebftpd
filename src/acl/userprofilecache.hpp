@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <boost/thread/mutex.hpp>
 #include "acl/user.hpp"
+#include "acl/userprofile.hpp"
 #include "util/error.hpp"
 
 namespace acl

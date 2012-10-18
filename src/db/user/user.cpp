@@ -1,6 +1,9 @@
 #include "db/user/user.hpp"
+#include "db/pool.hpp"
+#include "db/task.hpp"
 #include "db/bson/user.hpp"
 #include "db/bson/userprofile.hpp"
+#include "db/types.hpp"
 
 namespace db
 {
@@ -91,6 +94,7 @@ acl::UserProfile* GetUserProfile(const acl::UserID& uid)
 
   for (auto& obj: results)
     return bson::UserProfile::Unserialize(obj);
+  return nullptr; // -Wreturn-type will never get here
 }
 
 void AddIpMask(const acl::User& user, const std::string& mask)

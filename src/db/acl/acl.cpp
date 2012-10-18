@@ -4,6 +4,8 @@
 #include "acl/groupcache.hpp"
 #include "acl/user.hpp"
 #include "acl/group.hpp"
+#include "db/types.hpp"
+#include "db/pool.hpp"
 
 namespace db
 {

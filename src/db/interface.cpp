@@ -15,6 +15,7 @@
 #include "acl/types.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
+#include "acl/ipmaskcache.hpp"
 #include "acl/types.hpp"
 #include "logs/logs.hpp"
 #include "stats/stat.hpp"
@@ -48,8 +49,6 @@ void Initalize()
     
   acl::UserCache::Create("biohazard", "password", "1");
   acl::UserCache::Create("io", "password", "1");
-
-  db::UserLogin(acl::UserID(1));
 }
 
 // stats function

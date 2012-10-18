@@ -1,9 +1,13 @@
 #include <sstream>
 #include "cmd/site/user.hpp"
 #include "acl/types.hpp"
+#include "acl/user.hpp"
 #include "acl/usercache.hpp"
 #include "acl/userprofilecache.hpp"
 #include "acl/userprofile.hpp"
+#include "acl/groupcache.hpp"
+#include "db/user/user.hpp"
+#include "db/group/group.hpp"
 #include "util/error.hpp"
 
 namespace cmd { namespace site

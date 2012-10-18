@@ -17,7 +17,7 @@ namespace db
   void AddIpMask(const acl::User& user, const std::string& mask);
   void DelIpMask(const acl::User& user, const std::string& mask);
   void GetIpMasks(acl::UserIPMaskMap& userIPMaskMap);
-  void UserLogin(const acl::User& user);
+  void UserLogin(const acl::UserID& user);
 
   void SaveUserProfile(const acl::UserProfile& profile);
   void GetUserProfiles(std::vector<acl::UserProfile*>& profiles);

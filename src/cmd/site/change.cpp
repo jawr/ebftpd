@@ -2,6 +2,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "cmd/site/change.hpp"
 #include "acl/userprofilecache.hpp"
+#include "acl/usercache.hpp"
 #include "db/acl/acl.hpp"
 
 namespace cmd { namespace site
