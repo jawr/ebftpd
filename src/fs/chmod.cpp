@@ -6,7 +6,7 @@
 #include "ftp/client.hpp"
 #include "fs/mode.hpp"
 #include "fs/status.hpp"
-#include "acl/check.hpp"
+#include "acl/path.hpp"
 #include "cfg/get.hpp"
 
 namespace fs
@@ -14,7 +14,7 @@ namespace fs
 
 util::Error Chmod(ftp::Client& client, const Path& path, const Mode& mode)
 {
-  namespace PP = acl::PathPermission;
+  namespace PP = acl::path;
 
   Path absolute = (client.WorkDir() / path).Expand();
   util::Error e = PP::FileAllowed<PP::View>(client.User(), absolute);

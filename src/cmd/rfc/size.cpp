@@ -1,6 +1,6 @@
 #include <boost/lexical_cast.hpp>
 #include "cmd/rfc/size.hpp"
-#include "acl/check.hpp"
+#include "acl/path.hpp"
 #include "cfg/get.hpp"
 
 namespace cmd { namespace rfc
@@ -8,7 +8,7 @@ namespace cmd { namespace rfc
 
 cmd::Result SIZECommand::Execute()
 {
-  namespace PP = acl::PathPermission;
+  namespace PP = acl::path;
 
   fs::Path absolute = (client.WorkDir() / argStr).Expand();
 

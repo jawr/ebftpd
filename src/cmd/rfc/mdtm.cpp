@@ -1,5 +1,5 @@
 #include "cmd/rfc/mdtm.hpp"
-#include "acl/check.hpp"
+#include "acl/path.hpp"
 #include "cfg/get.hpp"
 
 namespace cmd { namespace rfc
@@ -7,7 +7,7 @@ namespace cmd { namespace rfc
 
 cmd::Result MDTMCommand::Execute()
 {
-  namespace PP = acl::PathPermission;
+  namespace PP = acl::path;
 
   fs::Path absolute = client.WorkDir() / argStr;
   

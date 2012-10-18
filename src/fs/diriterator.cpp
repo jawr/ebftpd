@@ -2,7 +2,7 @@
 #include "fs/diriterator.hpp"
 #include "ftp/client.hpp"
 #include "fs/path.hpp"
-#include "acl/check.hpp"
+#include "acl/path.hpp"
 #include "cfg/get.hpp"
 #include "util/error.hpp"
 
@@ -23,7 +23,7 @@ DirIterator::DirIterator(const ftp::Client& client, const fs::Path& path) :
 
 void DirIterator::Opendir()
 {
-  namespace PP = acl::PathPermission;
+  namespace PP = acl::path;
   
   if (client)
   {  
@@ -43,7 +43,7 @@ void DirIterator::Opendir()
 
 void DirIterator::NextEntry()
 {
-  namespace PP = acl::PathPermission;
+  namespace PP = acl::path;
   while (true)
   {
     if (readdir_r(dp.get(), &de, &dep) < 0)

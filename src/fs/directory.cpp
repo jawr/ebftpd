@@ -9,10 +9,10 @@
 #include "fs/owner.hpp"
 #include "fs/direnumerator.hpp"
 #include "logs/logs.hpp"
-#include "acl/check.hpp"
+#include "acl/path.hpp"
 #include "cfg/get.hpp"
 
-namespace PP = acl::PathPermission;
+namespace PP = acl::path;
 
 namespace fs
 {
