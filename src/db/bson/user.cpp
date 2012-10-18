@@ -30,7 +30,7 @@ acl::User* User::Unserialize(const mongo::BSONObj& bo)
   user->flags = bo["flags"].String();
   user->uid = bo["uid"].Int();
   user->primaryGid = bo["primary gid"].Int();
-  std::vector<mongo::BSONElement> secondaryGids;
+  std::vector<mongo::BSONElement> secondaryGids = bo["secondary gids"].Array();
   for (const auto& el: secondaryGids)
     user->secondaryGids.insert(el.Int());
   return user.release();
