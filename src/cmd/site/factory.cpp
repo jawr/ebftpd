@@ -24,6 +24,8 @@
 #include "cmd/site/grpadd.hpp"
 #include "cmd/site/chgrp.hpp"
 #include "cmd/site/change.hpp"
+#include "cmd/site/user.hpp"
+#include "cmd/site/users.hpp"
 
 #include <iostream>
 
@@ -128,7 +130,7 @@ Factory::Factory()
                       "Syntax: SITE SHOW [<user>]",
                       "Display user's info" }, },
     { "USER",       { 0,  1,  "user|userown",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::USERCommand>()),
                       "Syntax: SITE USER [<user>]",
                       "Display user's info" }, },
     { "TAGLINE",    { 0, -1,  "tagline",
