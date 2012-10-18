@@ -30,7 +30,7 @@ public:
   static bool Exists(const std::string& name);
   static bool Exists(UserID uid);
   static util::Error Create(const std::string& name, const std::string& password,
-                     const std::string& flags);
+                     const std::string& flags, const acl::UserID creator=0);
   static util::Error Delete(const std::string& name);
   static util::Error Purge(const std::string& name);
   static util::Error Readd(const std::string& name);

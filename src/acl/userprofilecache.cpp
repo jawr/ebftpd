@@ -37,6 +37,16 @@ UserProfileCache::~UserProfileCache()
   }
 }
 
+util::Error UserProfileCache::Create(UserID uid, UserID creator)
+{
+  util::Error ok = Ensure(uid);
+  if (!ok) return ok;
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  instance.byUID[uid]->SetCreator(creator);
+  Save(uid);
+  return util::Error::Success();
+}
+
 void UserProfileCache::Save(const acl::UserID& uid)
 {
   db::SaveUserProfile(*instance.byUID[uid]);

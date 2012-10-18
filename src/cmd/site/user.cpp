@@ -12,24 +12,42 @@ namespace cmd { namespace site
 cmd::Result USERCommand::Execute()
 {
   acl::User user;
+  std::unique_ptr<acl::UserProfile> profile;
+  std::string creator = "<ebftpd>";
   try
   {
     user = acl::UserCache::User(args[1]);
+    profile.reset(db::GetUserProfile(user.UID()));
   }
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
     return cmd::Result::Okay;
   }
-
-  acl::UserProfile profile = acl::UserProfileCache::UserProfile(user.UID());
+  try
+  {
+    acl::User creatorUser = acl::UserCache::User(profile->Creator());
+    creator = creatorUser.Name();
+  }
+  catch (const util::RuntimeError& e)
+  {
+    if (profile->Creator() != 0) creator = "<deleted>";
+  }
 
   std::ostringstream os;
 
   os << "+=======================================================================+";
-  os << "\n| Username: " << user.Name();
+  os << "\n| Username: " << user.Name() << "\tLogged in " 
+     << profile->LoggedIn() << " times.";
+  os << "\n| Created: " << profile->Created();
+  os << "\n| Last login: " << profile->LastLogin(); 
+  
+  const std::string& expires = profile->Expires();
+  if (expires != "not-a-date-time")
+    os << "\n| Expires: " << expires;
+  os << "\n| Created by: " << creator;
   os << "\n| Flags: " << user.Flags();
-  os << "\n| Ratio: " << profile.Ratio();
+  os << "\n| Ratio: " << profile->Ratio();
 
   std::string group = (user.PrimaryGID() == -1) ? "NoGroup" : acl::GroupCache::Group(user.PrimaryGID()).Name();
   os << "\n| Primary Group: " << group;
@@ -52,7 +70,13 @@ cmd::Result USERCommand::Execute()
       }
     }
   }
-    
+
+  os << "\n| Tagline: " << profile->Tagline();
+  os << "\n| Comment: " << profile->Comment();
+  if (profile->WeeklyAllotment() == 0)
+    os << "\n| Weekly Allotment: <unlimited>";
+  else
+    os << "\n| Weekly Allotment: " << profile->WeeklyAllotment() / 1024 << "MB";
   os << "\n+=======================================================================+";
 
   control.MultiReply(ftp::CommandOkay, os.str());

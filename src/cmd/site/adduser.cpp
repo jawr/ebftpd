@@ -30,7 +30,7 @@ cmd::Result ADDUSERCommand::Execute()
   const cfg::Config& cfg = cfg::Get();
 
   util::Error ok = acl::UserCache::Create(args[1], args[2], 
-    cfg.DefaultFlags());
+    cfg.DefaultFlags(), client.User().UID());
 
   if (!ok)
   {

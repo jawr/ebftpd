@@ -27,6 +27,7 @@ class UserProfileCache
   static util::Error Ensure(UserID uid); 
   
 public:
+  static util::Error Create(UserID uid, UserID creator);
   static util::Error SetRatio(UserID uid, const std::string& value);
   static util::Error SetWeeklyAllotment(UserID uid, const std::string& value);
   static util::Error SetHomeDir(UserID uid, const std::string& value);
@@ -42,7 +43,7 @@ public:
   static util::Error SetMaxSimUl(UserID uid, const std::string& value);
 
   static void Initalize();
-  
+
   // these return const as the user objects should NEVER
   // be modified except via the above functions'
   static acl::UserProfile UserProfile(acl::UserID uid);

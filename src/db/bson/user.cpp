@@ -33,6 +33,7 @@ acl::User* User::Unserialize(const mongo::BSONObj& bo)
   std::vector<mongo::BSONElement> secondaryGids = bo["secondary gids"].Array();
   for (const auto& el: secondaryGids)
     user->secondaryGids.insert(el.Int());
+
   return user.release();
 }
   

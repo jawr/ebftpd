@@ -2,6 +2,7 @@
 #include <vector>
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
+#include "acl/userprofilecache.hpp"
 #include "db/user/user.hpp"
 #include "logs/logs.hpp"
 
@@ -61,22 +62,23 @@ bool UserCache::Exists(UserID uid)
 }
 
 util::Error UserCache::Create(const std::string& name, const std::string& password,
-                              const std::string& flags)
+                              const std::string& flags, acl::UserID creator)
 {
   acl::UserID uid = db::GetNewUserID();
 
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
-  if (instance.byName.find(name) != instance.byName.end())
-    return util::Error::Failure("User already exists");
+  {
+    boost::lock_guard<boost::mutex> lock(instance.mutex);
+    if (instance.byName.find(name) != instance.byName.end())
+      return util::Error::Failure("User already exists");
 
-  std::unique_ptr<acl::User> user(new acl::User(name, uid, password, flags));
+    std::unique_ptr<acl::User> user(new acl::User(name, uid, password, flags));
+      
+    instance.byName.insert(std::make_pair(name, user.get()));
+    instance.byUID.insert(std::make_pair(uid, user.get()));
     
-  instance.byName.insert(std::make_pair(name, user.get()));
-  instance.byUID.insert(std::make_pair(uid, user.get()));
-  
-  Save(*user.release());
-  
-  return util::Error::Success();
+    Save(*user.release());
+  }
+  return UserProfileCache::Create(uid, creator);
 }
 
 util::Error UserCache::Purge(const std::string& name)

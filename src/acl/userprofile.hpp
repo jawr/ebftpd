@@ -20,6 +20,8 @@ namespace acl
 class UserProfile
 {
   UserID uid;
+  UserID creator;
+  std::string created;
 
   int ratio;
   int weeklyAllotment;
@@ -38,6 +40,9 @@ class UserProfile
   int maxSimDl;
   int maxSimUl;
 
+  int loggedIn;
+  std::string lastLogin;
+
 public:
   UserProfile(acl::UserID uid); 
 
@@ -55,8 +60,11 @@ public:
   util::Error SetMaxSimDl(int maxSimDl);
   util::Error SetMaxSimUl(int maxSimUl);
 
+  void SetCreator(acl::UserID creator) { this->creator = creator; }
 
-  int8_t Ratio() const { return ratio; }
+
+  acl::UserID Creator() const { return creator; }
+  int Ratio() const { return ratio; }
   int WeeklyAllotment() const { return weeklyAllotment; }
   const std::string& HomeDir() const { return homeDir; }
   const std::string& StartupDir() const { return startupDir; }
@@ -74,6 +82,9 @@ public:
   int MaxSimDl() const { return maxSimDl; }
   int MaxSimUl() const { return maxSimUl; }
   const acl::UserID& UID() const { return uid; }
+  const std::string& Created() const { return created; }
+  const std::string& LastLogin() const { return lastLogin; }
+  int LoggedIn() const { return loggedIn; }
 
   friend struct db::bson::UserProfile;
 };

@@ -47,6 +47,9 @@ void Initalize()
     Pool::Queue(task);
     
   acl::UserCache::Create("biohazard", "password", "1");
+  acl::UserCache::Create("io", "password", "1");
+
+  db::UserLogin(acl::UserID(1));
 }
 
 // stats function

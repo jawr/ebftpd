@@ -38,6 +38,16 @@ void SaveUser(const acl::User& user)
   Pool::Queue(task);
 }
 
+void UserLogin(const acl::UserID& uid)
+{
+  // updates login count and time
+  mongo::Query query = QUERY("uid" << uid);
+  mongo::BSONObj obj = BSON("$inc" << BSON("logged in" << 1) <<
+    "$set" << BSON("last login" << mongo::DATENOW));
+  TaskPtr task(new db::Update("userprofiles", query, obj, false));
+  Pool::Queue(task);
+}
+
 void DeleteUser(const acl::UserID& uid)
 {
   mongo::Query query = QUERY("uid" << uid);
@@ -64,6 +74,23 @@ void GetUsers(boost::ptr_vector<acl::User>& users)
 
   for (auto& obj: results)
     users.push_back(bson::User::Unserialize(obj));
+}
+
+acl::UserProfile* GetUserProfile(const acl::UserID& uid)
+{
+  QueryResults results;
+  mongo::Query query = QUERY("uid" << uid);
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("userprofiles", query, results, future));
+  Pool::Queue(task);
+
+  future.wait();
+
+  if (results.size() == 0) 
+    throw util::RuntimeError("Unable to get UserProfile.");
+
+  for (auto& obj: results)
+    return bson::UserProfile::Unserialize(obj);
 }
 
 void AddIpMask(const acl::User& user, const std::string& mask)

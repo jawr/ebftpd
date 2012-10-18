@@ -20,6 +20,7 @@
 #include "main.hpp"
 #include "util/net/identclient.hpp"
 #include "util/string.hpp"
+#include "db/user/user.hpp"
 
 namespace ftp
 {
@@ -50,6 +51,7 @@ void Client::SetLoggedIn()
   boost::lock_guard<boost::mutex> lock(mutex);
   state = ClientState::LoggedIn;
   loggedInAt = boost::posix_time::second_clock::local_time();
+  db::UserLogin(user.UID());
 }
 
 void Client::SetWaitingPassword(const acl::User& user)

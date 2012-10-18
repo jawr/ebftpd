@@ -25,6 +25,7 @@ mongo::BSONObj UserProfile::Serialize(const acl::UserProfile& profile)
   bob.append("max ul speed", profile.maxUlSpeed);
   bob.append("max sim dl", profile.maxSimDl);
   bob.append("max sim ul", profile.maxSimUl);
+  bob.append("creator", profile.creator);
   return bob.obj();
 }
 
@@ -46,7 +47,19 @@ acl::UserProfile* UserProfile::Unserialize(const mongo::BSONObj& bo)
   profile->maxUlSpeed = bo["max ul speed"].Int();
   profile->maxSimDl = bo["max sim dl"].Int();
   profile->maxSimUl = bo["max sim ul"].Int();
+  profile->creator = bo["creator"].Int();
+
+  if (bo.hasField("last login"))
+    profile->lastLogin = bo["last login"].Date().toString();
+
+  if (bo.hasField("logged in"))
+    profile->loggedIn = bo["logged in"].Int();
   
+  mongo::BSONElement date;
+  bo.getObjectID(date);
+  auto oid = date.OID();
+  profile->created = oid.asDateT().toString();
+
   return profile.release();
 }
   
