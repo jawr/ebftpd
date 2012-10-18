@@ -23,7 +23,6 @@ std::string FormatDuration(const boost::posix_time::time_duration& duration)
 
 cmd::Result TIMECommand::Execute()
 {
-  
   pt::ptime now = pt::second_clock::local_time();
   
   std::ostringstream os;

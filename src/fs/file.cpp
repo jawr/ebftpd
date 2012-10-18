@@ -9,12 +9,12 @@
 #include "ftp/client.hpp"
 #include "fs/owner.hpp"
 #include "util/misc.hpp"
-#include "acl/check.hpp"
+#include "acl/path.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "util/randomstring.hpp"
 
-namespace PP = acl::PathPermission;
+namespace PP = acl::path;
 
 namespace fs
 {

@@ -1,12 +1,12 @@
 #include "cmd/rfc/rnfr.hpp"
-#include "acl/check.hpp"
+#include "acl/path.hpp"
 
 namespace cmd { namespace rfc
 {
 
 cmd::Result RNFRCommand::Execute()
 {
-  namespace PP = acl::PathPermission;
+  namespace PP = acl::path;
   
   fs::Path absolute = (client.WorkDir() / argStr).Expand();
   

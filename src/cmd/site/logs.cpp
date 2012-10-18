@@ -44,10 +44,13 @@ void LOGSCommand::Show(const std::string& path)
     util::ReverseLogReader in(path);
     std::string line;
     int count = 0;
-    while (in.Getline(line) && ++count <= number)
+    while (in.Getline(line) && count < number)
     {
       if (CheckStrings(line))
+      {
         control.PartReply(ftp::CommandOkay, line);
+        ++count;
+      }
     }
   
     control.Reply(ftp::CommandOkay, "LOGS command finished");

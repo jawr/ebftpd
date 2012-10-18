@@ -5,7 +5,7 @@
 #include "fs/direnumerator.hpp"
 #include "fs/status.hpp"
 #include "ftp/client.hpp"
-#include "acl/check.hpp"
+#include "acl/path.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "logs/logs.hpp"
@@ -51,7 +51,7 @@ void DirEnumerator::Readdir(ftp::Client& client, const fs::Path& path)
 
 void DirEnumerator::Readdir()
 {
-  namespace PP = acl::PathPermission;
+  namespace PP = acl::path;
   
   Path real(path);
   if (client)
