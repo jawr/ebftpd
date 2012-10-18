@@ -39,7 +39,7 @@ cmd::Result CHANGECommand::Execute()
   int i = 0;
   if (users.size() > 1)
   {
-    os << "Updating " << users.size() << " users:";
+    os << "Updating (" << users.size() << ") users:";
     ++i;
   }
 
@@ -73,6 +73,24 @@ cmd::Result CHANGECommand::Execute()
       ok = acl::UserProfileCache::SetMaxSimDl(user.UID(), value);
     else if (setting == "max_sim_up")
       ok = acl::UserProfileCache::SetMaxSimUl(user.UID(), value);
+    else if (setting == "flags")
+    {
+      if (value[0] == '+')
+      {
+        value.assign(value.begin()+1, value.end());
+        ok = acl::UserCache::AddFlags(user.Name(), value);
+      }
+      else if (value[0] == '-')
+      {
+        value.assign(value.begin()+1, value.end());
+        ok = acl::UserCache::DelFlags(user.Name(), value);
+      }
+      else
+      {
+        // handle setting flags if = or none?
+        ok = util::Error::Failure("Not implemented. Should this set or throw sub syntax error?");
+      }
+    }
     else
     {
       control.Reply(ftp::ActionNotOkay, "Error: " + setting + " field not found!");
