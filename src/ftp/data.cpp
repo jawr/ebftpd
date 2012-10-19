@@ -64,7 +64,8 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
       
     try
     {
-      listener.Listen(Endpoint(*ip, port));
+      ep = Endpoint(*ip, port);
+      listener.Listen(ep);
       break;
     }
     catch (const util::net::NetworkSystemError& e)
@@ -73,8 +74,6 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
         throw;
     }
   }
-  
-  ep = listener.Endpoint();
 }
 
 void Data::InitActive(const util::net::Endpoint& ep)
