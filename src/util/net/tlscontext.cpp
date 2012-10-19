@@ -162,7 +162,11 @@ void TLSContext::SelectCiphers()
 
 unsigned long TLSContext::ThreadIdCallback()
 {
+#if defined(__CYGWIN__)
   return reinterpret_cast<unsigned long>(pthread_self());
+#else
+  return pthread_self();
+#endif
 }
 
 
