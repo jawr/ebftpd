@@ -7,7 +7,9 @@ namespace util
 std::string ErrnoToMessage(int errno_)
 {
   char buffer[256];
-  return strerror_r(errno_, buffer, sizeof(buffer));
+  memset(buffer, 0, sizeof(buffer)); // ensure returning an empty string if strerror fails
+  strerror_r(errno_, buffer, sizeof(buffer));
+  return buffer;
 }
 
 SystemError::SystemError(int errno_) :

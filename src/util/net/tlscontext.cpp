@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
+#include <boost/type_traits/is_pointer.hpp>
 #include "util/net/tlscontext.hpp"
 #include "util/net/tlserror.hpp"
 
@@ -161,7 +162,7 @@ void TLSContext::SelectCiphers()
 
 unsigned long TLSContext::ThreadIdCallback()
 {
-  return pthread_self();
+  return reinterpret_cast<unsigned long>(pthread_self());
 }
 
 
