@@ -27,7 +27,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
     std::string firstAddr;
     while (true)
     {
-      std::string addr = AddrAllocator<AddrType::Active>::NextAddr();
+      std::string addr = AddrAllocator<AddrType::Passive>::NextAddr();
       if (addr.empty()) break;
       
       if (addr == firstAddr)
@@ -36,8 +36,11 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
       try
       {
         ip.reset(IPAddress(addr));
-        if (pasvType != PassiveType::PASV ||
-            ip->Family() == IPFamily::IPv6) break;
+        if (pasvType == PassiveType::PASV && ip->Family() == IPFamily::IPv4)
+          break;
+        else
+        if (ip->Family() == client.Control().LocalEndpoint().IP().Family())
+          break;
       }
       catch (const NetworkError&)
       {
