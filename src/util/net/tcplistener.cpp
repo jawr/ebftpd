@@ -22,6 +22,7 @@ TCPListener::TCPListener(const util::net::Endpoint& endpoint, int backlog) :
   socket(-1),
   backlog(backlog)
 {
+  if (pipe(interruptPipe) < 0) throw NetworkSystemError(errno);
   Listen();
 }
 
@@ -29,6 +30,7 @@ TCPListener::TCPListener(int backlog) :
   socket(-1),
   backlog(backlog)
 {
+  if (pipe(interruptPipe) < 0) throw NetworkSystemError(errno);
 }
 
 void TCPListener::Listen()
