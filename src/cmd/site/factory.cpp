@@ -27,6 +27,7 @@
 #include "cmd/site/user.hpp"
 #include "cmd/site/users.hpp"
 #include "cmd/site/seen.hpp"
+#include "cmd/site/setpgrp.hpp"
 
 #include <iostream>
 
@@ -143,7 +144,7 @@ Factory::Factory()
                       "Syntax: SITE TAGLINE <tagline>",
                       "Change your tagline" }, },
     { "SETPGRP",    { 2,  2,  "chgrp",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::SETPGRPCommand>()),
                       "Syntax: SITE SETPGRP <user> <group>",
                       "Set's a user's primary group" }, },
     { "CHGRP",      { 2, -1,  "chgrp",
