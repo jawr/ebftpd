@@ -1,6 +1,7 @@
 #include <cctype>
 #include "cmd/site/tagline.hpp"
 #include "acl/usercache.hpp"
+#include "acl/userprofilecache.hpp"
 
 namespace cmd { namespace site
 {
@@ -26,8 +27,13 @@ cmd::Result TAGLINECommand::Execute()
                   charsNotAllowed);
     return cmd::Result::Okay;
   }
+
+  util::Error ok = acl::UserProfileCache::SetTagline(client.User().UID(), argStr);
+  if (!ok)
+    control.Reply(ftp::ActionNotOkay, ok.Message());
+  else
+    control.Reply(ftp::CommandOkay, "New Tagline: " + argStr);
   
-  control.Reply(ftp::NotImplemented, "Not implemented");
   return cmd::Result::Okay;
 }
 
