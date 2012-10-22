@@ -26,6 +26,7 @@
 #include "cmd/site/change.hpp"
 #include "cmd/site/user.hpp"
 #include "cmd/site/users.hpp"
+#include "cmd/site/seen.hpp"
 
 #include <iostream>
 
@@ -110,7 +111,7 @@ Factory::Factory()
                       "Syntax: SITE KICK <user>",
                       "Kick a user's connections from the site" }, },
     { "SEEN",       { 1,  1,  "seen",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::SEENCommand>()),
                       "Syntax: SITE SEEN <user>",
                       "Display last time a user logged in" }, },
     { "USERS",      { 0,  -1, "users",

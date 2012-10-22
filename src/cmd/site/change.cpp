@@ -88,8 +88,8 @@ cmd::Result CHANGECommand::Execute()
       }
       else
       {
-        // handle setting flags if = or none?
-        ok = util::Error::Failure("Not implemented. Should this set or throw sub syntax error?");
+        static const char* changeSyntax = "you need to use + or - in front of flags.";
+        ok = util::Error::Failure(changeSyntax);
       }
     }
     else
