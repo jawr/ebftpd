@@ -25,7 +25,7 @@ void GroupCache::Initalize()
   std::vector<acl::Group*> groups;
   try
   {
-    db::GetGroups(groups);
+    db::group::GetAll(groups);
     for (auto& group: groups)
     {
       instance.byName.insert(std::make_pair(group->Name(), group));
@@ -45,7 +45,7 @@ void GroupCache::Initalize()
 
 void GroupCache::Save(const acl::Group& group)
 {
-  db::SaveGroup(group);
+  db::group::Save(group);
 }
 
 bool GroupCache::Exists(const std::string& name)
@@ -66,7 +66,7 @@ util::Error GroupCache::Create(const std::string& name)
   if (instance.byName.find(name) != instance.byName.end())
     return util::Error::Failure("Group already exists");
 
-  acl::GroupID gid = db::GetNewGroupID();
+  acl::GroupID gid = db::group::GetNewGroupID();
 
   std::unique_ptr<acl::Group> group(new acl::Group(name, gid));
     

@@ -6,7 +6,7 @@
 #include "acl/group.hpp"
 #include "acl/types.hpp"
 
-namespace db
+namespace db { namespace group
 {
 
 namespace
@@ -33,7 +33,7 @@ acl::GroupID GetNewGroupID()
   return acl::GroupID(++gid);
 }
 
-void SaveGroup(const acl::Group& group)
+void Save(const acl::Group& group)
 {
   mongo::BSONObj obj = db::bson::Group::Serialize(group);
   mongo::Query query = QUERY("gid" << group.GID());
@@ -41,7 +41,7 @@ void SaveGroup(const acl::Group& group)
   Pool::Queue(task);
 }
 
-void GetGroups(std::vector<acl::Group*>& groups)
+void GetAll(std::vector<acl::Group*>& groups)
 {
   QueryResults results;
   mongo::Query query;
@@ -57,5 +57,7 @@ void GetGroups(std::vector<acl::Group*>& groups)
     groups.push_back(bson::Group::Unserialize(obj));
 }
 
+// end
+}
 }
 

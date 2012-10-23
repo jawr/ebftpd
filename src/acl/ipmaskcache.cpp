@@ -1,5 +1,6 @@
 #include "acl/ipmaskcache.hpp"
 #include "db/user/user.hpp"
+#include "db/user/ipmask.hpp"
 #include "util/string.hpp"
 
 namespace acl
@@ -9,7 +10,7 @@ IpMaskCache IpMaskCache::instance;
 void IpMaskCache::Initalize()
 {
   boost::unique_lock<boost::shared_mutex> lock(instance.mtx);
-  db::GetIpMasks(instance.userIPMaskMap);
+  db::ipmask::GetAll(instance.userIPMaskMap);
 }
 
 bool IpMaskCache::Check(const std::string& addr)
@@ -49,7 +50,7 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
     else if (util::string::WildcardMatch(mask, (*it), false))
     {
       deleted.push_back((*it));
-      db::DelIpMask(user, (*it));
+      db::ipmask::Delete(user, (*it));
       {
         boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
         it = masks->second.erase(it);
@@ -63,7 +64,7 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
     boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
     instance.userIPMaskMap[user.UID()].push_back(mask);
   }
-  db::AddIpMask(user, mask);
+  db::ipmask::Add(user, mask);
   return util::Error::Success();
 }
 
@@ -79,7 +80,7 @@ util::Error IpMaskCache::Delete(const acl::User& user, const std::string& mask)
   {
     if ((*it) == mask)
     {
-      db::DelIpMask(user, (*it));
+      db::ipmask::Delete(user, (*it));
       boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
       masks->second.erase(it);
       return util::Error::Success();                                                                      }

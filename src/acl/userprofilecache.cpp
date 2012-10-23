@@ -3,7 +3,7 @@
 #include "acl/userprofile.hpp"
 #include "util/error.hpp"
 #include "logs/logs.hpp"
-#include "db/user/user.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace acl
 {
@@ -16,7 +16,7 @@ void UserProfileCache::Initalize()
   std::vector<acl::UserProfile*> profiles;
   try
   {
-    db::GetUserProfiles(profiles);
+    db::userprofile::GetAll(profiles);
     for (auto& profile: profiles)
       instance.byUID.insert(std::make_pair(profile->UID(), profile));
   }
@@ -50,7 +50,7 @@ util::Error UserProfileCache::Create(UserID uid, UserID creator)
 
 void UserProfileCache::Save(const acl::UserID& uid)
 {
-  db::SaveUserProfile(*instance.byUID[uid]);
+  db::userprofile::Save(*instance.byUID[uid]);
 }
 
 util::Error UserProfileCache::Ensure(UserID uid)

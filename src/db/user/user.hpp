@@ -8,19 +8,17 @@
 #include "acl/ipmaskcache.hpp"
 
 
-namespace db
+namespace db { namespace user
 {
   acl::UserID GetNewUserID();
-  void SaveUser(const acl::User& user);    
-  void DeleteUser(const acl::UserID& uid);
-  void GetUsers(boost::ptr_vector<acl::User>& users);
-  void AddIpMask(const acl::User& user, const std::string& mask);
-  void DelIpMask(const acl::User& user, const std::string& mask);
-  void GetIpMasks(acl::UserIPMaskMap& userIPMaskMap);
-  void UserLogin(const acl::UserID& user);
+  void Save(const acl::User& user);    
+  void Delete(const acl::UserID& uid);
+  void GetAll(boost::ptr_vector<acl::User>& users);
+  void Login(const acl::UserID& user);
 
-  void SaveUserProfile(const acl::UserProfile& profile);
-  void GetUserProfiles(std::vector<acl::UserProfile*>& profiles);
-  acl::UserProfile* GetUserProfile(const acl::UserID& uid);
+
+
+// end
+}
 }
 #endif

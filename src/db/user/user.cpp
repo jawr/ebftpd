@@ -5,7 +5,7 @@
 #include "db/bson/userprofile.hpp"
 #include "db/types.hpp"
 
-namespace db
+namespace db { namespace user
 {
 
 namespace
@@ -33,7 +33,7 @@ acl::UserID GetNewUserID()
   return acl::UserID(++uid);
 }
 
-void SaveUser(const acl::User& user)
+void Save(const acl::User& user)
 {
   mongo::BSONObj obj = db::bson::User::Serialize(user);
   mongo::Query query = QUERY("uid" << user.UID());
@@ -41,7 +41,7 @@ void SaveUser(const acl::User& user)
   Pool::Queue(task);
 }
 
-void UserLogin(const acl::UserID& uid)
+void Login(const acl::UserID& uid)
 {
   // updates login count and time
   mongo::Query query = QUERY("uid" << uid);
@@ -51,7 +51,7 @@ void UserLogin(const acl::UserID& uid)
   Pool::Queue(task);
 }
 
-void DeleteUser(const acl::UserID& uid)
+void Delete(const acl::UserID& uid)
 {
   mongo::Query query = QUERY("uid" << uid);
   std::vector<TaskPtr> tasks;
@@ -63,7 +63,7 @@ void DeleteUser(const acl::UserID& uid)
     Pool::Queue(task);      
 }
 
-void GetUsers(boost::ptr_vector<acl::User>& users)
+void GetAll(boost::ptr_vector<acl::User>& users)
 {
   QueryResults results;
   mongo::Query query;
@@ -79,85 +79,8 @@ void GetUsers(boost::ptr_vector<acl::User>& users)
     users.push_back(bson::User::Unserialize(obj));
 }
 
-acl::UserProfile* GetUserProfile(const acl::UserID& uid)
-{
-  QueryResults results;
-  mongo::Query query = QUERY("uid" << uid);
-  boost::unique_future<bool> future;
-  TaskPtr task(new db::Select("userprofiles", query, results, future));
-  Pool::Queue(task);
 
-  future.wait();
-
-  if (results.size() == 0) 
-    throw util::RuntimeError("Unable to get UserProfile.");
-
-  for (auto& obj: results)
-    return bson::UserProfile::Unserialize(obj);
-  return nullptr; // -Wreturn-type will never get here
+// end
 }
-
-void AddIpMask(const acl::User& user, const std::string& mask)
-{
-  mongo::BSONObj obj = BSON("uid" << user.UID() << "mask" << mask);
-  TaskPtr task(new db::Insert("ipmasks", obj));
-  Pool::Queue(task);
-}
-
-void DelIpMask(const acl::User& user, const std::string& mask)
-{
-  mongo::Query query = QUERY("uid" << user.UID() << "mask" << mask);
-  TaskPtr task(new db::Delete("ipmasks", query));
-  Pool::Queue(task);  
-}
-
-void GetIpMasks(acl::UserIPMaskMap& userIPMaskMap)
-{
-  QueryResults results;
-  mongo::Query query;
-  boost::unique_future<bool> future;
-  TaskPtr task(new db::Select("ipmasks", query, results, future));
-  Pool::Queue(task);
-
-  future.wait();
-
-  if (results.size() == 0) return;
-
-  for (auto& obj: results)
-  {
-    std::string mask = obj.getStringField("mask");
-    acl::UserID uid = acl::UserID(obj.getIntField("uid"));
-
-    std::vector<std::string> temp = {mask};
-    std::pair<acl::UserIPMaskMap::iterator, bool> result = 
-        userIPMaskMap.insert(std::make_pair(uid, temp));
-    if (!result.second) result.first->second.emplace_back(mask);
-  }
-}
-
-void SaveUserProfile(const acl::UserProfile& profile)
-{
-  mongo::BSONObj obj = db::bson::UserProfile::Serialize(profile);
-  mongo::Query query = QUERY("uid" << profile.UID());
-  TaskPtr task(new db::Update("userprofiles", query, obj, true));
-  Pool::Queue(task);
-}
-
-void GetUserProfiles(std::vector<acl::UserProfile*>& profiles)
-{
-  QueryResults results;
-  mongo::Query query;
-  boost::unique_future<bool> future;
-  TaskPtr task(new db::Select("userprofiles", query, results, future));
-  Pool::Queue(task);
-
-  future.wait();
-
-  if (results.size() == 0) return;
-
-  for (auto& obj: results)
-    profiles.push_back(bson::UserProfile::Unserialize(obj));
-}
-
 }
 

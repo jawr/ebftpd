@@ -1,7 +1,7 @@
 #include <memory>
 #include "cmd/site/seen.hpp"
 #include "acl/userprofile.hpp"
-#include "db/user/user.hpp"
+#include "db/user/userprofile.hpp"
 #include "util/error.hpp"
 
 namespace cmd { namespace site
@@ -14,7 +14,7 @@ cmd::Result SEENCommand::Execute()
   try
   {
     user = acl::UserCache::User(args[1]);
-    profile.reset(db::GetUserProfile(user.UID()));
+    profile.reset(db::userprofile::Get(user.UID()));
   }
   catch (const util::RuntimeError& e)
   {

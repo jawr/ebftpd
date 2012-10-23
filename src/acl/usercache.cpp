@@ -31,7 +31,7 @@ void UserCache::Initalize()
   acl::GroupCache::Initalize();
 
   boost::ptr_vector<acl::User> users;
-  db::GetUsers(users);
+  db::user::GetAll(users);
   while (!users.empty())
   {
     auto user = users.release(users.begin());
@@ -46,7 +46,7 @@ void UserCache::Initalize()
 
 void UserCache::Save(const acl::User& user)
 {
-  db::SaveUser(user);
+  db::user::Save(user);
 }
 
 bool UserCache::Exists(const std::string& name)
@@ -64,7 +64,7 @@ bool UserCache::Exists(UserID uid)
 util::Error UserCache::Create(const std::string& name, const std::string& password,
                               const std::string& flags, acl::UserID creator)
 {
-  acl::UserID uid = db::GetNewUserID();
+  acl::UserID uid = db::user::GetNewUserID();
 
   {
     boost::lock_guard<boost::mutex> lock(instance.mutex);
@@ -95,7 +95,7 @@ util::Error UserCache::Purge(const std::string& name)
   delete it->second;
   instance.byName.erase(it);
   
-  db::DeleteUser(uid);
+  db::user::Delete(uid);
   
   return util::Error::Success();
 }

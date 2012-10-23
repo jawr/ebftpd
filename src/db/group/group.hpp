@@ -4,11 +4,14 @@
 #include "acl/types.hpp"
 #include "acl/group.hpp"
 
-namespace db
+namespace db { namespace group
 {
   acl::GroupID GetNewGroupID();
-  void SaveGroup(const acl::Group& group);
-  void GetGroups(std::vector<acl::Group*>& groups);
+  void Save(const acl::Group& group);
+  void GetAll(std::vector<acl::Group*>& groups);
+
+// end
+}
 }
 
 #endif
