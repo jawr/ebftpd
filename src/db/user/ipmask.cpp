@@ -1,4 +1,7 @@
 #include "db/user/ipmask.hpp"
+#include "db/task.hpp"
+#include "db/types.hpp"
+#include "db/pool.hpp"
 
 namespace db { namespace ipmask
 {

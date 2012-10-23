@@ -1,6 +1,7 @@
 #include <memory>
 #include "cmd/site/seen.hpp"
 #include "acl/userprofile.hpp"
+#include "acl/usercache.hpp"
 #include "db/user/userprofile.hpp"
 #include "util/error.hpp"
 

@@ -1,6 +1,10 @@
 #ifndef __DB_USER_IPMASK_HPP
 #define __DB_USER_IPMASK_HPP
 
+#include <vector>
+#include "acl/types.hpp"
+#include "acl/ipmaskcache.hpp"
+
 namespace db { namespace ipmask
 {
 

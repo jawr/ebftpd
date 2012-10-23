@@ -1,6 +1,10 @@
 #ifndef __DB_USER_USERPROFILE_HPP
 #define __DB_USER_USERPROFILE_HPP
 
+#include <vector>
+#include "acl/userprofile.hpp"
+#include "acl/types.hpp"
+
 namespace db { namespace userprofile
 {
 

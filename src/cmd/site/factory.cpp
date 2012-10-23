@@ -28,6 +28,8 @@
 #include "cmd/site/users.hpp"
 #include "cmd/site/seen.hpp"
 #include "cmd/site/setpgrp.hpp"
+#include "cmd/site/kick.hpp"
+#include "cmd/site/who.hpp"
 
 #include <iostream>
 

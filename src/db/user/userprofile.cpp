@@ -1,4 +1,8 @@
 #include "db/user/userprofile.hpp"
+#include "db/task.hpp"
+#include "db/types.hpp"
+#include "db/pool.hpp"
+#include "db/bson/userprofile.hpp"
 
 namespace db { namespace userprofile
 {

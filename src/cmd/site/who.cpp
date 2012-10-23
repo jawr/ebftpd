@@ -3,6 +3,7 @@
 #include "cmd/site/who.hpp"
 #include "acl/user.hpp"
 #include "acl/userprofile.hpp"
+#include "acl/userprofilecache.hpp"
 #include "acl/group.hpp"
 #include "acl/groupcache.hpp"
 #include "ftp/listener.hpp"
