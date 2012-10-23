@@ -8,7 +8,7 @@ namespace acl
 
 enum class Flag : char
 {
-	FlagSiteop = '1',
+  FlagSiteop = '1',
   Gadmin = '2',
   Glock = '3',
   Exempt = '4',
