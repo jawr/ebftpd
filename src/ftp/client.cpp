@@ -155,8 +155,8 @@ void Client::IdleReset(const std::string& commandLine)
          (commandLine.length() >= cmd.length() &&
           commandLine[cmd.length()] == ' ')))
       return;
-      
-  idleExpires = boost::posix_time::second_clock::local_time() + idleTimeout;
+  idleTime = boost::posix_time::second_clock::local_time();
+  idleExpires = idleTime + idleTimeout;
 }
 
 void Client::ExecuteCommand(const std::string& commandLine)
@@ -180,6 +180,7 @@ void Client::ExecuteCommand(const std::string& commandLine)
   }
   else if (CheckState(def->RequiredState()))
   {
+    currentCommand = argStr;
     cmd::CommandPtr command(def->Create(*this, argStr, args));
     if (!command)
     {
@@ -194,6 +195,7 @@ void Client::ExecuteCommand(const std::string& commandLine)
       IdleReset(commandLine);
     }
   }
+  currentCommand = "";
 }
 
 void Client::Handle()

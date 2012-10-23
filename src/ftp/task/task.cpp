@@ -12,6 +12,16 @@ void KickUser::Execute(Listener& listener)
   }
 }
 
+void GetOnlineUsers::Execute(Listener& listener)
+{
+  for (auto& client: listener.clients)
+  {
+    users.emplace_back(WhoUser(client.User(), client.IdleTime(), 
+      client.CurrentCommand()));
+  }
+  promise.set_value(true);
+}
+
 // end
 }
 }

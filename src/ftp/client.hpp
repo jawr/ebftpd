@@ -45,10 +45,12 @@ class Client : public util::Thread
   std::string ident;
   ::ftp::XDupeMode xdupeMode;
   std::string confirmCommand;
+  std::string currentCommand;
 
   boost::posix_time::ptime loggedInAt;
   boost::posix_time::ptime idleExpires;
   boost::posix_time::seconds idleTimeout;
+  boost::posix_time::ptime idleTime;
   
   static const int maxPasswordAttemps = 3;
   
@@ -97,6 +99,14 @@ public:
   bool IsFxp(const util::net::Endpoint& ep) const;
   
   bool ConfirmCommand(const std::string& argStr);
+
+  boost::posix_time::seconds IdleTime() const 
+  { 
+    boost::posix_time::time_duration diff = 
+      boost::posix_time::second_clock::local_time() - idleTime;
+    return boost::posix_time::seconds(diff.total_seconds());
+  }
+  const std::string& CurrentCommand() const { return currentCommand; }
 };
 
 } /* ftp namespace */

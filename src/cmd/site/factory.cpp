@@ -216,7 +216,7 @@ Factory::Factory()
                       "Syntax: SITE TRAFFIC",
                       "Display traffic statistics" }, },
     { "WHO",        { 0,  0,  "who",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::WHOCommand>()),
                       "Syntax: SITE WHO",
                       "Display who's online" }, },
     { "SWHO",       { 0,  0,  "swho",

@@ -555,7 +555,7 @@ void Config::Parse(const std::string& line) {
 
 void Config::NotImplemented(const std::string& opt)
 {
-  logs::error << "Ignring not implemented config option: " << opt << logs::endl;
+  logs::error << "Ignoring not implemented config option: " << opt << logs::endl;
 }
 
 void Config::ParameterCheck(const std::string& opt,

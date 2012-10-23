@@ -1,7 +1,12 @@
 #ifndef __FTP_TASK_TASK_HPP
 #define __FTP_TASK_TASK_HPP
 
+#include <vector>
+#include <string>
+#include <boost/thread/future.hpp>
+#include "ftp/task/types.hpp"
 #include "acl/types.hpp"
+#include "acl/user.hpp"
 
 namespace ftp 
 { 
@@ -23,6 +28,17 @@ class KickUser : public Task
   acl::UserID uid;
 public:
   KickUser(const acl::UserID& uid) : uid(uid) {}
+  void Execute(Listener& listener);
+};
+
+class GetOnlineUsers : public Task
+{
+  std::vector<ftp::task::WhoUser>& users;
+  boost::unique_future<bool>& future;
+  boost::promise<bool> promise;
+public:
+  GetOnlineUsers(std::vector<ftp::task::WhoUser>& users, boost::unique_future<bool>& future) : 
+    users(users), future(future) { future = promise.get_future(); }
   void Execute(Listener& listener);
 };
 
