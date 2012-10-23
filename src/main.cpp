@@ -67,16 +67,15 @@ int main(int argc, char** argv)
   
   int exitStatus = 0;
   
-  ftp::Listener listener;  
-  if (!listener.Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
+  if (!ftp::Listener::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
     logs::error << "Listener failed to initialise!" << logs::endl;
     exitStatus = 1;
   }
   else
   {  
-    listener.Start();
-    listener.Join();
+    ftp::Listener::StartThread();
+    ftp::Listener::JoinThread();
   }
   
   fs::OwnerCache::Stop();

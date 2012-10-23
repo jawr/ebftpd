@@ -4,10 +4,14 @@
 #include <ostream>
 #include <vector>
 #include <unordered_set>
+#include <queue>
 #include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "ftp/client.hpp"
+#include "ftp/task/types.hpp"
+#include "ftp/task/task.hpp"
 #include "util/thread.hpp"
 #include "util/net/tcplistener.hpp"
 #include "util/net/tcpsocket.hpp"
@@ -25,17 +29,39 @@ class Listener : public util::Thread
   std::vector<std::string> validIPs;
   int32_t port;
   util::Pipe interruptPipe;
+
+  std::queue<TaskPtr> queue;
+  boost::mutex mtx;
   
   void AcceptClients();
   void AcceptClient(util::net::TCPListener& server);
   void HandleClients();
   void Run();
+
+  static Listener instance;
   
 public:
   Listener() : port(-1) { }
-  bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
+  static bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
   
-  void Stop();
+  static void Stop();
+
+  static void PushTask( const TaskPtr& task)
+  {
+    { 
+      boost::lock_guard<boost::mutex> lock(instance.mtx); 
+      instance.queue.push(task);
+    }
+    instance.interruptPipe.Interrupt();
+  }
+
+  static void StartThread();
+  static void StopThread();
+  static void JoinThread() { instance.Join(); }
+    
+
+  // tasks
+  friend task::Task;
 };
 
 }

@@ -26,6 +26,11 @@ public:
 
   int ReadFd() const { return fds[0]; }
   int WriteFd() const { return fds[1]; }  
+
+  void Interrupt() const 
+  {
+    (void) write(WriteFd(), "1", 1);
+  }
 };
 
 } /* util namespace */

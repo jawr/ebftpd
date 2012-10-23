@@ -11,16 +11,28 @@
 namespace ftp
 {
 
+Listener Listener::instance;
+
+void Listener::StartThread()
+{
+  instance.Start();
+}
+
+void Listener::StopThread()
+{
+  instance.Stop();
+}
+
 bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port)
 {
-  assert(!validIPs.empty());
+  assert(!instance.validIPs.empty());
   util::net::Endpoint ep;
   try
   {
     for (const auto& ip : validIPs)
     {
       ep = util::net::Endpoint(ip, port);
-      servers.push_back(new util::net::TCPListener(ep));
+      instance.servers.push_back(new util::net::TCPListener(ep));
       logs::debug << "Listening for clients on " << ep << logs::endl;
     }
   }
@@ -89,6 +101,7 @@ void Listener::AcceptClients()
   else if (FD_ISSET(interruptPipe.ReadFd(), &readSet))
   {
     boost::this_thread::interruption_point();
+    logs::debug << "GOT INTERRUPT Q SIZE: " << queue.size() << logs::endl;
     // possibly use this to refresh our config too ??
     // if port has changed in config, we have to renew our server object with
     // new endpoint
@@ -111,9 +124,9 @@ void Listener::Run()
 
 void Listener::Stop()
 {
-  (void) write(interruptPipe.WriteFd(), "1", 1);
-  thread.interrupt();
-  thread.join();
+  instance.interruptPipe.Interrupt();
+  instance.thread.interrupt();
+  instance.thread.join();
 }
 
 }
