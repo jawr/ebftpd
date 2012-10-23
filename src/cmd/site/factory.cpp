@@ -108,7 +108,7 @@ Factory::Factory()
                       "        SITE CHANGE * <setting> <value>",
                       "Change settings for a user or users" }, },
     { "KICK",       { 1,  1,  "kick",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::KICKCommand>()),
                       "Syntax: SITE KICK <user>",
                       "Kick a user's connections from the site" }, },
     { "SEEN",       { 1,  1,  "seen",

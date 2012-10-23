@@ -23,7 +23,14 @@ cmd::Result KICKCommand::Execute()
     return cmd::Result::Okay;
   }
 
+  if (user.CheckFlag(acl::Flag::FlagSiteop))
+  {
+    control.Reply(ftp::ActionNotOkay, "Cannot kick a SITEOP.");
+    return cmd::Result::Okay;
+  } 
+
   ftp::TaskPtr task(new ftp::task::KickUser(user.UID()));
+  ftp::Listener::PushTask(task);
 
   control.Reply(ftp::CommandOkay, "Kicked " + args[1]);
   return cmd::Result::Okay;

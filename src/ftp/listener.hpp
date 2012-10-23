@@ -31,12 +31,15 @@ class Listener : public util::Thread
   util::Pipe interruptPipe;
 
   std::queue<TaskPtr> queue;
-  boost::mutex mtx;
+  
+  boost::mutex taskMtx;
+  boost::mutex clientMtx;
   
   void AcceptClients();
   void AcceptClient(util::net::TCPListener& server);
   void HandleClients();
   void Run();
+  void RunTask();
 
   static Listener instance;
   
@@ -49,7 +52,7 @@ public:
   static void PushTask( const TaskPtr& task)
   {
     { 
-      boost::lock_guard<boost::mutex> lock(instance.mtx); 
+      boost::lock_guard<boost::mutex> lock(instance.taskMtx); 
       instance.queue.push(task);
     }
     instance.interruptPipe.Interrupt();
@@ -62,6 +65,7 @@ public:
 
   // tasks
   friend task::Task;
+  friend task::KickUser;
 };
 
 }

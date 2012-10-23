@@ -23,9 +23,25 @@ void Listener::StopThread()
   instance.Stop();
 }
 
+void Listener::RunTask()
+{
+  TaskPtr task;
+  {
+    boost::lock_guard<boost::mutex> lock(taskMtx);
+    task = queue.front();
+    queue.pop();
+  }
+
+  {
+    boost::lock_guard<boost::mutex> lock(clientMtx); // or lock within
+    task->Execute(*this);
+  }
+  HandleClients();
+}
+
 bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port)
 {
-  assert(!instance.validIPs.empty());
+  assert(!validIPs.empty());
   util::net::Endpoint ep;
   try
   {
@@ -49,6 +65,7 @@ bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port
 void Listener::HandleClients()
 {
   // erase any clients that are done
+  boost::lock_guard<boost::mutex> lock(clientMtx); // move into loop?
   for (ClientList::iterator it = clients.begin();
        it != clients.end();)
   {
@@ -69,6 +86,7 @@ void Listener::AcceptClient(util::net::TCPListener& server)
   if (client->Accept(server)) 
   {
     client->Start();
+    boost::lock_guard<boost::mutex> lock(clientMtx);
     clients.push_back(client.release());
   }
 }
@@ -101,7 +119,9 @@ void Listener::AcceptClients()
   else if (FD_ISSET(interruptPipe.ReadFd(), &readSet))
   {
     boost::this_thread::interruption_point();
-    logs::debug << "GOT INTERRUPT Q SIZE: " << queue.size() << logs::endl;
+    static char buffer[1];
+    (void) read(interruptPipe.ReadFd(), &buffer, sizeof(buffer));
+    RunTask();
     // possibly use this to refresh our config too ??
     // if port has changed in config, we have to renew our server object with
     // new endpoint

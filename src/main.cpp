@@ -66,7 +66,7 @@ int main(int argc, char** argv)
   fs::OwnerCache::Start();
   
   int exitStatus = 0;
-  
+ 
   if (!ftp::Listener::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
     logs::error << "Listener failed to initialise!" << logs::endl;
