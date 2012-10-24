@@ -64,8 +64,8 @@ public:
     
 
   // tasks
-  friend task::KickUser;
-  friend task::GetOnlineUsers;
+  friend class task::KickUser;
+  friend class task::GetOnlineUsers;
 };
 
 }
