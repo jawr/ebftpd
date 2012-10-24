@@ -1,5 +1,6 @@
 #include "cmd/rfc/retr.hpp"
 #include "fs/file.hpp"
+#include "acl/usercache.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -36,13 +37,16 @@ cmd::Result RETRCommand::Execute()
 
   try
   {
+    long bytes;
     char buffer[16384];
     while (true)
     {
       ssize_t len = boost::iostreams::read(*fin,buffer, sizeof(buffer));
       if (len < 0) break;
+      bytes += len;
       data.Write(buffer, len);
     }
+    acl::UserCache::DecrCredits(client.User().Name(), bytes);
   }
   catch (const std::ios_base::failure&)
   {
