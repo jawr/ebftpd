@@ -3,7 +3,7 @@
 #include "cmd/site/who.hpp"
 #include "acl/user.hpp"
 #include "acl/userprofile.hpp"
-#include "acl/userprofilecache.hpp"
+#include "db/user/userprofile.hpp"
 #include "acl/group.hpp"
 #include "acl/groupcache.hpp"
 #include "ftp/listener.hpp"
@@ -48,7 +48,7 @@ cmd::Result WHOCommand::Execute()
     {
       group = "NoGroup";
     }
-    acl::UserProfile profile = acl::UserProfileCache::UserProfile(user.user.UID());
+    acl::UserProfile profile = db::userprofile::Get(user.user.UID());
     
     os << "\n| " << user.user.Name() << " | " << group << " | ";
     os << profile.Tagline() << " | ";

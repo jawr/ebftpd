@@ -1,9 +1,9 @@
 #include <sstream>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "cmd/site/change.hpp"
-#include "acl/userprofilecache.hpp"
 #include "acl/usercache.hpp"
 #include "db/acl/acl.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace site
 {
@@ -49,31 +49,31 @@ cmd::Result CHANGECommand::Execute()
     if (i++ != 0) os << "\n";
 
     if (setting == "ratio" || setting == "changeratio")
-      ok = acl::UserProfileCache::SetRatio(user.UID(), value);
+      ok = db::userprofile::SetRatio(user.UID(), value);
     else if (setting == "wkly_allotment" || setting == "changeallot")
-      ok = acl::UserProfileCache::SetWeeklyAllotment(user.UID(), value);
+      ok = db::userprofile::SetWeeklyAllotment(user.UID(), value);
     else if (setting == "homedir" || setting == "changehomedir")
-      ok = acl::UserProfileCache::SetHomeDir(user.UID(), value);
+      ok = db::userprofile::SetHomeDir(user.UID(), value);
     else if (setting == "startup_dir")
-      ok = acl::UserProfileCache::SetStartupDir(user.UID(), value);
+      ok = db::userprofile::SetStartupDir(user.UID(), value);
     else if (setting == "idle_time")
-      ok = acl::UserProfileCache::SetIdleTime(user.UID(), value);
+      ok = db::userprofile::SetIdleTime(user.UID(), value);
     else if (setting == "expires")
-      ok = acl::UserProfileCache::SetExpires(user.UID(), value);
+      ok = db::userprofile::SetExpires(user.UID(), value);
     else if (setting == "num_logins")
-      ok = acl::UserProfileCache::SetNumLogins(user.UID(), value);
+      ok = db::userprofile::SetNumLogins(user.UID(), value);
     else if (setting == "tagline")
-      ok = acl::UserProfileCache::SetTagline(user.UID(), value);
+      ok = db::userprofile::SetTagline(user.UID(), value);
     else if (setting == "comment")
-      ok = acl::UserProfileCache::SetComment(user.UID(), value);
+      ok = db::userprofile::SetComment(user.UID(), value);
     else if (setting == "max_dlspeed")
-      ok = acl::UserProfileCache::SetMaxDlSpeed(user.UID(), value);
+      ok = db::userprofile::SetMaxDlSpeed(user.UID(), value);
     else if (setting == "max_ulspeed")
-      ok = acl::UserProfileCache::SetMaxUlSpeed(user.UID(), value);
+      ok = db::userprofile::SetMaxUlSpeed(user.UID(), value);
     else if (setting == "max_sim_down")
-      ok = acl::UserProfileCache::SetMaxSimDl(user.UID(), value);
+      ok = db::userprofile::SetMaxSimDl(user.UID(), value);
     else if (setting == "max_sim_up")
-      ok = acl::UserProfileCache::SetMaxSimUl(user.UID(), value);
+      ok = db::userprofile::SetMaxSimUl(user.UID(), value);
     else if (setting == "flags")
     {
       if (value[0] == '+')

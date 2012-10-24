@@ -4,7 +4,7 @@
 #include "cmd/site/users.hpp"
 #include "util/error.hpp"
 #include "acl/types.hpp"
-#include "acl/userprofilecache.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace site
 {
@@ -24,7 +24,7 @@ cmd::Result USERSCommand::Execute()
     os << "Detailed user listing...";
     for (auto& user: users)
     {
-      acl::UserProfile profile = acl::UserProfileCache::UserProfile(user.UID());
+      acl::UserProfile profile = db::userprofile::Get(user.UID());
       //acl::Group group = acl::GroupCache::Group(user.PrimaryGID());
       os << "\nUser: " << user.Name() << " ";
     }

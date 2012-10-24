@@ -19,7 +19,6 @@
 #include "acl/types.hpp"
 #include "logs/logs.hpp"
 #include "stats/stat.hpp"
-#include "acl/userprofilecache.hpp"
 
 namespace db
 {
@@ -29,7 +28,6 @@ void Initalize()
   db::Pool::StartThread();
   acl::GroupCache::Initalize();
   acl::UserCache::Initalize();
-  acl::UserProfileCache::Initalize();
   acl::IpMaskCache::Initalize();
 
   std::vector<TaskPtr> tasks;

@@ -3,6 +3,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include "util/error.hpp"
 
 namespace util { namespace string
 {
@@ -21,7 +22,7 @@ FindNthNonConsecutiveChar(const std::string& str,
 
 std::string& CompressWhitespace(std::string& str);
 std::string CompressWhitespaceCopy(const std::string& str);
-    
+
 } /* string namespace */
 } /* util namespace */
 

@@ -44,7 +44,10 @@ class UserProfile
   std::string lastLogin;
 
 public:
-  UserProfile(acl::UserID uid); 
+  UserProfile() : uid(-1), creator(-1) {};
+
+  UserProfile(acl::UserID uid) : UserProfile(uid, acl::UserID(0)) {}; 
+  UserProfile(acl::UserID uid, acl::UserID creator);
 
   util::Error SetRatio(int ratio);
   util::Error SetWeeklyAllotment(int weeklyAllotment);
