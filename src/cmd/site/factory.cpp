@@ -31,6 +31,7 @@
 #include "cmd/site/kick.hpp"
 #include "cmd/site/who.hpp"
 #include "cmd/site/give.hpp"
+#include "cmd/site/take.hpp"
 
 #include <iostream>
 
@@ -127,7 +128,7 @@ Factory::Factory()
                       "Syntax: SITE GIVE <user> <credits>G|M [<message>]",
                       "Give credits to user" }, },
     { "TAKE",       { 2, 3,   "take",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::TAKECommand>()),
                       "Syntax: SITE TAKE <user> <credits>G|M [<message>]",
                       "Take credits from user" }, },
     { "STATS",      { 0,  1,  "stats|statsown",
