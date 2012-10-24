@@ -257,6 +257,26 @@ util::Error UserCache::ResetSecondaryGID(const std::string& name)
   return util::Error::Success();
 }
 
+util::Error UserCache::IncrCredits(const std::string& name, long long kbytes)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  it->second->IncrCredits(kbytes);
+  Save(*it->second);
+  return util::Error::Success();
+}
+
+util::Error UserCache::DecrCredits(const std::string& name, long long kbytes)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  it->second->DecrCredits(kbytes);
+  Save(*it->second);
+  return util::Error::Success();
+}
+
 acl::User UserCache::User(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);

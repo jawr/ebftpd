@@ -13,7 +13,8 @@ User::User(const std::string& name,
            const std::string& flags) :
   name(name),
   uid(uid),
-  primaryGid(-1)
+  primaryGid(-1),
+  credits(15360)
 {
   SetPassword(password);
   AddFlags(flags);

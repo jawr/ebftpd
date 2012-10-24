@@ -26,6 +26,8 @@ class User
   GroupID primaryGid;
   std::unordered_set<GroupID> secondaryGids;
   
+  long long credits;
+  
   
 public:
   User() : uid(-1), primaryGid(-1) { }
@@ -34,6 +36,10 @@ public:
        
   const std::string& Name() const { return name; }
   void SetName(const std::string& name) { this->name = name; }
+
+  long long Credits() const { return credits; }
+  void DecrCredits(long long kbytes) { credits -= kbytes; }
+  void IncrCredits(long long kbytes) { credits += kbytes; }
   
   void SetPassword(const std::string& password);
   bool VerifyPassword(const std::string& password) const;
