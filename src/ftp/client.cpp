@@ -21,6 +21,7 @@
 #include "util/net/identclient.hpp"
 #include "util/string.hpp"
 #include "db/user/user.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace ftp
 {
@@ -52,6 +53,7 @@ void Client::SetLoggedIn()
   state = ClientState::LoggedIn;
   loggedInAt = boost::posix_time::second_clock::local_time();
   db::user::Login(user.UID());
+  profile = db::userprofile::Get(user.UID());
 }
 
 void Client::SetWaitingPassword(const acl::User& user)

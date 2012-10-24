@@ -6,6 +6,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/user.hpp"
+#include "acl/userprofile.hpp"
 #include "util/net/tcpsocket.hpp"
 #include "util/net/tcplistener.hpp"
 #include "util/thread.hpp"
@@ -46,6 +47,8 @@ class Client : public util::Thread
   ::ftp::XDupeMode xdupeMode;
   std::string confirmCommand;
   std::string currentCommand;
+
+  acl::UserProfile profile;
 
   boost::posix_time::ptime loggedInAt;
   boost::posix_time::ptime idleExpires;
