@@ -52,7 +52,7 @@ cmd::Result USERCommand::Execute()
   os << "\n| Created by: " << creator;
   os << "\n| Flags: " << user.Flags();
   os << "\n| Ratio: " << profile.Ratio();
-  os << "\n| Credits: " << user.Credits()/1024 << " MiB";
+  os << "\n| Credits: " << user.Credits()/1000 << " MiB";
 
   std::string group = (user.PrimaryGID() == -1) ? "NoGroup" : acl::GroupCache::Group(user.PrimaryGID()).Name();
   os << "\n| Primary Group: " << group;

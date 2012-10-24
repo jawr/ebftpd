@@ -48,9 +48,9 @@ cmd::Result GIVECommand::Execute()
   logs::debug << "credits: " << credits << logs::endl;
 
   if (type == "G")
-    credits *= 1024 * 1024;
+    credits *= 1000 * 1000;
   else if (type == "M")
-    credits *= 1024;
+    credits *= 1000;
 
 
   logs::debug << "credits: " << credits << logs::endl;

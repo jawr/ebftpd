@@ -13,11 +13,20 @@
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "util/randomstring.hpp"
+#include "fs/status.hpp"
+#include "util/error.hpp"
 
 namespace PP = acl::path;
 
 namespace fs
 {
+
+off_t SizeFile(ftp::Client& client, const Path& path)
+{
+  Path absolute = (client.WorkDir() / path).Expand();
+  fs::Status status(cfg::Get().Sitepath() + absolute); // catch throw in parent
+  return status.Size();
+}
 
 util::Error DeleteFile(ftp::Client& client, const Path& path)
 {

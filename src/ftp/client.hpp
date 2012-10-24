@@ -71,6 +71,7 @@ public:
      
   const fs::Path& WorkDir() const { return workDir; }
   const acl::User& User() const { return user; }
+  const acl::UserProfile& UserProfile() const { return profile; }
   
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;

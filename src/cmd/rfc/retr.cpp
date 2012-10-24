@@ -47,7 +47,7 @@ cmd::Result RETRCommand::Execute()
       bytes += len;
       data.Write(buffer, len);
     }
-    bytes /= 1024;
+    bytes /= 1000;
     acl::UserCache::DecrCredits(client.User().Name(), (long long)bytes);
   }
   catch (const std::ios_base::failure&)

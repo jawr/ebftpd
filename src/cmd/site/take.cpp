@@ -46,9 +46,9 @@ cmd::Result TAKECommand::Execute()
   }
 
   if (type == "G")
-    credits *= 1024 * 1024;
+    credits *= 1000 * 1000;
   else if (type == "M")
-    credits *= 1024;
+    credits *= 1000;
 
   acl::UserCache::DecrCredits(user.Name(), credits);
   control.Reply(ftp::CommandOkay, "Taken " + args[2] + " from " + args[1] + ".");

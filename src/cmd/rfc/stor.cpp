@@ -1,3 +1,4 @@
+#include <ios>
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
 
@@ -33,12 +34,16 @@ cmd::Result STORCommand::Execute()
     return cmd::Result::Okay;
   }
 
+  
+  std::streamsize bytes(0);
   try
   {
     char buffer[16384];
     while (true)
     {
       size_t len = data.Read(buffer, sizeof(buffer));
+      bytes += len;
+    
       fout->write(buffer, len);
     }
   }
@@ -51,6 +56,14 @@ cmd::Result STORCommand::Execute()
                  e.Message());
     return cmd::Result::Okay;
   }
+
+  logs::debug << "BYTES: " << bytes << logs::endl;
+  bytes *= client.UserProfile().Ratio();
+  logs::debug << "BYTES: " << bytes << logs::endl;
+  bytes /= 1000;
+  logs::debug << "BYTES: " << bytes << logs::endl;
+  acl::UserCache::IncrCredits(client.User().Name(), (long long)bytes);
+
   
   data.Close();
   control.Reply(ftp::DataClosedOkay, "Transfer finished."); 
