@@ -1,4 +1,5 @@
 #include <ios>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/rfc/retr.hpp"
 #include "fs/file.hpp"
 #include "acl/usercache.hpp"
@@ -8,6 +9,9 @@ namespace cmd { namespace rfc
 
 cmd::Result RETRCommand::Execute()
 {
+  namespace time = boost::posix_time;
+  time::ptime start = time::microsec_clock::local_time();
+
   fs::InStreamPtr fin;
   try
   {
@@ -36,9 +40,9 @@ cmd::Result RETRCommand::Execute()
     return cmd::Result::Okay;
   }
 
+  std::streamsize bytes(0);
   try
   {
-    std::streamsize bytes(0);
     char buffer[16384];
     while (true)
     {
@@ -47,8 +51,6 @@ cmd::Result RETRCommand::Execute()
       bytes += len;
       data.Write(buffer, len);
     }
-    bytes /= 1000;
-    acl::UserCache::DecrCredits(client.User().Name(), (long long)bytes);
   }
   catch (const std::ios_base::failure&)
   {
@@ -67,6 +69,16 @@ cmd::Result RETRCommand::Execute()
     return cmd::Result::Okay;
   }
   
+  bytes /= 1000;
+
+  time::ptime end = time::microsec_clock::local_time();
+  time::time_duration diff = end - start;
+
+  db::DecrementStats(client.User(), bytes, diff.total_milliseconds(),
+    stats::Direction::Download);
+  
+  acl::UserCache::DecrCredits(client.User().Name(), (long long)bytes);
+
   data.Close();
   control.Reply(ftp::DataClosedOkay, "Transfer finished."); 
   return cmd::Result::Okay;

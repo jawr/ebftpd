@@ -1,12 +1,17 @@
 #include <ios>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
+#include "db/interface.hpp"
 
 namespace cmd { namespace rfc
 {
 
 cmd::Result STORCommand::Execute()
 {
+  namespace time = boost::posix_time;
+  time::ptime start = time::microsec_clock::local_time();
+
   fs::OutStreamPtr fout;
   try
   {
@@ -57,13 +62,17 @@ cmd::Result STORCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  logs::debug << "BYTES: " << bytes << logs::endl;
+  time::ptime end = time::microsec_clock::local_time();
+  time::time_duration diff = end - start;
+
+  db::IncrementStats(client.User(), bytes/1000, diff.total_milliseconds(),
+    stats::Direction::Upload);
+
   bytes *= client.UserProfile().Ratio();
-  logs::debug << "BYTES: " << bytes << logs::endl;
   bytes /= 1000;
-  logs::debug << "BYTES: " << bytes << logs::endl;
   acl::UserCache::IncrCredits(client.User().Name(), (long long)bytes);
 
+  logs::debug << "TIME TAKE: " << diff.total_milliseconds() << logs::endl;
   
   data.Close();
   control.Reply(ftp::DataClosedOkay, "Transfer finished."); 

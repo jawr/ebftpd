@@ -88,7 +88,7 @@ void DecrementStats(const acl::User& user,
     << now.date().month().as_number() << "year" << now.date().year()
     << "direction" << direction_);
   mongo::BSONObj obj = BSON(
-    "$inc" << BSON("files" << -1) <<
+    "$inc" << BSON("files" << 1) <<
     "$inc" << BSON("kbytes" << kbytes*-1) <<
     "$inc" << BSON("xfertime" << xfertime)); // how to handle the xfertime
   TaskPtr task(new db::Update("transfers", query, obj, true));

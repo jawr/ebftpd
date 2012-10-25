@@ -15,6 +15,14 @@ namespace cmd { namespace site
 
 cmd::Result USERCommand::Execute()
 {
+
+  if (!acl::AllowSiteCmd(client.User(), "user") && (args[1] != client.User().Name() 
+    || !acl::AllowSiteCmd(client.User(), "userown")))
+  {
+    control.Reply(ftp::ActionNotOkay, "SITE " + args[0] + ": Permission denied!");
+    return cmd::Result::Okay;
+  }
+
   acl::User user;
   acl::UserProfile profile;
   std::string creator = "<ebftpd>";
