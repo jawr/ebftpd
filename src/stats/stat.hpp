@@ -1,10 +1,12 @@
 #ifndef __STATS_DAY_HPP
 #define __STATS_DAY_HPP
 
-#include <ctime>
-#include <memory>
-#include <boost/thread/mutex.hpp>
-#include "acl/user.hpp"
+#include "acl/types.hpp"
+
+namespace db { namespace bson {
+    class Stat;
+  } 
+}
 
 namespace stats
 {
@@ -17,7 +19,7 @@ enum class Direction : uint8_t
 
 class Stat
 {
-  acl::User user;
+  acl::UserID uid;
 
   int day;
   int week;
@@ -25,45 +27,26 @@ class Stat
   int year;
 
   unsigned int files;
-  unsigned int kBytes;
-  double xferTime;
-
-  boost::mutex mtx;
+  unsigned int kbytes;
+  double xfertime;
 
   Direction direction;
 
-protected:
-
-  Stat(const acl::User& user, Direction direction) :
-    user(user),
-    day(0),
-    week(0),
-    month(0),
-    year(0),
-    files(0),
-    kBytes(0),
-    xferTime(0.0),
-    mtx(),
-    direction(direction)
-  {}
+  ~Stat() {}
 
 public:
+  Stat() {}
 
-  void Add(unsigned int files, unsigned int kBytes, double time)
-  {
-    boost::lock_guard<boost::mutex> lock(mtx);
-    this->files += files;
-    this->kBytes += kBytes;
-    this->xferTime += time;
-  }
-
+  acl::UserID UID() const { return uid; }
   int Day() const { return day; }
   int Week() const { return week; }
   int Month() const { return month; }
   int Year() const { return year; }
   unsigned int Files() const { return files; }
-  unsigned int KBytes() const { return kBytes; }
-  double XferTime() const { return xferTime; }
+  unsigned int Kbytes() const { return kbytes; }
+  double Xfertime() const { return xfertime; }
+
+  friend class db::bson::Stat;
   
 };
 
