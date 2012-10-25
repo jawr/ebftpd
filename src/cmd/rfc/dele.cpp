@@ -1,7 +1,7 @@
 #include "cmd/rfc/dele.hpp"
 #include "fs/file.hpp"
 #include "acl/usercache.hpp"
-#include "db/stats/stats.hpp"
+#include "db/stats/stat.hpp"
 
 namespace cmd { namespace rfc
 {

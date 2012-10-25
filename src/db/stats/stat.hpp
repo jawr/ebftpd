@@ -1,5 +1,5 @@
-#ifndef __DB_STATS_STATS_HPP
-#define __DB_STATS_STATS_HPP
+#ifndef __DB_STATS_STAT_HPP
+#define __DB_STATS_STAT_HPP
 
 #include "acl/user.hpp"
 #include "stats/stat.hpp"

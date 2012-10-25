@@ -2,7 +2,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
-#include "db/stats/stats.hpp"
+#include "db/stats/stat.hpp"
 
 namespace cmd { namespace rfc
 {

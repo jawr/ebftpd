@@ -6,7 +6,6 @@
 #include "acl/types.hpp"
 #include "acl/user.hpp"
 #include "acl/group.hpp"
-#include "stats/stat.hpp"
 
 namespace db 
 {

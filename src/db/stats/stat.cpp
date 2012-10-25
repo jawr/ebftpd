@@ -1,6 +1,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <mongo/client/dbclient.h>
-#include "db/stats/stats.hpp"
+#include "db/stats/stat.hpp"
 #include "db/task.hpp"
 #include "db/pool.hpp"
 #include "db/types.hpp"

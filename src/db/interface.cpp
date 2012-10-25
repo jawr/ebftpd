@@ -18,7 +18,6 @@
 #include "acl/ipmaskcache.hpp"
 #include "acl/types.hpp"
 #include "logs/logs.hpp"
-#include "stats/stat.hpp"
 
 namespace db
 {
