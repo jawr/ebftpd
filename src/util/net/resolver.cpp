@@ -51,7 +51,6 @@ void Resolver::Resolve()
     }
     
     charService = service.c_str();
-    std::cout << charService << std::endl;
   }
 
   struct addrinfo hints;
