@@ -3,6 +3,7 @@
 #include "cmd/rfc/retr.hpp"
 #include "fs/file.hpp"
 #include "acl/usercache.hpp"
+#include "db/stats/stats.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -74,8 +75,7 @@ cmd::Result RETRCommand::Execute()
   time::ptime end = time::microsec_clock::local_time();
   time::time_duration diff = end - start;
 
-  db::DecrementStats(client.User(), bytes, diff.total_milliseconds(),
-    stats::Direction::Download);
+  db::stats::Download(client.User(), bytes, diff.total_milliseconds());
   
   acl::UserCache::DecrCredits(client.User().Name(), (long long)bytes);
 

@@ -19,6 +19,7 @@ cmd::Result USERCommand::Execute()
   if (!acl::AllowSiteCmd(client.User(), "user") && (args[1] != client.User().Name() 
     || !acl::AllowSiteCmd(client.User(), "userown")))
   {
+    logs::debug << "NO!" << logs::endl;
     control.Reply(ftp::ActionNotOkay, "SITE " + args[0] + ": Permission denied!");
     return cmd::Result::Okay;
   }

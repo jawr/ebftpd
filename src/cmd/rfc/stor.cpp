@@ -2,7 +2,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
-#include "db/interface.hpp"
+#include "db/stats/stats.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -65,8 +65,7 @@ cmd::Result STORCommand::Execute()
   time::ptime end = time::microsec_clock::local_time();
   time::time_duration diff = end - start;
 
-  db::IncrementStats(client.User(), bytes/1000, diff.total_milliseconds(),
-    stats::Direction::Upload);
+  db::stats::Upload(client.User(), bytes/1000, diff.total_milliseconds());
 
   bytes *= client.UserProfile().Ratio();
   bytes /= 1000;
