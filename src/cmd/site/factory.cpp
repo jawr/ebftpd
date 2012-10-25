@@ -32,6 +32,7 @@
 #include "cmd/site/who.hpp"
 #include "cmd/site/give.hpp"
 #include "cmd/site/take.hpp"
+#include "cmd/site/stats.hpp"
 
 #include <iostream>
 
@@ -132,7 +133,7 @@ Factory::Factory()
                       "Syntax: SITE TAKE <user> <credits>G|M [<message>]",
                       "Take credits from user" }, },
     { "STATS",      { 0,  1,  "stats|statsown",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::STATSCommand>()),
                       "Syntax: SITE STATS [<user>]",
                       "Display user's transfer stats" }, },
     { "SHOW",       { 0,  1,  "show|showown",

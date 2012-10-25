@@ -16,7 +16,7 @@ cmd::Result DELECommand::Execute()
     control.Reply(ftp::FileActionOkay, "DELE command successful."); 
     long long bytes = (size * client.UserProfile().Ratio()) / 1000;
     acl::UserCache::DecrCredits(client.User().Name(), bytes);
-    db::stats::UploadDecr(client.User(), bytes);
+    db::stats::UploadDecr(client.User(), size/1000);
   }
   return cmd::Result::Okay;
 }

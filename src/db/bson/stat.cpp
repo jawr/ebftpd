@@ -37,7 +37,7 @@ mongo::BSONObj Stat::Serialize(const ::stats::Stat& stat)
 
   stat.files = bo["files"].Int();
   stat.kbytes = bo["kbytes"].Long();
-  stat.xfertime = bo["kbytes"].Double();
+  stat.xfertime = bo["xfertime"].Long();
 
   if (bo["direction"].String() == "up")
     stat.direction = ::stats::Direction::Upload;

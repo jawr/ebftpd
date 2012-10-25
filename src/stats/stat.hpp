@@ -26,16 +26,17 @@ class Stat
   int month;
   int year;
 
-  unsigned int files;
-  unsigned int kbytes;
-  double xfertime;
+  int files;
+  // might need to store bytes rather than kbytes as we lose files < certain siez
+  long long kbytes;
+  long long xfertime;
 
   Direction direction;
 
-  ~Stat() {}
 
 public:
-  Stat() {}
+  Stat() : files(0), kbytes(0), xfertime(0) {}
+  ~Stat() {}
 
   acl::UserID UID() const { return uid; }
   int Day() const { return day; }
@@ -43,8 +44,8 @@ public:
   int Month() const { return month; }
   int Year() const { return year; }
   unsigned int Files() const { return files; }
-  unsigned int Kbytes() const { return kbytes; }
-  double Xfertime() const { return xfertime; }
+  long long Kbytes() const { return kbytes; }
+  long long Xfertime() const { return xfertime; }
 
   friend class db::bson::Stat;
   
