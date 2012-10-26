@@ -1,19 +1,15 @@
 #include <crypto++/osrng.h>
 #include <crypto++/sha.h>
 #include <crypto++/hex.h>
+#include <crypto++/pwdbased.h>
 #include "util/passwd.hpp"
-
-using CryptoPP::AutoSeededRandomPool;
-using CryptoPP::SHA256;
-using CryptoPP::HexEncoder;
-using CryptoPP::HexDecoder;
 
 namespace util { namespace passwd
 {
 
 std::string GenerateSalt(unsigned int length)
 {
-  AutoSeededRandomPool prng;
+  CryptoPP::AutoSeededRandomPool prng;
   byte salt[length];
   prng.GenerateBlock(salt, length);
   return std::string(&salt[0], &salt[length]);
@@ -21,17 +17,16 @@ std::string GenerateSalt(unsigned int length)
 
 std::string HashPassword(const std::string& password, const std::string& salt)
 {
-  size_t dataLength =password.length() + salt.length();
-  byte data[dataLength];
+  static const unsigned iterations = 1000;
   
-  std::copy(password.begin(), password.end(), &data[0]);
-  std::copy(salt.begin(), salt.end(), &data[password.length()]);
+  CryptoPP::PKCS5_PBKDF2_HMAC<CryptoPP::SHA256> pbkdf2;
   
-  byte digest[CryptoPP::SHA256::DIGESTSIZE];
-  CryptoPP::SHA256 hash;
-  hash.CalculateDigest(digest, data, dataLength);
-  
-  return std::string(&digest[0], &digest[sizeof(digest)]);
+  byte key[CryptoPP::SHA256::DIGESTSIZE];
+  pbkdf2.DeriveKey(key, sizeof(key), 0, 
+                   reinterpret_cast<const byte*>(password.c_str()), password.length(),
+                   reinterpret_cast<const byte*>(salt.c_str()), salt.length(), iterations);
+                   
+  return std::string(reinterpret_cast<char*>(key), sizeof(key));
 }
 
 std::string HexEncode(const std::string& data)
@@ -84,6 +79,18 @@ int main()
   
   std::cout << util::passwd::HexEncode(hashed) << std::endl;
 
+  hashed = util::passwd::HashPassword(password, salt);
+  std::cout << util::passwd::HexEncode(hashed) << std::endl;
+  
+  hashed = util::passwd::HashPassword(password, salt);
+  std::cout << util::passwd::HexEncode(hashed) << std::endl;
+
+  hashed = util::passwd::HashPassword("two", salt);
+  std::cout << util::passwd::HexEncode(hashed) << std::endl;
+
+  hashed = util::passwd::HashPassword("my mother fucking password", salt);
+  std::cout << util::passwd::HexEncode(hashed) << std::endl;
+  
   hashed = util::passwd::HashPassword(password, salt);
   std::cout << util::passwd::HexEncode(hashed) << std::endl;
 }
