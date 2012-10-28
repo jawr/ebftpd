@@ -2,12 +2,19 @@
 #include "cmd/site/delip.hpp"
 #include "acl/usercache.hpp"
 #include "acl/ipmaskcache.hpp"
+#include "acl/allowsitecmd.hpp"
 
 namespace cmd { namespace site
 {
 
 cmd::Result DELIPCommand::Execute()
 {
+  if (args[1] != client.User().Name() &&
+     !acl::AllowSiteCmd(client.User(), "delip"))
+  {
+    return cmd::Result::Permission;
+  }
+
   std::ostringstream os;
   acl::User user;
   try
