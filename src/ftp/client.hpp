@@ -106,7 +106,20 @@ public:
       boost::posix_time::second_clock::local_time() - idleTime;
     return boost::posix_time::seconds(diff.total_seconds());
   }
-  const std::string& CurrentCommand() const { return currentCommand; }
+  const std::string& CurrentCommand() const
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    return currentCommand; 
+  }
+  
+  const std::string& Ident() const
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    return ident;
+  }
+  
+  const std::string& Address() const
+  { return control.RemoteEndpoint().IP().ToString(); }
 };
 
 } /* ftp namespace */

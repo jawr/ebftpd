@@ -15,9 +15,13 @@ struct WhoUser
   acl::User user;
   boost::posix_time::seconds idleTime;
   std::string command;
-  WhoUser(const acl::User& user, boost::posix_time::seconds idleTime,
-    const std::string& command) : user(user), idleTime(idleTime), command(command)
-    {}
+  std::string ident;
+  std::string address;
+  WhoUser(const acl::User& user, boost::posix_time::seconds idleTime, 
+          const std::string& command, const std::string& ident, 
+          const std::string& address) : 
+    user(user), idleTime(idleTime), command(command), 
+    ident(ident), address(address) { }
 };
 // end task namespace
 }

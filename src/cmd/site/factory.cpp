@@ -30,6 +30,7 @@
 #include "cmd/site/setpgrp.hpp"
 #include "cmd/site/kick.hpp"
 #include "cmd/site/who.hpp"
+#include "cmd/site/swho.hpp"
 
 #include <iostream>
 
@@ -222,7 +223,7 @@ Factory::Factory()
                       "Syntax: SITE WHO",
                       "Display who's online" }, },
     { "SWHO",       { 0,  0,  "swho",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::SWHOCommand>()),
                       "Syntax: SITE SWHO",
                       "Display detailed who's online" }, },
     { "WIPE",       { 1,  -1,  "wipe",
