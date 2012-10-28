@@ -20,6 +20,7 @@ enum class Result : int
 {
   SyntaxError,
   Finished,
+  Permission,
   Okay
 };
 

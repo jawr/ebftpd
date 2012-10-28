@@ -36,9 +36,14 @@ cmd::Result SITECommand::Execute()
     {
       control.Reply(ftp::NotImplemented, "Command not implemented");
     }
-    else if (command->Execute() == cmd::Result::SyntaxError)
+    else
     {
-      control.Reply(ftp::SyntaxError, def->Syntax());
+      cmd::Result result = command->Execute();
+      if (result == cmd::Result::SyntaxError)
+        control.Reply(ftp::SyntaxError, def->Syntax());
+      else
+      if (result == cmd::Result::Permission)
+        control.Reply(ftp::ActionNotOkay, "SITE " + args[0] + ": Permission denied");
     }
   }
   return cmd::Result::Okay;

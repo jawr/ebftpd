@@ -5,6 +5,7 @@
 #include "acl/ipmaskcache.hpp"
 #include "acl/secureip.hpp"
 #include "acl/ipstrength.hpp"
+#include "acl/allowsitecmd.hpp"
 
 namespace cmd { namespace site
 {
@@ -12,6 +13,11 @@ namespace cmd { namespace site
 cmd::Result ADDIPCommand::Execute()
 {
 
+  if (args[1] != client.User().Name() &&
+     !acl::AllowSiteCmd(client.User(), "addip"))
+  {
+    return cmd::Result::Permission;
+  }
   // race condition between the check if user exists and adding ips
   // possibly we should just start adding the ips to the cache and have 
   // the cache throw an exception if user doesn't exist.
