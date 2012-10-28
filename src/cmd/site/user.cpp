@@ -9,25 +9,45 @@
 #include "db/user/userprofile.hpp"
 #include "db/group/group.hpp"
 #include "util/error.hpp"
+#include "acl/allowsitecmd.hpp"
 
 namespace cmd { namespace site
 {
 
 cmd::Result USERCommand::Execute()
 {
-  acl::User user;
+  if (args.size() == 2 && args[1] != client.User().Name() && 
+      !acl::AllowSiteCmd(client.User(), "user"))
+  {
+    return cmd::Result::Permission;
+  }
+
+  acl::User user(client.User());
+  if (args.size() == 2)
+  {
+    try
+    {
+      user = acl::UserCache::User(args[1]);
+    }
+    catch (const util::RuntimeError& e)
+    {
+      control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+      return cmd::Result::Okay;
+    }
+  }
+
   std::unique_ptr<acl::UserProfile> profile;
-  std::string creator = "<ebftpd>";
   try
   {
-    user = acl::UserCache::User(args[1]);
     profile.reset(db::userprofile::Get(user.UID()));
   }
-  catch (const util::RuntimeError& e)
+  catch (const util::RuntimeError&e )
   {
     control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
     return cmd::Result::Okay;
   }
+  
+  std::string creator = "<ebftpd>";
   try
   {
     acl::User creatorUser = acl::UserCache::User(profile->Creator());

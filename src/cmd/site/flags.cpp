@@ -11,7 +11,8 @@ namespace cmd { namespace site
 
 cmd::Result FLAGSCommand::Execute()
 {
-  if (args.size() == 2 && !acl::AllowSiteCmd(client.User(), "flags"))
+  if (args.size() == 2 && args[1] != client.User().Name() &&
+      !acl::AllowSiteCmd(client.User(), "flags"))
   {
     return cmd::Result::Permission;
   }
