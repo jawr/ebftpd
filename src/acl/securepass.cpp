@@ -8,10 +8,11 @@ namespace acl
 
 bool SecurePass(const User& user, const std::string& password , PasswdStrength& minimum)
 {
+  PasswdStrength strength(password);
   for (auto& sp : cfg::Get().SecurePass())
     if (sp.ACL().Evaluate(user))
     {
-      if (sp.Strength().Allowed(PasswdStrength(password)))
+      if (sp.Strength().Allowed(strength))
         return true;
       else
       {

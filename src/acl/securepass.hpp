@@ -9,7 +9,7 @@ namespace acl
 class PasswdStrength;
 class User;
 
-bool SecurePass(const User& user, const std::string& password, PasswdStrength& strength);
+bool SecurePass(const User& user, const std::string& password, PasswdStrength& minimum);
 
 } /* acl namespace */
 

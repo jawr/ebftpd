@@ -3,6 +3,8 @@
 #include "util/error.hpp"
 #include "acl/usercache.hpp"
 #include "acl/ipmaskcache.hpp"
+#include "acl/secureip.hpp"
+#include "acl/ipstrength.hpp"
 
 namespace cmd { namespace site
 {
@@ -27,22 +29,30 @@ cmd::Result ADDIPCommand::Execute()
     return cmd::Result::Okay;
   }
 
+  acl::IPStrength strength;
   std::vector<std::string> deleted;
-  util::Error ipOkay;
   for (Args::iterator it = args.begin()+2; it != args.end(); ++it)
   {
     if (it != args.begin()+2) os << "\n";
-    deleted.clear();
-    ipOkay = acl::IpMaskCache::Add(user, *it, deleted);
-
-    if (!ipOkay)
-      os << "Error adding " << *it << ": " << ipOkay.Message();
+    if (!acl::SecureIP(client.User(), *it, strength))
+    {
+      os << "Error adding " << *it << ": Must contain " 
+         << strength.NumOctets() << " octets, ";
+      if (strength.HasIdent()) os << "have an ident, ";
+      if (!strength.IsHostname()) os << "not be a hostname.";
+    }
     else
     {
-      os << "IP '" << *it << "' successfully added to " << args[1] << ".";
+      util::Error ipOkay = acl::IpMaskCache::Add(user, *it, deleted);
+      if (!ipOkay)
+        os << "Error adding " << *it << ": " << ipOkay.Message();
+      else
+      {
+        os << "IP '" << *it << "' successfully added to " << args[1] << ".";
 
-      for (auto& del: deleted)
-        os << "Auto-removing useless IP '" << del << "'...";
+        for (auto& del: deleted)
+          os << "Auto-removing unnecessary IP '" << del << "'...";
+      }
     }
   }
 

@@ -11,6 +11,7 @@
 #include "acl/acl.hpp"
 #include "fs/path.hpp"
 #include "acl/passwdstrength.hpp"
+#include "acl/ipstrength.hpp"
 
 namespace cfg { namespace setting
 {
@@ -66,18 +67,14 @@ public:
 
 class SecureIp : public Setting
 {
-  int minFields;
-  bool allowHostname;
-  bool needIdent;
+  acl::IPStrength strength;
   acl::ACL acl;
+
 public:
-  SecureIp() : minFields(2), allowHostname(false), needIdent(true) {
-    acl = acl::ACL::FromString("*");
-  } 
+  SecureIp() : strength(2, false, true) { acl = acl::ACL::FromString("*"); } 
+  
   SecureIp(std::vector<std::string> toks);
-  int MinFields() const { return minFields; }
-  bool AllowHostname() const { return allowHostname; }
-  bool NeedIdent() const { return needIdent; }
+  const acl::IPStrength& Strength() const { return strength; }
   const acl::ACL& ACL() const { return acl; }
 };
 

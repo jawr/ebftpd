@@ -30,10 +30,11 @@ AsciiDownloads::AsciiDownloads(const std::vector<std::string>& toks) :
 
 SecureIp::SecureIp(std::vector<std::string> toks)
 {
-  minFields = boost::lexical_cast<int>(toks.at(0));
-  if (minFields < 0) throw boost::bad_lexical_cast();
-  allowHostname = util::string::BoolLexicalCast(toks.at(1));
-  needIdent = util::string::BoolLexicalCast(toks.at(2));
+  int numOctets = boost::lexical_cast<int>(toks.at(0));
+  if (numOctets < 0) throw boost::bad_lexical_cast();
+  bool isHostname = util::string::BoolLexicalCast(toks.at(1));
+  bool hasIdent = util::string::BoolLexicalCast(toks.at(2));
+  strength = acl::IPStrength(numOctets, isHostname, hasIdent);
   toks.erase(toks.begin(), toks.begin()+3);
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
