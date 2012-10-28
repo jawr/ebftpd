@@ -35,7 +35,7 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
   if (masks == instance.userIPMaskMap.end())
   {
     boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
-    instance.userIPMaskMap.insert({user.UID(), {mask}});
+    instance.userIPMaskMap.insert({user.UID(), std::vector<std::string>({mask})});
     return util::Error::Success();
   }
 
@@ -44,13 +44,13 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
     it != masks->second.end();)
   {
     // check if there is a broader mask
-    if (util::string::WildcardMatch((*it), mask, false))
+    if (util::string::WildcardMatch(*it, mask, false))
       return util::Error::Failure("Broader IP mask exists.");
     // check if mask we are adding is broader
-    else if (util::string::WildcardMatch(mask, (*it), false))
+    else if (util::string::WildcardMatch(mask, *it, false))
     {
-      deleted.push_back((*it));
-      db::ipmask::Delete(user, (*it));
+      deleted.push_back(*it);
+      db::ipmask::Delete(user, *it);
       {
         boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
         it = masks->second.erase(it);
@@ -78,9 +78,9 @@ util::Error IpMaskCache::Delete(const acl::User& user, const std::string& mask)
   std::vector<std::string>::iterator it;
   for (it = masks->second.begin(); it != masks->second.end(); ++it)
   {
-    if ((*it) == mask)
+    if (*it == mask)
     {
-      db::ipmask::Delete(user, (*it));
+      db::ipmask::Delete(user, *it);
       boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
       masks->second.erase(it);
       return util::Error::Success();                                                                      }

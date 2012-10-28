@@ -41,7 +41,7 @@ public:
     std::ostringstream* oss = buffer.get();                                       
     (*oss) << data;                                                               
     return *this;                                                                 
-  };
+  }
 
   Logger& operator<<(std::ostream& (*pf)(std::ostream&));
   Logger& operator<<(Logger& (*pf)(Logger&));

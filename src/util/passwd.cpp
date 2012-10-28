@@ -2,17 +2,18 @@
 #include <crypto++/sha.h>
 #include <crypto++/hex.h>
 #include <crypto++/pwdbased.h>
+#include <crypto++/secblock.h>
 #include "util/passwd.hpp"
 
 namespace util { namespace passwd
 {
 
-std::string GenerateSalt(unsigned int length)
+std::string GenerateSalt(const unsigned int length)
 {
   CryptoPP::AutoSeededRandomPool prng;
-  byte salt[length];
+  CryptoPP::SecByteBlock salt(length);
   prng.GenerateBlock(salt, length);
-  return std::string(&salt[0], &salt[length]);
+  return std::string(std::begin(salt), std::end(salt));
 }
 
 std::string HashPassword(const std::string& password, const std::string& salt)

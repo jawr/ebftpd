@@ -18,7 +18,7 @@ namespace util { namespace net
 enum class SocketType : int
 {
   Stream = SOCK_STREAM,
-  Datagram = SOCK_DGRAM,
+  Datagram = SOCK_DGRAM
 };
 
 class ResolverError : public NetworkError
