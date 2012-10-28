@@ -102,9 +102,9 @@ public:
 
   boost::posix_time::seconds IdleTime() const 
   { 
-    boost::posix_time::time_duration diff = 
-      boost::posix_time::second_clock::local_time() - idleTime;
-    return boost::posix_time::seconds(diff.total_seconds());
+    namespace pt = boost::posix_time;
+    pt::time_duration diff = pt::second_clock::local_time() - idleTime;
+    return pt::seconds(diff.total_seconds());
   }
   const std::string& CurrentCommand() const
   {
