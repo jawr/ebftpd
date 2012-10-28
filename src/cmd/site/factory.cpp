@@ -229,7 +229,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<site::WIPECommand>()),
                       "Syntax: SITE WIPE [-R] <pathmask>",
                       "Wipe a file or directory (and it's contents)" }, },
-    { "LOGS",       { 1,  -1, "errorlog|securitylog|eventlog|dblog|sysoplog",
+    { "LOGS",       { 1,  -1, "logs|errorlog|securitylog|eventlog|dblog|sysoplog",
                       CreatorBasePtr(new Creator<site::LOGSCommand>()),
                       "Syntax: SITE -[-MAX <number>] LOGS ERROR|SECURITY|EVENTS|DB|SYSOP [<string> ..]",
                       "Display entries from a system log" }, },

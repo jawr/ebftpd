@@ -50,22 +50,32 @@ cmd::Result WHOCommand::Execute()
     }
     acl::UserProfile profile = acl::UserProfileCache::UserProfile(user.user.UID());
     
-    os << "\n| " << user.user.Name() << " | " << group << " | ";
-    os << profile.Tagline() << " | ";
+    os << "\n| " << std::left << std::setw(9) << user.user.Name().substr(0, 9) 
+       << " | " << std::left << std::setw(8) << group.substr(0, 8) 
+       << " | " << std::left << std::setw(16) << profile.Tagline().substr(0, 16)  << " | ";
     
     if (user.command.empty())
-      os << "IDLE for " << user.idleTime;
+    {
+      std::ostringstream format;
+      format << "IDLE for " << user.idleTime;
+      os << std::left << std::setw(29) << format.str().substr(0, 29);
+    }
     else 
-      os << user.command;
+      os << std::left << std::setw(29) << user.command.substr(0, 29);
     os << " |";
 
   }
 
   os << "\n|-----------+----------+------------+-----+-------------------------------|";
-  os << "\n| " << users.size() << " of " << cfg.TotalUsers();
-  os << " users(s) currently online.";
+
+  {
+    std::ostringstream format;
+    format << users.size() << " of " << cfg.TotalUsers() << " users(s) currently online.";
+    os << "\n| " << std::left << std::setw(71) << format.str().substr(0, 71) << " |";
+  }
+
   os << "\n`-------------------------------------------------------------------------'";
-  control.Reply(ftp::CommandOkay, os.str());
+  control.MultiReply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay; 
 }
 

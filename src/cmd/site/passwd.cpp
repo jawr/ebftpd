@@ -13,12 +13,12 @@ cmd::Result PASSWDCommand::Execute()
   cpArgStr += client.User().Name();
   cpArgStr += " ";
   cpArgStr += args[1];
-  
+
   std::vector<std::string> cpArgs;
   boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
   
   CommandPtr command(cmd::site::Factory::
-      Lookup(args[0])->Create(client, cpArgStr, cpArgs));
+      Lookup(cpArgs[0])->Create(client, cpArgStr, cpArgs));
   assert(command.get());
   command->Execute();
   return cmd::Result::Okay;
