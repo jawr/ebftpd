@@ -70,7 +70,7 @@ void Listener::HandleClients()
        it != clients.end();)
   {
     ftp::Client& client = *it;
-    if (client.IsFinished())
+    if (client.State() == ClientState::Finished)
     {
       client.Join();
       clients.erase(it++);

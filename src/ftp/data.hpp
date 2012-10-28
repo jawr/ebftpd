@@ -16,26 +16,26 @@ namespace ftp
 
 class Client;
 
-enum class EPSVMode : uint8_t
+enum class EPSVMode
 {
   Normal,
   Full
 };
 
-enum class DataType : uint8_t
+enum class DataType
 {
   ASCII,
   Binary
 };
 
-enum class TransferType : uint8_t
+enum class TransferType
 {
   Upload,
   Download,
   List
 };
 
-enum class PassiveType : uint8_t
+enum class PassiveType
 {
   PASV,
   EPSV,

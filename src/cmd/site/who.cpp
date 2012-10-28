@@ -1,5 +1,6 @@
 #include <vector>
 #include <boost/thread/future.hpp>
+#include <boost/optional.hpp>
 #include "cmd/site/who.hpp"
 #include "acl/user.hpp"
 #include "acl/userprofile.hpp"
@@ -11,6 +12,7 @@
 #include "ftp/task/task.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -38,9 +40,19 @@ cmd::Result WHOCommand::Execute()
   std::string group;
   for (auto& user: users)
   {
+    boost::optional<acl::UserProfile> profile;
     try
     {
-      group.clear();
+      profile.reset(acl::UserProfileCache::UserProfile(user.user.UID()));
+    }
+    catch (const util::RuntimeError& e)
+    {
+      logs::error << "Unable to retrieve profile from user profile cache for user: " 
+                  << user.user.Name() << logs::endl;
+    }
+    
+    try
+    {
       groupObj = acl::GroupCache::Group(user.user.PrimaryGID());
       group = groupObj.Name();
     }
@@ -48,11 +60,11 @@ cmd::Result WHOCommand::Execute()
     {
       group = "NoGroup";
     }
-    acl::UserProfile profile = acl::UserProfileCache::UserProfile(user.user.UID());
     
     os << "\n| " << std::left << std::setw(9) << user.user.Name().substr(0, 9) 
        << " | " << std::left << std::setw(8) << group.substr(0, 8) 
-       << " | " << std::left << std::setw(16) << profile.Tagline().substr(0, 16)  << " | ";
+       << " | " << std::left << std::setw(16) 
+       << (profile ? profile->Tagline().substr(0, 16) : "")  << " | ";
     
     if (user.command.empty())
     {

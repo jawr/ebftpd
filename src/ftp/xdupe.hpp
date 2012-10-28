@@ -6,7 +6,7 @@
 namespace ftp
 {
 
-enum class XDupeMode : uint8_t
+enum class XDupeMode
 {
   Disabled = 0,
   One = 1,

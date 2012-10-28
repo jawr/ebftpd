@@ -18,7 +18,7 @@ class TLSSocket : private boost::noncopyable
   void EvaluateResult(int result);  
   
 public:
-  enum HandshakeRole : uint8_t
+  enum HandshakeRole
   {
     Server,
     Client

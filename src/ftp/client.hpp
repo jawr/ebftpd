@@ -20,7 +20,7 @@
 namespace ftp 
 {
 
-enum class ClientState : uint8_t
+enum class ClientState
 {
   LoggedOut,
   WaitingPassword,
@@ -71,9 +71,7 @@ public:
   
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;
-  void SetFinished();
   void SetLoggedIn();
-  void SetLoggedOut();
   void SetWaitingPassword(const acl::User& user);
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
@@ -120,6 +118,14 @@ public:
   
   const std::string& Address() const
   { return control.RemoteEndpoint().IP().ToString(); }
+  
+  ClientState State() const
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    return state;
+  }
+
+  void SetState(ClientState state);
 };
 
 } /* ftp namespace */

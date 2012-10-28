@@ -9,7 +9,7 @@ void KickUser::Execute(Listener& listener)
   for (auto& client: listener.clients)
   {
     if (client.User().UID() == uid)
-      client.SetFinished(); 
+      client.SetState(ClientState::Finished); 
   }
 }
 
@@ -17,8 +17,11 @@ void GetOnlineUsers::Execute(Listener& listener)
 {
   for (auto& client: listener.clients)
   {
-    users.emplace_back(WhoUser(client.User(), client.IdleTime(), 
-      client.CurrentCommand(), client.Ident(), client.Address()));
+    if (client.State() == ClientState::LoggedIn)
+    {
+      users.emplace_back(WhoUser(client.User(), client.IdleTime(), 
+        client.CurrentCommand(), client.Ident(), client.Address()));
+    }
   }
   promise.set_value(true);
 }

@@ -12,12 +12,12 @@ cmd::Result PASSCommand::Execute()
     {
       control.Reply(ftp::NotLoggedIn,
                   "Password attempts exceeded, disconnecting.");
-      client.SetFinished();
+      client.SetState(ftp::ClientState::Finished);
     }
     else
     {
       control.Reply(ftp::NotLoggedIn, "Login incorrect.");
-      client.SetLoggedOut();
+      client.SetState(ftp::ClientState::LoggedOut);
     }
     return cmd::Result::Okay;
   }
@@ -25,7 +25,7 @@ cmd::Result PASSCommand::Execute()
   if (client.User().Deleted())
   {
     control.Reply(ftp::ServiceUnavailable, "You have been deleted. Goodbye.");
-    client.SetFinished();
+    client.SetState(ftp::ClientState::Finished);
     return cmd::Result::Okay;
   }
   
@@ -35,7 +35,7 @@ cmd::Result PASSCommand::Execute()
   {
     control.Reply(ftp::ServiceUnavailable, 
       "Unable to change to site root directory: " + e.Message());
-    client.SetFinished();
+    client.SetState(ftp::ClientState::Finished);
     return cmd::Result::Okay;
   }
   

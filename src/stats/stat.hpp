@@ -9,7 +9,7 @@
 namespace stats
 {
 
-enum class Direction : uint8_t
+enum class Direction
 {
   Upload,
   Download

@@ -40,10 +40,12 @@ Client::~Client()
 {
 }
 
-bool Client::IsFinished() const
+void Client::SetState(ClientState state)
 {
+  assert(state != ClientState::LoggedIn); // these 2 states have own setter
+  assert(state != ClientState::WaitingPassword);
   boost::lock_guard<boost::mutex> lock(mutex);
-  return state == ClientState::Finished;
+  this->state = state;
 }
 
 void Client::SetLoggedIn()
@@ -62,18 +64,6 @@ void Client::SetWaitingPassword(const acl::User& user)
   }
   
   this->user = user;
-}
-
-void Client::SetLoggedOut()
-{
-  boost::lock_guard<boost::mutex> lock(mutex);
-  state = ClientState::LoggedOut;
-}
-
-void Client::SetFinished()
-{
-  boost::lock_guard<boost::mutex> lock(mutex);
-  state = ClientState::Finished;
 }
 
 bool Client::CheckState(ClientState reqdState)
@@ -124,7 +114,7 @@ bool Client::Accept(util::net::TCPListener& server)
   }
   catch(const util::net::NetworkError& e)
   {
-    SetFinished();
+    SetState(ClientState::Finished);
     logs::error << "Error while accepting new client: " << e.Message() << logs::endl;
     return false;
   }
@@ -169,6 +159,7 @@ void Client::ExecuteCommand(const std::string& commandLine)
   std::string argStr(commandLine.substr(args[0].length()));
   boost::trim(argStr);
   boost::to_upper(args[0]);
+  currentCommand = args[0] + " " + argStr;
   cmd::rfc::CommandDefOptRef def(cmd::rfc::Factory::Lookup(args[0]));
   if (!def)
   {
@@ -180,7 +171,6 @@ void Client::ExecuteCommand(const std::string& commandLine)
   }
   else if (CheckState(def->RequiredState()))
   {
-    currentCommand = argStr;
     cmd::CommandPtr command(def->Create(*this, argStr, args));
     if (!command)
     {
@@ -202,7 +192,7 @@ void Client::Handle()
 {
   namespace pt = boost::posix_time;
 
-  while (!IsFinished())
+  while (State() != ClientState::Finished)
   {
     pt::time_duration timeout = idleExpires - pt::second_clock::local_time();
     ExecuteCommand(control.NextCommand(timeout));
@@ -243,7 +233,7 @@ void Client::Run()
   using util::scope_guard;
   using util::make_guard;
   
-  scope_guard finishedGuard = make_guard([this]{ SetFinished(); });
+  scope_guard finishedGuard = make_guard([&]{ SetState(ClientState::Finished); });
 
   LookupIdent();
   

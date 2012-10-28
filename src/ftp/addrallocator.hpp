@@ -13,7 +13,7 @@
 namespace ftp
 {
 
-enum class AddrType : uint8_t
+enum class AddrType
 {
   Active,
   Passive

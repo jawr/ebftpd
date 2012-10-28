@@ -273,7 +273,9 @@ util::Error UserProfileCache::SetMaxSimUl(UserID uid, const std::string& value)
 acl::UserProfile UserProfileCache::UserProfile(acl::UserID uid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  return *instance.byUID[uid];
+  auto it = instance.byUID.find(uid);
+  if (it == instance.byUID.end()) throw util::RuntimeError("Unable to load profile");
+  return *it->second;
 }
 
 // end

@@ -6,7 +6,7 @@ namespace cmd { namespace rfc
 cmd::Result QUITCommand::Execute()
 {
   control.Reply(ftp::ClosingControl, "Bye bye"); 
-  client.SetFinished();
+  client.SetState(ftp::ClientState::Finished);
   return cmd::Result::Okay;
 }
 

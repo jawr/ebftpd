@@ -6,7 +6,7 @@
 
 namespace ftp
 {
-enum class TransferType : uint8_t;
+enum class TransferType;
 }
 
 namespace acl
