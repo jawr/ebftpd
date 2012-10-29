@@ -3,7 +3,6 @@
 #include "cmd/site/swho.hpp"
 #include "acl/user.hpp"
 #include "acl/userprofile.hpp"
-#include "acl/userprofilecache.hpp"
 #include "acl/group.hpp"
 #include "acl/groupcache.hpp"
 #include "ftp/listener.hpp"
@@ -11,6 +10,7 @@
 #include "ftp/task/task.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace site
 {

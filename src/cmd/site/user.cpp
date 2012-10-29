@@ -36,10 +36,10 @@ cmd::Result USERCommand::Execute()
     }
   }
 
-  std::unique_ptr<acl::UserProfile> profile;
+  acl::UserProfile profile;
   try
   {
-    profile.reset(db::userprofile::Get(user.UID()));
+    profile = db::userprofile::Get(user.UID());
   }
   catch (const util::RuntimeError&e )
   {

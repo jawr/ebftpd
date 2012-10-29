@@ -50,12 +50,24 @@ cmd::Result WHOCommand::Execute()
       group = "NoGroup";
     }
 
-    acl::UserProfile profile = db::userprofile::Get(user.user.UID());
+    acl::UserProfile profile;
+    try
+    {
+      profile = db::userprofile::Get(user.user.UID());
+    }
+    catch (const util::RuntimeError& e)
+    {
+      // no userprofile.. should never get here, but we will print err for 
+      // this user
+      os << "\n| Error getting UserProfile for " << user.user.Name() 
+         << ": " << e.Message();
+      continue;
+    }
     
     os << "\n| " << std::left << std::setw(9) << user.user.Name().substr(0, 9) 
        << " | " << std::left << std::setw(8) << group.substr(0, 8) 
        << " | " << std::left << std::setw(20) 
-       << (profile ? profile->Tagline().substr(0, 20) : "")  << " | ";
+       << profile.Tagline().substr(0, 20) << " | ";
     
     if (user.command.empty())
     {
