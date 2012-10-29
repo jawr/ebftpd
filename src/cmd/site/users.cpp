@@ -1,9 +1,9 @@
 #include <sstream>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "db/acl/acl.hpp"
 #include "cmd/site/users.hpp"
 #include "util/error.hpp"
 #include "acl/types.hpp"
+#include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
 
 namespace cmd { namespace site
@@ -13,7 +13,7 @@ cmd::Result USERSCommand::Execute()
 {
   std::ostringstream os;
   boost::ptr_vector<acl::User> users;
-  util::Error ok = db::GetUsersByACL(users, args[1]);
+  util::Error ok = db::user::UsersByACL(users, args[1]);
 
   if (!ok)
   {

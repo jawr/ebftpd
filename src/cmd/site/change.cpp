@@ -2,7 +2,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "cmd/site/change.hpp"
 #include "acl/usercache.hpp"
-#include "db/acl/acl.hpp"
+#include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
 
 namespace cmd { namespace site
@@ -14,7 +14,7 @@ cmd::Result CHANGECommand::Execute()
   std::string acl = args[1];
   if (acl[0] != '=') acl = "-" + acl;
 
-  util::Error ok = db::GetUsersByACL(users, acl);
+  util::Error ok = db::user::UsersByACL(users, acl);
 
   if (!ok)
   {

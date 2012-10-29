@@ -34,6 +34,7 @@
 #include "cmd/site/give.hpp"
 #include "cmd/site/take.hpp"
 #include "cmd/site/stats.hpp"
+#include "cmd/site/group.hpp"
 
 #include <iostream>
 
@@ -254,7 +255,7 @@ Factory::Factory()
                       "Syntax: SITE GROUPS",
                       "Display a list of all groups" }, },
     { "GROUP",      { 0,  1,  "group",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GROUPCommand>()),
                       "Syntax: SITE GROUP",
                       "Display detailed group info" }, },
     { "GRPCHANGE",  { 3,  3,  "grpchange", 

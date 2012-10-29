@@ -89,8 +89,8 @@ void GetAll(boost::ptr_vector<acl::User>& users)
 }
 
 
-util::Error GetUsersByACL(boost::ptr_vector<acl::User>& users,
-  std::string& acl)
+util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
+  std::string acl)
 {
   mongo::Query query;
   if (acl[0] == '-')
