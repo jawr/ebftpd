@@ -6,6 +6,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/user.hpp"
+#include "acl/userprofile.hpp"
 #include "util/net/tcpsocket.hpp"
 #include "util/net/tcplistener.hpp"
 #include "util/thread.hpp"
@@ -47,6 +48,8 @@ class Client : public util::Thread
   std::string confirmCommand;
   std::string currentCommand;
 
+  acl::UserProfile profile;
+
   boost::posix_time::ptime loggedInAt;
   boost::posix_time::ptime idleExpires;
   boost::posix_time::seconds idleTimeout;
@@ -68,6 +71,7 @@ public:
      
   const fs::Path& WorkDir() const { return workDir; }
   const acl::User& User() const { return user; }
+  const acl::UserProfile& UserProfile() const { return profile; }
   
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;

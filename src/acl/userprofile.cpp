@@ -4,8 +4,9 @@
 namespace acl
 {
 
-UserProfile::UserProfile(acl::UserID uid) :
+UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
   uid(uid),
+  creator(creator),
   ratio(3),
   homeDir("/"),
   startupDir("/"),

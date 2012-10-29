@@ -1,7 +1,7 @@
 #include <cctype>
 #include "cmd/site/tagline.hpp"
 #include "acl/usercache.hpp"
-#include "acl/userprofilecache.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace site
 {
@@ -28,7 +28,7 @@ cmd::Result TAGLINECommand::Execute()
     return cmd::Result::Okay;
   }
 
-  util::Error ok = acl::UserProfileCache::SetTagline(client.User().UID(), argStr);
+  util::Error ok = db::userprofile::SetTagline(client.User().UID(), argStr);
   if (!ok)
     control.Reply(ftp::ActionNotOkay, ok.Message());
   else

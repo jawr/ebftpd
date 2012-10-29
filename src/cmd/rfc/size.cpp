@@ -1,5 +1,6 @@
 #include <boost/lexical_cast.hpp>
 #include "cmd/rfc/size.hpp"
+#include "fs/file.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
 
@@ -19,10 +20,10 @@ cmd::Result SIZECommand::Execute()
     return cmd::Result::Okay;
   }
   
-  fs::Status status;
   try
   {
-    status.Reset(cfg::Get().Sitepath() + absolute);
+    control.Reply(ftp::FileStatus, 
+      boost::lexical_cast<std::string>(fs::SizeFile(client, argStr))); 
   }
   catch (const util::SystemError& e)
   {
@@ -30,7 +31,6 @@ cmd::Result SIZECommand::Execute()
     return cmd::Result::Okay;
   }
   
-  control.Reply(ftp::FileStatus, boost::lexical_cast<std::string>(status.Size())); 
   return cmd::Result::Okay;
 }
 

@@ -14,7 +14,7 @@ namespace db { namespace bson
 struct UserProfile
 {
   static mongo::BSONObj Serialize(const acl::UserProfile& profile);
-  static acl::UserProfile* Unserialize(const mongo::BSONObj& bo);
+  static acl::UserProfile Unserialize(const mongo::BSONObj& bo);
 };
 
 } /* bson namespace */

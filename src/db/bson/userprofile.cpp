@@ -29,38 +29,37 @@ mongo::BSONObj UserProfile::Serialize(const acl::UserProfile& profile)
   return bob.obj();
 }
 
-acl::UserProfile* UserProfile::Unserialize(const mongo::BSONObj& bo)
+acl::UserProfile UserProfile::Unserialize(const mongo::BSONObj& bo)
 {
-  std::unique_ptr<acl::UserProfile> 
-    profile(new acl::UserProfile(acl::UserID(bo["uid"].Int())));
+  acl::UserProfile profile(bo["uid"].Int(), bo["creator"].Int());
 
-  profile->ratio = bo["ratio"].Int();
-  profile->weeklyAllotment = bo["weekly allotment"].Int();
-  profile->homeDir = bo["home dir"].String();
-  profile->startupDir = bo["startup dir"].String();
-  profile->idleTime = bo["idle time"].Int();
-  profile->SetExpires(bo["expires"].String());
-  profile->numLogins = bo["num logins"].Int();
-  profile->tagline = bo["tagline"].String();
-  profile->comment = bo["comment"].String();
-  profile->maxDlSpeed = bo["max dl speed"].Int();
-  profile->maxUlSpeed = bo["max ul speed"].Int();
-  profile->maxSimDl = bo["max sim dl"].Int();
-  profile->maxSimUl = bo["max sim ul"].Int();
-  profile->creator = bo["creator"].Int();
+  profile.ratio = bo["ratio"].Int();
+  profile.weeklyAllotment = bo["weekly allotment"].Int();
+  profile.homeDir = bo["home dir"].String();
+  profile.startupDir = bo["startup dir"].String();
+  profile.idleTime = bo["idle time"].Int();
+  profile.SetExpires(bo["expires"].String());
+  profile.numLogins = bo["num logins"].Int();
+  profile.tagline = bo["tagline"].String();
+  profile.comment = bo["comment"].String();
+  profile.maxDlSpeed = bo["max dl speed"].Int();
+  profile.maxUlSpeed = bo["max ul speed"].Int();
+  profile.maxSimDl = bo["max sim dl"].Int();
+  profile.maxSimUl = bo["max sim ul"].Int();
+  profile.creator = bo["creator"].Int();
 
   if (bo.hasField("last login"))
-    profile->lastLogin = bo["last login"].Date().toString();
+    profile.lastLogin = bo["last login"].Date().toString();
 
   if (bo.hasField("logged in"))
-    profile->loggedIn = bo["logged in"].Int();
+    profile.loggedIn = bo["logged in"].Int();
   
   mongo::BSONElement date;
   bo.getObjectID(date);
   auto oid = date.OID();
-  profile->created = oid.asDateT().toString();
+  profile.created = oid.asDateT().toString();
 
-  return profile.release();
+  return profile;
 }
   
 } /* bson namespace */

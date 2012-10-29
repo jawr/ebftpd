@@ -44,6 +44,9 @@ public:
   static util::Error DelSecondaryGID(const std::string& name, GroupID secondaryGID);
   static util::Error ResetSecondaryGID(const std::string& name);
 
+  static util::Error IncrCredits(const std::string& name, long long kbytes);
+  static util::Error DecrCredits(const std::string& name, long long kbytes);
+
   static void Initalize();
   
   // these return const as the user objects should NEVER

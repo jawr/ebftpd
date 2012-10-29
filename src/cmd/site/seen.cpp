@@ -11,11 +11,11 @@ namespace cmd { namespace site
 cmd::Result SEENCommand::Execute()
 {
   acl::User user;
-  std::unique_ptr<acl::UserProfile> profile;
+  acl::UserProfile profile;
   try
   {
     user = acl::UserCache::User(args[1]);
-    profile.reset(db::userprofile::Get(user.UID()));
+    profile = db::userprofile::Get(user.UID());
   }
   catch (const util::RuntimeError& e)
   {
@@ -23,11 +23,11 @@ cmd::Result SEENCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  if (profile->LastLogin().empty())
+  if (profile.LastLogin().empty())
     control.Reply(ftp::CommandOkay, "No seen record for " + args[1] + ".");
   else
     control.Reply(ftp::CommandOkay, 
-      "Last saw " + args[1] + " on " + profile->LastLogin());
+      "Last saw " + args[1] + " on " + profile.LastLogin());
   return cmd::Result::Okay;
 }
 

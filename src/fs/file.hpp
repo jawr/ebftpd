@@ -35,6 +35,8 @@ InStreamPtr OpenFile(ftp::Client& client, const Path& path);
 util::Error UniqueFile(ftp::Client& client, const Path& path, 
                        size_t filenameLength, Path& uniquePath);
 
+off_t SizeFile(ftp::Client& client, const Path& path); // throws an exception and doesn't check perms
+
 } /* fs namespace */
 
 #endif

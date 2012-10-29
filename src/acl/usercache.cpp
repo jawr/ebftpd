@@ -2,7 +2,7 @@
 #include <vector>
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
-#include "acl/userprofilecache.hpp"
+#include "db/user/userprofile.hpp"
 #include "db/user/user.hpp"
 #include "logs/logs.hpp"
 
@@ -77,8 +77,10 @@ util::Error UserCache::Create(const std::string& name, const std::string& passwo
     instance.byUID.insert(std::make_pair(uid, user.get()));
     
     Save(*user.release());
+    UserProfile profile(uid, creator);
+    db::userprofile::Save(profile);
+    return util::Error::Success();
   }
-  return UserProfileCache::Create(uid, creator);
 }
 
 util::Error UserCache::Purge(const std::string& name)
@@ -252,6 +254,26 @@ util::Error UserCache::ResetSecondaryGID(const std::string& name)
 
   Save(*it->second);
 
+  return util::Error::Success();
+}
+
+util::Error UserCache::IncrCredits(const std::string& name, long long kbytes)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  it->second->IncrCredits(kbytes);
+  Save(*it->second);
+  return util::Error::Success();
+}
+
+util::Error UserCache::DecrCredits(const std::string& name, long long kbytes)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  it->second->DecrCredits(kbytes);
+  Save(*it->second);
   return util::Error::Success();
 }
 

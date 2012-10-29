@@ -31,6 +31,9 @@
 #include "cmd/site/kick.hpp"
 #include "cmd/site/who.hpp"
 #include "cmd/site/swho.hpp"
+#include "cmd/site/give.hpp"
+#include "cmd/site/take.hpp"
+#include "cmd/site/stats.hpp"
 
 #include <iostream>
 
@@ -123,15 +126,15 @@ Factory::Factory()
                       "Syntax: SITE USERS [<criteria> ..]",
                       "Detailed list of users" }, },
     { "GIVE",       { 2,  3,  "give",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GIVECommand>()),
                       "Syntax: SITE GIVE <user> <credits>G|M [<message>]",
                       "Give credits to user" }, },
     { "TAKE",       { 2, 3,   "take",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::TAKECommand>()),
                       "Syntax: SITE TAKE <user> <credits>G|M [<message>]",
                       "Take credits from user" }, },
     { "STATS",      { 0,  1,  "stats|statsown",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::STATSCommand>()),
                       "Syntax: SITE STATS [<user>]",
                       "Display user's transfer stats" }, },
     { "USER",       { 0,  1,  "user|userown",
