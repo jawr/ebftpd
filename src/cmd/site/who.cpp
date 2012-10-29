@@ -32,9 +32,9 @@ cmd::Result WHOCommand::Execute()
 
   std::ostringstream os;
   os << "Users logged on to " << cfg.SitenameShort();
-  os << "\n.-------------------------------------------------------------------------.";
-  os << "\n| User        Group      Unfo               Action                        |";
-  os << "\n|-----------+----------+------------------+-------------------------------|";
+  os << "\n.-----------.----------.----------------------.--------------------------------.";
+  os << "\n| User      | Group    | Tagline              | Activity                       |";
+  os << "\n|-----------+----------+----------------------+--------------------------------|";
 
   acl::Group groupObj;
   std::string group;
@@ -63,30 +63,30 @@ cmd::Result WHOCommand::Execute()
     
     os << "\n| " << std::left << std::setw(9) << user.user.Name().substr(0, 9) 
        << " | " << std::left << std::setw(8) << group.substr(0, 8) 
-       << " | " << std::left << std::setw(16) 
-       << (profile ? profile->Tagline().substr(0, 16) : "")  << " | ";
+       << " | " << std::left << std::setw(20) 
+       << (profile ? profile->Tagline().substr(0, 20) : "")  << " | ";
     
     if (user.command.empty())
     {
       std::ostringstream format;
       format << "IDLE for " << user.idleTime;
-      os << std::left << std::setw(29) << format.str().substr(0, 29);
+      os << std::left << std::setw(30) << format.str().substr(0, 30);
     }
     else 
-      os << std::left << std::setw(29) << user.command.substr(0, 29);
+      os << std::left << std::setw(30) << user.command.substr(0, 30);
     os << " |";
 
   }
 
-  os << "\n|-----------+----------+------------+-----+-------------------------------|";
+  os << "\n|-----------+----------+----------------------+--------------------------------|";
 
   {
     std::ostringstream format;
     format << users.size() << " of " << cfg.TotalUsers() << " users(s) currently online.";
-    os << "\n| " << std::left << std::setw(71) << format.str().substr(0, 71) << " |";
+    os << "\n| " << std::left << std::setw(76) << format.str().substr(0, 76) << " |";
   }
 
-  os << "\n`-------------------------------------------------------------------------'";
+  os << "\n`------------------------------------------------------------------------------'";
   control.MultiReply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay; 
 }
