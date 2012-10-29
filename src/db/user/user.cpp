@@ -41,6 +41,15 @@ void Save(const acl::User& user)
   Pool::Queue(task);
 }
 
+void Save(const acl::User& user, const std::string& field)
+{
+  mongo::BSONObj userObj = db::bson::User::Serialize(user);
+  mongo::Query query = QUERY("uid" << user.UID());
+  mongo::BSONObj obj = BSON("$set" << BSON(field << userObj[field]));
+  TaskPtr task(new db::Update("users", query, obj, false));
+  Pool::Queue(task);
+}
+
 void Login(const acl::UserID& uid)
 {
   // updates login count and time

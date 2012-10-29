@@ -3,6 +3,7 @@
 #include "util/passwd.hpp"
 #include "acl/user.hpp"
 #include "acl/types.hpp"
+#include "db/user/user.hpp"
 
 namespace acl
 {
