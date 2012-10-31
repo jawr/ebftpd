@@ -24,6 +24,28 @@ acl::UserProfile Get(const acl::UserID& uid)
   return bson::UserProfile::Unserialize(*results.begin());
 }
 
+void GetSelection(boost::ptr_vector<acl::User>& users,
+  std::map<acl::UserID, acl::UserProfile>& profiles)
+{
+  QueryResults results;
+  mongo::BSONArrayBuilder b;
+  for (auto& user: users)
+    b.append(user.UID());
+  boost::unique_future<bool> future;
+  mongo::Query query = BSON("uid" << BSON("$in" << b.arr()));
+
+  TaskPtr task(new db::Select("userprofiles", query, results, future));
+  Pool::Queue(task);
+
+  future.wait();
+
+  for (auto& result: results)
+  {
+    acl::UserProfile profile = db::bson::UserProfile::Unserialize(result);
+    profiles.insert(std::make_pair(profile.UID(), profile));
+  }
+}
+
 void Save(const acl::UserProfile& profile)
 {
   mongo::BSONObj obj = db::bson::UserProfile::Serialize(profile);

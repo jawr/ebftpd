@@ -2,6 +2,8 @@
 #define __DB_USER_USERPROFILE_HPP
 
 #include <vector>
+#include <map>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <mongo/client/dbclient.h>
 #include "acl/userprofile.hpp"
 #include "acl/types.hpp"
@@ -13,6 +15,8 @@ namespace db { namespace userprofile
   void Save(const acl::UserProfile& profile);
   void GetAll(std::vector<acl::UserProfile>& profiles);
   acl::UserProfile Get(const acl::UserID& uid);
+  void GetSelection(boost::ptr_vector<acl::User>& users,
+    std::map<acl::UserID, acl::UserProfile>& profiles);
 
   // setters
   void Set(const acl::UserID uid, mongo::BSONObj obj);

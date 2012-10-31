@@ -7,6 +7,7 @@
 #include "db/types.hpp"
 #include "db/bson/stat.hpp"
 #include "util/error.hpp"
+#include "util/time.hpp"
 
 namespace db { namespace stats
 {
@@ -33,6 +34,12 @@ void Get(mongo::Query& query, QueryResults& results)
   return db::bson::Stat::Unserialize(results.front());
 }
 
+void GetAllDown(const std::vector<acl::User>& users,
+  std::map<acl::UserID, ::stats::Stat>& stats, int week, int year)
+{
+  
+}
+
 ::stats::Stat GetWeekUp(const acl::UserID& uid, int week, int year)
 {
   QueryResults results;
@@ -44,11 +51,10 @@ void Get(mongo::Query& query, QueryResults& results)
 
 void UploadDecr(const acl::User& user, long long kbytes)
 {
-  using namespace boost::posix_time;
-  auto now = second_clock::local_time();
-  mongo::Query query = QUERY("uid" << user.UID() << "day" << now.date().day()
-    << "week" << now.date().week_number() << "month" 
-    << now.date().month().as_number() << "year" << now.date().year()
+  util::Time::Update();
+  mongo::Query query = QUERY("uid" << user.UID() << "day" << util::Time::Day()
+    << "week" << util::Time::Week() << "month" 
+    << util::Time::Month() << "year" << util::Time::Year()
     << "direction" << "up");
   mongo::BSONObj obj = BSON(
     "$inc" << BSON("files" << -1) <<
@@ -60,11 +66,10 @@ void UploadDecr(const acl::User& user, long long kbytes)
 
 void Upload(const acl::User& user, long long kbytes, long long xfertime)
 {
-  using namespace boost::posix_time;
-  auto now = second_clock::local_time();
-  mongo::Query query = QUERY("uid" << user.UID() << "day" << now.date().day()
-    << "week" << now.date().week_number() << "month" 
-    << now.date().month().as_number() << "year" << now.date().year()
+  util::Time::Update();
+  mongo::Query query = QUERY("uid" << user.UID() << "day" << util::Time::Day()
+    << "week" << util::Time::Week() << "month" 
+    << util::Time::Month() << "year" << util::Time::Year()
     << "direction" << "up");
   mongo::BSONObj obj = BSON(
     "$inc" << BSON("files" << 1) <<
@@ -76,11 +81,10 @@ void Upload(const acl::User& user, long long kbytes, long long xfertime)
 
 void Download(const acl::User& user, long long kbytes, long long xfertime)
 {
-  using namespace boost::posix_time;
-  auto now = second_clock::local_time();
-  mongo::Query query = QUERY("uid" << user.UID() << "day" << now.date().day()
-    << "week" << now.date().week_number() << "month" 
-    << now.date().month().as_number() << "year" << now.date().year()
+  util::Time::Update();
+  mongo::Query query = QUERY("uid" << user.UID() << "day" << util::Time::Day()
+    << "week" << util::Time::Week() << "month" 
+    << util::Time::Month() << "year" << util::Time::Year()
     << "direction" << "dn");
   mongo::BSONObj obj = BSON(
     "$inc" << BSON("files" << 1) <<

@@ -47,6 +47,10 @@ public:
   long long Kbytes() const { return kbytes; }
   long long Xfertime() const { return xfertime; }
 
+  void IncrFiles(int files) { this->files += files; }
+  void IncrKbytes(long long kbytes) { this->kbytes += kbytes; }
+  void IncrXfertime(long long xfertime) { this->xfertime += xfertime; }
+
   friend class db::bson::Stat;
   
 };
