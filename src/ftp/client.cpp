@@ -55,7 +55,15 @@ void Client::SetLoggedIn()
   state = ClientState::LoggedIn;
   loggedInAt = boost::posix_time::second_clock::local_time();
   db::user::Login(user.UID());
-  profile = db::userprofile::Get(user.UID());
+  try
+  {
+    profile = db::userprofile::Get(user.UID());
+  }
+  catch (const util::RuntimeError& e)
+  {
+    logs::error << "Error loading UserProfile for " << user.Name() << logs::endl;
+    // do we make a blank profile here?
+  }
 }
 
 void Client::SetWaitingPassword(const acl::User& user)
