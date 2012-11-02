@@ -34,9 +34,58 @@ void Get(mongo::Query& query, QueryResults& results)
   return db::bson::Stat::Unserialize(results.front());
 }
 
-void GetAllDown(const std::vector<acl::User>& users,
-  std::map<acl::UserID, ::stats::Stat>& stats, int week, int year)
+void GetAllUp(const boost::ptr_vector<acl::User>& users,
+  std::map<acl::UserID, ::stats::Stat>& stats)
 {
+  for (auto& user: users)
+  {
+    boost::unique_future<bool> future;
+    mongo::BSONObj cmd = BSON("aggregate" << "transfers" << "pipeline" <<
+      BSON_ARRAY(
+        BSON("$match" << 
+          BSON("uid" << user.UID() << "direction" << "up")) <<
+        BSON("$group" << 
+          BSON("_id" << "$uid" << "files" << BSON("$sum" << "$files") << "kbytes" <<
+          BSON("$sum" << "$kbytes") << "xfertime" << BSON("$sum" << "$xfertime")))
+      ));
+
+    mongo::BSONObj ret;
+    TaskPtr task(new db::RunCommand(cmd, ret, future));
+    Pool::Queue(task);
+
+    future.wait();
+
+    stats.insert(std::make_pair(user.UID(), 
+      db::bson::Stat::UnserializeRaw(ret)));
+  } 
+}
+
+void GetAllDown(const boost::ptr_vector<acl::User>& users,
+  std::map<acl::UserID, ::stats::Stat>& stats)
+{
+  for (auto& user: users)
+  {
+    boost::unique_future<bool> future;
+    mongo::BSONObj cmd = BSON("aggregate" << "transfers" << "pipeline" <<
+      BSON_ARRAY(
+        BSON("$match" << 
+          BSON("uid" << user.UID() << "direction" << "dn")) <<
+        BSON("$group" << 
+          BSON("_id" << "$uid" << "files" << BSON("$sum" << "$files") << "kbytes" <<
+          BSON("$sum" << "$kbytes") << "xfertime" << BSON("$sum" << "$xfertime")))
+      ));
+
+    mongo::BSONObj ret;
+    TaskPtr task(new db::RunCommand(cmd, ret, future));
+    Pool::Queue(task);
+
+    future.wait();
+
+    logs::debug << "TEST RET: " << ret.toString() << logs::endl;
+
+    stats.insert(std::make_pair(user.UID(), 
+      db::bson::Stat::UnserializeRaw(ret)));
+  } 
   
 }
 

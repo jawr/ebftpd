@@ -25,24 +25,52 @@ mongo::BSONObj Stat::Serialize(const ::stats::Stat& stat)
   return bob.obj();
 }
 
+::stats::Stat Stat::UnserializeRaw(const mongo::BSONObj& bo)
+{
+  ::stats::Stat stat;
+  try
+  {
+    stat.uid = bo["_id"].Int();
+    stat.files = bo["files"].Int();
+    stat.kbytes = bo["kbytes"].Long();
+    stat.xfertime = bo["xfertime"].Long();
+  }
+  catch (const mongo::MsgAssertionException& e)
+  {
+    logs::db << "Stat::UnserializeRaw error: " << e.what() << " bo: " 
+      << bo.toString() << logs::endl;
+  }
+
+  return stat;
+}
+
 ::stats::Stat Stat::Unserialize(const mongo::BSONObj& bo)
 {
   ::stats::Stat stat;
- 
-  stat.uid = bo["uid"].Int(); 
-  stat.day = bo["day"].Int();
-  stat.week = bo["week"].Int();
-  stat.month = bo["month"].Int();
-  stat.year = bo["year"].Int();
 
-  stat.files = bo["files"].Int();
-  stat.kbytes = bo["kbytes"].Long();
-  stat.xfertime = bo["xfertime"].Long();
+  try
+  {
+    stat.uid = bo["uid"].Int(); 
 
-  if (bo["direction"].String() == "up")
-    stat.direction = ::stats::Direction::Upload;
-  else
-    stat.direction = ::stats::Direction::Download;
+    stat.files = bo["files"].Int();
+    stat.kbytes = bo["kbytes"].Long();
+    stat.xfertime = bo["xfertime"].Long();
+
+    if (bo["direction"].String() == "up")
+      stat.direction = ::stats::Direction::Upload;
+    else
+      stat.direction = ::stats::Direction::Download;
+
+    stat.day = bo["day"].Int();
+    stat.week = bo["week"].Int();
+    stat.month = bo["month"].Int();
+    stat.year = bo["year"].Int();
+  } 
+  catch (const mongo::MsgAssertionException& e)
+  {
+    logs::db << "Stat::Unserialize error: " << e.what() << " bo: " 
+      << bo.toString() << logs::endl;
+  }
 
   return stat;
 }

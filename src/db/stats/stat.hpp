@@ -14,10 +14,10 @@ namespace db { namespace stats
   ::stats::Stat GetWeekDown(const acl::UserID& uid, int week, int year);
   ::stats::Stat GetWeekUp(const acl::UserID& uid, int week, int year);
 
-  void GetAllDown(const std::vector<acl::User>& users,
-    std::map<acl::UserID, ::stats::Stat>& stats, int week, int year);
-  void GetAllUp(const std::vector<acl::User>& users,
-    std::map<acl::UserID, ::stats::Stat>& stats, int week, int year);
+  void GetAllDown(const boost::ptr_vector<acl::User>& users,
+    std::map<acl::UserID, ::stats::Stat>& stats);
+  void GetAllUp(const boost::ptr_vector<acl::User>& users,
+    std::map<acl::UserID, ::stats::Stat>& stats);
 
   void Upload(const acl::User& user, long long kbytes, long long xfertime);
   void Download(const acl::User& user, long long kbytes, long long xfertime);

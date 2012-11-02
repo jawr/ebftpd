@@ -43,7 +43,7 @@ public:
   int Week() const { return week; }
   int Month() const { return month; }
   int Year() const { return year; }
-  unsigned int Files() const { return files; }
+  int Files() const { return files; }
   long long Kbytes() const { return kbytes; }
   long long Xfertime() const { return xfertime; }
 

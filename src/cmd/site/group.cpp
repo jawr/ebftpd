@@ -8,6 +8,7 @@
 #include "acl/flags.hpp"
 #include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
+#include "util/time.hpp"
 
 namespace cmd { namespace site
 {
@@ -37,6 +38,11 @@ cmd::Result GROUPCommand::Execute()
   std::map<acl::UserID, acl::UserProfile> profiles;
   db::userprofile::GetSelection(users, profiles);
 
+  std::map<acl::UserID, ::stats::Stat> dnStats;
+  std::map<acl::UserID, ::stats::Stat> upStats;
+  db::stats::GetAllDown(users, dnStats);
+  db::stats::GetAllUp(users, upStats);
+
   std::ostringstream os;
   os << ",-----------+--------+-----------+--------+-----------+-------+---------.";
   os << "\n|  Username |     Up |      Megs |     Dn |      Megs | Ratio |    Wkly |";
@@ -48,12 +54,12 @@ cmd::Result GROUPCommand::Execute()
     std::string flag = (user.CheckFlag(acl::Flag::Gadmin)) ? "+" : " ";
     flag = (user.CheckFlag(acl::Flag::FlagSiteop)) ? "*" : flag;
     os << flag << std::left << std::setw(8) << user.Name().substr(0, 8) << " | ";
-    os << std::right << std::setw(6) << 2 << " | ";
-    os << std::right << std::setw(9) << 3 << " | ";
-    os << std::right << std::setw(6) << 4 << " | ";
-    os << std::right << std::setw(9) << 5 << " | ";
+    os << std::right << std::setw(6) << upStats[user.UID()].Files() << " | ";
+    os << std::right << std::setw(9) << upStats[user.UID()].Kbytes()/1000.0 << " | ";
+    os << std::right << std::setw(6) << dnStats[user.UID()].Files() << " | ";
+    os << std::right << std::setw(9) << dnStats[user.UID()].Kbytes()/1000.0 << " | ";
     os << std::right << std::setw(5) << profiles[user.UID()].Ratio() << " | "; 
-    os << std::right << std::setw(7) << 6 << " | ";
+    os << std::right << std::setw(7) << profiles[user.UID()].WeeklyAllotment() << " | ";
   }
 
   os << "\n|-----------+--------+-----------+--------+-----------+-------+---------|";
