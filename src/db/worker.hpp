@@ -31,6 +31,7 @@ public:
     mongo::Query& query, bool upsert);
   void Delete(const std::string& container, mongo::Query& query);
   void EnsureIndex(const std::string& container, const mongo::BSONObj& ob);
+  void RunCommand(const mongo::BSONObj& cmd, mongo::BSONObj& ret);
   
 };
 

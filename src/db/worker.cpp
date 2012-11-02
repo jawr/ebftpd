@@ -58,6 +58,7 @@ void Worker::Insert(const std::string& container, const mongo::BSONObj& obj)
   }
 }
 
+
 void Worker::Update(const std::string& container, mongo::BSONObj& obj,
   mongo::Query& query, bool upsert)
 {
@@ -109,6 +110,19 @@ void Worker::EnsureIndex(const std::string& container, const mongo::BSONObj& obj
     //boost::mutex::scoped_lock lock(mtx);
     conn.ensureIndex(database + container, obj, true); // unique
     // no need to check for error
+  }
+  catch (const mongo::DBException& e)
+  {
+    throw DBError(e.what());
+  }
+}
+
+void Worker::RunCommand(const mongo::BSONObj& cmd, mongo::BSONObj& ret)
+{
+  try
+  {
+    if (conn.runCommand("ebftpd", cmd, ret))
+      ret = ret.getObjectField("result").getObjectField("0");
   }
   catch (const mongo::DBException& e)
   {

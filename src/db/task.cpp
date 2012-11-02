@@ -6,6 +6,20 @@
 namespace db
 {
 
+void RunCommand::Execute(Worker& worker)
+{
+  try
+  {
+    worker.RunCommand(cmd, ret);
+    promise.set_value(true);
+  }
+  catch (const DBError& e)
+  {
+    logs::db << "Select failure: " << e.Message() << logs::endl;
+  }
+    
+}
+
 void Update::Execute(Worker& worker)
 {
   try

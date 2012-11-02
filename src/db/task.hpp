@@ -25,6 +25,21 @@ public:
   void Execute(Worker& worker);
 };
 
+class RunCommand : public Task
+{
+  const mongo::BSONObj& cmd;
+  mongo::BSONObj& ret;
+  boost::unique_future<bool>& future;
+  boost::promise<bool> promise;
+public:
+  RunCommand(const mongo::BSONObj& cmd, mongo::BSONObj& ret, 
+    boost::unique_future<bool>& future) : cmd(cmd), ret(ret), future(future)
+  {
+    future = promise.get_future();
+  }
+  void Execute(Worker& worker);
+};
+
 class Select : public Task
 {
   std::string container;
