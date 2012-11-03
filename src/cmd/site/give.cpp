@@ -45,15 +45,11 @@ cmd::Result GIVECommand::Execute()
     return cmd::Result::Okay;
   }
 
-  logs::debug << "credits: " << credits << logs::endl;
-
   if (type == "G")
     credits *= 1000 * 1000;
   else if (type == "M")
     credits *= 1000;
 
-
-  logs::debug << "credits: " << credits << logs::endl;
 
   std::ostringstream os;
   if (!acl::UserCache::User(client.User().UID()).CheckFlags("1"))

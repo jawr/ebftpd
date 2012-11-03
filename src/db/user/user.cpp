@@ -4,6 +4,8 @@
 #include "db/bson/user.hpp"
 #include "db/bson/userprofile.hpp"
 #include "db/types.hpp"
+#include "acl/groupcache.hpp"
+#include "acl/group.hpp"
 
 namespace db { namespace user
 {
@@ -74,6 +76,8 @@ void Delete(const acl::UserID& uid)
 
 void GetAll(boost::ptr_vector<acl::User>& users)
 {
+  users.clear();
+
   QueryResults results;
   mongo::Query query;
   boost::unique_future<bool> future;

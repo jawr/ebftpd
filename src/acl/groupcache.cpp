@@ -22,22 +22,15 @@ void GroupCache::Initalize()
 {
   if (instance.initalized) return;
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  std::vector<acl::Group*> groups;
-  try
+  boost::ptr_vector<acl::Group> groups;
+  db::group::GetAll(groups);
+  while (!groups.empty())
   {
-    db::group::GetAll(groups);
-    for (auto& group: groups)
-    {
-      instance.byName.insert(std::make_pair(group->Name(), group));
-      instance.byGID.insert(std::make_pair(group->GID(), group));
-    }
+    auto group = groups.release(groups.begin());
+  
+    instance.byName.insert(std::make_pair(group->Name(), group.get()));
+    instance.byGID.insert(std::make_pair(group->GID(), group.get()));
   } 
-  catch (const util::RuntimeError& e)
-  {
-    logs::error << "Failed to initialise group cache: "
-                << e.Message() << logs::endl;
-    for (auto& ptr: groups) delete ptr;
-  }
 
   instance.initalized = true;
   

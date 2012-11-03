@@ -3,6 +3,7 @@
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
 #include "db/stats/stat.hpp"
+#include "acl/usercache.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -71,8 +72,6 @@ cmd::Result STORCommand::Execute()
   bytes /= 1000;
   acl::UserCache::IncrCredits(client.User().Name(), (long long)bytes);
 
-  logs::debug << "TIME TAKE: " << diff.total_milliseconds() << logs::endl;
-  
   data.Close();
   control.Reply(ftp::DataClosedOkay, "Transfer finished."); 
   return cmd::Result::Okay;

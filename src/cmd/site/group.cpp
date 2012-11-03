@@ -9,6 +9,8 @@
 #include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
 #include "util/time.hpp"
+#include "stats/stat.hpp"
+#include "db/stats/stat.hpp"
 
 namespace cmd { namespace site
 {

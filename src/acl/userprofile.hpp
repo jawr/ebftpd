@@ -49,19 +49,7 @@ public:
   UserProfile(acl::UserID uid) : UserProfile(uid, acl::UserID(0)) {}; 
   UserProfile(acl::UserID uid, acl::UserID creator);
 
-  util::Error SetRatio(int ratio);
-  util::Error SetWeeklyAllotment(int weeklyAllotment);
-  util::Error SetHomeDir(const std::string& homeDir);
-  util::Error SetStartupDir(const std::string& startupDir);
-  util::Error SetIdleTime(int idleTime);
   util::Error SetExpires(const std::string& date);
-  util::Error SetNumLogins(int numLogins);
-  util::Error SetTagline(const std::string& tagline);
-  util::Error SetComment(const std::string& comment);
-  util::Error SetMaxDlSpeed(int maxDlSpeed);
-  util::Error SetMaxUlSpeed(int maxUlSpeed);
-  util::Error SetMaxSimDl(int maxSimDl);
-  util::Error SetMaxSimUl(int maxSimUl);
 
   void SetCreator(acl::UserID creator) { this->creator = creator; }
 

@@ -41,8 +41,10 @@ void Save(const acl::Group& group)
   Pool::Queue(task);
 }
 
-void GetAll(std::vector<acl::Group*>& groups)
+void GetAll(boost::ptr_vector<acl::Group>& groups)
 {
+  groups.clear();
+
   QueryResults results;
   mongo::Query query;
   boost::unique_future<bool> future;

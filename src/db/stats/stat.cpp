@@ -81,8 +81,6 @@ void GetAllDown(const boost::ptr_vector<acl::User>& users,
 
     future.wait();
 
-    logs::debug << "TEST RET: " << ret.toString() << logs::endl;
-
     stats.insert(std::make_pair(user.UID(), 
       db::bson::Stat::UnserializeRaw(ret)));
   } 

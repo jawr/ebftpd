@@ -6,6 +6,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <mongo/client/dbclient.h>
 #include "acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "acl/types.hpp"
 #include "util/error.hpp"
 
@@ -19,21 +20,21 @@ namespace db { namespace userprofile
     std::map<acl::UserID, acl::UserProfile>& profiles);
 
   // setters
-  void Set(const acl::UserID uid, mongo::BSONObj obj);
+  void Set(const acl::UserID& uid, mongo::BSONObj obj);
 
-  util::Error SetRatio(const acl::UserID uid, const std::string& value);
-  util::Error SetWeeklyAllotment(const acl::UserID uid, const std::string& value);
-  util::Error SetHomeDir(const acl::UserID uid, const std::string& value);
-  util::Error SetStartupDir(const acl::UserID uid, const std::string& value);
-  util::Error SetIdleTime(const acl::UserID uid, const std::string& value);
-  util::Error SetExpires(const acl::UserID uid, const std::string& value);
-  util::Error SetNumLogins(const acl::UserID uid, const std::string& value);
-  util::Error SetTagline(const acl::UserID uid, const std::string& value);
-  util::Error SetComment(const acl::UserID uid, const std::string& value);
-  util::Error SetMaxDlSpeed(const acl::UserID uid, const std::string& value);
-  util::Error SetMaxUlSpeed(const acl::UserID uid, const std::string& value);
-  util::Error SetMaxSimDl(const acl::UserID uid, const std::string& value);
-  util::Error SetMaxSimUl(const acl::UserID uid, const std::string& value);
+  util::Error SetRatio(const acl::UserID& uid, const std::string& value);
+  util::Error SetWeeklyAllotment(const acl::UserID& uid, const std::string& value);
+  util::Error SetHomeDir(const acl::UserID& uid, const std::string& value);
+  util::Error SetStartupDir(const acl::UserID& uid, const std::string& value);
+  util::Error SetIdleTime(const acl::UserID& uid, const std::string& value);
+  util::Error SetExpires(const acl::UserID& uid, const std::string& value);
+  util::Error SetNumLogins(const acl::UserID& uid, const std::string& value);
+  util::Error SetTagline(const acl::UserID& uid, const std::string& value);
+  util::Error SetComment(const acl::UserID& uid, const std::string& value);
+  util::Error SetMaxDlSpeed(const acl::UserID& uid, const std::string& value);
+  util::Error SetMaxUlSpeed(const acl::UserID& uid, const std::string& value);
+  util::Error SetMaxSimDl(const acl::UserID& uid, const std::string& value);
+  util::Error SetMaxSimUl(const acl::UserID& uid, const std::string& value);
 
 // end
 }

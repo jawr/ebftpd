@@ -35,6 +35,7 @@
 #include "cmd/site/take.hpp"
 #include "cmd/site/stats.hpp"
 #include "cmd/site/group.hpp"
+#include "cmd/site/groups.hpp"
 
 #include <iostream>
 
@@ -251,7 +252,7 @@ Factory::Factory()
                       "Syntax: SITE GADDUSER <group> <user> <password> [<ident@ip> ..]",
                       "Add a user directly to a group" }, },
     { "GROUPS",     { 0,  0,  "groups",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GROUPSCommand>()),
                       "Syntax: SITE GROUPS",
                       "Display a list of all groups" }, },
     { "GROUP",      { 0,  1,  "group",
