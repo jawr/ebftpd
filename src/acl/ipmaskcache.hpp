@@ -1,8 +1,9 @@
-#ifndef __ACL_IpMaskCACHE_HPP
-#define __ACL_IpMaskCACHE_HPP
+#ifndef __ACL_IPMASKCACHE_HPP
+#define __ACL_IPMASKCACHE_HPP
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <boost/thread/shared_mutex.hpp>
 #include "acl/user.hpp"
 #include "acl/types.hpp"

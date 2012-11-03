@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sys/types.h>
+#include <vector>
 #include "util/error.hpp"
 
 namespace fs

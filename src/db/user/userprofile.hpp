@@ -8,6 +8,7 @@
 #include "acl/userprofile.hpp"
 #include "acl/types.hpp"
 #include "util/error.hpp"
+#include "acl/user.hpp"
 
 namespace db { namespace userprofile
 {

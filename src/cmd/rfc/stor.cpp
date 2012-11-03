@@ -3,6 +3,8 @@
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
 #include "db/stats/stat.hpp"
+#include "logs/logs.hpp"
+#include "acl/usercache.hpp"
 
 namespace cmd { namespace rfc
 {

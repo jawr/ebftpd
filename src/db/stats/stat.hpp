@@ -3,6 +3,7 @@
 
 #include <map>
 #include <vector>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include "acl/user.hpp"
 #include "db/types.hpp"
 #include "stats/stat.hpp"

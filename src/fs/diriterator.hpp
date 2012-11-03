@@ -5,6 +5,7 @@
 #include <iterator>
 #include <string>
 #include <dirent.h>
+#include <memory>
 #include "fs/path.hpp"
 
 namespace ftp

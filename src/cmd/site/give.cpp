@@ -8,6 +8,7 @@
 #include "acl/usercache.hpp"
 #include "acl/userprofile.hpp"
 #include "util/error.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {

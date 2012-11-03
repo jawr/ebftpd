@@ -4,6 +4,8 @@
 #include "db/bson/user.hpp"
 #include "db/bson/userprofile.hpp"
 #include "db/types.hpp"
+#include "acl/group.hpp"
+#include "acl/groupcache.hpp"
 
 namespace db { namespace user
 {
