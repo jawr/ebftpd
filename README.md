@@ -25,4 +25,4 @@ Other than the founding features taken from glftpd we have also added some new f
 IRC
 ---
 
-#ebftpd on efnet
+`#ebftpd on efnet`
