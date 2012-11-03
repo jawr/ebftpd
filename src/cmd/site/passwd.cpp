@@ -1,6 +1,7 @@
 #include <cassert>
 #include <memory>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include "cmd/site/passwd.hpp"
 #include "cmd/site/factory.hpp"
 

@@ -8,6 +8,7 @@
 #include "db/bson/stat.hpp"
 #include "util/error.hpp"
 #include "util/time.hpp"
+#include "logs/logs.hpp"
 
 namespace db { namespace stats
 {
