@@ -25,4 +25,20 @@ Other than the founding features taken from glftpd we have also added some new f
 IRC
 ---
 
-`#ebftpd on efnet`
+\#ebftpd on efnet
+
+Compiling
+---------
+
+Dependencies are:
+
+* Boost
+* Crypto++
+* gcc > 4.4
+* MongoDB
+
+Debian Wheezy instructions:
+
+`apt-get install libboost-all-dev libcrypto++ mongodb-dev
+make`
+
