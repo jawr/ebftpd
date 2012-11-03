@@ -9,6 +9,8 @@ ebftpd was started for several reasons:
 * A learning experience, coding is fun and c++11 has lots of new features!
 * OpenSource lets anyone get contribute, have an idea? Get involved!
 
+Please check out [the wiki](https://github.com/jawr/ebftpd/wiki). Before you start to code please [check out our coding style](https://github.com/jawr/ebftpd/wiki/Coding-Style) to help maintain a clean code base.
+
 Features
 --------
 
