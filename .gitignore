@@ -37,3 +37,6 @@ ebftpd.exe
 *.lai
 *.la
 *.a
+
+core
+
