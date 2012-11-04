@@ -28,7 +28,7 @@ namespace db { namespace userprofile
   util::Error SetHomeDir(const acl::UserID& uid, const std::string& value);
   util::Error SetStartupDir(const acl::UserID& uid, const std::string& value);
   util::Error SetIdleTime(const acl::UserID& uid, const std::string& value);
-  util::Error SetExpires(const acl::UserID& uid, const std::string& value);
+  util::Error SetExpires(const acl::UserID& uid, std::string& value);
   util::Error SetNumLogins(const acl::UserID& uid, const std::string& value);
   util::Error SetTagline(const acl::UserID& uid, const std::string& value);
   util::Error SetComment(const acl::UserID& uid, const std::string& value);

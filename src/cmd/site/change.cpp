@@ -1,9 +1,11 @@
 #include <sstream>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/change.hpp"
 #include "acl/usercache.hpp"
 #include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
+#include "acl/allowsitecmd.hpp"
 
 namespace cmd { namespace site
 {
@@ -36,23 +38,47 @@ cmd::Result CHANGECommand::Execute()
     setting = args[0];
     value = args[2];
   }
-
+  
+  boost::to_lower(setting);
+  
   int i = 0;
   if (users.size() > 1)
   {
     os << "Updating (" << users.size() << ") users:";
     ++i;
   }
+  
+  if (setting == "ratio")
+  {
+    if (!acl::AllowSiteCmd(client.User(), "changeratio")) return cmd::Result::Permission;
+  }
+  else
+  if (setting == "wkly_allotment")
+  {
+    if (!acl::AllowSiteCmd(client.User(), "changeallot")) return cmd::Result::Permission;
+  }
+  else
+  if (setting == "homedir")
+  {
+    if (!acl::AllowSiteCmd(client.User(), "changehomedir")) return cmd::Result::Permission;
+  }
+  else
+  if (setting == "flags")
+  {
+    if (!acl::AllowSiteCmd(client.User(), "changeflags")) return cmd::Result::Permission;
+  }
+  else
+  if (!acl::AllowSiteCmd(client.User(), "change")) return cmd::Result::Permission;
 
   for (auto& user: users)
   {
     if (i++ != 0) os << "\n";
 
-    if (setting == "ratio" || setting == "changeratio")
+    if (setting == "ratio")
       ok = db::userprofile::SetRatio(user.UID(), value);
-    else if (setting == "wkly_allotment" || setting == "changeallot")
+    else if (setting == "wkly_allotment")
       ok = db::userprofile::SetWeeklyAllotment(user.UID(), value);
-    else if (setting == "homedir" || setting == "changehomedir")
+    else if (setting == "homedir")
       ok = db::userprofile::SetHomeDir(user.UID(), value);
     else if (setting == "startup_dir")
       ok = db::userprofile::SetStartupDir(user.UID(), value);
@@ -101,7 +127,7 @@ cmd::Result CHANGECommand::Execute()
     if (!ok)
       os << "Error: " << ok.Message();
     else
-      os << "Updated " << user.Name() << " " << setting << " to " << value << ".";
+      os << "Updated " << user.Name() << " " << setting << " to: " << value;
   }
 
   control.MultiReply(ftp::CommandOkay, os.str());

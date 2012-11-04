@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "acl/userprofile.hpp"
 #include "acl/usercache.hpp"
 
@@ -24,11 +25,11 @@ util::Error UserProfile::SetExpires(const std::string& date)
 {
   try
   {
-    this->expires = boost::gregorian::from_string(date);;
+    this->expires = boost::gregorian::from_string(date);
   }
-  catch (const boost::bad_lexical_cast& e)
+  catch (const std::exception& e)
   {
-    return util::Error::Failure(e.what());
+    return util::Error::Failure("Invalid date.");
   }
   return util::Error::Success();
 }
