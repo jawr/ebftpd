@@ -14,6 +14,7 @@
 #include "util/randomstring.hpp"
 #include "fs/status.hpp"
 #include "util/error.hpp"
+#include "logs/logs.hpp"
 
 namespace PP = acl::path;
 
@@ -32,13 +33,12 @@ util::Error DeleteFile(ftp::Client& client, const Path& path, off_t* size)
   Path absolute = (client.WorkDir() / path).Expand();
   util::Error e = PP::FileAllowed<PP::Delete>(client.User(), absolute);
   if (!e) return e;
-  Path real = cfg::Get().Sitepath() + absolute;
   
   if (size)
   {
     try
     {
-      *size = SizeFile(client, real);
+      *size = SizeFile(client, absolute);
     }
     catch (const util::SystemError& e)
     {
@@ -46,6 +46,7 @@ util::Error DeleteFile(ftp::Client& client, const Path& path, off_t* size)
     }
   }
   
+  Path real = cfg::Get().Sitepath() + absolute;
   if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
   OwnerCache::Delete(real);
   return util::Error::Success();

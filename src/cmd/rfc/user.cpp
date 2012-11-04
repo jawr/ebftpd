@@ -13,13 +13,8 @@ cmd::Result USERCommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    if (argStr == "root")
-      user = acl::User("root", 0, "password", "1");
-    else
-    {
-      control.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
-      return cmd::Result::Okay;
-    }
+    control.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
+    return cmd::Result::Okay;
   }
   
   control.Reply(ftp::NeedPassword, "Password required for " + argStr + "."); 
