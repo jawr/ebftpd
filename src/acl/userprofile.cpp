@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <boost/algorithm/string/case_conv.hpp>
 #include "acl/userprofile.hpp"
 #include "acl/usercache.hpp"
 
@@ -21,16 +22,22 @@ UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
 {
 }
 
-util::Error UserProfile::SetExpires(const std::string& date)
+util::Error UserProfile::SetExpires(const std::string& value)
 {
-  try
+  if (boost::to_lower_copy(value) == "never")
+    expires = boost::optional<boost::gregorian::date>();
+  else
   {
-    this->expires = boost::gregorian::from_string(date);
+    try
+    {
+      expires = boost::gregorian::from_string(value);
+    }
+    catch (const std::exception& e)
+    {
+      return util::Error::Failure("Invalid date. Must be in format YYYY-MM-DD. or NEVER");
+    }
   }
-  catch (const std::exception& e)
-  {
-    return util::Error::Failure("Invalid date.");
-  }
+  
   return util::Error::Success();
 }
 

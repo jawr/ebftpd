@@ -142,13 +142,17 @@ util::Error SetIdleTime(const acl::UserID& uid, const std::string& value)
 
 util::Error SetExpires(const acl::UserID& uid, std::string& value)
 {
-  try
+  boost::to_lower(value);
+  if (value != "never")
   {
-    value = boost::gregorian::to_simple_string(boost::gregorian::from_simple_string(value));
-  }
-  catch (const std::exception& e)
-  {
-    return util::Error::Failure("Invalid date. Must be in format YYYY-MM-DD.");
+    try
+    {
+      value = boost::gregorian::to_simple_string(boost::gregorian::from_simple_string(value));
+    }
+    catch (const std::exception& e)
+    {
+      return util::Error::Failure("Invalid date. Must be in format YYYY-MM-DD or NEVER.");
+    }
   }
   Set(uid, BSON("expires" << value));
   return util::Error::Success();

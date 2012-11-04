@@ -3,7 +3,7 @@
 
 #include <string>
 #include <boost/date_time/gregorian/gregorian.hpp>
-
+#include <boost/optional.hpp>
 #include "acl/types.hpp"
 #include "util/error.hpp"
 
@@ -28,7 +28,7 @@ class UserProfile
   std::string homeDir;
   std::string startupDir;
   int idleTime;
-  boost::gregorian::date expires;
+  boost::optional<boost::gregorian::date> expires;
   int numLogins; // used to be # #, with the second int being logins
   // from the same ip.
 
@@ -60,7 +60,8 @@ public:
   int IdleTime() const { return idleTime; }
   const std::string Expires() const 
   { 
-    return boost::gregorian::to_iso_extended_string(expires);
+    if (expires) return boost::gregorian::to_simple_string(*expires);
+    else return "never";
   }
   bool Expired(const std::string& date) const;
   int NumLogins() const { return numLogins; }
