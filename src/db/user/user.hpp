@@ -13,9 +13,9 @@ namespace db { namespace user
   acl::UserID GetNewUserID();
   void Save(const acl::User& user);    
   void Save(const acl::User& user, const std::string& field);
-  void Delete(const acl::UserID& uid);
+  void Delete(acl::UserID uid);
   void GetAll(boost::ptr_vector<acl::User>& users);
-  void Login(const acl::UserID& user);
+  void Login(acl::UserID user);
 
   util::Error UsersByACL(boost::ptr_vector<acl::User>& users, 
     std::string acl);

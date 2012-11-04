@@ -8,18 +8,18 @@
 
 namespace db { namespace group
 {
-  acl::GroupProfile Get(const acl::GroupID& gid);
+  acl::GroupProfile Get(acl::GroupID gid);
   
-  void Set(const acl::GroupID& gid, mongo::BSONObj obj); 
+  void Set(acl::GroupID gid, mongo::BSONObj obj); 
 
-  util::Error SetSlots(const acl::GroupID& gid, int slots); 
-  util::Error SetLeechSlots(const acl::GroupID& gid, int slots); 
-  util::Error SetAllotSlots(const acl::GroupID& gid, int slots); 
-  util::Error SetMaxAllotSlots(const acl::GroupID& gid, int slots); 
-  util::Error SetMaxLogins(const acl::GroupID& gid, int maxLogins); 
-  util::Error SetDescription(const acl::GroupID& gid, 
+  util::Error SetSlots(acl::GroupID gid, int slots); 
+  util::Error SetLeechSlots(acl::GroupID gid, int slots); 
+  util::Error SetAllotSlots(acl::GroupID gid, int slots); 
+  util::Error SetMaxAllotSlots(acl::GroupID gid, int slots); 
+  util::Error SetMaxLogins(acl::GroupID gid, int maxLogins); 
+  util::Error SetDescription(acl::GroupID gid, 
     const std::string& description);
-  util::Error SetComment(const acl::GroupID& gid, 
+  util::Error SetComment(acl::GroupID gid, 
     const std::string& comment);
 
 }

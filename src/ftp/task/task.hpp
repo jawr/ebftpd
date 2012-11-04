@@ -27,7 +27,7 @@ class KickUser : public Task
 {
   acl::UserID uid;
 public:
-  KickUser(const acl::UserID& uid) : uid(uid) {}
+  KickUser(acl::UserID uid) : uid(uid) {}
   void Execute(Listener& listener);
 };
 

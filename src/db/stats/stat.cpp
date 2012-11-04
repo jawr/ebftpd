@@ -26,7 +26,7 @@ void Get(mongo::Query& query, QueryResults& results)
   return;
 }
 
-::stats::Stat GetWeekDown(const acl::UserID& uid, int week, int year)
+::stats::Stat GetWeekDown(acl::UserID uid, int week, int year)
 {
   QueryResults results;
   mongo::Query query = QUERY("uid" << uid << "week" << week << "year" << year
@@ -88,7 +88,7 @@ void GetAllDown(const boost::ptr_vector<acl::User>& users,
   
 }
 
-::stats::Stat GetWeekUp(const acl::UserID& uid, int week, int year)
+::stats::Stat GetWeekUp(acl::UserID uid, int week, int year)
 {
   QueryResults results;
   mongo::Query query = QUERY("uid" << uid << "week" << week << "year" << year

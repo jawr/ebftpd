@@ -6,6 +6,7 @@
 #include "db/types.hpp"
 #include "acl/groupcache.hpp"
 #include "acl/group.hpp"
+#include "logs/logs.hpp"
 
 namespace db { namespace user
 {
@@ -52,7 +53,7 @@ void Save(const acl::User& user, const std::string& field)
   Pool::Queue(task);
 }
 
-void Login(const acl::UserID& uid)
+void Login(acl::UserID uid)
 {
   // updates login count and time
   mongo::Query query = QUERY("uid" << uid);
@@ -62,7 +63,7 @@ void Login(const acl::UserID& uid)
   Pool::Queue(task);
 }
 
-void Delete(const acl::UserID& uid)
+void Delete(acl::UserID uid)
 {
   mongo::Query query = QUERY("uid" << uid);
   std::vector<TaskPtr> tasks;
@@ -114,10 +115,12 @@ util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
     {
       return util::Error::Failure(e.Message());
     }
-    query = QUERY("$or" << BSON_ARRAY(BSON("primary gids" << group.GID()) << BSON("secondary gids" << group.GID())));
+    query = QUERY("$or" << BSON_ARRAY(BSON("primary gid" << group.GID()) << BSON("secondary gids" << group.GID())));
   }
   else
     query = QUERY("flags" << acl);
+    
+  logs::debug << query.toString() << logs::endl;
 
   QueryResults results;
   boost::unique_future<bool> future;

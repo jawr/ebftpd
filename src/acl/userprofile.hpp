@@ -71,7 +71,7 @@ public:
   int MaxUlSpeed() const { return maxUlSpeed; }
   int MaxSimDl() const { return maxSimDl; }
   int MaxSimUl() const { return maxSimUl; }
-  const acl::UserID& UID() const { return uid; }
+  acl::UserID UID() const { return uid; }
   const std::string& Created() const { return created; }
   const std::string& LastLogin() const { return lastLogin; }
   int LoggedIn() const { return loggedIn; }

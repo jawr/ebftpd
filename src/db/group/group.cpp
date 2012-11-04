@@ -59,6 +59,17 @@ void GetAll(boost::ptr_vector<acl::Group>& groups)
     groups.push_back(bson::Group::Unserialize(obj));
 }
 
+void Delete(acl::GroupID gid)
+{
+  mongo::Query query = QUERY("gid" << gid);
+  std::vector<TaskPtr> tasks;
+  tasks.emplace_back(new db::Delete("groups", query));
+  // add groupprofile here later
+
+  for (auto& task: tasks)
+    Pool::Queue(task);
+}
+
 // end
 }
 }

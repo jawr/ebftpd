@@ -77,13 +77,12 @@ util::Error GroupCache::Delete(const std::string& name)
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) return util::Error::Failure("Group doesn't exist");
 
+  db::group::Delete(it->second->GID());
+
   instance.byGID.erase(instance.byGID.find(it->second->GID()));
   delete it->second;
   instance.byName.erase(it);
-  
-  // create a task for the db connection pool to execute
-  // telling it to delete this group frmo database
-  
+    
   return util::Error::Success();
 }
 

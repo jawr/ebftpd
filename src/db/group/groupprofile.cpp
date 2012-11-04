@@ -7,7 +7,7 @@
 namespace db { namespace groupprofile
 {
 
-acl::GroupProfile Get(const acl::GroupID& gid)
+acl::GroupProfile Get(acl::GroupID gid)
 {
   QueryResults results;
   mongo::Query query = QUERY("gid" << gid);
@@ -23,7 +23,7 @@ acl::GroupProfile Get(const acl::GroupID& gid)
   return bson::GroupProfile::Unserialize(*results.begin());
 }
 
-void Set(const acl::GroupID& gid, mongo::BSONObj obj)
+void Set(acl::GroupID gid, mongo::BSONObj obj)
 {
   obj = BSON("$set" << obj);
   mongo::Query query = QUERY("gid" << gid);
@@ -31,7 +31,7 @@ void Set(const acl::GroupID& gid, mongo::BSONObj obj)
   Pool::Queue(task);
 }
 
-util::Error SetSlots(const acl::GroupID& gid, int slots)
+util::Error SetSlots(acl::GroupID gid, int slots)
 {
   int i;
   try
@@ -46,7 +46,7 @@ util::Error SetSlots(const acl::GroupID& gid, int slots)
   return util::Error::Success();
 }
 
-util::Error SetLeechSlots(const acl::GroupID& gid, int slots)
+util::Error SetLeechSlots(acl::GroupID gid, int slots)
 {
   int i;
   try
@@ -61,7 +61,7 @@ util::Error SetLeechSlots(const acl::GroupID& gid, int slots)
   return util::Error::Success();
 }
 
-util::Error SetAllotSlots(const acl::GroupID& gid, int slots)
+util::Error SetAllotSlots(acl::GroupID gid, int slots)
 {
   int i;
   try
@@ -76,7 +76,7 @@ util::Error SetAllotSlots(const acl::GroupID& gid, int slots)
   return util::Error::Success();
 }
 
-util::Error SetMaxAllotSlots(const acl::GroupID& gid, int slots)
+util::Error SetMaxAllotSlots(acl::GroupID gid, int slots)
 {
   int i;
   try
@@ -91,7 +91,7 @@ util::Error SetMaxAllotSlots(const acl::GroupID& gid, int slots)
   return util::Error::Success();
 }
 
-util::Error SetMaxLogins(const acl::GroupID& gid, int maxLogins) 
+util::Error SetMaxLogins(acl::GroupID gid, int maxLogins) 
 {
   int i;
   try
@@ -106,13 +106,13 @@ util::Error SetMaxLogins(const acl::GroupID& gid, int maxLogins)
   return util::Error::Success();
 }
 
-util::Error SetDescription(const acl::GroupID& gid, const std::string& description)
+util::Error SetDescription(acl::GroupID gid, const std::string& description)
 {
   Set(gid, BSON("description" << description));
   return util::Error::Success();
 }
 
-util::Error SetComment(const acl::GroupID& gid, const std::string& comment)
+util::Error SetComment(acl::GroupID gid, const std::string& comment)
 {
   Set(gid, BSON("comment" << comment));
   return util::Error::Success();

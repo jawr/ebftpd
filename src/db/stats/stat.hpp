@@ -12,8 +12,8 @@ namespace db { namespace stats
 {
   void Get(mongo::Query& query, QueryResults& results);
 
-  ::stats::Stat GetWeekDown(const acl::UserID& uid, int week, int year);
-  ::stats::Stat GetWeekUp(const acl::UserID& uid, int week, int year);
+  ::stats::Stat GetWeekDown(acl::UserID uid, int week, int year);
+  ::stats::Stat GetWeekUp(acl::UserID uid, int week, int year);
 
   void GetAllDown(const boost::ptr_vector<acl::User>& users,
     std::map<acl::UserID, ::stats::Stat>& stats);

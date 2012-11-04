@@ -36,6 +36,7 @@
 #include "cmd/site/stats.hpp"
 #include "cmd/site/group.hpp"
 #include "cmd/site/groups.hpp"
+#include "cmd/site/grpdel.hpp"
 
 #include <iostream>
 
@@ -270,7 +271,7 @@ Factory::Factory()
                       "Syntax: SITE GRPADD <group> [<tagline>]",
                       "Add a group" }, },
     { "GRPDEL",     { 1,  1,  "grpdel",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GRPDELCommand>()),
                       "Syntax: SITE GRPDEL <group>",
                       "Delete a group" }, },
     { "GRPREN",     { 2,  2,  "grpren",

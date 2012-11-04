@@ -10,7 +10,7 @@
 namespace db { namespace userprofile
 {
 
-acl::UserProfile Get(const acl::UserID& uid)
+acl::UserProfile Get(acl::UserID uid)
 {
   QueryResults results;
   mongo::Query query = QUERY("uid" << uid);
@@ -72,7 +72,7 @@ void GetAll(std::vector<acl::UserProfile>& profiles)
     profiles.push_back(bson::UserProfile::Unserialize(obj));
 }
 
-void Set(const acl::UserID& uid, mongo::BSONObj obj)
+void Set(acl::UserID uid, mongo::BSONObj obj)
 {
   obj = BSON("$set" << obj);
   mongo::Query query = QUERY("uid" << uid);
@@ -80,7 +80,7 @@ void Set(const acl::UserID& uid, mongo::BSONObj obj)
   Pool::Queue(task);
 }
 
-util::Error SetRatio(const acl::UserID& uid, const std::string& value)
+util::Error SetRatio(acl::UserID uid, const std::string& value)
 {
   int i;
   try
@@ -96,7 +96,7 @@ util::Error SetRatio(const acl::UserID& uid, const std::string& value)
   return util::Error::Success();
 }
 
-util::Error SetWeeklyAllotment(const acl::UserID& uid, const std::string& value)
+util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value)
 {
   int i;
   try
@@ -112,19 +112,19 @@ util::Error SetWeeklyAllotment(const acl::UserID& uid, const std::string& value)
   return util::Error::Success();
 }
   
-util::Error SetHomeDir(const acl::UserID& uid, const std::string& value)
+util::Error SetHomeDir(acl::UserID uid, const std::string& value)
 {
   Set(uid, BSON("home dir" << value));
   return util::Error::Success();
 }
 
-util::Error SetStartupDir(const acl::UserID& uid, const std::string& value)
+util::Error SetStartupDir(acl::UserID uid, const std::string& value)
 {
   Set(uid, BSON("startup dir" << value));
   return util::Error::Success();
 }
 
-util::Error SetIdleTime(const acl::UserID& uid, const std::string& value)
+util::Error SetIdleTime(acl::UserID uid, const std::string& value)
 {
   int i;
   try
@@ -140,7 +140,7 @@ util::Error SetIdleTime(const acl::UserID& uid, const std::string& value)
   return util::Error::Success();
 }
 
-util::Error SetExpires(const acl::UserID& uid, std::string& value)
+util::Error SetExpires(acl::UserID uid, std::string& value)
 {
   boost::to_lower(value);
   if (value != "never")
@@ -158,7 +158,7 @@ util::Error SetExpires(const acl::UserID& uid, std::string& value)
   return util::Error::Success();
 }
 
-util::Error SetNumLogins(const acl::UserID& uid, const std::string& value)
+util::Error SetNumLogins(acl::UserID uid, const std::string& value)
 {
   int i;
   try
@@ -174,19 +174,19 @@ util::Error SetNumLogins(const acl::UserID& uid, const std::string& value)
   return util::Error::Success();
 }
 
-util::Error SetTagline(const acl::UserID& uid, const std::string& value)
+util::Error SetTagline(acl::UserID uid, const std::string& value)
 {
   Set(uid, BSON("tagline" << value));
   return util::Error::Success();
 }
 
-util::Error SetComment(const acl::UserID& uid, const std::string& value)
+util::Error SetComment(acl::UserID uid, const std::string& value)
 {
   Set(uid, BSON("comment" << value));
   return util::Error::Success();
 }
 
-util::Error SetMaxDlSpeed(const acl::UserID& uid, const std::string& value)
+util::Error SetMaxDlSpeed(acl::UserID uid, const std::string& value)
 {
   int i;
   try
@@ -202,7 +202,7 @@ util::Error SetMaxDlSpeed(const acl::UserID& uid, const std::string& value)
   return util::Error::Success();
 }
 
-util::Error SetMaxUlSpeed(const acl::UserID& uid, const std::string& value)
+util::Error SetMaxUlSpeed(acl::UserID uid, const std::string& value)
 {
   int i;
   try
@@ -218,7 +218,7 @@ util::Error SetMaxUlSpeed(const acl::UserID& uid, const std::string& value)
   return util::Error::Success();
 }
 
-util::Error SetMaxSimDl(const acl::UserID& uid, const std::string& value)
+util::Error SetMaxSimDl(acl::UserID uid, const std::string& value)
 {
   int i;
   try
@@ -234,7 +234,7 @@ util::Error SetMaxSimDl(const acl::UserID& uid, const std::string& value)
   return util::Error::Success();
 }
 
-util::Error SetMaxSimUl(const acl::UserID& uid, const std::string& value)
+util::Error SetMaxSimUl(acl::UserID uid, const std::string& value)
 {
   int i;
   try

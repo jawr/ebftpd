@@ -30,7 +30,7 @@ public:
     gid(-1),
     description("ebftpd group profile")
   {}
-  GroupProfile(const acl::GroupID& gid) : gid(gid),
+  GroupProfile(acl::GroupID gid) : gid(gid),
     description("ebftpd group profile") {}
   
 
