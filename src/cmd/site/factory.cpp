@@ -37,6 +37,7 @@
 #include "cmd/site/group.hpp"
 #include "cmd/site/groups.hpp"
 #include "cmd/site/grpdel.hpp"
+#include "cmd/site/grpnfo.hpp"
 
 #include <iostream>
 
@@ -278,10 +279,10 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE GRPREN <old group> <new group>",
                       "Rename a group" }, },
-    { "GRPTAG",     { 2,  -1, "grptag",
-                      nullptr,
-                      "Syntax: SITE GRPTAG <group> <tagline>",
-                      "Change group tagline" }, },
+    { "GRPNFO",     { 2,  -1, "grpnfo",
+                      CreatorBasePtr(new Creator<site::GRPNFOCommand>()),
+                      "Syntax: SITE GRPNFO <group> <tagline>",
+                      "Change group description" }, },
     { "HELP",       { 0,  1,  "help",
                       CreatorBasePtr(new Creator<site::HELPCommand>()),
                       "Syntax: SITE HELP [<command>]",
