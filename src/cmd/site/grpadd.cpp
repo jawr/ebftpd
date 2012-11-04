@@ -7,7 +7,6 @@ namespace cmd { namespace site
 cmd::Result GRPADDCommand::Execute()
 {
   util::Error ok = acl::GroupCache::Create(args[1]);
-    //std::accumulate(args.begin()+2, args.end(), std::string("")));
   if (!ok)
     control.MultiReply(ftp::ActionNotOkay, ok.Message());
   else

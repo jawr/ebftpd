@@ -29,12 +29,10 @@ void Pool::LaunchWorker()
   {
     throw e;
   }
-std::cout << "launch worker" << std::endl;
 }
 
 void Pool::KillWorker()
 {
-std::cout << "killworker" << std::endl;
   workers.back().Stop(true);
   workers.pop_back();
 }
