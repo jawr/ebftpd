@@ -132,7 +132,7 @@ std::string GroupCache::GIDToName(GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByGIDMap::iterator it = instance.byGID.find(gid);
-  if (it == instance.byGID.end()) return "unknown";
+  if (it == instance.byGID.end()) return "UNKNOWN";
   return it->second->Name();
 }
 

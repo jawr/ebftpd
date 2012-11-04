@@ -57,7 +57,7 @@ public:
   UserID UID() const { return uid; }
   
   GroupID PrimaryGID() const { return primaryGid; }
-  void SetPrimaryGID(GroupID primaryGid) { this->primaryGid = primaryGid; }
+  void SetPrimaryGID(GroupID primaryGid);
   
   const std::unordered_set<GroupID> SecondaryGIDs() const { return secondaryGids; }
   void AddSecondaryGID(GroupID gid);

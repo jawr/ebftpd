@@ -1,3 +1,4 @@
+#include <sstream>
 #include "cmd/site/setpgrp.hpp"
 #include "acl/user.hpp"
 #include "acl/group.hpp"
@@ -20,12 +21,18 @@ cmd::Result SETPGRPCommand::Execute()
     control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
     return cmd::Result::Okay;
   }
-
-  util::Error ok = acl::UserCache::SetPrimaryGID(args[1], group.GID());
+  
+  acl::GroupID oldGID;
+  util::Error ok = acl::UserCache::SetPrimaryGID(args[1], group.GID(), oldGID);
   if (!ok)
     control.Reply(ftp::ActionNotOkay, "Error: " + ok.Message());
   else
-    control.Reply(ftp::CommandOkay, "Set primary group for " + args[1] + " to: " + group.Name());
+  {
+    std::ostringstream os;
+    if (oldGID != -1) os << "Moved old primary group " << acl::GroupCache::GIDToName(oldGID) << " to secondary.\n";
+    os << "Set primary group for " << args[1] << " to: " << group.Name();
+    control.MultiReply(ftp::CommandOkay, os.str());
+  }
   return cmd::Result::Okay;
 }
 
