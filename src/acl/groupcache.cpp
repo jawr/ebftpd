@@ -28,12 +28,12 @@ void GroupCache::Initalize()
   {
     auto group = groups.release(groups.begin());
   
-    instance.byName.insert(std::make_pair(group->Name(), group.get()));
     instance.byGID.insert(std::make_pair(group->GID(), group.get()));
+    instance.byName.insert(std::make_pair(group->Name(), group.get()));
+    group.release();
   } 
 
   instance.initalized = true;
-  
 }
 
 void GroupCache::Save(const acl::Group& group)
