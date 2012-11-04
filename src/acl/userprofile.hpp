@@ -10,7 +10,7 @@
 
 namespace db { namespace bson
 {
-  class UserProfile;
+class UserProfile;
 }
 }
 
@@ -45,9 +45,7 @@ class UserProfile
 
 public:
   UserProfile() : uid(-1), creator(-1) {};
-
-  UserProfile(acl::UserID uid) : UserProfile(uid, acl::UserID(0)) {}; 
-  UserProfile(acl::UserID uid, acl::UserID creator);
+  UserProfile(acl::UserID uid, acl::UserID creator = 0);
 
   util::Error SetExpires(const std::string& date);
 
