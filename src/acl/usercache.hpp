@@ -39,7 +39,7 @@ public:
   static util::Error SetFlags(const std::string& name, const std::string& flags);
   static util::Error AddFlags(const std::string& name, const std::string& flags);
   static util::Error DelFlags(const std::string& name, const std::string& flags);
-  static util::Error SetPrimaryGID(const std::string& name, GroupID primaryGID);
+  static util::Error SetPrimaryGID(const std::string& name, GroupID primaryGID, GroupID &oldPprimaryGID);
   static util::Error AddSecondaryGID(const std::string& name, GroupID secondaryGID);
   static util::Error DelSecondaryGID(const std::string& name, GroupID secondaryGID);
   static util::Error ResetSecondaryGID(const std::string& name);
