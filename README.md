@@ -36,8 +36,8 @@ Dependencies are:
 
 * Boost
 * Crypto++
-* gcc > 4.4
-* MongoDB
+* gcc >= 4.6
+* MongoDB >= 2.1 (For the Aggregation Framework)
 
 Debian Wheezy instructions:
 

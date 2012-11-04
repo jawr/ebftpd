@@ -28,7 +28,7 @@ class Stat
 
   int files;
   // might need to store bytes rather than kbytes as we lose files < certain siez
-  long long kbytes;
+  long long bytes;
   long long xfertime;
 
   Direction direction;
@@ -44,7 +44,9 @@ public:
   int Month() const { return month; }
   int Year() const { return year; }
   int Files() const { return files; }
-  long long Kbytes() const { return kbytes; }
+  std::string Kbytes();
+  std::string Mbytes();
+  std::string Gbytes();
   long long Xfertime() const { return xfertime; }
 
   void IncrFiles(int files) { this->files += files; }
