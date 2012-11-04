@@ -51,7 +51,10 @@ cmd::Result TAKECommand::Execute()
     credits *= 1024;
 
   acl::UserCache::DecrCredits(user.Name(), credits);
-  control.Reply(ftp::CommandOkay, "Taken " + args[2] + " from " + args[1] + ".");
+  
+  std::ostringstream os;
+  os << "Taken " << std::fixed << std::setprecision(2) << credits << "KB credits from " << user.Name() << ".";
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

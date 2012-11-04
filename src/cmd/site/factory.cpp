@@ -127,7 +127,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<site::USERSCommand>()),  
                       "Syntax: SITE USERS [<criteria> ..]",
                       "Detailed list of users" }, },
-    { "GIVE",       { 2,  3,  "give",
+    { "GIVE",       { 2,  3,  "give|giveown",
                       CreatorBasePtr(new Creator<site::GIVECommand>()),
                       "Syntax: SITE GIVE <user> <credits>G|M [<message>]",
                       "Give credits to user" }, },

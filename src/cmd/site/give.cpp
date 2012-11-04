@@ -9,6 +9,8 @@
 #include "acl/userprofile.hpp"
 #include "util/error.hpp"
 #include "logs/logs.hpp"
+#include "acl/allowsitecmd.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace site
 {
@@ -51,18 +53,40 @@ cmd::Result GIVECommand::Execute()
   else if (type == "M")
     credits *= 1024;
 
-
   std::ostringstream os;
-  if (!acl::UserCache::User(client.User().UID()).CheckFlags("1"))
+  if (acl::AllowSiteCmd(client.User(), "giveown") &&
+      !acl::AllowSiteCmd(client.User(), "give"))
   {
+    try
+    {
+      acl::UserProfile profile = db::userprofile::Get(user.UID());
+      if (profile.Ratio() == 0)
+      {
+        control.Reply(ftp::ActionNotOkay, "Not allowed to give credits when you have leech!");
+        return cmd::Result::Okay;
+      }
+    }
+    catch (const util::RuntimeError& e)
+    {
+      control.Reply(ftp::ActionNotOkay, "Unable to load your user profile.");
+      return cmd::Result::Okay;
+    }
     // take away users credits/warn them
+    
+    if (client.User().Credits() < credits)
+    {
+      os << "You only have " << client.User().Credits() << "KB credits left.";
+      control.Reply(ftp::ActionNotOkay, os.str());
+      return cmd::Result::Okay;
+    }
+    
     acl::UserCache::DecrCredits(client.User().Name(), credits);
-    os << "Taken " << args[2] << " credits. ";
+    os << "Taken " << credits << "KB credits from you!\n";
   }
   // give user the credits
   acl::UserCache::IncrCredits(user.Name(), credits);
-  os << "Given " << args[1] << " " << args[2] << " credits.";
-  control.Reply(ftp::CommandOkay, os.str());
+  os << "Given " << credits << "KB credits to " << user.Name() << ".";
+  control.MultiReply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

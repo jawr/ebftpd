@@ -22,18 +22,16 @@ cmd::Result USERCommand::Execute()
     return cmd::Result::Permission;
   }
 
-  acl::User user(client.User());
-  if (args.size() == 2)
+  std::string userName = args.size() == 2 ? args[1] : client.User().Name();
+  acl::User user;
+  try
   {
-    try
-    {
-      user = acl::UserCache::User(args[1]);
-    }
-    catch (const util::RuntimeError& e)
-    {
-      control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
-      return cmd::Result::Okay;
-    }
+    user = acl::UserCache::User(userName);
+  }
+  catch (const util::RuntimeError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+    return cmd::Result::Okay;
   }
 
   acl::UserProfile profile;
