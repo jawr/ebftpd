@@ -107,7 +107,7 @@ void UploadDecr(const acl::User& user, long long kbytes)
   mongo::BSONObj obj = BSON(
     "$inc" << BSON("files" << -1) <<
     "$inc" << BSON("kbytes" << kbytes*-1) <<
-    "$inc" << BSON("xfertime" << (long long)0));
+    "$inc" << BSON("xfertime" << 0));
   TaskPtr task(new db::Update("transfers", query, obj, true));
   Pool::Queue(task);
 }

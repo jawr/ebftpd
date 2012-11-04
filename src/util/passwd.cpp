@@ -35,7 +35,7 @@ std::string HexEncode(const std::string& data)
   CryptoPP::HexEncoder encoder;
   std::string result;
   encoder.Attach(new CryptoPP::StringSink(result));
-  encoder.Put((byte*) data.c_str(), data.length());
+  encoder.Put(reinterpret_cast<const byte*>(data.c_str()), data.length());
   encoder.MessageEnd();
   return result;
 }
@@ -45,7 +45,7 @@ std::string HexDecode(const std::string& data)
   CryptoPP::HexDecoder decoder;
   std::string result;
   decoder.Attach(new CryptoPP::StringSink(result));
-  decoder.Put((byte*) data.c_str(), data.length());
+  decoder.Put(reinterpret_cast<const byte*>(data.c_str()), data.length());
   decoder.MessageEnd();
   return result;
 }

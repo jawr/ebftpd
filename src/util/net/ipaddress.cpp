@@ -43,13 +43,13 @@ void IPAddress::FromString(const std::string& addr)
 {
   memset(data, 0, sizeof(data));
   if (inet_pton(static_cast<int>(IPFamily::IPv4), 
-                addr.c_str(), (struct in_addr*) data))
+                addr.c_str(), reinterpret_cast<struct in_addr*>(data)))
   {
     family = IPFamily::IPv4;
     dataLen = sizeof(struct in_addr);
   }
   else if (inet_pton(static_cast<int>(IPFamily::IPv6), 
-                     addr.c_str(), (struct in6_addr*) data))
+                     addr.c_str(), reinterpret_cast<struct in6_addr*>(data)))
   {
     family = IPFamily::IPv6;
     dataLen = sizeof(struct in6_addr);

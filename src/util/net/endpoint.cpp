@@ -92,13 +92,13 @@ void Endpoint::FromAddr(const struct sockaddr& addr)
   memcpy(&this->addr, &addr, addrLen);
   if (addrLen == sizeof(struct sockaddr_in))
   {
-    addr4 = (struct sockaddr_in*) &this->addr;
+    addr4 = reinterpret_cast<struct sockaddr_in*>(&this->addr);
     ip = IPAddress(&addr4->sin_addr, sizeof(addr4->sin_addr));
     port = ntohs(addr4->sin_port);
   }
   else if (addrLen == sizeof(struct sockaddr_in6))
   {
-    addr6 = (struct sockaddr_in6*) &this->addr;
+    addr6 = reinterpret_cast<struct sockaddr_in6*>(&this->addr);
     ip = IPAddress(&addr6->sin6_addr, sizeof(addr6->sin6_addr));
     port = ntohs(addr6->sin6_port);
   }

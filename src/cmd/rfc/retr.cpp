@@ -77,7 +77,7 @@ cmd::Result RETRCommand::Execute()
 
   db::stats::Download(client.User(), bytes, diff.total_milliseconds());
   
-  acl::UserCache::DecrCredits(client.User().Name(), (long long)bytes);
+  acl::UserCache::DecrCredits(client.User().Name(), bytes);
 
   data.Close();
   control.Reply(ftp::DataClosedOkay, "Transfer finished."); 
