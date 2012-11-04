@@ -15,7 +15,7 @@
 #include "util/thread.hpp"
 #include "util/net/tcplistener.hpp"
 #include "util/net/tcpsocket.hpp"
-#include "util/pipe.hpp"
+#include "util/interruptpipe.hpp"
 
 namespace ftp
 {
@@ -28,7 +28,7 @@ class Listener : public util::Thread
   boost::ptr_list<Client> clients;
   std::vector<std::string> validIPs;
   int32_t port;
-  util::Pipe interruptPipe;
+  util::InterruptPipe interruptPipe;
 
   std::queue<TaskPtr> queue;
   
