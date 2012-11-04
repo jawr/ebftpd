@@ -38,6 +38,7 @@
 #include "cmd/site/groups.hpp"
 #include "cmd/site/grpdel.hpp"
 #include "cmd/site/grpnfo.hpp"
+#include "cmd/site/grpren.hpp"
 
 #include <iostream>
 
@@ -276,7 +277,7 @@ Factory::Factory()
                       "Syntax: SITE GRPDEL <group>",
                       "Delete a group" }, },
     { "GRPREN",     { 2,  2,  "grpren",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GRPRENCommand>()),
                       "Syntax: SITE GRPREN <old group> <new group>",
                       "Rename a group" }, },
     { "GRPNFO",     { 2,  -1, "grpnfo",
