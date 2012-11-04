@@ -75,7 +75,7 @@ cmd::Result USERCommand::Execute()
   os << "\n| Ratio: " << profile.Ratio();
   os << "\n| Credits: ";
 
-  long long credits = user.Credits()/1000;
+  long long credits = user.Credits() / 1024;
   os << credits << " MiB";
  
   std::string group = (user.PrimaryGID() == -1) ? "NoGroup" : acl::GroupCache::Group(user.PrimaryGID()).Name();

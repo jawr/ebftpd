@@ -70,7 +70,7 @@ cmd::Result RETRCommand::Execute()
     return cmd::Result::Okay;
   }
   
-  bytes /= 1000;
+  bytes /= 1024;
 
   time::ptime end = time::microsec_clock::local_time();
   time::time_duration diff = end - start;

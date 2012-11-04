@@ -66,11 +66,11 @@ cmd::Result STORCommand::Execute()
   time::ptime end = time::microsec_clock::local_time();
   time::time_duration diff = end - start;
 
-  db::stats::Upload(client.User(), bytes/1000, diff.total_milliseconds());
+  db::stats::Upload(client.User(), bytes / 1024, diff.total_milliseconds());
 
   bytes *= client.UserProfile().Ratio();
-  bytes /= 1000;
-  acl::UserCache::IncrCredits(client.User().Name(), (long long)bytes);
+  bytes /= 1024;
+  acl::UserCache::IncrCredits(client.User().Name(), static_cast<long long>(bytes));
 
   data.Close();
   control.Reply(ftp::DataClosedOkay, "Transfer finished."); 

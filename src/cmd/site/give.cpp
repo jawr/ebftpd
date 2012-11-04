@@ -47,9 +47,9 @@ cmd::Result GIVECommand::Execute()
   }
 
   if (type == "G")
-    credits *= 1000 * 1000;
+    credits *= 1024 * 1024;
   else if (type == "M")
-    credits *= 1000;
+    credits *= 1024;
 
 
   std::ostringstream os;
