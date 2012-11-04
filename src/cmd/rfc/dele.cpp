@@ -8,8 +8,8 @@ namespace cmd { namespace rfc
 
 cmd::Result DELECommand::Execute()
 {
-  off_t size = fs::SizeFile(client, argStr);
-  util::Error e = fs::DeleteFile(client,  argStr);
+  off_t size;
+  util::Error e = fs::DeleteFile(client,  argStr, &size);
   if (!e) control.Reply(ftp::ActionNotOkay, "DELE failed: " + e.Message());
   else 
   {

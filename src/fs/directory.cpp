@@ -67,7 +67,7 @@ util::Error ChangeDirectory(ftp::Client& client, Path& path)
   util::Error e(PP::DirAllowed<PP::View>(client.User(), absolute));
   if (!e) return e;
 
-  Path real = cfg::Get().Sitepath() + path;
+  Path real = cfg::Get().Sitepath() + absolute;
   try
   {
     Status stat(real);

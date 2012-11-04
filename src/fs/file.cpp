@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <cerrno>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "fs/file.hpp"
@@ -28,12 +27,25 @@ off_t SizeFile(ftp::Client& client, const Path& path)
   return status.Size();
 }
 
-util::Error DeleteFile(ftp::Client& client, const Path& path)
+util::Error DeleteFile(ftp::Client& client, const Path& path, off_t* size)
 {
   Path absolute = (client.WorkDir() / path).Expand();
   util::Error e = PP::FileAllowed<PP::Delete>(client.User(), absolute);
   if (!e) return e;
   Path real = cfg::Get().Sitepath() + absolute;
+  
+  if (size)
+  {
+    try
+    {
+      *size = SizeFile(client, real);
+    }
+    catch (const util::SystemError& e)
+    {
+      return util::Error::Failure(e.Errno());
+    }
+  }
+  
   if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
   OwnerCache::Delete(real);
   return util::Error::Success();
