@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
-#include <boost/type_traits/is_pointer.hpp>
 #include "util/net/tlscontext.hpp"
 #include "util/net/tlserror.hpp"
 
@@ -14,7 +13,7 @@ namespace util { namespace net
 
 std::unique_ptr<TLSClientContext> TLSContext::client;
 std::unique_ptr<TLSServerContext> TLSContext::server;
-boost::mutex* TLSContext::mutexes = new boost::mutex[CRYPTO_num_locks()];
+boost::scoped_array<boost::mutex> TLSContext::mutexes(new boost::mutex[CRYPTO_num_locks()]);
 
 namespace
 {
@@ -99,7 +98,6 @@ DH *TempDHCallback(SSL* session, int isExport, int keyLength)
 TLSContext::~TLSContext()
 {
   if (context) SSL_CTX_free(context);
-  delete [] mutexes;
 }
 
 TLSContext::TLSContext(const std::string& certificate, const std::string& ciphers) :

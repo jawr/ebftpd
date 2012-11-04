@@ -9,6 +9,7 @@
 #include <openssl/crypto.h>
 #include <openssl/rsa.h>
 #include <boost/thread/mutex.hpp>
+#include <boost/scoped_array.hpp>
 
 namespace util { namespace net
 {
@@ -25,7 +26,7 @@ protected:
     
   static std::unique_ptr<TLSServerContext> server;
   static std::unique_ptr<TLSClientContext> client;
-  static boost::mutex* mutexes;
+  static boost::scoped_array<boost::mutex> mutexes;
   
   
   virtual ~TLSContext();
