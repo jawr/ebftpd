@@ -5,6 +5,7 @@
 #include "acl/types.hpp"
 #include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -13,13 +14,20 @@ cmd::Result USERSCommand::Execute()
 {
   std::ostringstream os;
   boost::ptr_vector<acl::User> users;
-  util::Error ok = db::user::UsersByACL(users, args[1]);
-
-  if (!ok)
+  
+  if (args.size() == 2)
   {
-    control.Reply(ftp::ActionNotOkay, ok.Message());
+    util::Error ok = db::user::UsersByACL(users, args[1]);
+    if (!ok)
+    {
+      control.Reply(ftp::ActionNotOkay, ok.Message());
+      return cmd::Result::Okay;
+    }
   }
-  else if (users.size() > 0)
+  else
+    db::user::GetAll(users);
+
+  if (users.size() > 0)
   {
     os << "Detailed user listing...";
     for (auto& user: users)
