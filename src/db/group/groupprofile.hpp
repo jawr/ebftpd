@@ -6,7 +6,7 @@
 #include "acl/types.hpp"
 #include "acl/groupprofile.hpp"
 
-namespace db { namespace group
+namespace db { namespace groupprofile
 {
   acl::GroupProfile Get(acl::GroupID gid);
   
