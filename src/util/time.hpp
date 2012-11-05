@@ -2,7 +2,6 @@
 #define __UTIL_TIME_HPP
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread/mutex.hpp>
 
 namespace util
 {
@@ -10,19 +9,14 @@ namespace util
 class Time
 {
   boost::posix_time::ptime now;
-  boost::mutex mtx;
 
-  static Time instance;
-  Time() { instance.Update(); }
 public:
+  Time() { now = boost::posix_time::second_clock::local_time(); }
 
-  // need to make this a little bit smarter in order to avoid redudnant calls.
-  static void Update();
-
-  static int Day() { return instance.now.date().day(); };
-  static int Week() { return instance.now.date().week_number(); };
-  static int Month() { return instance.now.date().month(); };
-  static int Year() { return instance.now.date().year(); };
+  int Day() { return now.date().day(); };
+  int Week() { return now.date().week_number(); };
+  int Month() { return now.date().month(); };
+  int Year() { return now.date().year(); };
 };
 
 // end
