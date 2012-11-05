@@ -251,7 +251,12 @@ void Client::Run()
   using util::scope_guard;
   using util::make_guard;
   
-  scope_guard finishedGuard = make_guard([&]{ SetState(ClientState::Finished); });
+  scope_guard finishedGuard = make_guard([&]
+  {
+    SetState(ClientState::Finished);
+    control.LogTraffic();
+    data.LogTraffic();
+  });
 
   LookupIdent();
   
@@ -266,7 +271,7 @@ void Client::Run()
   catch (const util::net::NetworkError& e)
   {
     logs::debug << "Client from " << control.RemoteEndpoint()
-                  << " lost connection: " << e.Message() << logs::endl;
+                << " lost connection: " << e.Message() << logs::endl;
   }
   
   (void) finishedGuard; /* silence unused variable warning */

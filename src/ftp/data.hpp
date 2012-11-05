@@ -47,6 +47,9 @@ class Data : public ReadWriteable
   ::ftp::EPSVMode epsvMode;
   ::ftp::DataType dataType;
   
+  long long bytesRead;
+  long long bytesWrite;
+  
   TransferState state;
 
 public:
@@ -55,7 +58,9 @@ public:
     protection(false),
     passiveMode(false),
     epsvMode(::ftp::EPSVMode::Normal),
-    dataType(::ftp::DataType::ASCII)
+    dataType(::ftp::DataType::ASCII),
+    bytesRead(0),
+    bytesWrite(0)
   {
   }
 
@@ -75,18 +80,26 @@ public:
   {
     socket.Close();
     state.Stop();
+    if (state.Type() == TransferType::List)
+      bytesWrite += state.Bytes();
   }
   
   size_t Read(char* buffer, size_t size)
-  { return socket.Read(buffer, size); }
+  {
+    return socket.Read(buffer, size);
+  }
   
   void Write(const char* buffer, size_t len)
-  { socket.Write(buffer, len); }
+  {
+    socket.Write(buffer, len);
+  }
   
   TransferState& State() { return state; }
   const TransferState& State() const { return state; }
   
   void Interrupt() { socket.Shutdown(); }
+  
+  void LogTraffic() const;
 };
 
 } /* ftp namespace */

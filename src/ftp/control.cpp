@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <boost/algorithm/string.hpp>
 #include <boost/thread.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include "ftp/control.hpp"
 #include "util/verify.hpp"
 #include "util/net/tcplistener.hpp"
@@ -22,7 +23,7 @@ void Control::SendReply(ReplyCode code, bool part, const std::string& message)
     reply << std::setw(3) << code << (part ? "-" : " ");
   reply << message << "\r\n";
   const std::string& str = reply.str();
-  socket.Write(str.c_str(), str.length());
+  Write(str.c_str(), str.length());
   logs::debug << str << logs::endl;
   lastCode = code;
 }
@@ -90,7 +91,10 @@ std::string Control::NextCommand(const boost::posix_time::time_duration& timeout
   if (FD_ISSET(socket.Socket(), &readSet))
   {
     std::string commandLine;
-    socket.Getline(commandLine, true);
+    socket.Getline(commandLine, false);
+    bytesRead += commandLine.length();
+    boost::trim_right_if(commandLine, boost::is_any_of("\n"));
+    boost::trim_right_if(commandLine, boost::is_any_of("\r"));
     logs::debug << commandLine << logs::endl;
     return commandLine;
   }
@@ -98,6 +102,12 @@ std::string Control::NextCommand(const boost::posix_time::time_duration& timeout
   boost::this_thread::interruption_point();
   verify(false); // should never get here!!
   return "";
+}
+
+void Control::LogTraffic()
+{
+  // insert code here to send bytesRead and bytesWrite to database
+  // under incoming / outgoing protocol traffic
 }
 
 } /* ftp namespace */
