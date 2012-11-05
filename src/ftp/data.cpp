@@ -64,8 +64,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
       
     try
     {
-      ep = Endpoint(*ip, port);
-      listener.Listen(ep);
+      listener.Listen(Endpoint(*ip, port));
       break;
     }
     catch (const util::net::NetworkSystemError& e)
@@ -74,6 +73,8 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
         throw;
     }
   }
+  
+  ep = listener.Endpoint();
 }
 
 void Data::InitActive(const util::net::Endpoint& ep)
@@ -142,8 +143,7 @@ void Data::Open(TransferType transferType)
     if (!acl::AllowFxp(transferType, client.User(), logging))
     {
       socket.Close();
-      std::string type = transferType == TransferType::Upload ?
-                         "upload" : "download";
+      std::string type = transferType == TransferType::Upload ? "upload" : "download";
       if (logging)
       {
         logs::security << "User " << client.User().Name() << " attempted to fxp " << type
