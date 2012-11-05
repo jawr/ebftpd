@@ -34,10 +34,11 @@ Compiling
 
 Dependencies are:
 
-* Boost
+* Boost no higher than 1.49 (Mongodb client doesn't work with 1.5+ currently)
+  and preferably not much lower either.
 * Crypto++
-* gcc > 4.4
-* MongoDB
+* gcc > 4.6
+* MongoDB 2.1+
 
 Debian Wheezy instructions:
 
