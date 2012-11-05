@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <boost/thread/future.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <mongo/client/dbclient.h>
@@ -99,25 +100,25 @@ void GetAllDown(const boost::ptr_vector<acl::User>& users,
 
 void UploadDecr(const acl::User& user, long long kbytes)
 {
-  util::Time::Update();
-  mongo::Query query = QUERY("uid" << user.UID() << "day" << util::Time::Day()
-    << "week" << util::Time::Week() << "month" 
-    << util::Time::Month() << "year" << util::Time::Year()
+  util::Time time;
+  mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
+    << "week" << time.Week() << "month" 
+    << time.Month() << "year" << time.Year()
     << "direction" << "up");
   mongo::BSONObj obj = BSON(
     "$inc" << BSON("files" << -1) <<
     "$inc" << BSON("kbytes" << kbytes*-1) <<
-    "$inc" << BSON("xfertime" << 0));
+    "$inc" << BSON("xfertime" << static_cast<long long>(0)));
   TaskPtr task(new db::Update("transfers", query, obj, true));
   Pool::Queue(task);
 }
 
 void Upload(const acl::User& user, long long kbytes, long long xfertime)
 {
-  util::Time::Update();
-  mongo::Query query = QUERY("uid" << user.UID() << "day" << util::Time::Day()
-    << "week" << util::Time::Week() << "month" 
-    << util::Time::Month() << "year" << util::Time::Year()
+  util::Time time;
+  mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
+    << "week" << time.Week() << "month" 
+    << time.Month() << "year" << time.Year()
     << "direction" << "up");
   mongo::BSONObj obj = BSON(
     "$inc" << BSON("files" << 1) <<
@@ -129,10 +130,10 @@ void Upload(const acl::User& user, long long kbytes, long long xfertime)
 
 void Download(const acl::User& user, long long kbytes, long long xfertime)
 {
-  util::Time::Update();
-  mongo::Query query = QUERY("uid" << user.UID() << "day" << util::Time::Day()
-    << "week" << util::Time::Week() << "month" 
-    << util::Time::Month() << "year" << util::Time::Year()
+  util::Time time;
+  mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
+    << "week" << time.Week() << "month" 
+    << time.Month() << "year" << time.Year()
     << "direction" << "dn");
   mongo::BSONObj obj = BSON(
     "$inc" << BSON("files" << 1) <<
