@@ -45,16 +45,7 @@ cmd::Result SWHOCommand::Execute()
       os << std::left << std::left << std::setw(30) << format.str().substr(0, 30) << " | ";
     }
     
-    if (user.command.empty())
-    {
-      std::ostringstream format;
-      format << "IDLE for " << user.idleTime;
-      os << std::left << std::setw(30) << format.str().substr(0, 30);
-    }
-    else 
-      os << std::left << std::setw(30) << user.command.substr(0, 30);
-    os << " |";
-
+    os << std::left << std::setw(30) << user.Action().substr(0, 30) << " |";
   }
 
   os << "\n|------------+--------------------------------+--------------------------------|";

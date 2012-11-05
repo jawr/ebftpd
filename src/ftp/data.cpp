@@ -158,6 +158,8 @@ void Data::Open(TransferType transferType)
   {
     socket.HandshakeTLS(util::net::TLSSocket::Server);
   }
+  
+  state.Start(transferType);
 }
 
 } /* ftp namespace */

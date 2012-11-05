@@ -4,15 +4,13 @@
 #include "fs/file.hpp"
 #include "db/stats/stat.hpp"
 #include "acl/usercache.hpp"
+#include "stats/util.hpp"
 
 namespace cmd { namespace rfc
 {
 
 cmd::Result STORCommand::Execute()
 {
-  namespace time = boost::posix_time;
-  time::ptime start = time::microsec_clock::local_time();
-
   fs::OutStreamPtr fout;
   try
   {
@@ -39,17 +37,14 @@ cmd::Result STORCommand::Execute()
                  "Unable to open data connection: " + e.Message());
     return cmd::Result::Okay;
   }
-
   
-  std::streamsize bytes(0);
   try
   {
     char buffer[16384];
     while (true)
     {
       size_t len = data.Read(buffer, sizeof(buffer));
-      bytes += len;
-    
+      data.State().Update(len);
       fout->write(buffer, len);
     }
   }
@@ -63,17 +58,17 @@ cmd::Result STORCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  time::ptime end = time::microsec_clock::local_time();
-  time::time_duration diff = end - start;
-
-  db::stats::Upload(client.User(), bytes / 1024, diff.total_milliseconds());
-
-  bytes *= client.UserProfile().Ratio();
-  bytes /= 1024;
-  acl::UserCache::IncrCredits(client.User().Name(), static_cast<long long>(bytes));
-
   data.Close();
-  control.Reply(ftp::DataClosedOkay, "Transfer finished."); 
+
+  boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
+  db::stats::Upload(client.User(), data.State().Bytes() / 1024, duration.total_milliseconds());
+
+  long long credits = data.State().Bytes() * client.UserProfile().Ratio() / 1024;
+  acl::UserCache::IncrCredits(client.User().Name(), credits);
+
+  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
+      stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
+
   return cmd::Result::Okay;
 }
 

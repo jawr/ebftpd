@@ -4,15 +4,13 @@
 #include "fs/file.hpp"
 #include "acl/usercache.hpp"
 #include "db/stats/stat.hpp"
+#include "stats/util.hpp"
 
 namespace cmd { namespace rfc
 {
 
 cmd::Result RETRCommand::Execute()
 {
-  namespace time = boost::posix_time;
-  time::ptime start = time::microsec_clock::local_time();
-
   fs::InStreamPtr fin;
   try
   {
@@ -41,7 +39,7 @@ cmd::Result RETRCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  std::streamsize bytes(0);
+  std::streamsize bytes = 0;
   try
   {
     char buffer[16384];
@@ -49,7 +47,7 @@ cmd::Result RETRCommand::Execute()
     {
       std::streamsize len = boost::iostreams::read(*fin,buffer, sizeof(buffer));
       if (len < 0) break;
-      bytes += len;
+      data.State().Update(len);
       data.Write(buffer, len);
     }
   }
@@ -70,17 +68,13 @@ cmd::Result RETRCommand::Execute()
     return cmd::Result::Okay;
   }
   
-  bytes /= 1024;
-
-  time::ptime end = time::microsec_clock::local_time();
-  time::time_duration diff = end - start;
-
-  db::stats::Download(client.User(), bytes, diff.total_milliseconds());
-  
-  acl::UserCache::DecrCredits(client.User().Name(), bytes);
-
   data.Close();
-  control.Reply(ftp::DataClosedOkay, "Transfer finished."); 
+  boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
+  db::stats::Download(client.User(), bytes / 1024, duration.total_milliseconds());
+  acl::UserCache::DecrCredits(client.User().Name(), bytes / 1024);
+
+  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
+      stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
   return cmd::Result::Okay;
 }
 
