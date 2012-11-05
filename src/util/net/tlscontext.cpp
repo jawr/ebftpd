@@ -104,7 +104,7 @@ TLSContext::TLSContext(const std::string& certificate, const std::string& cipher
   context(nullptr),
   certificate(certificate),
   ciphers(ciphers),
-  dummy(mutexes)
+  dummyMutexes(mutexes)
 {
 }
 
