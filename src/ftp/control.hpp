@@ -39,11 +39,6 @@ class Control : public ReadWriteable
 public:
   Control() : lastCode(CodeNotSet), bytesRead(0), bytesWrite(0) { }
   
-  ~Control()
-  {
-    std::cout << "read: " << bytesRead << " " << "write: " << bytesWrite << std::endl;
-  }
-  
   void Accept(util::net::TCPListener& listener);
  
   std::string NextCommand(const boost::posix_time::time_duration& timeout);

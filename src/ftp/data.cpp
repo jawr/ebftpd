@@ -162,4 +162,10 @@ void Data::Open(TransferType transferType)
   state.Start(transferType);
 }
 
+void Data::LogTraffic() const
+{
+  // insert code here to send bytesRead and bytesWrite to database
+  // under incoming / outgoing protocol traffic
+}
+
 } /* ftp namespace */
