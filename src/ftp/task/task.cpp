@@ -45,9 +45,9 @@ void ReloadConfig::Execute(Listener&)
   else promise.set_value(Result::Okay);
 }
 
-void Exit::Execute(Listener& listener)
+void Exit::Execute(Listener&)
 {
-  listener.SetShutdown(); 
+  ftp::Listener::SetShutdown();
 }
 
 

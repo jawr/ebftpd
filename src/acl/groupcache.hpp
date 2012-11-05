@@ -22,14 +22,15 @@ class GroupCache
   ByGIDMap byGID;
   
   static GroupCache instance;
-  static bool initalized;
+  static bool initialized;
   
   ~GroupCache();
   
   static void Save(const acl::Group& group);
   
 public:
-  static void Initalize();
+  static void Initialize();
+  static bool Initialized() { return instance.initialized; }
 
   static bool Exists(const std::string& name);
   static bool Exists(GroupID gid);
