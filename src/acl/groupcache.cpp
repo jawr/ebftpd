@@ -7,7 +7,7 @@ namespace acl
 {
 
 GroupCache GroupCache::instance;
-bool GroupCache::initalized = false;
+bool GroupCache::initialized = false;
 
 GroupCache::~GroupCache()
 {
@@ -18,9 +18,10 @@ GroupCache::~GroupCache()
   }
 }
 
-void GroupCache::Initalize()
+void GroupCache::Initialize()
 {
-  if (instance.initalized) return;
+  logs::debug << "Initialising group cache.." << logs::endl;
+  assert(!instance.initialized);
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   boost::ptr_vector<acl::Group> groups;
   db::group::GetAll(groups);
@@ -33,7 +34,7 @@ void GroupCache::Initalize()
     group.release();
   } 
 
-  instance.initalized = true;
+  instance.initialized = true;
 }
 
 void GroupCache::Save(const acl::Group& group)

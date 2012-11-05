@@ -330,8 +330,8 @@ Factory::Factory()
                       "Reload config file" }, },
     { "SHUTDOWN",   { 1,  1,  "shutdownexit|shutdownsiteop",
                       CreatorBasePtr(new Creator<site::SHUTDOWNCommand>()),
-                      "Syntax: SITE SHUTDOWN SITEOP|REOPEN|EXIT",
-                      "Shutdown to siteop only or exit completely" }, }
+                      "Syntax: SITE SHUTDOWN SITEOP|REOPEN|FULL",
+                      "Shutdown to siteop only or full shutdown and exit" }, }
   };
 }
 

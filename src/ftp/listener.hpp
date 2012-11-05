@@ -42,20 +42,22 @@ class Listener : public util::Thread
   void AcceptClient(util::net::TCPListener& server);
   void HandleClients();
   void Run();
-  void RunTask();
+  void HandleTasks();
   void StopClients();
 
+  void InnerSetShutdown()
+  {
+    isShutdown = true;
+    instance.interruptPipe.Interrupt();
+  }
+ 
   static Listener instance;
   
 public:
   Listener() : port(-1), isShutdown(false) { }
   
-  void SetShutdown() { isShutdown = true; }
- 
   static bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
   
-  static void Stop();
-
   static void PushTask( const TaskPtr& task)
   {
     { 
@@ -66,13 +68,13 @@ public:
   }
 
   static void StartThread();
-  static void StopThread();
-  static void JoinThread() { instance.Join(); }
-    
+  static void JoinThread();
+  static void SetShutdown();
 
   // tasks
   friend class task::KickUser;
   friend class task::GetOnlineUsers;
+  friend void SignalHandler(int);
 };
 
 }

@@ -9,8 +9,8 @@
 
 namespace db 
 {
-  // initalize
-  void Initalize(); // should only be called once by initial thread
+  // initialize
+  void Initialize(); // should only be called once by initial thread
   void Cleanup();
 // end
 }

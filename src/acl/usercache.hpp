@@ -20,7 +20,7 @@ class UserCache
   ByUIDMap byUID;
   
   static UserCache instance;
-  static bool initalized;
+  static bool initialized;
   
   ~UserCache();
   
@@ -47,7 +47,7 @@ public:
   static util::Error IncrCredits(const std::string& name, long long kbytes);
   static util::Error DecrCredits(const std::string& name, long long kbytes);
 
-  static void Initalize();
+  static void Initialize();
   
   // these return const as the user objects should NEVER
   // be modified except via the above functions'
