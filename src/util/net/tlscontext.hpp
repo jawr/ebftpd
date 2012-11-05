@@ -27,7 +27,7 @@ protected:
    // dummy prevents the static mutexes 
    // going out of scope before the contexts do
    // a nicer solution for this would be nice
-  boost::shared_array<boost::mutex> dummy;
+  boost::shared_array<boost::mutex> dummyMutexes;
     
   static std::unique_ptr<TLSServerContext> server;
   static std::unique_ptr<TLSClientContext> client;
