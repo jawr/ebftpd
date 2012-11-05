@@ -1,6 +1,7 @@
 #include "cmd/rfc/stat.hpp"
 #include "cfg/get.hpp"
 #include "main.hpp"
+#include "stats/util.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -32,9 +33,13 @@ cmd::Result STATCommand::Execute()
   control.PartReply(ftp::DirectoryStatus, "Status of " + path + ":");
   DirectoryList dirList(client, control, path, ListOptions(options, forcedOptions),
                         config.Lslong().MaxRecursion());
-  dirList.Execute();
   
-  control.Reply("End of status.");
+  boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
+  dirList.Execute();
+  boost::posix_time::ptime end = boost::posix_time::microsec_clock::local_time();
+  
+  control.Reply(ftp::DirectoryStatus, "End of status (" + 
+      stats::util::HighResSecondsString(start, end) + ")"); 
   return cmd::Result::Okay;
 }
 

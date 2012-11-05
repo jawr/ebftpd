@@ -18,8 +18,6 @@ void KickUser::Execute(Listener& listener)
 
 void GetOnlineUsers::Execute(Listener& listener)
 {
-  boost::posix_time::ptime now(boost::posix_time::microsec_clock::local_time());
-  
   for (auto& client: listener.clients)
   {
     if (client.State() != ClientState::LoggedIn) continue;
