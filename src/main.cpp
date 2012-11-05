@@ -81,6 +81,8 @@ int main(int argc, char** argv)
     ftp::Listener::StartThread();
     ftp::Listener::JoinThread();
   }
+
+  db::Cleanup();
   
   fs::OwnerCache::Stop();
   

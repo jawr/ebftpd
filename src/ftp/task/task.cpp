@@ -45,5 +45,11 @@ void ReloadConfig::Execute(Listener&)
   else promise.set_value(Result::Okay);
 }
 
+void Exit::Execute(Listener& listener)
+{
+  listener.SetShutdown(); 
+}
+
+
 }
 }
