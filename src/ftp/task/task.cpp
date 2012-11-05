@@ -9,8 +9,7 @@ void KickUser::Execute(Listener& listener)
 {
   for (auto& client: listener.clients)
   {
-    if (client.User().UID() == uid)
-      client.SetState(ClientState::Finished); 
+    if (client.User().UID() == uid) client.Interrupt();
   }
 }
 

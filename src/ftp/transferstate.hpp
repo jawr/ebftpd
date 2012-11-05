@@ -49,6 +49,7 @@ public:
   }
 
   TransferState() : type(TransferType::None), bytes(0) { }
+  ~TransferState() { Stop(); }
   
   void Start(TransferType type)
   {

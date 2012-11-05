@@ -108,6 +108,7 @@ public:
     pt::time_duration diff = pt::second_clock::local_time() - idleTime;
     return pt::seconds(diff.total_seconds());
   }
+  
   const std::string& CurrentCommand() const
   {
     boost::lock_guard<boost::mutex> lock(mutex);
@@ -130,6 +131,8 @@ public:
   }
 
   void SetState(ClientState state);
+  
+  void Interrupt();
 };
 
 } /* ftp namespace */

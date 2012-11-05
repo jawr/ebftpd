@@ -59,32 +59,34 @@ public:
   {
   }
 
-  inline void SetProtection(bool protection) { this->protection = protection; }
+  void SetProtection(bool protection) { this->protection = protection; }
 
-  inline ::ftp::EPSVMode EPSVMode() const { return epsvMode; }
-  inline void SetEPSVMode(::ftp::EPSVMode epsvMode) { this->epsvMode = epsvMode; }
+  ::ftp::EPSVMode EPSVMode() const { return epsvMode; }
+  void SetEPSVMode(::ftp::EPSVMode epsvMode) { this->epsvMode = epsvMode; }
 
-  inline ::ftp::DataType DataType() const { return dataType; }
-  inline void SetDataType(::ftp::DataType dataType) { this->dataType = dataType; }
+  ::ftp::DataType DataType() const { return dataType; }
+  void SetDataType(::ftp::DataType dataType) { this->dataType = dataType; }
   
   void InitPassive(util::net::Endpoint& ep, PassiveType pasvType);
   void InitActive(const util::net::Endpoint& ep);
   void Open(TransferType transferType);
   
-  inline void Close()
+  void Close()
   {
     socket.Close();
     state.Stop();
   }
   
-  inline size_t Read(char* buffer, size_t size)
+  size_t Read(char* buffer, size_t size)
   { return socket.Read(buffer, size); }
   
-  inline void Write(const char* buffer, size_t len)
+  void Write(const char* buffer, size_t len)
   { socket.Write(buffer, len); }
   
   TransferState& State() { return state; }
   const TransferState& State() const { return state; }
+  
+  void Interrupt() { socket.Shutdown(); }
 };
 
 } /* ftp namespace */

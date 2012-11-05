@@ -209,6 +209,13 @@ void Client::Handle()
   }
 }
 
+void Client::Interrupt()
+{
+  SetState(ClientState::Finished);
+  Stop();
+  control.Interrupt();
+  data.Interrupt();
+}
 
 void Client::LookupIdent()
 {
