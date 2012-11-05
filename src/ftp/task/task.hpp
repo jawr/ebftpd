@@ -26,6 +26,7 @@ public:
 class KickUser : public Task
 {
   acl::UserID uid;
+  
 public:
   KickUser(acl::UserID uid) : uid(uid) {}
   void Execute(Listener& listener);
@@ -36,6 +37,7 @@ class GetOnlineUsers : public Task
   std::vector<ftp::task::WhoUser>& users;
   boost::unique_future<bool>& future;
   boost::promise<bool> promise;
+  
 public:
   GetOnlineUsers(std::vector<ftp::task::WhoUser>& users, boost::unique_future<bool>& future) : 
     users(users), future(future) { future = promise.get_future(); }

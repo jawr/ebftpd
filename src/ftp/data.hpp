@@ -5,6 +5,7 @@
 #include "util/net/tcpsocket.hpp"
 #include "util/net/endpoint.hpp"
 #include "ftp/readwriteable.hpp"
+#include "ftp/transferstate.hpp"
 
 namespace acl
 {
@@ -28,13 +29,6 @@ enum class DataType
   Binary
 };
 
-enum class TransferType
-{
-  Upload,
-  Download,
-  List
-};
-
 enum class PassiveType
 {
   PASV,
@@ -52,6 +46,8 @@ class Data : public ReadWriteable
   util::net::Endpoint portEndpoint;
   ::ftp::EPSVMode epsvMode;
   ::ftp::DataType dataType;
+  
+  TransferState state;
 
 public:
   explicit Data(Client& client) :
@@ -74,13 +70,20 @@ public:
   void InitPassive(util::net::Endpoint& ep, PassiveType pasvType);
   void InitActive(const util::net::Endpoint& ep);
   void Open(TransferType transferType);
-  inline void Close() { socket.Close(); }
+  inline void Close()
+  {
+    socket.Close();
+    state.Stop();
+  }
   
   inline size_t Read(char* buffer, size_t size)
   { return socket.Read(buffer, size); }
   
   inline void Write(const char* buffer, size_t len)
   { socket.Write(buffer, len); }
+  
+  TransferState& State() { return state; }
+  const TransferState& State() const { return state; }
 };
 
 } /* ftp namespace */
