@@ -70,6 +70,7 @@ public:
   void InitPassive(util::net::Endpoint& ep, PassiveType pasvType);
   void InitActive(const util::net::Endpoint& ep);
   void Open(TransferType transferType);
+  
   inline void Close()
   {
     socket.Close();

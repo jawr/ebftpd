@@ -90,7 +90,7 @@ const std::string& IPAddress::ToString() const
 
 bool IPAddress::IsMappedv4() const
 {
-  if (family != IPFamily::IPv4) return false;
+  if (family != IPFamily::IPv6) return false;
   return IN6_IS_ADDR_V4MAPPED(data);
 }
 
@@ -145,6 +145,8 @@ bool IPAddress::Valid(const std::string& addr)
 
 bool IPAddress::Equals(const IPAddress& addr) const
 {
+  if (IsMappedv4()) return ToUnmappedv4().Equals(addr);
+  if (addr.IsMappedv4()) return Equals(addr.ToUnmappedv4());
   if (dataLen != addr.dataLen) return false;
   return !memcmp(data, addr.data, dataLen);
 }
