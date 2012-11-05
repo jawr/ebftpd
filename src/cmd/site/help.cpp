@@ -1,5 +1,6 @@
 #include "cmd/site/help.hpp"
 #include "cmd/site/factory.hpp"
+#include "acl/allowsitecmd.hpp"
 #include "main.hpp"
 
 namespace cmd { namespace site
@@ -28,12 +29,24 @@ cmd::Result HELPCommand::List()
   std::ostringstream os;
   os << " " << programFullname << " SITE command listing - \n\n";
   
+  std::vector<std::string> sorted;
   size_t maxLen = 0;
   for (auto& kv : commands)
-    maxLen = std::max(kv.first.length(), maxLen);
+  {
+    if (acl::AllowSiteCmd(client.User(), kv.second.ACLKeyword()))
+    {
+      sorted.push_back(kv.first);
+      maxLen = std::max(kv.first.length(), maxLen);
+    }
+  }
+  
+  std::sort(sorted.begin(), sorted.end());
     
-  for (auto& kv : commands)
-    os << " " << std::setw(maxLen) << kv.first << " : " << kv.second.Description() << "\n";
+  for (auto& command : sorted)
+  {
+    os << " " << std::setw(maxLen) << command << " : " 
+       << commands.at(command).Description() << "\n";
+  }
     
   os << "\n End of list";
   control.MultiReply(ftp::CommandOkay, os.str());
