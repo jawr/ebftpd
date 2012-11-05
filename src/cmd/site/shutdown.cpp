@@ -33,7 +33,7 @@ cmd::Result SHUTDOWNCommand::Execute()
   else
   if (args[1] == "full")
   {
-    control.Reply(ftp::CommandOkay, "Full server shutdown/exit in progress..");
+    control.Reply(ftp::ServiceUnavailable, "Full server shutdown/exit in progress..");
     logs::sysop << client.User().Name() << " initiated a full server shutdown/exit the server." << logs::endl;
     ftp::TaskPtr task(new ftp::task::Exit());
     ftp::Listener::PushTask(task);
