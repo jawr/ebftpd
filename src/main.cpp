@@ -19,17 +19,16 @@
 
 extern const std::string programName = "ebftpd";
 extern const std::string programFullname = programName + " " + std::string(version);
+extern const std::string configFile = "ftpd.conf";
 
 #ifndef TEST
 int main(int argc, char** argv)
 {
   std::cout << "Starting " << programFullname << " .. " << std::endl;
 
-  std::shared_ptr<cfg::Config> config;
   try
   {
-    config.reset(new cfg::Config("ftpd.conf"));
-    cfg::UpdateShared(config);
+    cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config(configFile)));
   }
   catch (const cfg::ConfigError& e)
   {
@@ -48,10 +47,10 @@ int main(int argc, char** argv)
     return 1;
   }
   
-  ftp::AddrAllocator<ftp::AddrType::Active>::SetAddrs(config->ActiveAddr());
-  ftp::AddrAllocator<ftp::AddrType::Passive>::SetAddrs(config->PasvAddr());
-  ftp::PortAllocator<ftp::PortType::Active>::SetPorts(config->ActivePorts());
-  ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(config->PasvPorts());
+  ftp::AddrAllocator<ftp::AddrType::Active>::SetAddrs(cfg::Get().ActiveAddr());
+  ftp::AddrAllocator<ftp::AddrType::Passive>::SetAddrs(cfg::Get().PasvAddr());
+  ftp::PortAllocator<ftp::PortType::Active>::SetPorts(cfg::Get().ActivePorts());
+  ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(cfg::Get().PasvPorts());
   
   try
   {

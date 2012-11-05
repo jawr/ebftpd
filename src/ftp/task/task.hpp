@@ -41,6 +41,19 @@ class GetOnlineUsers : public Task
 public:
   GetOnlineUsers(std::vector<ftp::task::WhoUser>& users, boost::unique_future<bool>& future) : 
     users(users), future(future) { future = promise.get_future(); }
+    
+  void Execute(Listener& listener);
+};
+
+class ReloadConfig : public Task
+{
+  boost::unique_future<bool>& future;
+  boost::promise<bool> promise;
+  
+public:
+  ReloadConfig(boost::unique_future<bool>& future) : future(future)
+  { future = promise.get_future(); }
+  
   void Execute(Listener& listener);
 };
 

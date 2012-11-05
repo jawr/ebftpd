@@ -252,7 +252,7 @@ public:
   { return commandACLs.at(keyword); }
   
   
-  friend const Config& Get(bool update);
+  friend void UpdateLocal();
 };
 
 typedef std::shared_ptr<cfg::Config> ConfigPtr;
