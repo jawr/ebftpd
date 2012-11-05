@@ -55,6 +55,8 @@ public:
   { return socket.LocalEndpoint(); }
   
   bool IsTLS() const { return socket.IsTLS(); }
+  
+  void Interrupt(){ socket.Shutdown(); }
 };
 
 } /* ftp namespace */
