@@ -40,8 +40,7 @@
 #include "cmd/site/grpnfo.hpp"
 #include "cmd/site/grpren.hpp"
 #include "cmd/site/reload.hpp"
-
-#include <iostream>
+#include "cmd/site/shutdown.hpp"
 
 namespace cmd { namespace site
 {
@@ -328,7 +327,11 @@ Factory::Factory()
     { "RELOAD",     { 0,  0,  "reload",
                       CreatorBasePtr(new Creator<site::RELOADCommand>()),
                       "Syntax: SITE RELOAD",
-                      "Reload config file" }, }
+                      "Reload config file" }, },
+    { "SHUTDOWN",   { 1,  1,  "shutdownexit|shutdownsiteop",
+                      CreatorBasePtr(new Creator<site::SHUTDOWNCommand>()),
+                      "Syntax: SITE SHUTDOWN SITEOP|REOPEN|EXIT",
+                      "Shutdown to siteop only or exit completely" }, }
   };
 }
 

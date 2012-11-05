@@ -26,6 +26,8 @@
 namespace ftp
 {
 
+std::atomic_bool Client::siteopOnly(false);
+
 Client::Client() :
   data(*this), 
   workDir("/"), 

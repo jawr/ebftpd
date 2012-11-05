@@ -28,6 +28,12 @@ cmd::Result PASSCommand::Execute()
     client.SetState(ftp::ClientState::Finished);
     return cmd::Result::Okay;
   }
+
+  if (ftp::Client::IsSiteopOnly() && !client.User().CheckFlag(acl::Flag::Siteop))
+  {
+    control.Reply(ftp::ServiceUnavailable, "Server has been shutdown.");
+    return cmd::Result::Okay;
+  }
   
   fs::Path rootPath("/");
   util::Error e = fs::ChangeDirectory(client, rootPath);
