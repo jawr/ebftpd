@@ -22,12 +22,12 @@
 namespace db
 {
 
-void Initalize()
+void Initialize()
 {
   db::Pool::StartThread();
-  acl::GroupCache::Initalize();
-  acl::UserCache::Initalize();
-  acl::IpMaskCache::Initalize();
+  acl::GroupCache::Initialize();
+  acl::UserCache::Initialize();
+  acl::IpMaskCache::Initialize();
 
   std::vector<TaskPtr> tasks;
   

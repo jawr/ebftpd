@@ -24,7 +24,7 @@ class IpMaskCache
 
 public:
   
-  static void Initalize();
+  static void Initialize();
   static bool Check(const std::string& addr);
   static util::Error Add(const acl::User& user, const std::string& mask,
     std::vector<std::string>& deleted);

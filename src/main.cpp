@@ -1,4 +1,6 @@
+#include <csignal>
 #include <memory>
+#include <cstring>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -18,6 +20,7 @@
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include "ftp/client.hpp"
+#include "util/error.hpp"
 
 #include "version.hpp"
 
@@ -31,6 +34,7 @@ std::string configFile = "ftpd.conf";
 
 void LoadConfig()
 {
+  logs::debug << "Loading config file.." << logs::endl;
   cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config(configFile)));
   
   ftp::AddrAllocator<ftp::AddrType::Active>::SetAddrs(cfg::Get().ActiveAddr());
@@ -53,7 +57,7 @@ bool ParseOptions(int argc, char** argv, boost::program_options::variables_map& 
     ("help,h", "display this help message")
     ("config-file,c", po::value<std::string>(),
      "specify location of config file")
-    ("foreground,f", "run server in foreground")
+    //("foreground,f", "run server in foreground")
     ("siteop-only,s", "run server in siteop only mode");
 
   try
@@ -80,6 +84,54 @@ bool ParseOptions(int argc, char** argv, boost::program_options::variables_map& 
   return true;
 }
 
+void SignalHandler(int signo)
+{
+  switch (signo)
+  {
+    case SIGHUP  :
+    {
+      try
+      {
+        LoadConfig();
+      }
+      catch (const cfg::ConfigError& e)
+      {
+        logs::error << "Failed to load config: " + e.Message() << logs::endl;
+      }
+      break;
+    }
+    case SIGINT  :
+    {
+      logs::debug << "Server interrupted!" << logs::endl;
+      ftp::Listener::SetShutdown();
+      break;
+    }
+  }
+}
+
+util::Error SetupSignals()
+{
+  {
+    struct sigaction ignore;
+    ignore.sa_handler = SIG_IGN;
+    ignore.sa_flags = 0;
+    
+    if (sigaction(SIGPIPE, &ignore, 0) < 0) return util::Error::Failure(errno);
+  }
+  
+  {
+    struct sigaction handle;
+    memset(&handle, 0, sizeof(handle));
+    handle.sa_handler = SignalHandler;
+    handle.sa_flags = 0;
+    
+    if (sigaction(SIGHUP, &handle, 0) < 0) return util::Error::Failure(errno);
+    if (sigaction(SIGINT, &handle, 0) < 0) return util::Error::Failure(errno);
+  }
+  
+  return util::Error::Success();
+}
+
 #ifndef TEST
 int main(int argc, char** argv)
 {
@@ -98,9 +150,17 @@ int main(int argc, char** argv)
     logs::error << "Failed to load config: " << e.Message() << logs::endl;
     return 1;
   }
+  
+  util::Error sige = SetupSignals();
+  if (!sige)
+  {
+    logs::error << "Failed to setup signal handlers: " << sige.Message() << logs::endl;
+    return 1;
+  }
 
   try
   {
+    logs::debug << "Initialising TLS context.." << logs::endl;
     util::net::TLSServerContext::Initialise(
         cfg::Get().TlsCertificate().ToString(), "");
   }
@@ -112,7 +172,7 @@ int main(int argc, char** argv)
     
   try
   {
-    db::Initalize();
+    db::Initialize();
   }
   catch (const db::DBError& e)
   {
@@ -136,6 +196,8 @@ int main(int argc, char** argv)
 
   db::Cleanup();
   fs::OwnerCache::Stop();
+
+  logs::debug << "Bye!" << logs::endl;
   
   return exitStatus;
 }

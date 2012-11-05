@@ -2,13 +2,15 @@
 #include "db/user/user.hpp"
 #include "db/user/ipmask.hpp"
 #include "util/string.hpp"
+#include "logs/logs.hpp"
 
 namespace acl
 {
 IpMaskCache IpMaskCache::instance;
 
-void IpMaskCache::Initalize()
+void IpMaskCache::Initialize()
 {
+  logs::debug << "Initialising ip mask cache.." << logs::endl;
   boost::unique_lock<boost::shared_mutex> lock(instance.mtx);
   db::ipmask::GetAll(instance.userIPMaskMap);
 }
@@ -112,8 +114,8 @@ util::Error IpMaskCache::List(const acl::User& user,
 
 int main()
 {
-  db::Initalize();
-  acl::IpMaskCache::Initalize();
+  db::Initialize();
+  acl::IpMaskCache::Initialize();
 
   logs::debug << acl::IpMaskCache::Check("blah@192.168.1.1") << logs::endl;
   logs::debug << acl::IpMaskCache::Check("*@hello.com") << logs::endl;
