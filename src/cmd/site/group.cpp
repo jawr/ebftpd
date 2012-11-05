@@ -54,7 +54,7 @@ cmd::Result GROUPCommand::Execute()
   {
     os << "\n| ";
     std::string flag = (user.CheckFlag(acl::Flag::Gadmin)) ? "+" : " ";
-    flag = (user.CheckFlag(acl::Flag::FlagSiteop)) ? "*" : flag;
+    flag = (user.CheckFlag(acl::Flag::Siteop)) ? "*" : flag;
     os << flag << std::left << std::setw(8) << user.Name().substr(0, 8) << " | ";
     os << std::right << std::setw(6) << upStats[user.UID()].Files() << " | ";
     os << std::right << std::setw(9) << upStats[user.UID()].Kbytes()/1024.0 << " | ";

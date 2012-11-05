@@ -62,6 +62,12 @@ public:
   void Execute(Listener& listener);
 };
 
+class Exit : public Task
+{
+public:
+  void Execute(Listener& listener);
+};
+
 // end
 }
 }

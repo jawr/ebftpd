@@ -48,5 +48,10 @@ void Initalize()
   acl::UserCache::Create("io", "password", "1");
 }
 
+void Cleanup()
+{
+  Pool::StopThread();
+}
+
 // end
 }

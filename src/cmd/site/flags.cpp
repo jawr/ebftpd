@@ -33,7 +33,7 @@ cmd::Result FLAGSCommand::Execute()
   
   std::ostringstream os;
   os << "FLAGS for " << user.Name() << "\n\n";
-  os << CheckFlag(user, acl::Flag::FlagSiteop)  << " Siteop    -1-\n";
+  os << CheckFlag(user, acl::Flag::Siteop)      << " Siteop    -1-\n";
   os << CheckFlag(user, acl::Flag::Gadmin)      << " Gadmin    -2-\n";
   os << CheckFlag(user, acl::Flag::Glock)       << " Glock     -3-\n";
   os << CheckFlag(user, acl::Flag::Exempt)      << " Exempt    -4-\n";

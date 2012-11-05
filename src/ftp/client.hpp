@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cstdint>
+#include <atomic>
 #include <boost/thread/mutex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/user.hpp"
@@ -54,6 +55,8 @@ class Client : public util::Thread
   boost::posix_time::ptime idleExpires;
   boost::posix_time::seconds idleTimeout;
   boost::posix_time::ptime idleTime;
+
+  static std::atomic_bool siteopOnly;
   
   static const int maxPasswordAttemps = 3;
   
@@ -133,6 +136,22 @@ public:
   void SetState(ClientState state);
   
   void Interrupt();
+  
+  
+  static bool SetSiteopOnly()
+  {
+    bool expected = false;
+    return siteopOnly.compare_exchange_strong(expected, true);
+  }
+  
+  static bool SetReopen()
+  {
+    bool expected = true; 
+    return siteopOnly.compare_exchange_strong(expected, false);
+  }
+  
+  static bool IsSiteopOnly()
+  { return siteopOnly; }
 };
 
 } /* ftp namespace */
