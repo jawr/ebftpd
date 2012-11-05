@@ -1,3 +1,4 @@
+#include <sstream>
 #include "cmd/rfc/feat.hpp"
 
 namespace cmd { namespace rfc
@@ -5,17 +6,19 @@ namespace cmd { namespace rfc
 
 cmd::Result FEATCommand::Execute()
 {
-  control.PartReply(ftp::SystemStatus, "Extended feature support:");
-  control.PartReply(ftp::NoCode, " AUTH TLS");
-  control.PartReply(ftp::NoCode, " EPRT");
-  control.PartReply(ftp::NoCode, " EPSV");
-  control.PartReply(ftp::NoCode, " LPRT");
-  control.PartReply(ftp::NoCode, " LPSV");
-  control.PartReply(ftp::NoCode, " PBSZ");
-  control.PartReply(ftp::NoCode, " PROT");
-  control.PartReply(ftp::NoCode, " MDTM");
-  control.PartReply(ftp::NoCode, " SIZE");
-  control.Reply(ftp::SystemStatus, "End.");
+  std::ostringstream os;
+  os << "Extended feature support:\n"
+     << " AUTH TLS\n"
+     << " EPRT\n"
+     << " EPSV\n"
+     << " LPRT\n"
+     << " LPSV\n"
+     << " PBSZ\n"
+     << " PROT\n"
+     << " MDTM\n"
+     << " SIZE\n"
+     << "End.";
+  control.MultiReply(ftp::SystemStatus, os.str());
   return cmd::Result::Okay;
 }
 
