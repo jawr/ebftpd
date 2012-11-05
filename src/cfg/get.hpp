@@ -10,6 +10,7 @@ namespace cfg
 void UpdateShared(const std::shared_ptr<Config> newShared);
 void UpdateLocal();
 const Config& Get();
+bool RequireStopStart();
 
 } /* cfg namespace */
 

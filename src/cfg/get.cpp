@@ -4,6 +4,7 @@
 #include <boost/thread/mutex.hpp>
 #include "cfg/get.hpp"
 #include "cfg/config.hpp"
+#include "logs/logs.hpp"
 
 namespace cfg
 {
@@ -43,6 +44,32 @@ const Config& Get()
     assert(config);
   }
   return *config;
+}
+
+bool RequireStopStart()
+{
+  bool required = false;
+  const Config& old = cfg::Get();
+  
+  if (shared->ValidIp() != old.ValidIp())
+  {
+    logs::error << "valid_ip config option changed, full stop start required." << logs::endl;
+    required = true;
+  }
+  
+  if (shared->Port() != old.Port())
+  {
+    logs::error << "port config option changed, full stop start required." << logs::endl;
+    required = true;
+  }
+  
+  if (shared->TlsCertificate() != old.TlsCertificate())
+  {
+    logs::error << "tls_certificate option changed, full stop start required." << logs::endl;
+    required = true;
+  }
+      
+  return required;
 }
 
 }

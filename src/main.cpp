@@ -21,6 +21,16 @@ extern const std::string programName = "ebftpd";
 extern const std::string programFullname = programName + " " + std::string(version);
 extern const std::string configFile = "ftpd.conf";
 
+void LoadConfig()
+{
+  cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config(configFile)));
+  
+  ftp::AddrAllocator<ftp::AddrType::Active>::SetAddrs(cfg::Get().ActiveAddr());
+  ftp::AddrAllocator<ftp::AddrType::Passive>::SetAddrs(cfg::Get().PasvAddr());
+  ftp::PortAllocator<ftp::PortType::Active>::SetPorts(cfg::Get().ActivePorts());
+  ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(cfg::Get().PasvPorts());
+}
+
 #ifndef TEST
 int main(int argc, char** argv)
 {
@@ -28,7 +38,7 @@ int main(int argc, char** argv)
 
   try
   {
-    cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config(configFile)));
+    LoadConfig();
   }
   catch (const cfg::ConfigError& e)
   {
@@ -46,12 +56,7 @@ int main(int argc, char** argv)
     logs::error << "TLS failed to initialise: " << e.Message() << logs::endl;
     return 1;
   }
-  
-  ftp::AddrAllocator<ftp::AddrType::Active>::SetAddrs(cfg::Get().ActiveAddr());
-  ftp::AddrAllocator<ftp::AddrType::Passive>::SetAddrs(cfg::Get().PasvAddr());
-  ftp::PortAllocator<ftp::PortType::Active>::SetPorts(cfg::Get().ActivePorts());
-  ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(cfg::Get().PasvPorts());
-  
+    
   try
   {
     db::Initalize();

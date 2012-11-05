@@ -8,19 +8,31 @@ namespace cmd { namespace site
 
 cmd::Result RELOADCommand::Execute()
 {
-  boost::unique_future<bool> future;
-  ftp::TaskPtr task(new ftp::task::ReloadConfig(future));
+  using namespace ftp::task;
+
+  boost::unique_future<ReloadConfig::Result> future;
+  ftp::TaskPtr task(new ReloadConfig(future));
   ftp::Listener::PushTask(task);
   future.wait();
   
-  if (!future.get())
+  std::stringstream os;
+  
+  ReloadConfig::Result result = future.get();
+  if (result == ReloadConfig::Result::Fail)
   {
-    control.PartReply(ftp::ActionNotOkay, "Config failed to reload.");
-    control.Reply(ftp::ActionNotOkay, "See SITE LOGS ERROR for further details.");
-    return cmd::Result::Okay;
+    os << "Config failed to reload.\n";
+    os << "See SITE LOGS ERROR for further details.";
+  }
+
+  os << "Config reloaded.";
+
+  if (result == ReloadConfig::Result::StopStart)
+  {
+    os << "\nSome of the options changed require a full stop start.\n";
+    os << "See SITE LOGS ERROR for details.";
   }
   
-  control.Reply(ftp::CommandOkay, "Config reloaded.");
+  control.MultiReply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 
