@@ -8,7 +8,8 @@ namespace cfg
 {
 
 void UpdateShared(const std::shared_ptr<Config> newShared);
-const Config& Get(bool update = false);
+void UpdateLocal();
+const Config& Get();
 
 } /* cfg namespace */
 

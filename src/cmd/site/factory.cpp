@@ -39,6 +39,7 @@
 #include "cmd/site/grpdel.hpp"
 #include "cmd/site/grpnfo.hpp"
 #include "cmd/site/grpren.hpp"
+#include "cmd/site/reload.hpp"
 
 #include <iostream>
 
@@ -324,6 +325,10 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE REQUESTS [<number>] [<string> ..]",
                       "Display list of requests" }, },
+    { "RELOAD",     { 0,  0,  "reload",
+                      CreatorBasePtr(new Creator<site::RELOADCommand>()),
+                      "Syntax: SITE RELOAD",
+                      "Reload config file" }, }
   };
 }
 

@@ -206,6 +206,7 @@ void Client::Handle()
   {
     pt::time_duration timeout = idleExpires - pt::second_clock::local_time();
     ExecuteCommand(control.NextCommand(timeout));
+    cfg::UpdateLocal();
   }
 }
 

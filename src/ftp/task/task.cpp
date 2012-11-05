@@ -1,6 +1,8 @@
 #include <sstream>
 #include "ftp/task/task.hpp"
 #include "ftp/listener.hpp"
+#include "cfg/get.hpp"
+#include "main.hpp"
 
 namespace ftp { namespace task
 {
@@ -23,9 +25,26 @@ void GetOnlineUsers::Execute(Listener& listener)
     users.emplace_back(WhoUser(client.User(), client.Data().State(), client.IdleTime(), 
                        client.CurrentCommand(), client.Ident(), client.Address()));
   }
+  
   promise.set_value(true);
 }
 
-// end
+void ReloadConfig::Execute(Listener&)
+{
+  try
+  {
+    cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config(configFile)));
+  }
+  catch (const cfg::ConfigError&)
+  {
+    promise.set_value(false);
+    return;
+  }
+  
+  // threads need to be notified
+  
+  promise.set_value(true);
+}
+
 }
 }
