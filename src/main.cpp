@@ -58,6 +58,7 @@ bool ParseOptions(int argc, char** argv, boost::program_options::variables_map& 
     ("config-file,c", po::value<std::string>(),
      "specify location of config file")
     //("foreground,f", "run server in foreground")
+    ("foreground,f", "run server in foreground")
     ("siteop-only,s", "run server in siteop only mode");
 
   try
