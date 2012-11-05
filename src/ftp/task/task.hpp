@@ -65,8 +65,7 @@ public:
 class Exit : public Task
 {
 public:
-  void Execute(Listener&)
-  { }
+  void Execute(Listener& listener);
 };
 
 // end

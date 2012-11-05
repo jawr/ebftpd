@@ -80,6 +80,17 @@ void Listener::HandleClients()
   }
 }
 
+void Listener::StopClients()
+{
+  for (auto& client : clients)
+    client.Interrupt();
+    
+  for (auto& client : clients)
+    client.Join();
+    
+  clients.clear();
+}
+
 void Listener::AcceptClient(util::net::TCPListener& server)
 {
   std::unique_ptr<ftp::Client> client(new ftp::Client());
@@ -135,7 +146,7 @@ void Listener::AcceptClients()
 
 void Listener::Run()
 {
-  while (true)
+  while (!isShutdown)
   {
     AcceptClients();
     HandleClients();
@@ -147,6 +158,7 @@ void Listener::Stop()
   instance.interruptPipe.Interrupt();
   instance.thread.interrupt();
   instance.thread.join();
+  instance.StopClients();
 }
 
 }

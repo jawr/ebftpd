@@ -138,11 +138,17 @@ public:
   void Interrupt();
   
   
-  static void SetSiteopOnly()
-  { siteopOnly = true; }
+  static bool SetSiteopOnly()
+  {
+    bool expected = false;
+    return siteopOnly.compare_exchange_strong(expected, true);
+  }
   
-  static void SetReopen()
-  { siteopOnly = false; }
+  static bool SetReopen()
+  {
+    bool expected = true; 
+    return siteopOnly.compare_exchange_strong(expected, false);
+  }
   
   static bool IsSiteopOnly()
   { return siteopOnly; }
