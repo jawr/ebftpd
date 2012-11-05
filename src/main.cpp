@@ -1,4 +1,7 @@
 #include <memory>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/program_options/parsers.hpp>
 #include "ftp/listener.hpp"
 #include "util/net/tlscontext.hpp"
 #include "util/net/error.hpp"
@@ -14,12 +17,17 @@
 #include "db/exception.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
+#include "ftp/client.hpp"
 
 #include "version.hpp"
 
 extern const std::string programName = "ebftpd";
 extern const std::string programFullname = programName + " " + std::string(version);
-extern const std::string configFile = "ftpd.conf";
+
+namespace
+{
+std::string configFile = "ftpd.conf";
+}
 
 void LoadConfig()
 {
@@ -31,9 +39,54 @@ void LoadConfig()
   ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(cfg::Get().PasvPorts());
 }
 
+void DisplayHelp(char* argv0, boost::program_options::options_description& desc)
+{
+  std::cout << "usage: " << argv0 << " [options]" << std::endl;
+  std::cout << desc;
+}
+
+bool ParseOptions(int argc, char** argv, boost::program_options::variables_map& vm)
+{
+  namespace po = boost::program_options;
+  po::options_description desc("supported options");
+  desc.add_options()
+    ("help,h", "display this help message")
+    ("config-file,c", po::value<std::string>(),
+     "specify location of config file")
+    ("foreground,f", "run server in foreground")
+    ("siteop-only,s", "run server in siteop only mode");
+
+  try
+  {
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm); 
+  }
+  catch (const boost::program_options::error& e)
+  {
+    std::cerr << e.what() << std::endl;
+    DisplayHelp(argv[0], desc);
+    return false;
+  }
+  
+  if (vm.count("help"))
+  {
+    DisplayHelp(argv[0], desc);
+    return false;
+  }
+  
+  if (vm.count("config-file")) configFile = vm["config-file"].as<std::string>();
+  if (vm.count("siteop-only")) ftp::Client::SetSiteopOnly();
+  
+  return true;
+}
+
 #ifndef TEST
 int main(int argc, char** argv)
 {
+  boost::program_options::variables_map vm;
+  
+  if (!ParseOptions(argc, argv, vm)) return 1;
+
   std::cout << "Starting " << programFullname << " .. " << std::endl;
 
   try
@@ -48,8 +101,8 @@ int main(int argc, char** argv)
 
   try
   {
-    const std::string& certificate = cfg::Get().TlsCertificate().ToString();
-    util::net::TLSServerContext::Initialise(certificate, "");
+    util::net::TLSServerContext::Initialise(
+        cfg::Get().TlsCertificate().ToString(), "");
   }
   catch (const util::net::NetworkError& e)
   {
@@ -70,7 +123,6 @@ int main(int argc, char** argv)
   fs::OwnerCache::Start();
   
   int exitStatus = 0;
- 
   if (!ftp::Listener::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
     logs::error << "Listener failed to initialise!" << logs::endl;
@@ -83,11 +135,7 @@ int main(int argc, char** argv)
   }
 
   db::Cleanup();
-  
   fs::OwnerCache::Stop();
-  
-  (void) argc;
-  (void) argv;
   
   return exitStatus;
 }
