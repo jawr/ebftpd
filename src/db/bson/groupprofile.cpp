@@ -1,7 +1,6 @@
 #include "db/bson/groupprofile.hpp"
 #include "acl/groupprofile.hpp"
-#include "logs/logs.hpp"
-#include "db/exception.hpp"
+#include "db/bson/error.hpp"
 
 namespace db { namespace bson
 {
@@ -37,8 +36,7 @@ acl::GroupProfile GroupProfile::Unserialize(const mongo::BSONObj& bo)
   }
   catch (const mongo::DBException& e)
   {
-    logs::db << "Error while unserialising group profile: " << e.what() << logs::endl;
-    throw db::DBError("Unable to load group profile.");
+    UnserializeFailure("group profile", e, bo);
   }
 }
 

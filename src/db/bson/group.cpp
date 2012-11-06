@@ -1,7 +1,6 @@
 #include "db/bson/group.hpp"
 #include "acl/group.hpp"
-#include "db/exception.hpp"
-#include "logs/logs.hpp"
+#include "db/bson/error.hpp"
 
 namespace db { namespace bson
 {
@@ -14,16 +13,15 @@ mongo::BSONObj Group::Serialize(const acl::Group& group)
   return bob.obj();
 }
 
-acl::Group* Group::Unserialize(const mongo::BSONObj& bo)
+std::unique_ptr<acl::Group> Group::Unserialize(const mongo::BSONObj& bo)
 {
   try
   {
-    return new acl::Group(bo["name"].String(), bo["gid"].Int());
+    return std::unique_ptr<acl::Group>(new acl::Group(bo["name"].String(), bo["gid"].Int()));
   }
   catch (const mongo::DBException& e)
   {
-    logs::db << "Error while unserialising group: " << e.what() << logs::endl;
-    throw db::DBError("Unable to load group.");
+    UnserializeFailure("group", e, bo);
   }
 }
 

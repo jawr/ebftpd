@@ -4,7 +4,7 @@
 #include "acl/user.hpp"
 #include "db/bson/bson.hpp"
 #include "logs/logs.hpp"
-#include "db/exception.hpp"
+#include "db/bson/error.hpp"
 
 namespace db { namespace bson
 {
@@ -42,8 +42,7 @@ std::unique_ptr<acl::User> User::Unserialize(const mongo::BSONObj& bo)
   }
   catch (const mongo::DBException& e)
   {
-    logs::db << "Error while unserialising user: " << e.what() << logs::endl;
-    throw db::DBError("Unable to load user.");
+    UnserializeFailure("user", e, bo);
   }
 
   return user;

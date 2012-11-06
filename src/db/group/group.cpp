@@ -63,7 +63,7 @@ void GetAll(boost::ptr_vector<acl::Group>& groups)
   future.wait();
 
   for (auto& obj: results)
-    groups.push_back(bson::Group::Unserialize(obj));
+    groups.push_back(bson::Group::Unserialize(obj).release());
 }
 
 void Delete(acl::GroupID gid)

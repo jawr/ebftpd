@@ -2,8 +2,7 @@
 #include "db/bson/stat.hpp"
 #include "db/bson/bson.hpp"
 #include "stats/stat.hpp"
-#include "logs/logs.hpp"
-#include "db/exception.hpp"
+#include "db/bson/error.hpp"
 
 namespace db { namespace bson
 {
@@ -38,9 +37,7 @@ mongo::BSONObj Stat::Serialize(const ::stats::Stat& stat)
   }
   catch (const mongo::DBException& e)
   {
-    logs::db << "Stat::UnserializeRaw error: " << e.what() << " bo: " 
-      << bo.toString() << logs::endl;
-    throw db::DBError("Unable to load stats.");
+    UnserializeFailure("stat raw", e, bo);
   }
 
   return stat;
@@ -70,9 +67,7 @@ mongo::BSONObj Stat::Serialize(const ::stats::Stat& stat)
   } 
   catch (const mongo::DBException& e)
   {
-    logs::db << "Stat::Unserialize error: " << e.what() << " bo: " 
-      << bo.toString() << logs::endl;
-    throw db::DBError("Unable to load stats.");
+    UnserializeFailure("stat", e, bo);
   }
 
   return stat;

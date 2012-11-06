@@ -4,8 +4,7 @@
 #include "acl/userprofile.hpp"
 #include "acl/types.hpp"
 #include "db/bson/bson.hpp"
-#include "db/exception.hpp"
-#include "logs/logs.hpp"
+#include "db/bson/error.hpp"
 
 namespace db { namespace bson
 {
@@ -72,8 +71,7 @@ acl::UserProfile UserProfile::Unserialize(const mongo::BSONObj& bo)
   }
   catch (const mongo::DBException& e)
   {
-    logs::db << "Error while unserialising user profile: " << e.what() << logs::endl;
-    throw db::DBError("Unable to load user profile.");
+    UnserializeFailure("user profile", e, bo);
   }
 
   return profile;
