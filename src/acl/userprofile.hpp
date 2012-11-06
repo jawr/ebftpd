@@ -21,7 +21,7 @@ class UserProfile
 {
   UserID uid;
   UserID creator;
-  std::string created;
+  boost::gregorian::date created;
 
   int ratio;
   int weeklyAllotment;
@@ -72,7 +72,7 @@ public:
   int MaxSimDl() const { return maxSimDl; }
   int MaxSimUl() const { return maxSimUl; }
   acl::UserID UID() const { return uid; }
-  const std::string& Created() const { return created; }
+  const boost::gregorian::date& Created() const { return created; }
   const std::string& LastLogin() const { return lastLogin; }
   int LoggedIn() const { return loggedIn; }
 

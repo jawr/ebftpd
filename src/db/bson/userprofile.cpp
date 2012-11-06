@@ -56,8 +56,10 @@ acl::UserProfile UserProfile::Unserialize(const mongo::BSONObj& bo)
   
   mongo::BSONElement date;
   bo.getObjectID(date);
-  auto oid = date.OID();
-  profile.created = oid.asDateT().toString();
+  
+  struct tm created;
+  date.OID().asDateT().toTm(&created);
+  profile.created = boost::gregorian::date_from_tm(created);
 
   return profile;
 }
