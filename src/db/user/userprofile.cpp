@@ -26,9 +26,10 @@ acl::UserProfile Get(acl::UserID uid)
   return bson::UserProfile::Unserialize(*results.begin());
 }
 
-void GetSelection(boost::ptr_vector<acl::User>& users,
-  std::map<acl::UserID, acl::UserProfile>& profiles)
+std::map<acl::UserID, acl::UserProfile> GetSelection(std::vector<acl::User>& users)
 {
+  std::map<acl::UserID, acl::UserProfile> profiles;
+
   QueryResults results;
   mongo::BSONArrayBuilder b;
   for (auto& user: users)
@@ -46,6 +47,8 @@ void GetSelection(boost::ptr_vector<acl::User>& users,
     acl::UserProfile profile = db::bson::UserProfile::Unserialize(result);
     profiles.insert(std::make_pair(profile.UID(), profile));
   }
+
+  return profiles;
 }
 
 void Save(const acl::UserProfile& profile)

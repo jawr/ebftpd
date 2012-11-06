@@ -20,10 +20,9 @@ cmd::Result GROUPSCommand::Execute()
     os << "(Users)  Name      Group Description";
     os << "\n----------------------------------------------------------------------";
 
-    boost::ptr_vector<acl::User> users; 
     for (auto& group: groups)
     {
-      db::user::UsersByACL(users, "=" + group.Name());
+      std::vector<acl::User> users = db::user::GetByACL("=" + group.Name());
       os << "\n(" << users.size() << ") " << group.Name();
     }
   }

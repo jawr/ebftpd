@@ -17,7 +17,7 @@ namespace db { namespace userprofile
   void Save(const acl::UserProfile& profile);
   void GetAll(std::vector<acl::UserProfile>& profiles);
   acl::UserProfile Get(acl::UserID uid);
-  void GetSelection(boost::ptr_vector<acl::User>& users,
+  void GetSelection(std::vector<acl::User>& users,
     std::map<acl::UserID, acl::UserProfile>& profiles);
 
   // setters

@@ -113,9 +113,10 @@ std::vector<acl::User> GetAll()
 
 
 // change to objects rather than pointers
-util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
-  std::string acl)
+std::vector<acl::User> GetByACL(std::string acl)
 {
+  std::vector<acl::User> users;
+
   mongo::Query query;
   if (acl[0] == '-')
   {
@@ -132,9 +133,13 @@ util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
     }
     catch (const util::RuntimeError& e)
     {
-      return util::Error::Failure(e.Message());
+      // group not found
+      return users;
     }
-    query = QUERY("$or" << BSON_ARRAY(BSON("primary gid" << group.GID()) << BSON("secondary gids" << group.GID())));
+    query = QUERY("$or" << BSON_ARRAY(
+      BSON("primary gid" << group.GID()) << 
+      BSON("secondary gids" << group.GID())
+    ));
   }
   else
     query = QUERY("flags" << acl);
@@ -149,9 +154,9 @@ util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
   future.wait();
 
   for (auto& obj: results)
-    users.push_back(bson::User::UnserializePtr(obj));
+    users.emplace_back(bson::User::Unserialize(obj));
 
-  return util::Error::Success();
+  return users;
 }
 
 // end

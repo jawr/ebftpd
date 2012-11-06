@@ -11,14 +11,7 @@ cmd::Result GRPDELCommand::Execute()
 {
   std::ostringstream acl;
   acl << "=" << args[1];
-  boost::ptr_vector<acl::User> users;
-  
-  util::Error e = db::user::UsersByACL(users, acl.str());
-  if (!e) 
-  {
-    control.Reply(ftp::ActionNotOkay, "GRPDEL failed: " + e.Message());
-    return cmd::Result::Okay;
-  }
+  std::vector<acl::User> users = db::user::GetByACL(acl.str());
 
   if (!users.empty())
   {
@@ -26,7 +19,7 @@ cmd::Result GRPDELCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  e = acl::GroupCache::Delete(args[1]);
+  util::Error e = acl::GroupCache::Delete(args[1]);
   if (!e)
     control.Reply(ftp::ActionNotOkay, "GRPDEL failed: " + e.Message());
   else

@@ -13,19 +13,12 @@ namespace cmd { namespace site
 cmd::Result USERSCommand::Execute()
 {
   std::ostringstream os;
-  boost::ptr_vector<acl::User> users;
+  std::vector<acl::User> users;
   
   if (args.size() == 2)
-  {
-    util::Error ok = db::user::UsersByACL(users, args[1]);
-    if (!ok)
-    {
-      control.Reply(ftp::ActionNotOkay, ok.Message());
-      return cmd::Result::Okay;
-    }
-  }
+    users = db::user::GetByACL(args[1]);
   else
-    users = db::user::GetAllPtr();
+    users = db::user::GetAll();
 
   if (users.size() > 0)
   {
