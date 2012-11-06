@@ -12,22 +12,10 @@ struct ConfigError : public util::RuntimeError
   ConfigError(const std::string& message) : std::runtime_error(message) {}
 };
 
-struct ConfigFileError : public ConfigError
-{
-  ConfigFileError() : std::runtime_error("Unable to open Config file.") {}
-  ConfigFileError(const std::string& message) : std::runtime_error(message) {}
-};
-
-struct NoSetting : public ConfigError
-{
-  NoSetting() : std::runtime_error("Error parsing setting") {}
-  NoSetting(const std::string& message) : std::runtime_error(message) {}
-};
-
 struct RequiredSetting : public ConfigError
 {
   RequiredSetting() : std::runtime_error("Missing required setting.") {}
-  RequiredSetting(const std::string& message) : std::runtime_error("Missing required setting: " + message) {}
+  RequiredSetting(const std::string& setting) : std::runtime_error("Missing required setting: " + setting) {}
 };
 
 }

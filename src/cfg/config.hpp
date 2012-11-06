@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
-#include <unordered_map>
+#include <unordered_set>
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
 #include "fs/path.hpp"
@@ -15,12 +15,10 @@ namespace cfg
 
 class Config
 { 
-  static int latestVersion;
   int version;
-
-  std::string config;
+  std::string configFile;
  
-  void Parse(const std::string& line);
+  void Parse(std::string line);
   
   bool CheckSetting(const std::string& name);
   void SanityCheck();
@@ -128,21 +126,23 @@ class Config
   int maxSitecmdLines;
   setting::IdleTimeout idleTimeout;
   
-  std::unordered_map<std::string, acl::ACL> commandACLs;
+  std::unordered_map<std::string, acl::ACL> commandACLs;  
+  
+  static std::unordered_set<std::string> aclKeywords;
+  static int latestVersion;
   
   Config(const Config&) = default;
   Config& operator=(const Config&) = default;
   
-  void NotImplemented(const std::string& opt);
-  void ParameterCheck(const std::string& opt,
-                      const std::vector<std::string>& toks, 
-                      int minimum, int maximum);
-  void ParameterCheck(const std::string& opt,
-                      const std::vector<std::string>& toks, 
-                      int minimum)
+  static void NotImplemented(const std::string& opt);
+  static void ParameterCheck(const std::string& opt,
+                             const std::vector<std::string>& toks, 
+                             int minimum, int maximum);
+  static void ParameterCheck(const std::string& opt,
+                             const std::vector<std::string>& toks, 
+                             int minimum)
   { ParameterCheck(opt, toks, minimum, minimum); }
-        
-  
+
 public:
   Config(const std::string& configFile);
   ~Config() {}  
@@ -253,6 +253,9 @@ public:
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }
   
+  
+  static void PopulateACLKeywords(const std::unordered_set<std::string>& keywords)
+  { aclKeywords.insert(keywords.begin(), keywords.end()); }
   
   friend void UpdateLocal();
 };

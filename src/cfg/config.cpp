@@ -16,10 +16,11 @@ namespace cfg
 {
 
 int Config::latestVersion = 0;
+std::unordered_set<std::string> Config::aclKeywords;
 
-Config::Config(const std::string& config) : 
+Config::Config(const std::string& configFile) : 
   version(++latestVersion),
-  config(config),
+  configFile(configFile),
   port(-1),
   defaultFlags("3"),
   freeSpace(100),
@@ -35,66 +36,75 @@ Config::Config(const std::string& config) :
   maxSitecmdLines(-1) // unlimited
 {
   std::string line;
-  std::ifstream io(config.c_str(), std::ifstream::in);
-  int i = 0;
+  std::ifstream io(configFile.c_str());
+  if (!io) throw ConfigError("Unable to open config file.");
 
-  if (!io.is_open()) throw ConfigFileError("Unable to open config file");
-
-  while (io.good())
+  bool okay = true;
+  for (int i = 1; std::getline(io, line); ++i)
   {
-    std::getline(io, line);
-    ++i;
     std::string::size_type pos = line.find_first_of('#');
     if (pos != std::string::npos) line.erase(pos);
     if (line.empty()) continue;
+    
     try 
     {
       Parse(line);
     } 
-    catch (const NoSetting &e) // handle properly
+    catch (const ConfigError &e) // handle properly
     {
-      logs::error << "Invalid config setting: " << e.Message() 
-                  << " (" << config << ":" << i << ")" << logs::endl;
+      logs::error << "Error in config at line " << i << ": " << e.Message() << logs::endl;
+      okay = false;
     }
   }
+  
+  if (!okay) throw ConfigError("Errors while parsing config file.");
 
   SanityCheck();
 }
 
-void Config::Parse(const std::string& line) {
+void Config::Parse(std::string line) {
   std::vector<std::string> toks;
+  boost::trim(line);
   boost::split(toks, line, boost::is_any_of("\t "), boost::token_compress_on);
-  for (auto& token : toks) 
-    boost::replace_all(token, "[:space:]", " ");
-  
+  for (auto& token : toks) boost::replace_all(token, "[:space:]", " ");
+
   if (toks.size() == 0) return;
   std::string opt = toks.at(0);
   if (opt.size() == 0) return;
   
   // remove setting from args
-  toks.erase(toks.begin());
-  
-  // not too sure this is necessary with token_compress_on??
-  std::vector<std::string>::iterator it;
-  for (it = toks.begin(); it != toks.end();)
-    if (it->size() == 0)
-      it = toks.erase(it);
-    else
-      ++it;
-    
-  // parse string
+  toks.erase(toks.begin());    
   boost::algorithm::to_lower(opt);
 
-  // plan to rehaul this area in the future to sway from glftpd's inconsitencies
-  // check if we have a perm to parse
-  if (opt[0] == '-' || boost::starts_with(opt, "custom-"))
+  // update cache for sanity check
+  settingsCache[opt]++; 
+
+  if (opt[0] == '-')
   {
     ParameterCheck(opt, toks, 1, -1);
-    std::string keyword(opt[0] == '-' ? opt.substr(1) : opt.substr(7));
+    std::string keyword(opt.substr(1));
+    if (aclKeywords.find(keyword) == aclKeywords.end())
+      throw ConfigError("Invalid command acl keyword: " + keyword);
     commandACLs.insert(std::make_pair(keyword, 
         acl::ACL::FromString(boost::join(toks, " "))));
   }
-
+  else
+  if (boost::starts_with(opt, "custom-"))
+  {
+    ParameterCheck(opt, toks, 1, -1);
+    std::string keyword(opt.substr(7));
+    if (std::find_if(siteCmd.begin(), siteCmd.end(), 
+        [&](const setting::SiteCmd& sc)
+        {
+          return boost::to_upper_copy(keyword) == sc.Command();
+        }) == siteCmd.end())
+    {
+      throw ConfigError("Invalid custom command acl keyword: " + keyword);
+    }
+    commandACLs.insert(std::make_pair(keyword, 
+        acl::ACL::FromString(boost::join(toks, " "))));
+  }
+  else
   if (opt == "sitepath")
   {
     ParameterCheck(opt, toks, 1);
@@ -125,7 +135,7 @@ void Config::Parse(const std::string& line) {
     ParameterCheck(opt, toks, 1);
     rootpath = fs::Path(toks.at(0));
   }
-  else if (opt == "reload_config")
+  else if (opt == "reload_3")
   {
     NotImplemented(opt);
   }
@@ -554,9 +564,10 @@ void Config::Parse(const std::string& line) {
     ParameterCheck(opt, toks, 3);
     idleTimeout = setting::IdleTimeout(toks);
   }
-
-  // update cache for sanity check
-  settingsCache[opt]++; 
+  else
+  {
+    throw ConfigError("Invalid config option: " + opt);
+  }
 }
 
 void Config::NotImplemented(const std::string& opt)
@@ -582,7 +593,6 @@ bool Config::CheckSetting(const std::string& name)
 
 void Config::SanityCheck()
 {
-  // required
   if (!CheckSetting("tls_certificate")) throw RequiredSetting("tls_certificate");
   else if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
   else if (!CheckSetting("port")) throw RequiredSetting("port");

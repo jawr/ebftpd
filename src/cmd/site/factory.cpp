@@ -288,7 +288,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<site::HELPCommand>()),
                       "Syntax: SITE HELP [<command>]",
                       "Display site command help" }, },
-    { "STAT",       { 0,  0,  "statsown",
+    { "STAT",       { 0,  0,  "stat",
                       nullptr,
                       "Syntax: SITE STAT",
                       "Display statline" }, },
@@ -340,6 +340,19 @@ CommandDefOptRef Factory::Lookup(const std::string& command)
   CommandDefsMap::const_iterator it = factory.defs.find(command);
   if (it != factory.defs.end()) return CommandDefOptRef(it->second);
   return CommandDefOptRef();
+}
+
+std::unordered_set<std::string> Factory::ACLKeywords()
+{
+  std::unordered_set<std::string> keywords;
+  for (auto& kv : Commands())
+  {
+    std::vector<std::string> curKeywords;
+    boost::split(curKeywords, kv.second.ACLKeyword(), boost::is_any_of("|"));
+    keywords.insert(curKeywords.begin(), curKeywords.end());
+  }
+  
+  return keywords;
 }
 
 } /* site namespace */
