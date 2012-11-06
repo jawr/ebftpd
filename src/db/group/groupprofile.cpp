@@ -91,7 +91,7 @@ util::Error SetMaxAllotSlots(acl::GroupID gid, const std::string& slots)
   return util::Error::Success();
 }
 
-util::Error SetMaxLogins(acl::GroupID gid, int maxLogins) 
+util::Error SetMaxLogins(acl::GroupID gid, const std::string& maxLogins) 
 {
   int i;
   try
