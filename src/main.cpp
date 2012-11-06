@@ -51,12 +51,18 @@ void DisplayHelp(char* argv0, boost::program_options::options_description& desc)
   std::cout << desc;
 }
 
+void DisplayVersion()
+{
+  std::cout << programFullname << std::endl;
+}
+
 bool ParseOptions(int argc, char** argv, bool& foreground)
 {
   namespace po = boost::program_options;
   po::options_description desc("supported options");
   desc.add_options()
     ("help,h", "display this help message")
+    ("version,v", "display version")
     ("config-file,c", po::value<std::string>(),
      "specify location of config file")
     ("foreground,f", "run server in foreground")
@@ -78,6 +84,12 @@ bool ParseOptions(int argc, char** argv, bool& foreground)
   if (vm.count("help"))
   {
     DisplayHelp(argv[0], desc);
+    return false;
+  }
+  
+  if (vm.count("version"))
+  {
+    DisplayVersion();
     return false;
   }
   
