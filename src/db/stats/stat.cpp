@@ -27,6 +27,23 @@ void Get(mongo::Query& query, QueryResults& results)
   return;
 }
 
+mongo::BSONObj GetFromCommand(const mongo::BSONObj& match)
+{
+  boost::unique_future<bool> future;
+  mongo::BSONObj cmd = BSON("aggregate" << "transfers" << "pipeline" <<
+    BSON_ARRAY(BSON("$match" << match) << BSON("$group" <<
+      BSON("_id" << "$uid" << "files" << BSON("$sum" << "$files") << "kbytes" <<
+      BSON("$sum" << "$kbytes") << "xfertime" << BSON("$sum" << "$xfertime")))
+    ));
+  mongo::BSONObj ret;
+  TaskPtr task(new db::RunCommand(cmd, ret, future));
+  Pool::Queue(task);
+
+  future.wait();
+
+  return ret;      
+}
+
 ::stats::Stat GetWeekDown(acl::UserID uid, int week, int year)
 {
   QueryResults results;
@@ -36,57 +53,30 @@ void Get(mongo::Query& query, QueryResults& results)
   return db::bson::Stat::Unserialize(results.front());
 }
 
-void GetAllUp(const boost::ptr_vector<acl::User>& users,
-  std::map<acl::UserID, ::stats::Stat>& stats)
+std::map<acl::UserID, ::stats::Stat> GetAllUp(const std::vector<acl::User>& users)
 {
+  std::map<acl::UserID, ::stats::Stat> stats;
   for (auto& user: users)
   {
-    boost::unique_future<bool> future;
-    mongo::BSONObj cmd = BSON("aggregate" << "transfers" << "pipeline" <<
-      BSON_ARRAY(
-        BSON("$match" << 
-          BSON("uid" << user.UID() << "direction" << "up")) <<
-        BSON("$group" << 
-          BSON("_id" << "$uid" << "files" << BSON("$sum" << "$files") << "kbytes" <<
-          BSON("$sum" << "$kbytes") << "xfertime" << BSON("$sum" << "$xfertime")))
-      ));
-
-    mongo::BSONObj ret;
-    TaskPtr task(new db::RunCommand(cmd, ret, future));
-    Pool::Queue(task);
-
-    future.wait();
-
+    mongo::BSONObj match = BSON("uid" << user.UID() << "direction" << "up");  
+    mongo::BSONObj ret = GetFromCommand(match);
     stats.insert(std::make_pair(user.UID(), 
       db::bson::Stat::UnserializeRaw(ret)));
   } 
+  return stats; 
 }
 
-void GetAllDown(const boost::ptr_vector<acl::User>& users,
-  std::map<acl::UserID, ::stats::Stat>& stats)
+std::map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl::User>& users)
 {
+  std::map<acl::UserID, ::stats::Stat> stats;
   for (auto& user: users)
   {
-    boost::unique_future<bool> future;
-    mongo::BSONObj cmd = BSON("aggregate" << "transfers" << "pipeline" <<
-      BSON_ARRAY(
-        BSON("$match" << 
-          BSON("uid" << user.UID() << "direction" << "dn")) <<
-        BSON("$group" << 
-          BSON("_id" << "$uid" << "files" << BSON("$sum" << "$files") << "kbytes" <<
-          BSON("$sum" << "$kbytes") << "xfertime" << BSON("$sum" << "$xfertime")))
-      ));
-
-    mongo::BSONObj ret;
-    TaskPtr task(new db::RunCommand(cmd, ret, future));
-    Pool::Queue(task);
-
-    future.wait();
-
+    mongo::BSONObj match = BSON("uid" << user.UID() << "direction" << "dn");
+    mongo::BSONObj ret = GetFromCommand(match);
     stats.insert(std::make_pair(user.UID(), 
       db::bson::Stat::UnserializeRaw(ret)));
   } 
-  
+  return stats; 
 }
 
 ::stats::Stat GetWeekUp(acl::UserID uid, int week, int year)
