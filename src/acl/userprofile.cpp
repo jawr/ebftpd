@@ -10,6 +10,7 @@ UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
   uid(uid),
   creator(creator),
   ratio(3),
+  weeklyAllotment(0),
   homeDir("/"),
   startupDir("/"),
   idleTime(0),
@@ -18,27 +19,14 @@ UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
   maxDlSpeed(0),
   maxUlSpeed(0),
   maxSimDl(2),
-  maxSimUl(2)
+  maxSimUl(2),
+  loggedIn(0)
 {
 }
 
-util::Error UserProfile::SetExpires(const std::string& value)
+bool UserProfile::Expired() const
 {
-  if (boost::to_lower_copy(value) == "never")
-    expires = boost::optional<boost::gregorian::date>();
-  else
-  {
-    try
-    {
-      expires = boost::gregorian::from_string(value);
-    }
-    catch (const std::exception& e)
-    {
-      return util::Error::Failure("Invalid date. Must be in format YYYY-MM-DD. or NEVER");
-    }
-  }
-  
-  return util::Error::Success();
+  return boost::gregorian::day_clock::local_day() >= expires;
 }
 
 // end

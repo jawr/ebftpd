@@ -65,9 +65,9 @@ cmd::Result USERCommand::Execute()
   os << "\n| Created: " << profile.Created();
   os << "\n| Last login: " << profile.LastLogin(); 
   
-  const std::string& expires = profile.Expires();
-  if (expires != "not-a-date-time")
-    os << "\n| Expires: " << expires;
+  os << "\n| Expires : ";
+  if (profile.Expires()) os << *profile.Expires();
+  else os << "Never";
   os << "\n| Created by: " << creator;
   os << "\n| Flags: " << user.Flags();
   os << "\n| Ratio: " << profile.Ratio();

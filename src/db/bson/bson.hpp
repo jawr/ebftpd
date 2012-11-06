@@ -39,7 +39,7 @@ inline boost::gregorian::date ToGregDate(const mongo::Date_t& dt)
 {
   time_t t = dt.toTimeT();
   struct tm tm;
-  verify(!localtime_r(&t, &tm)); // what to do ?!? :(
+  localtime_r(&t, &tm);
   return boost::gregorian::date_from_tm(tm);
 }
 

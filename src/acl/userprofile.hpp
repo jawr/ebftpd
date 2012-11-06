@@ -41,29 +41,21 @@ class UserProfile
   int maxSimUl;
 
   int loggedIn;
-  std::string lastLogin;
+  boost::optional<boost::posix_time::ptime> lastLogin;
 
 public:
   UserProfile() : uid(-1), creator(-1) {};
   UserProfile(acl::UserID uid, acl::UserID creator = 0);
 
-  util::Error SetExpires(const std::string& date);
-
-  void SetCreator(acl::UserID creator) { this->creator = creator; }
-
-
+  const boost::optional<boost::gregorian::date>& Expires() const
+  { return expires; }
+  bool Expired() const;
   acl::UserID Creator() const { return creator; }
   int Ratio() const { return ratio; }
   int WeeklyAllotment() const { return weeklyAllotment; }
   const std::string& HomeDir() const { return homeDir; }
   const std::string& StartupDir() const { return startupDir; }
   int IdleTime() const { return idleTime; }
-  const std::string Expires() const 
-  { 
-    if (expires) return boost::gregorian::to_simple_string(*expires);
-    else return "never";
-  }
-  bool Expired(const std::string& date) const;
   int NumLogins() const { return numLogins; }
   const std::string& Tagline() const { return tagline; }
   const std::string& Comment() const { return comment; }
@@ -73,7 +65,7 @@ public:
   int MaxSimUl() const { return maxSimUl; }
   acl::UserID UID() const { return uid; }
   const boost::gregorian::date& Created() const { return created; }
-  const std::string& LastLogin() const { return lastLogin; }
+  const boost::optional<boost::posix_time::ptime>& LastLogin() const { return lastLogin; }
   int LoggedIn() const { return loggedIn; }
 
   friend struct db::bson::UserProfile;

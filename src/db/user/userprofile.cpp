@@ -6,6 +6,7 @@
 #include "db/types.hpp"
 #include "db/pool.hpp"
 #include "db/bson/userprofile.hpp"
+#include "db/exception.hpp"
 
 namespace db { namespace userprofile
 {
@@ -21,7 +22,7 @@ acl::UserProfile Get(acl::UserID uid)
   future.wait();
 
   if (results.size() == 0) 
-    throw util::RuntimeError("Unable to get UserProfile.");
+    throw db::DBError("Unable to load user profile.");
 
   return bson::UserProfile::Unserialize(*results.begin());
 }
