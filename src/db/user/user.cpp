@@ -143,7 +143,7 @@ std::vector<acl::User> GetByACL(std::string acl)
   }
   else
     query = QUERY("flags" << acl);
-    
+
   QueryResults results;
   boost::unique_future<bool> future;
   TaskPtr task(new db::Select("users", query, results, future));
