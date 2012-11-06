@@ -39,7 +39,6 @@ cmd::Result RETRCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  std::streamsize bytes = 0;
   try
   {
     char buffer[16384];
@@ -70,8 +69,8 @@ cmd::Result RETRCommand::Execute()
   
   data.Close();
   boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
-  db::stats::Download(client.User(), bytes / 1024, duration.total_milliseconds());
-  acl::UserCache::DecrCredits(client.User().Name(), bytes / 1024);
+  db::stats::Download(client.User(), data.State().Bytes(), duration.total_milliseconds());
+  acl::UserCache::DecrCredits(client.User().Name(), data.State().Bytes());
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
       stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
