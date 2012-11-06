@@ -19,10 +19,10 @@ TLSSocket::TLSSocket() :
 {
 }
 
-TLSSocket::TLSSocket(TCPSocket& socket, HandshakeRole role) :
+TLSSocket::TLSSocket(TCPSocket& socket, HandshakeRole role, TLSSocket* id) :
   session(nullptr)
 {
-  Handshake(socket, role);
+  Handshake(socket, role, id);
 }
 
 void TLSSocket::EvaluateResult(int result)
@@ -56,7 +56,7 @@ void TLSSocket::EvaluateResult(int result)
   }
 }
 
-void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role)
+void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role, TLSSocket* id)
 {
   session = SSL_new(role == Client ?
                     TLSClientContext::Get() :
@@ -64,6 +64,8 @@ void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role)
   if (!session) throw TLSProtocolError();
   
   if (SSL_set_fd(session, socket.Socket()) != 1) throw TLSProtocolError();
+  
+  if (id) SSL_copy_session_id(session, id->session);
   
   if (role == Client) SSL_set_connect_state(session);
   else SSL_set_accept_state(session);
@@ -77,7 +79,6 @@ void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role)
     if (result == 1) break;
     else EvaluateResult(result);
   }
-  std::cout << SSL_version(session) << std::endl;
 }
 
 size_t TLSSocket::Read(char* buffer, size_t bufferSize)

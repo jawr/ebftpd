@@ -29,10 +29,10 @@ public:
   TLSSocket();
   /* No exceptions */
   
-  TLSSocket(TCPSocket& socket, HandshakeRole role);
+  TLSSocket(TCPSocket& socket, HandshakeRole role, TLSSocket* id = 0);
   /* Throws TLSError, TLSProtocolError, TLSSystemError, EndOfStream */
   
-  void Handshake(TCPSocket& socket, HandshakeRole role);
+  void Handshake(TCPSocket& socket, HandshakeRole role, TLSSocket* id = 0);
   /* Throws TLSError, TLSProtocolError, TLSSystemError, EndOfStream */
   
   size_t Read(char* buffer, size_t bufferSize);
