@@ -31,91 +31,39 @@ void Set(acl::GroupID gid, mongo::BSONObj obj)
   Pool::Queue(task);
 }
 
-util::Error SetSlots(acl::GroupID gid, int slots)
+void SetSlots(acl::GroupID gid, int slots)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(slots);
-  }
-  catch (const boost::bad_lexical_cast& e)
-  {
-    return util::Error::Failure("Failed to parse number!");
-  }
-  Set(gid, BSON("slots" << i));
-  return util::Error::Success();
+  Set(gid, BSON("slots" << slots));
 }
 
-util::Error SetLeechSlots(acl::GroupID gid, int slots)
+void SetLeechSlots(acl::GroupID gid, int slots)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(slots);
-  }
-  catch (const boost::bad_lexical_cast& e)
-  {
-    return util::Error::Failure("Failed to parse number!");
-  }
-  Set(gid, BSON("leech slots" << i));
-  return util::Error::Success();
+  Set(gid, BSON("leech slots" << slots));
 }
 
-util::Error SetAllotSlots(acl::GroupID gid, int slots)
+void SetAllotSlots(acl::GroupID gid, int slots)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(slots);
-  }
-  catch (const boost::bad_lexical_cast& e)
-  {
-    return util::Error::Failure("Failed to parse number!");
-  }
-  Set(gid, BSON("allotment slots" << i));
-  return util::Error::Success();
+  Set(gid, BSON("allotment slots" << slots));
 }
 
-util::Error SetMaxAllotSlots(acl::GroupID gid, int slots)
+void SetMaxAllotSlots(acl::GroupID gid, int slots)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(slots);
-  }
-  catch (const boost::bad_lexical_cast& e)
-  {
-    return util::Error::Failure("Failed to parse number!");
-  }
-  Set(gid, BSON("max allotment slots" << i));
-  return util::Error::Success();
+  Set(gid, BSON("max allotment slots" << slots));
 }
 
-util::Error SetMaxLogins(acl::GroupID gid, int maxLogins) 
+void SetMaxLogins(acl::GroupID gid, int maxLogins) 
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(maxLogins);
-  }
-  catch (const boost::bad_lexical_cast& e)
-  {
-    return util::Error::Failure("Failed to parse number!");
-  }
-  Set(gid, BSON("max logins" << i));
-  return util::Error::Success();
+  Set(gid, BSON("max logins" << maxLogins));
 }
 
-util::Error SetDescription(acl::GroupID gid, const std::string& description)
+void SetDescription(acl::GroupID gid, const std::string& description)
 {
   Set(gid, BSON("description" << description));
-  return util::Error::Success();
 }
 
-util::Error SetComment(acl::GroupID gid, const std::string& comment)
+void SetComment(acl::GroupID gid, const std::string& comment)
 {
   Set(gid, BSON("comment" << comment));
-  return util::Error::Success();
 }
 // end
 }

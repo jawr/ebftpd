@@ -5,6 +5,8 @@
 #include "db/bson/group.hpp"
 #include "acl/group.hpp"
 #include "acl/types.hpp"
+#include "logs/logs.hpp"
+#include "db/exception.hpp"
 
 namespace db { namespace group
 {
@@ -29,8 +31,15 @@ acl::GroupID GetNewGroupID()
 
   if (results.size() == 0) return acl::GroupID(1);
 
-  int gid = results.back().getIntField("gid");
-  return acl::GroupID(++gid);
+  try
+  {
+    return results.back().getIntField("gid");
+  }
+  catch (const mongo::DBException& e)
+  {
+    logs::db << "Error while getting new group id: " << e.what() << logs::endl;
+  }
+  throw db::DBError("Unable to get new group id.");
 }
 
 void Save(const acl::Group& group)
@@ -53,8 +62,6 @@ void GetAll(boost::ptr_vector<acl::Group>& groups)
 
   future.wait();
 
-  if (results.size() == 0) return;
-
   for (auto& obj: results)
     groups.push_back(bson::Group::Unserialize(obj));
 }
@@ -70,7 +77,6 @@ void Delete(acl::GroupID gid)
     Pool::Queue(task);
 }
 
-// end
 }
 }
 
