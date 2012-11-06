@@ -41,9 +41,9 @@ void Save(const acl::Group& group)
   Pool::Queue(task);
 }
 
-void GetAll(boost::ptr_vector<acl::Group>& groups)
+boost::ptr_vector<acl::Group> GetAllPtr()
 {
-  groups.clear();
+  boost::ptr_vector<acl::Group> groups;
 
   QueryResults results;
   mongo::Query query;
@@ -53,10 +53,10 @@ void GetAll(boost::ptr_vector<acl::Group>& groups)
 
   future.wait();
 
-  if (results.size() == 0) return;
-
   for (auto& obj: results)
     groups.push_back(bson::Group::Unserialize(obj));
+
+  return groups;
 }
 
 void Delete(acl::GroupID gid)

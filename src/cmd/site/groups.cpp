@@ -11,11 +11,9 @@ namespace cmd { namespace site
 
 cmd::Result GROUPSCommand::Execute()
 {
-  boost::ptr_vector<acl::Group> groups; 
+  boost::ptr_vector<acl::Group> groups = db::group::GetAllPtr();
 
   std::ostringstream os;
-
-  db::group::GetAll(groups);
 
   if (groups.size() > 0)
   {

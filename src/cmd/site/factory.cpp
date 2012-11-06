@@ -41,6 +41,9 @@
 #include "cmd/site/grpren.hpp"
 #include "cmd/site/reload.hpp"
 #include "cmd/site/shutdown.hpp"
+#include "cmd/site/grpchange.hpp"
+
+#include <iostream>
 
 namespace cmd { namespace site
 {
@@ -263,7 +266,7 @@ Factory::Factory()
                       "Syntax: SITE GROUP",
                       "Display detailed group info" }, },
     { "GRPCHANGE",  { 3,  3,  "grpchange", 
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GRPCHANGECommand>()),
                       "Syntax: SITE GRPCHANGE <group> <setting> <value>\n"
                       "        SITE GRPCHANGE {<group> [<group> ..]} <setting> <value>\n"
                       "        SITE GRPCHANGE * <setting> <value>",
