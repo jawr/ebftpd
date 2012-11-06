@@ -7,18 +7,20 @@
 namespace util { namespace logger
 {
 
-Logger::Logger() : out(&std::clog) { }
-Logger::Logger(const std::string& path) : path(path), out(&std::clog) { }
+Logger::Logger() : out(&std::cout), stdoutAlso(false) { }
+Logger::Logger(const std::string& path, bool stdoutAlso) : 
+  path(path), out(&std::cout), stdoutAlso(stdoutAlso) { }
 
 
-void Logger::SetPath(const std::string& path)
+void Logger::SetPath(const std::string& path, bool stdoutAlso)
 {
   this->path = path;
+  this->stdoutAlso = stdoutAlso;
 }
 
 Logger::~Logger()
 {
-  if (out != &std::clog) delete out;
+  if (out != &std::cout) delete out;
 }
 
 Logger& Logger::operator<<(std::ostream& (*pf)(std::ostream&))
@@ -54,7 +56,7 @@ Logger& Logger::Flush(bool newLine)
   
   {
     boost::lock_guard<boost::mutex> lock(outMutex);
-    if (out == &std::clog && !path.empty()) out = nullptr;
+    if (out == &std::cout && !path.empty()) out = nullptr;
     if (!out)
     {
       std::ofstream* fout(new std::ofstream(path.c_str(), std::ios::app));
@@ -63,7 +65,7 @@ Logger& Logger::Flush(bool newLine)
       {
         delete fout;
         fout = nullptr;
-        out = &std::clog;
+        out = &std::cout;
       }
     }
 
@@ -75,16 +77,13 @@ Logger& Logger::Flush(bool newLine)
       if (!firstLine) (*out) << "\n";
       else firstLine = false;
       (*out) << timestamp << " " << line;
-      #ifdef DEBUG
-      //std::clog << timestamp << " " << line;
-      #endif
+      if (stdoutAlso && out != &std::cout)
+        std::cout << timestamp << " " << line;
     }
 
     (*out) << (newLine ? "\n" : "") << std::flush;
-
-    #ifdef DEBUG
-    //std::clog << (newLine ? "\n" : "") << std::flush;
-    #endif
+    if (stdoutAlso && out != &std::cout)
+      std::cout << (newLine ? "\n" : "") << std::flush;
   }
   
   oss->str("");
