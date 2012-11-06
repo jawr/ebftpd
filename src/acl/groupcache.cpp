@@ -107,7 +107,8 @@ acl::Group GroupCache::Group(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) throw util::RuntimeError("Group doesn't exist");
+  if (it == instance.byName.end()) 
+    throw util::RuntimeError("Group (" + name + ") doesn't exist.");
   return *it->second;
 }
 
