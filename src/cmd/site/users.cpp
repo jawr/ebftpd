@@ -25,7 +25,7 @@ cmd::Result USERSCommand::Execute()
     }
   }
   else
-    db::user::GetAll(users);
+    users = db::user::GetAllPtr();
 
   if (users.size() > 0)
   {

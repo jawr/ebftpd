@@ -14,7 +14,8 @@ namespace db { namespace bson
 struct Group
 {
   static mongo::BSONObj Serialize(const acl::Group& group);
-  static acl::Group* Unserialize(const mongo::BSONObj& bo);
+  static acl::Group Unserialize(const mongo::BSONObj& bo);
+  static acl::Group* UnserializePtr(const mongo::BSONObj& bo);
 };
 
 } /* bson namespace */
