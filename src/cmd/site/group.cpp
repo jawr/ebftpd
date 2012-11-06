@@ -39,10 +39,10 @@ cmd::Result GROUPCommand::Execute()
   std::map<acl::UserID, acl::UserProfile> profiles = 
     db::userprofile::GetSelection(users);
 
-  std::map<acl::UserID, ::stats::Stat> dnStats;
-  std::map<acl::UserID, ::stats::Stat> upStats;
-  //db::stats::GetAllDown(users, dnStats);
-  //db::stats::GetAllUp(users, upStats);
+  std::map<acl::UserID, ::stats::Stat> dnStats = db::stats::GetAllDown(users);
+  std::map<acl::UserID, ::stats::Stat> upStats = db::stats::GetAllUp(users);
+
+  logs::debug << "Users: " << users.size() << " " << dnStats.size() << logs::endl;
 
   std::ostringstream os;
   os << ",-----------+--------+-----------+--------+-----------+-------+---------.";
