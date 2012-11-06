@@ -21,6 +21,7 @@
 #include "acl/groupcache.hpp"
 #include "ftp/client.hpp"
 #include "util/error.hpp"
+#include "util/daemonise.hpp"
 
 #include "version.hpp"
 
@@ -49,7 +50,7 @@ void DisplayHelp(char* argv0, boost::program_options::options_description& desc)
   std::cout << desc;
 }
 
-bool ParseOptions(int argc, char** argv, boost::program_options::variables_map& vm)
+bool ParseOptions(int argc, char** argv, bool& foreground)
 {
   namespace po = boost::program_options;
   po::options_description desc("supported options");
@@ -57,10 +58,10 @@ bool ParseOptions(int argc, char** argv, boost::program_options::variables_map& 
     ("help,h", "display this help message")
     ("config-file,c", po::value<std::string>(),
      "specify location of config file")
-    //("foreground,f", "run server in foreground")
     ("foreground,f", "run server in foreground")
     ("siteop-only,s", "run server in siteop only mode");
 
+  po::variables_map vm;
   try
   {
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -81,6 +82,7 @@ bool ParseOptions(int argc, char** argv, boost::program_options::variables_map& 
   
   if (vm.count("config-file")) configFile = vm["config-file"].as<std::string>();
   if (vm.count("siteop-only")) ftp::Client::SetSiteopOnly();
+  foreground = vm.count("foreground") > 0;
   
   return true;
 }
@@ -133,14 +135,56 @@ util::Error SetupSignals()
   return util::Error::Success();
 }
 
+bool Daemonise(bool foreground)
+{
+  const std::string& pidfile = cfg::Get().Pidfile();
+  if (!pidfile.empty())
+  {
+    util::Error e = util::daemonise::NotRunning(pidfile);
+    if (!e)
+    {
+      if (e.ValidErrno())
+        logs::error << "Failed to read the pidfile: " << e.Message() << logs::endl;
+      else
+        logs::error << "Server already running. If it's not, delete the pid file at: " << pidfile << logs::endl;
+      return false;
+    }
+  }
+  
+  if (!foreground)
+  {
+    logs::debug << "Forking into the background.." << logs::endl;
+    util::Error e = util::daemonise::Daemonise();
+    if (!e)
+    {
+      logs::error << "Failed to daemonise server process: " 
+                  << e.Message() << logs::endl;
+      return false;
+    }
+    else
+      logs::NoStdout();
+  }
+  
+  if (!pidfile.empty())
+  {
+    util::Error e = util::daemonise::CreatePIDFile(pidfile);
+    if (!e)
+    {
+      logs::error << "Failed to create pid file: " << e.Message() << logs::endl;
+    }
+  }
+  
+  return true;
+}
+
 #ifndef TEST
 int main(int argc, char** argv)
 {
-  boost::program_options::variables_map vm;
+  bool foreground;
   
-  if (!ParseOptions(argc, argv, vm)) return 1;
+  if (!ParseOptions(argc, argv, foreground)) return 1;
 
-  std::cout << "Starting " << programFullname << " .. " << std::endl;
+  logs::debug << "Starting " << programFullname << " .. " << logs::endl;
 
   try
   {
@@ -151,6 +195,9 @@ int main(int argc, char** argv)
     logs::error << "Failed to load config: " << e.Message() << logs::endl;
     return 1;
   }
+  
+  logs::Initialise(cfg::Get().Datapath() + "/logs");
+  if (!Daemonise(foreground)) return 1;
   
   util::Error sige = SetupSignals();
   if (!sige)

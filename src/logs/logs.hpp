@@ -9,6 +9,8 @@ namespace logs
 
 void Initialise(const std::string& dataPath);
 
+void NoStdout();
+
 /*
  * log types:
  *

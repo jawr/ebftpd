@@ -30,6 +30,7 @@ class Config
 
   // containers
   fs::Path sitepath;
+  fs::Path pidfile;
   fs::Path tlsCertificate;
   int port;
   std::string defaultFlags;
@@ -150,6 +151,7 @@ public:
 
   // getters
   const fs::Path& Sitepath() const { return sitepath; }
+  const fs::Path& Pidfile() const { return pidfile; }
   const fs::Path& TlsCertificate() const { return tlsCertificate; }
   int Port() const { return port; }
   const std::string& DefaultFlags() const { return defaultFlags; }

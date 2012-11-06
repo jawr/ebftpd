@@ -100,6 +100,12 @@ void Config::Parse(const std::string& line) {
     ParameterCheck(opt, toks, 1);
     sitepath = fs::Path(toks.at(0));
   }
+  else
+  if (opt == "pidfile")
+  {
+    ParameterCheck(opt, toks, 1);
+    pidfile = fs::Path(toks.at(0));
+  }
   else if (opt == "port")
   {
     ParameterCheck(opt, toks, 1);
