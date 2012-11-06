@@ -22,6 +22,7 @@
 #include "ftp/client.hpp"
 #include "util/error.hpp"
 #include "util/daemonise.hpp"
+#include "cmd/site/factory.hpp"
 
 #include "version.hpp"
 
@@ -194,6 +195,8 @@ int main(int argc, char** argv)
 
   logs::debug << "Starting " << programFullname << " .. " << logs::endl;
 
+  cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
+  
   try
   {
     LoadConfig();

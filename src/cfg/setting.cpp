@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include "cfg/setting.hpp"
 #include "cfg/exception.hpp"
 #include "util/string.hpp"
@@ -259,7 +260,7 @@ Privpath::Privpath(std::vector<std::string> toks)
 
 SiteCmd::SiteCmd(const std::vector<std::string>& toks)   
 {
-  command = toks.at(0);
+  command = boost::to_upper_copy(toks.at(0));
   if (toks.at(1) == "EXEC") type = EXEC;
   else if (toks.at(1) == "TEXT") type = TEXT;
   else if (toks.at(1) == "IS") type = IS;
