@@ -11,6 +11,7 @@
 #include "util/time.hpp"
 #include "stats/stat.hpp"
 #include "db/stats/stat.hpp"
+#include "stats/conversions.hpp"
 
 namespace cmd { namespace site
 {
@@ -56,9 +57,11 @@ cmd::Result GROUPCommand::Execute()
     flag = (user.CheckFlag(acl::Flag::Siteop)) ? "*" : flag;
     os << flag << std::left << std::setw(8) << user.Name().substr(0, 8) << " | ";
     os << std::right << std::setw(6) << upStats[user.UID()].Files() << " | ";
-    os << std::right << std::setw(9) << upStats[user.UID()].Kbytes()/1024.0 << " | ";
+    os << std::right << std::setw(9) 
+      << ::stats::tostring::Mbyte(upStats[user.UID()]) << " | ";
     os << std::right << std::setw(6) << dnStats[user.UID()].Files() << " | ";
-    os << std::right << std::setw(9) << dnStats[user.UID()].Kbytes()/1024.0 << " | ";
+    os << std::right << std::setw(9) 
+      << ::stats::tostring::Mbyte(dnStats[user.UID()]) << " | ";
     os << std::right << std::setw(5) << profiles[user.UID()].Ratio() << " | "; 
     os << std::right << std::setw(7) << profiles[user.UID()].WeeklyAllotment() << " | ";
   }
