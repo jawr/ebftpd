@@ -19,8 +19,7 @@ namespace db { namespace user
   std::vector<acl::User> GetAll();
   void Login(acl::UserID user);
 
-  util::Error UsersByACL(boost::ptr_vector<acl::User>& users, 
-    std::string acl);
+  std::vector<acl::User> GetByACL(std::string acl); 
 // end
 }
 }
