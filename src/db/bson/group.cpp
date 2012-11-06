@@ -12,9 +12,14 @@ mongo::BSONObj Group::Serialize(const acl::Group& group)
   return bob.obj();
 }
 
-acl::Group* Group::Unserialize(const mongo::BSONObj& bo)
+acl::Group* Group::UnserializePtr(const mongo::BSONObj& bo)
 {
   return new acl::Group(bo["name"].String(), bo["gid"].Int());
+}
+
+acl::Group Group::Unserialize(const mongo::BSONObj& bo)
+{
+  return acl::Group(bo["name"].String(), bo["gid"].Int());
 }
 
 } /* bson namespace */

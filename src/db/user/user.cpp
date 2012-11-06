@@ -75,9 +75,9 @@ void Delete(acl::UserID uid)
     Pool::Queue(task);      
 }
 
-void GetAll(boost::ptr_vector<acl::User>& users)
+boost::ptr_vector<acl::User> GetAllPtr()
 {
-  users.clear();
+  boost::ptr_vector<acl::User> users;
 
   QueryResults results;
   mongo::Query query;
@@ -87,13 +87,32 @@ void GetAll(boost::ptr_vector<acl::User>& users)
 
   future.wait();
 
-  if (results.size() == 0) return;
+  for (auto& obj: results)
+    users.push_back(bson::User::UnserializePtr(obj));
+
+  return users;
+}
+
+std::vector<acl::User> GetAll()
+{
+  std::vector<acl::User> users;
+
+  QueryResults results;
+  mongo::Query query;
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("users", query, results, future));
+  Pool::Queue(task);
+
+  future.wait();
 
   for (auto& obj: results)
-    users.push_back(bson::User::Unserialize(obj));
+    users.emplace_back(bson::User::Unserialize(obj));
+
+  return users;
 }
 
 
+// change to objects rather than pointers
 util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
   std::string acl)
 {
@@ -130,7 +149,7 @@ util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
   future.wait();
 
   for (auto& obj: results)
-    users.push_back(bson::User::Unserialize(obj));
+    users.push_back(bson::User::UnserializePtr(obj));
 
   return util::Error::Success();
 }
