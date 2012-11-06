@@ -43,8 +43,6 @@ cmd::Result GROUPCommand::Execute()
   std::map<acl::UserID, ::stats::Stat> dnStats = db::stats::GetAllDown(users);
   std::map<acl::UserID, ::stats::Stat> upStats = db::stats::GetAllUp(users);
 
-  logs::debug << "Users: " << users.size() << " " << dnStats.size() << logs::endl;
-
   std::ostringstream os;
   os << ",-----------+--------+-----------+--------+-----------+-------+---------.";
   os << "\n|  Username |     Up |      Megs |     Dn |      Megs | Ratio |    Wkly |";

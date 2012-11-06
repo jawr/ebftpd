@@ -7,6 +7,9 @@
 #include "acl/group.hpp"
 #include "acl/groupcache.hpp"
 #include "util/error.hpp"
+#include "db/group/group.hpp"
+#include "db/group/groupprofile.hpp"
+
 
 namespace cmd { namespace site
 {
