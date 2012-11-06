@@ -31,7 +31,7 @@ void Set(acl::GroupID gid, mongo::BSONObj obj)
   Pool::Queue(task);
 }
 
-util::Error SetSlots(acl::GroupID gid, int slots)
+util::Error SetSlots(acl::GroupID gid, const std::string& slots)
 {
   int i;
   try
@@ -46,7 +46,7 @@ util::Error SetSlots(acl::GroupID gid, int slots)
   return util::Error::Success();
 }
 
-util::Error SetLeechSlots(acl::GroupID gid, int slots)
+util::Error SetLeechSlots(acl::GroupID gid, const std::string& slots)
 {
   int i;
   try
@@ -61,7 +61,7 @@ util::Error SetLeechSlots(acl::GroupID gid, int slots)
   return util::Error::Success();
 }
 
-util::Error SetAllotSlots(acl::GroupID gid, int slots)
+util::Error SetAllotSlots(acl::GroupID gid, const std::string& slots)
 {
   int i;
   try
@@ -76,7 +76,7 @@ util::Error SetAllotSlots(acl::GroupID gid, int slots)
   return util::Error::Success();
 }
 
-util::Error SetMaxAllotSlots(acl::GroupID gid, int slots)
+util::Error SetMaxAllotSlots(acl::GroupID gid, const std::string& slots)
 {
   int i;
   try

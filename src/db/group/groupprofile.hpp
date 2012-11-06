@@ -12,11 +12,11 @@ namespace db { namespace group
   
   void Set(acl::GroupID gid, mongo::BSONObj obj); 
 
-  util::Error SetSlots(acl::GroupID gid, int slots); 
-  util::Error SetLeechSlots(acl::GroupID gid, int slots); 
-  util::Error SetAllotSlots(acl::GroupID gid, int slots); 
-  util::Error SetMaxAllotSlots(acl::GroupID gid, int slots); 
-  util::Error SetMaxLogins(acl::GroupID gid, int maxLogins); 
+  util::Error SetSlots(acl::GroupID gid, const std::string& slots); 
+  util::Error SetLeechSlots(acl::GroupID gid, const std::string& slots); 
+  util::Error SetAllotSlots(acl::GroupID gid, const std::string& slots); 
+  util::Error SetMaxAllotSlots(acl::GroupID gid, const std::string& slots); 
+  util::Error SetMaxLogins(acl::GroupID gid, const std::string&  maxLogins); 
   util::Error SetDescription(acl::GroupID gid, 
     const std::string& description);
   util::Error SetComment(acl::GroupID gid, 
