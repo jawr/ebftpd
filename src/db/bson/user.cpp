@@ -23,9 +23,9 @@ mongo::BSONObj User::Serialize(const acl::User& user)
   return bob.obj();
 }
 
-acl::User* User::Unserialize(const mongo::BSONObj& bo)
+std::unique_ptr<acl::User> User::Unserialize(const mongo::BSONObj& bo)
 {
-  std::unique_ptr<acl::User> user(new acl::User);
+  std::unique_ptr<acl::User> user(new acl::User());
 
   try
   {
@@ -46,7 +46,7 @@ acl::User* User::Unserialize(const mongo::BSONObj& bo)
     throw db::DBError("Unable to load user.");
   }
 
-  return user.release();
+  return user;
 }
   
 } /* bson namespace */

@@ -90,7 +90,7 @@ void GetAll(boost::ptr_vector<acl::User>& users)
   if (results.size() == 0) return;
 
   for (auto& obj: results)
-    users.push_back(bson::User::Unserialize(obj));
+    users.push_back(bson::User::Unserialize(obj).release());
 }
 
 
@@ -128,7 +128,7 @@ util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
   future.wait();
 
   for (auto& obj: results)
-    users.push_back(bson::User::Unserialize(obj));
+    users.push_back(bson::User::Unserialize(obj).release());
 
   return util::Error::Success();
 }

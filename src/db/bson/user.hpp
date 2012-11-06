@@ -14,7 +14,7 @@ namespace db { namespace bson
 struct User
 {
   static mongo::BSONObj Serialize(const acl::User& user);
-  static acl::User* Unserialize(const mongo::BSONObj& bo);
+  static std::unique_ptr<acl::User> Unserialize(const mongo::BSONObj& bo);
 };
 
 } /* bson namespace */

@@ -73,8 +73,7 @@ void Delete(acl::GroupID gid)
   tasks.emplace_back(new db::Delete("groups", query));
   // add groupprofile here later
 
-  for (auto& task: tasks)
-    Pool::Queue(task);
+  for (auto& task: tasks) Pool::Queue(task);
 }
 
 }
