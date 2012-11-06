@@ -61,9 +61,9 @@ cmd::Result STORCommand::Execute()
   data.Close();
 
   boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
-  db::stats::Upload(client.User(), data.State().Bytes() / 1024, duration.total_milliseconds());
+  db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds());
 
-  long long credits = data.State().Bytes() * client.UserProfile().Ratio() / 1024;
+  long long credits = data.State().Bytes() * client.UserProfile().Ratio();
   acl::UserCache::IncrCredits(client.User().Name(), credits);
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 

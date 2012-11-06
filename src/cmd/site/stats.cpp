@@ -13,8 +13,6 @@ cmd::Result STATSCommand::Execute()
   try
   {
     ::stats::Stat down = db::stats::GetWeekDown(client.User().UID(), 43, 2012);
-    os << "Down - Files: " << down.Files() << " ";
-    os << std::setprecision(2) << down.Kbytes()/1024.0 << " MiB ";
   }
   catch (const util::RuntimeError& e)
   {
@@ -23,8 +21,6 @@ cmd::Result STATSCommand::Execute()
   try
   {
     ::stats::Stat up = db::stats::GetWeekUp(client.User().UID(), 43, 2012);
-    os << "Up - Files: " << up.Files() << " ";
-    os << std::setprecision(2) << up.Kbytes()/1024.0 << " MiB";
   }
   catch (const util::RuntimeError& e)
   {

@@ -20,12 +20,12 @@ namespace db { namespace stats
   std::map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl::User>& users);
   std::map<acl::UserID, ::stats::Stat> GetAllUp(const std::vector<acl::User>& users);
 
-  void Upload(const acl::User& user, long long kbytes, long long xfertime);
-  void Download(const acl::User& user, long long kbytes, long long xfertime);
+  void Upload(const acl::User& user, long long bytes, long long xfertime);
+  void Download(const acl::User& user, long long bytes, long long xfertime);
 
   // we need to pass the creation date of the file to this in order to effect
   // the correct stats segment.
-  void UploadDecr(const acl::User& user, long long kbytes);
+  void UploadDecr(const acl::User& user, long long bytes);
 
 // end
 }
