@@ -28,22 +28,21 @@ cmd::Result GROUPCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  boost::ptr_vector<acl::User> users;
-  util::Error ok = db::user::UsersByACL(users, "=" + args[1]);
+  std::vector<acl::User> users = db::user::GetByACL("=" + args[1]);
 
-  if (!ok)
+  if (users.empty())
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + ok.Message());
+    control.Reply(ftp::ActionNotOkay, "Error: No users found for " + args[1]);
     return cmd::Result::Okay;
   }
 
-  std::map<acl::UserID, acl::UserProfile> profiles;
-  db::userprofile::GetSelection(users, profiles);
+  std::map<acl::UserID, acl::UserProfile> profiles = 
+    db::userprofile::GetSelection(users);
 
   std::map<acl::UserID, ::stats::Stat> dnStats;
   std::map<acl::UserID, ::stats::Stat> upStats;
-  db::stats::GetAllDown(users, dnStats);
-  db::stats::GetAllUp(users, upStats);
+  //db::stats::GetAllDown(users, dnStats);
+  //db::stats::GetAllUp(users, upStats);
 
   std::ostringstream os;
   os << ",-----------+--------+-----------+--------+-----------+-------+---------.";

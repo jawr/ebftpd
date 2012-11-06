@@ -12,18 +12,12 @@ namespace cmd { namespace site
 
 cmd::Result CHANGECommand::Execute()
 {
-  boost::ptr_vector<acl::User> users;
   std::string acl = args[1];
   if (acl[0] != '=') acl = "-" + acl;
 
-  util::Error ok = db::user::UsersByACL(users, acl);
+  std::vector<acl::User> users = db::user::GetByACL(acl);
 
-  if (!ok)
-  {
-    control.Reply(ftp::ActionNotOkay, "Error: " + ok.Message());
-    return cmd::Result::Okay;
-  }
-  else if (users.size() == 0)
+  if (users.size() == 0)
   {
     control.Reply(ftp::ActionNotOkay, "No user(s) found.");
     return cmd::Result::Okay;
@@ -69,6 +63,8 @@ cmd::Result CHANGECommand::Execute()
   }
   else
   if (!acl::AllowSiteCmd(client.User(), "change")) return cmd::Result::Permission;
+
+  util::Error ok;
 
   for (auto& user: users)
   {
