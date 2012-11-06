@@ -44,7 +44,6 @@ cmd::Result CHANGECommand::Execute()
       if (tok[0] == '=')
       {
         std::vector<acl::User> tempUsers = db::user::GetByACL(tok);
-        logs::debug << "tempUsers: " << tempUsers.size() << logs::endl;
         users.insert(users.end(), tempUsers.begin(), tempUsers.end()); // emplace not working
       }
       else
