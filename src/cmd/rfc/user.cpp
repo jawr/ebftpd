@@ -6,10 +6,9 @@ namespace cmd { namespace rfc
 
 cmd::Result USERCommand::Execute()
 {
-  acl::User user;
   try
   {
-    user = acl::UserCache::User(argStr);
+      client.SetWaitingPassword(acl::UserCache::User(argStr));
   }
   catch (const util::RuntimeError& e)
   {
@@ -18,7 +17,6 @@ cmd::Result USERCommand::Execute()
   }
   
   control.Reply(ftp::NeedPassword, "Password required for " + argStr + "."); 
-  client.SetWaitingPassword(user);
   return cmd::Result::Okay;
 }
 

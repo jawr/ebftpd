@@ -37,7 +37,6 @@ cmd::Result PASSCommand::Execute()
     return cmd::Result::Okay;
   }
   
-  
   fs::Path rootPath("/");
   util::Error e = fs::ChangeDirectory(client, rootPath);
   if (!e) 

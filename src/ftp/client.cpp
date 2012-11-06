@@ -56,7 +56,7 @@ void Client::SetLoggedIn(const acl::UserProfile& profile)
   db::user::Login(user.UID());
   
   boost::lock_guard<boost::mutex> lock(mutex);
-  this->profile = profile;
+  this->profile = std::move(profile);
   state = ClientState::LoggedIn;
   loggedInAt = boost::posix_time::second_clock::local_time();
 }
@@ -66,9 +66,8 @@ void Client::SetWaitingPassword(const acl::User& user)
   {
     boost::lock_guard<boost::mutex> lock(mutex);
     state = ClientState::WaitingPassword;
+    this->user = std::move(user);
   }
-  
-  this->user = user;
 }
 
 bool Client::CheckState(ClientState reqdState)
