@@ -37,6 +37,7 @@
 #include "cmd/site/group.hpp"
 #include "cmd/site/groups.hpp"
 #include "cmd/site/grpdel.hpp"
+#include "cmd/site/grpchange.hpp"
 
 #include <iostream>
 
@@ -261,7 +262,7 @@ Factory::Factory()
                       "Syntax: SITE GROUP",
                       "Display detailed group info" }, },
     { "GRPCHANGE",  { 3,  3,  "grpchange", 
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GRPCHANGECommand>()),
                       "Syntax: SITE GRPCHANGE <group> <setting> <value>\n"
                       "        SITE GRPCHANGE {<group> [<group> ..]} <setting> <value>\n"
                       "        SITE GRPCHANGE * <setting> <value>",

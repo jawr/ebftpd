@@ -22,8 +22,7 @@ void GroupCache::Initalize()
 {
   if (instance.initalized) return;
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  boost::ptr_vector<acl::Group> groups;
-  db::group::GetAll(groups);
+  boost::ptr_vector<acl::Group> groups = db::group::GetAllPtr();
   while (!groups.empty())
   {
     auto group = groups.release(groups.begin());
