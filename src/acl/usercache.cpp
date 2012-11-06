@@ -31,8 +31,8 @@ void UserCache::Initialize()
 
   assert(acl::GroupCache::Initialized());
 
-  boost::ptr_vector<acl::User> users;
-  db::user::GetAll(users);
+  boost::ptr_vector<acl::User> users = db::user::GetAllPtr();
+
   while (!users.empty())
   {
     auto user = users.release(users.begin());
