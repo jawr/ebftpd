@@ -15,10 +15,11 @@ namespace db { namespace userprofile
 {
 
   void Save(const acl::UserProfile& profile);
-  void GetAll(std::vector<acl::UserProfile>& profiles);
+  std::vector<acl::UserProfile> GetAll();
   acl::UserProfile Get(acl::UserID uid);
-  void GetSelection(std::vector<acl::User>& users,
-    std::map<acl::UserID, acl::UserProfile>& profiles);
+
+  std::map<acl::UserID, acl::UserProfile> GetSelection(
+    const std::vector<acl::User>& users);
 
   // setters
   void Set(acl::UserID uid, mongo::BSONObj obj);
