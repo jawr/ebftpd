@@ -23,7 +23,7 @@ class Control : public ReadWriteable
   util::Pipe interruptPipe;
   ReplyCode lastCode;
   std::string commandLine;
-
+  
   void SendReply(ReplyCode code, bool part, const std::string& message);
 
   size_t Read(char* buffer, size_t size)
@@ -55,6 +55,8 @@ public:
   { return socket.LocalEndpoint(); }
   
   bool IsTLS() const { return socket.IsTLS(); }
+  
+  void Interrupt(){ socket.Shutdown(); }
 };
 
 } /* ftp namespace */

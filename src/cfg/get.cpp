@@ -4,6 +4,7 @@
 #include <boost/thread/mutex.hpp>
 #include "cfg/get.hpp"
 #include "cfg/config.hpp"
+#include "logs/logs.hpp"
 
 namespace cfg
 {
@@ -24,16 +25,51 @@ void UpdateShared(const std::shared_ptr<Config> newShared)
   shared = newShared;
 }
 
-const Config& Get(bool update)
+void UpdateLocal()
+{
+  Config* config = thisThread.get();
+  boost::lock_guard<boost::mutex> lock(sharedMutex);
+  if (config && shared->Version() <= config->Version()) return;
+  thisThread.reset(new Config(*shared));
+}
+
+const Config& Get()
 {
   assert(shared.get()); // program must never call Get until a valid config is loaded
   Config* config = thisThread.get();
-  if (config && !update) return *config;
-  boost::lock_guard<boost::mutex> lock(sharedMutex);
-  if (config && update && shared->Version() <= config->Version()) return *config;
-  config = new Config(*shared);
-  thisThread.reset(config);
+  if (!config)
+  {
+    UpdateLocal();
+    config = thisThread.get();
+    assert(config);
+  }
   return *config;
+}
+
+bool RequireStopStart()
+{
+  bool required = false;
+  const Config& old = cfg::Get();
+  
+  if (shared->ValidIp() != old.ValidIp())
+  {
+    logs::error << "valid_ip config option changed, full stop start required." << logs::endl;
+    required = true;
+  }
+  
+  if (shared->Port() != old.Port())
+  {
+    logs::error << "port config option changed, full stop start required." << logs::endl;
+    required = true;
+  }
+  
+  if (shared->TlsCertificate() != old.TlsCertificate())
+  {
+    logs::error << "tls_certificate option changed, full stop start required." << logs::endl;
+    required = true;
+  }
+      
+  return required;
 }
 
 }

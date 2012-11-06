@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <boost/optional.hpp>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
@@ -99,6 +100,9 @@ public:
   
   static const CommandDefsMap& Commands()
   { return factory.defs; }
+  
+  
+  static std::unordered_set<std::string> ACLKeywords();
 };
 
 } /* site namespace */

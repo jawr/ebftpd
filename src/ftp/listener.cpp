@@ -15,28 +15,36 @@ Listener Listener::instance;
 
 void Listener::StartThread()
 {
+  logs::debug << "Starting listener thread.." << logs::endl;
   instance.Start();
 }
 
-void Listener::StopThread()
+void Listener::JoinThread()
 {
-  instance.Stop();
+  instance.Join();
 }
 
-void Listener::RunTask()
-{
-  TaskPtr task;
-  {
-    boost::lock_guard<boost::mutex> lock(taskMtx);
-    task = queue.front();
-    queue.pop();
-  }
+void Listener::SetShutdown()
+{   
+  logs::debug << "Stopping listener thread.." << logs::endl;
+  instance.InnerSetShutdown();
+}
 
+void Listener::HandleTasks()
+{
+  //logs::debug << "Handling listener tasks.." << logs::endl;
+  TaskPtr task;
+  while (true)
   {
-    boost::lock_guard<boost::mutex> lock(clientMtx); // or lock within
+    {
+      boost::lock_guard<boost::mutex> lock(taskMtx);
+      if (queue.empty()) break;
+      task = queue.front();
+      queue.pop();
+    }
+
     task->Execute(*this);
   }
-  HandleClients();
 }
 
 bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port)
@@ -80,6 +88,18 @@ void Listener::HandleClients()
   }
 }
 
+void Listener::StopClients()
+{
+  logs::debug << "Stopping all connected clients.." << logs::endl;
+  for (auto& client : clients)
+    client.Interrupt();
+    
+  for (auto& client : clients)
+    client.Join();
+    
+  clients.clear();
+}
+
 void Listener::AcceptClient(util::net::TCPListener& server)
 {
   std::unique_ptr<ftp::Client> client(new ftp::Client());
@@ -118,13 +138,9 @@ void Listener::AcceptClients()
   }
   else if (FD_ISSET(interruptPipe.ReadFd(), &readSet))
   {
-    boost::this_thread::interruption_point();
-    static char buffer[1];
-    (void) read(interruptPipe.ReadFd(), &buffer, sizeof(buffer));
-    RunTask();
-    // possibly use this to refresh our config too ??
-    // if port has changed in config, we have to renew our server object with
-    // new endpoint
+    char ch;
+    (void) read(interruptPipe.ReadFd(), &ch, sizeof(ch));
+    HandleTasks();
   }
   else
   {
@@ -135,22 +151,14 @@ void Listener::AcceptClients()
 
 void Listener::Run()
 {
-  while (true)
+  while (!isShutdown)
   {
     AcceptClients();
     HandleClients();
   }
 }
 
-void Listener::Stop()
-{
-  instance.interruptPipe.Interrupt();
-  instance.thread.interrupt();
-  instance.thread.join();
-}
-
-}
-// end ftp namespace
+} // end ftp namespace
 
 #ifdef FTP_LISTENER_TEST
 

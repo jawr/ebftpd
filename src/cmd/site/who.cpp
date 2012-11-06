@@ -1,6 +1,7 @@
 #include <vector>
 #include <boost/thread/future.hpp>
 #include <boost/optional.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/site/who.hpp"
 #include "acl/user.hpp"
 #include "acl/userprofile.hpp"
@@ -13,6 +14,7 @@
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "logs/logs.hpp"
+#include "stats/util.hpp"
 
 namespace cmd { namespace site
 {
@@ -28,7 +30,6 @@ cmd::Result WHOCommand::Execute()
   const cfg::Config& cfg = cfg::Get();
 
   future.wait();
-
 
   std::ostringstream os;
   os << "Users logged on to " << cfg.SitenameShort();
@@ -65,15 +66,7 @@ cmd::Result WHOCommand::Execute()
        << " | " << std::left << std::setw(20) 
        << tagline.substr(0, 20) << " | ";
     
-    if (user.command.empty())
-    {
-      std::ostringstream format;
-      format << "IDLE for " << user.idleTime;
-      os << std::left << std::setw(30) << format.str().substr(0, 30);
-    }
-    else 
-      os << std::left << std::setw(30) << user.command.substr(0, 30);
-    os << " |";
+    os << std::left << std::setw(30) << user.Action().substr(0, 30) << " |";
 
   }
 

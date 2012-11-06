@@ -13,12 +13,22 @@ util::logger::Logger db;
 
 void Initialise(const std::string& dataPath)
 {
-  events.SetPath(dataPath + "/ftpd.log");
-  security.SetPath(dataPath + "/access.log");
-  sysop.SetPath(dataPath + "/siteop.log");
-  error.SetPath(dataPath + "/error.log");
-  debug.SetPath(dataPath + "/debug.log");
-  db.SetPath(dataPath + "/db.log");
+  events.SetPath(dataPath + "/ftpd.log", true);
+  security.SetPath(dataPath + "/access.log", true);
+  sysop.SetPath(dataPath + "/siteop.log", true);
+  error.SetPath(dataPath + "/error.log", true);
+  debug.SetPath(dataPath + "/debug.log", true);
+  db.SetPath(dataPath + "/db.log", true);
+}
+
+void NoStdout()
+{
+  events.SetStdoutAlso(false);
+  security.SetStdoutAlso(false);
+  sysop.SetStdoutAlso(false);
+  error.SetStdoutAlso(false);
+  debug.SetStdoutAlso(false);
+  db.SetStdoutAlso(false);
 }
 
 } /* logger namespace */

@@ -268,11 +268,13 @@ void OwnerCache::Main()
 
 void OwnerCache::Start()
 {
+  logs::debug << "Starting owner cache.." << logs::endl;
   instance.thread = boost::thread(std::bind(&OwnerCache::Main, &instance));
 }
 
 void OwnerCache::Stop()
 {
+  logs::debug << "Stopping owner cache.." << logs::endl;
   instance.saveCond.notify_one();
   instance.thread.interrupt();
   instance.thread.join();

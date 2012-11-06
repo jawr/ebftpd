@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_set>
 #include <queue>
+#include <atomic>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
@@ -25,30 +26,38 @@ class Listener : public util::Thread
   typedef boost::ptr_list<Client> ClientList;
 
   boost::ptr_vector<util::net::TCPListener> servers;
-  boost::ptr_list<Client> clients;
   std::vector<std::string> validIPs;
   int32_t port;
   util::InterruptPipe interruptPipe;
 
-  std::queue<TaskPtr> queue;
-  
-  boost::mutex taskMtx;
   boost::mutex clientMtx;
+  boost::ptr_list<Client> clients;
+
+  std::queue<TaskPtr> queue;
+  boost::mutex taskMtx;
+  
+  std::atomic_bool isShutdown;
   
   void AcceptClients();
   void AcceptClient(util::net::TCPListener& server);
   void HandleClients();
   void Run();
-  void RunTask();
+  void HandleTasks();
+  void StopClients();
 
+  void InnerSetShutdown()
+  {
+    isShutdown = true;
+    instance.interruptPipe.Interrupt();
+  }
+ 
   static Listener instance;
   
 public:
-  Listener() : port(-1) { }
+  Listener() : port(-1), isShutdown(false) { }
+  
   static bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
   
-  static void Stop();
-
   static void PushTask( const TaskPtr& task)
   {
     { 
@@ -59,13 +68,13 @@ public:
   }
 
   static void StartThread();
-  static void StopThread();
-  static void JoinThread() { instance.Join(); }
-    
+  static void JoinThread();
+  static void SetShutdown();
 
   // tasks
   friend class task::KickUser;
   friend class task::GetOnlineUsers;
+  friend void SignalHandler(int);
 };
 
 }

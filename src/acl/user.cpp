@@ -80,6 +80,12 @@ bool User::CheckFlag(Flag flag) const
   return this->flags.find(static_cast<char>(flag)) != std::string::npos;
 }
 
+void User::SetPrimaryGID(GroupID primaryGid)
+{
+  this->primaryGid = primaryGid;
+}
+
+
 void User::AddSecondaryGID(GroupID gid)
 {
   secondaryGids.insert(gid);

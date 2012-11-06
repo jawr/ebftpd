@@ -26,6 +26,8 @@
 namespace ftp
 {
 
+std::atomic_bool Client::siteopOnly(false);
+
 Client::Client() :
   data(*this), 
   workDir("/"), 
@@ -206,9 +208,17 @@ void Client::Handle()
   {
     pt::time_duration timeout = idleExpires - pt::second_clock::local_time();
     ExecuteCommand(control.NextCommand(timeout));
+    cfg::UpdateLocal();
   }
 }
 
+void Client::Interrupt()
+{
+  SetState(ClientState::Finished);
+  Stop();
+  control.Interrupt();
+  data.Interrupt();
+}
 
 void Client::LookupIdent()
 {

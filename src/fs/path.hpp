@@ -38,6 +38,9 @@ public:
   operator std::string() { return path; }
   operator std::string() const { return path; }
   
+  bool operator==(const Path& rhs) const;
+  bool operator!=(const Path& rhs) const;
+  
   bool Absolute() const { return !path.empty() && path[0] == '/'; }
   bool Empty() const { return path.empty(); }
   size_t Length() const { return path.length(); }

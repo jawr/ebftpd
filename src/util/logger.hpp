@@ -25,16 +25,17 @@ class Logger : boost::noncopyable
   boost::mutex outMutex;
   std::ostream* out;
   boost::thread_specific_ptr<std::ostringstream> buffer;
+  bool stdoutAlso;
 
   std::string Timestamp();
   Logger& Flush(bool newLine);
   
 public:
   Logger();
-  Logger(const std::string& path);
+  Logger(const std::string& path, bool stdoutAlso = false);
   ~Logger();
 
-  void SetPath(const std::string& path);
+  void SetPath(const std::string& path, bool stdoutAlso = false);
   
   template <typename T> Logger& operator<<(T data) {
     if (!buffer.get()) buffer.reset(new std::ostringstream);                      
@@ -47,6 +48,8 @@ public:
   Logger& operator<<(Logger& (*pf)(Logger&));
   
   const std::string& Path() const { return path; }
+  
+  void SetStdoutAlso(bool stdoutAlso) { this->stdoutAlso = stdoutAlso; }
   
   friend Logger& flush(Logger& logger);
   friend Logger& endl(Logger& logger);

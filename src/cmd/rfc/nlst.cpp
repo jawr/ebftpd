@@ -1,5 +1,6 @@
 #include "cmd/rfc/nlst.hpp"
 #include "cfg/get.hpp"
+#include "stats/util.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -49,7 +50,8 @@ cmd::Result NLSTCommand::Execute()
   }
   
   data.Close();
-  control.Reply(ftp::DataClosedOkay, "End of directory listing."); 
+  control.Reply(ftp::DataClosedOkay, "End of directory listing (" + 
+      stats::util::HighResSecondsString(data.State().StartTime(), data.State().EndTime()) + ")"); 
   return cmd::Result::Okay;
 }
 

@@ -59,6 +59,16 @@ bool Path::operator>(const Path& rhs) const
   return strcasecmp(path.c_str(), rhs.path.c_str()) > 0;
 }
 
+bool Path::operator==(const Path& rhs) const
+{
+  return path == rhs.path;
+}
+
+bool Path::operator!=(const Path& rhs) const
+{
+  return !operator==(rhs);
+}
+
 Path operator/(const Path& lhs, const std::string& rhs)
 {
   return Path(lhs) /= rhs;

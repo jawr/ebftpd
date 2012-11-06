@@ -1,3 +1,4 @@
+#include <iostream>
 #include <boost/algorithm/string.hpp>
 #include "cmd/site/factory.hpp"
 #include "cmd/site/epsv.hpp"
@@ -38,8 +39,10 @@
 #include "cmd/site/groups.hpp"
 #include "cmd/site/grpdel.hpp"
 #include "cmd/site/grpchange.hpp"
-
-#include <iostream>
+#include "cmd/site/grpnfo.hpp"
+#include "cmd/site/grpren.hpp"
+#include "cmd/site/reload.hpp"
+#include "cmd/site/shutdown.hpp"
 
 namespace cmd { namespace site
 {
@@ -276,18 +279,18 @@ Factory::Factory()
                       "Syntax: SITE GRPDEL <group>",
                       "Delete a group" }, },
     { "GRPREN",     { 2,  2,  "grpren",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GRPRENCommand>()),
                       "Syntax: SITE GRPREN <old group> <new group>",
                       "Rename a group" }, },
-    { "GRPTAG",     { 2,  -1, "grptag",
-                      nullptr,
-                      "Syntax: SITE GRPTAG <group> <tagline>",
-                      "Change group tagline" }, },
+    { "GRPNFO",     { 2,  -1, "grpnfo",
+                      CreatorBasePtr(new Creator<site::GRPNFOCommand>()),
+                      "Syntax: SITE GRPNFO <group> <tagline>",
+                      "Change group description" }, },
     { "HELP",       { 0,  1,  "help",
                       CreatorBasePtr(new Creator<site::HELPCommand>()),
                       "Syntax: SITE HELP [<command>]",
                       "Display site command help" }, },
-    { "STAT",       { 0,  0,  "statsown",
+    { "STAT",       { 0,  0,  "stat",
                       nullptr,
                       "Syntax: SITE STAT",
                       "Display statline" }, },
@@ -323,6 +326,14 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE REQUESTS [<number>] [<string> ..]",
                       "Display list of requests" }, },
+    { "RELOAD",     { 0,  0,  "reload",
+                      CreatorBasePtr(new Creator<site::RELOADCommand>()),
+                      "Syntax: SITE RELOAD",
+                      "Reload config file" }, },
+    { "SHUTDOWN",   { 1,  1,  "shutdownexit|shutdownsiteop",
+                      CreatorBasePtr(new Creator<site::SHUTDOWNCommand>()),
+                      "Syntax: SITE SHUTDOWN SITEOP|REOPEN|FULL",
+                      "Shutdown to siteop only or full shutdown and exit" }, }
   };
 }
 
@@ -331,6 +342,19 @@ CommandDefOptRef Factory::Lookup(const std::string& command)
   CommandDefsMap::const_iterator it = factory.defs.find(command);
   if (it != factory.defs.end()) return CommandDefOptRef(it->second);
   return CommandDefOptRef();
+}
+
+std::unordered_set<std::string> Factory::ACLKeywords()
+{
+  std::unordered_set<std::string> keywords;
+  for (auto& kv : Commands())
+  {
+    std::vector<std::string> curKeywords;
+    boost::split(curKeywords, kv.second.ACLKeyword(), boost::is_any_of("|"));
+    keywords.insert(curKeywords.begin(), curKeywords.end());
+  }
+  
+  return keywords;
 }
 
 } /* site namespace */

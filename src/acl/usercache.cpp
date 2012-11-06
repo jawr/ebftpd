@@ -1,3 +1,4 @@
+#include <cassert>
 #include <memory>
 #include <vector>
 #include "acl/usercache.hpp"
@@ -10,7 +11,7 @@ namespace acl
 {
 
 UserCache UserCache::instance;
-bool UserCache::initalized = false;
+bool UserCache::initialized = false;
 
 UserCache::~UserCache()
 {
@@ -21,14 +22,14 @@ UserCache::~UserCache()
   }
 }
 
-void UserCache::Initalize()
+void UserCache::Initialize()
 {
+  logs::debug << "Initialising user cache.." << logs::endl;
   // grab all user's from the database and populate the map
-  if (instance.initalized) return;
+  assert(!instance.initialized);
   boost::lock_guard<boost::mutex> lock(instance.mutex);
 
-  // need to initalize group cache first
-  acl::GroupCache::Initalize();
+  assert(acl::GroupCache::Initialized());
 
   boost::ptr_vector<acl::User> users = db::user::GetAllPtr();
 
@@ -40,8 +41,8 @@ void UserCache::Initalize()
     instance.byName.insert(std::make_pair(user->Name(), user.get()));
     user.release(); 
   }
-  instance.initalized = true;
   
+  instance.initialized = true;  
 }
 
 void UserCache::Save(const acl::User& user)
@@ -201,18 +202,20 @@ util::Error UserCache::DelFlags(const std::string& name, const std::string& flag
   return util::Error::Success();
 }
 
-util::Error UserCache::SetPrimaryGID(const std::string& name, GroupID gid)
+util::Error UserCache::SetPrimaryGID(const std::string& name, GroupID gid, GroupID& oldPrimaryGID)
 {
-  // unlike to happen, but what to do if group is deleted between 
-  // checking it exists and then this function being called?
-  // same for secondary gid functions
-
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
   
-  it->second->SetPrimaryGID(gid);
+  oldPrimaryGID = it->second->PrimaryGID();
+  if (oldPrimaryGID != -1)
+  {
+    it->second->AddSecondaryGID(oldPrimaryGID);
+    db::user::Save(*it->second, "secondary gids");
+  }
   
+  it->second->SetPrimaryGID(gid);
   db::user::Save(*it->second, "primary gid");
 
   return util::Error::Success();

@@ -74,12 +74,15 @@ void Pool::Run()
 
 void Pool::StartThread()
 {
+  logs::debug << "Starting mongodb connection thread pool.." << logs::endl;
   instance.Start();
 }
 
 void Pool::StopThread()
 {
+  logs::debug << "Stopping mongodb connection thread pool.." << logs::endl;
   instance.Stop(true);
+  logs::debug << "Finalising last database transactions.." << logs::endl;
   instance.Finalise();
 }
 
@@ -106,10 +109,10 @@ void ThreadMain()
 
 int main()
 {
-  db::Initalize();
+  db::Initialize();
 
-  acl::UserCache::Initalize();
-  acl::GroupCache::Initalize();
+  acl::UserCache::Initialize();
+  acl::GroupCache::Initialize();
 
   acl::UserCache::Create("iotest", "password", "123");
   acl::GroupCache::Create("TESTGRP");

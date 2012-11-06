@@ -13,7 +13,7 @@ namespace util { namespace net
 
 std::unique_ptr<TLSClientContext> TLSContext::client;
 std::unique_ptr<TLSServerContext> TLSContext::server;
-boost::scoped_array<boost::mutex> TLSContext::mutexes(new boost::mutex[CRYPTO_num_locks()]);
+boost::shared_array<boost::mutex> TLSContext::mutexes(new boost::mutex[CRYPTO_num_locks()]);
 
 namespace
 {
@@ -103,7 +103,8 @@ TLSContext::~TLSContext()
 TLSContext::TLSContext(const std::string& certificate, const std::string& ciphers) :
   context(nullptr),
   certificate(certificate),
-  ciphers(ciphers)
+  ciphers(ciphers),
+  dummyMutexes(mutexes)
 {
 }
 
