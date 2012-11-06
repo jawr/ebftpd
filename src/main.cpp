@@ -91,7 +91,7 @@ void SignalHandler(int signo)
 {
   switch (signo)
   {
-    case SIGHUP  :
+    case SIGHUP   :
     {
       try
       {
@@ -103,7 +103,9 @@ void SignalHandler(int signo)
       }
       break;
     }
-    case SIGINT  :
+    case SIGTERM  :
+    case SIGQUIT  :
+    case SIGINT   :
     {
       logs::debug << "Server interrupted!" << logs::endl;
       ftp::Listener::SetShutdown();
@@ -120,6 +122,10 @@ util::Error SetupSignals()
     ignore.sa_flags = 0;
     
     if (sigaction(SIGPIPE, &ignore, 0) < 0) return util::Error::Failure(errno);
+    if (sigaction(SIGCHLD, &ignore, 0) < 0) return util::Error::Failure(errno);
+    if (sigaction(SIGTSTP, &ignore, 0) < 0) return util::Error::Failure(errno);
+    if (sigaction(SIGTTOU, &ignore, 0) < 0) return util::Error::Failure(errno);
+    if (sigaction(SIGTTIN, &ignore, 0) < 0) return util::Error::Failure(errno);
   }
   
   {
@@ -130,6 +136,8 @@ util::Error SetupSignals()
     
     if (sigaction(SIGHUP, &handle, 0) < 0) return util::Error::Failure(errno);
     if (sigaction(SIGINT, &handle, 0) < 0) return util::Error::Failure(errno);
+    if (sigaction(SIGTERM, &handle, 0) < 0) return util::Error::Failure(errno);
+    if (sigaction(SIGQUIT, &handle, 0) < 0) return util::Error::Failure(errno);
   }
   
   return util::Error::Success();
