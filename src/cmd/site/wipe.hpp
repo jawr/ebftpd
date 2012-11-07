@@ -8,13 +8,13 @@ namespace cmd { namespace site
 
 class WIPECommand : public Command
 {
-  std::string pathmaskStr;
+  std::string pathmask;
   bool recursive;
   int dirs;
   int files;
   int failed;
   
-  void Process(const fs::Path& pathmask, int dept = 1);
+  void Process(const fs::Path& absmask, int dept = 1);
   bool ParseArgs();
   
 public:

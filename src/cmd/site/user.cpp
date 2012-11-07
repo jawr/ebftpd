@@ -30,7 +30,7 @@ cmd::Result USERCommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
 
@@ -41,7 +41,7 @@ cmd::Result USERCommand::Execute()
   }
   catch (const util::RuntimeError&e )
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
   
@@ -93,7 +93,7 @@ cmd::Result USERCommand::Execute()
       }
       catch (const util::RuntimeError& e)
       {
-        os << "\n| Error: " << e.Message();
+        os << "\n| " << e.Message();
       }
     }
   }

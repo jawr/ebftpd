@@ -1,3 +1,4 @@
+#include <cassert>
 #include <algorithm>
 #include <iterator>
 #include "util/passwd.hpp"
@@ -37,8 +38,15 @@ bool User::VerifyPassword(const std::string& password) const
   return HexEncode(HashPassword(password, HexDecode(salt))) == this->password;
 }
 
+void User::SetFlags(const std::string& flags)
+{
+  assert(ValidFlags(flags));
+  this->flags = flags;
+}
+
 void User::AddFlags(const std::string& flags)
 {
+  assert(ValidFlags(flags));
   for (char ch: flags)
   {
     if (this->flags.find(ch) == std::string::npos) this->flags += ch;
@@ -94,6 +102,11 @@ void User::AddSecondaryGID(GroupID gid)
 void User::DelSecondaryGID(GroupID gid)
 {
   secondaryGids.erase(gid);
+}
+
+void User::ResetSecondaryGIDs()
+{
+  secondaryGids.clear();
 }
 
 bool User::CheckGID(GroupID gid)

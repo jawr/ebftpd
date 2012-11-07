@@ -11,7 +11,7 @@ namespace cmd { namespace site
 class CHMODCommand : public Command
 {
   boost::optional<fs::Mode> mode;
-  std::string pathmaskStr;
+  std::string pathmask;
   std::string modeStr;
   bool recursive;
   int dirs;

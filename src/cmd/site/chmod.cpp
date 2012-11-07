@@ -76,8 +76,8 @@ bool CHMODCommand::ParseArgs()
       util::string::FindNthNonConsecutiveChar(argStr, ' ', n);
   if (pos == std::string::npos) return false;
   
-  pathmaskStr = argStr.substr(pos);
-  boost::trim(pathmaskStr);
+  pathmask = argStr.substr(pos);
+  boost::trim(pathmask);
   return true;
 }
 
@@ -100,12 +100,11 @@ cmd::Result CHMODCommand::Execute()
   }
   catch (const fs::InvalidModeString& e)
   {
-    control.Reply(ftp::ActionNotOkay, 
-        "Chmod failed: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
 
-  Process((client.WorkDir() / pathmaskStr).Expand());
+  Process((client.WorkDir() / pathmask).Expand());
   
   std::ostringstream os;
   os << "CHMOD finished (okay on: "

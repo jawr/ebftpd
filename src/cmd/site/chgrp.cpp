@@ -36,7 +36,7 @@ cmd::Result CHGRPCommand::Execute()
   }
   else if (args[2] == "=") 
   {
-    ok = acl::UserCache::ResetSecondaryGID(args[1]);
+    ok = acl::UserCache::ResetSecondaryGIDs(args[1]);
     if (!ok)
     {
       control.Reply(ftp::ActionNotOkay, ok.Message());
@@ -58,17 +58,20 @@ cmd::Result CHGRPCommand::Execute()
     }
     catch (const util::RuntimeError& e)
     {
-      os << "\nError: " << e.Message();
+      os << "\n" << e.Message();
       continue;
     }
     if (method == Method::Add)
       ok = acl::UserCache::AddSecondaryGID(args[1], group.GID());
     else if (method == Method::Delete)
       ok = acl::UserCache::DelSecondaryGID(args[1], group.GID());
-    os << "\n" << *it;
+    if (!ok)
+      os << "\n" << ok.Message();
+    else
+      os << "\n" << *it << " okay.";
   }
-  
-  control.MultiReply(ftp::ActionNotOkay, os.str());
+  os << "\nCommand finished.";
+  control.MultiReply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

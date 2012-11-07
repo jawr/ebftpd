@@ -24,7 +24,7 @@ cmd::Result GROUPCommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
 
@@ -33,7 +33,7 @@ cmd::Result GROUPCommand::Execute()
 
   if (!ok)
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + ok.Message());
+    control.Reply(ftp::ActionNotOkay, ok.Message());
     return cmd::Result::Okay;
   }
 

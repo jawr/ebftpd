@@ -28,8 +28,7 @@ cmd::Result CHPASSCommand::Execute()
 
   util::Error e = acl::UserCache::SetPassword(args[1], args[2]);
   if (!e)
-    control.Reply(ftp::ActionNotOkay, 
-                  "Unable to change password: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
   else
     control.Reply(ftp::CommandOkay, "Password changed.");
   return cmd::Result::Okay;

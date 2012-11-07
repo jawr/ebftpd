@@ -74,12 +74,11 @@ bool CHOWNCommand::ParseArgs()
       util::string::FindNthNonConsecutiveChar(argStr, ' ', n);
   if (pos == std::string::npos) return false;
   
-  pathmaskStr = argStr.substr(pos);
-  boost::trim(pathmaskStr);
+  pathmask = argStr.substr(pos);
+  boost::trim(pathmask);
   return true;
 }
 
-// SITE CHOWN [-R] <MODE> <PATHMASK.. ..>
 cmd::Result CHOWNCommand::Execute()
 {
   if (!ParseArgs()) return cmd::Result::SyntaxError;
@@ -98,7 +97,7 @@ cmd::Result CHOWNCommand::Execute()
     uid = acl::UserCache::NameToUID(user);
     if (uid == -1)
     {
-      control.Reply(ftp::ActionNotOkay, "CHMOD failed: User doesn't exist");
+      control.Reply(ftp::ActionNotOkay, "User " + user + " doesn't exist.");
       return cmd::Result::Okay;
     }
   }
@@ -109,14 +108,14 @@ cmd::Result CHOWNCommand::Execute()
     gid = acl::GroupCache::NameToGID(group);
     if (gid == -1)
     {
-      control.Reply(ftp::ActionNotOkay, "CHMOD failed: Group doesn't exist");
+      control.Reply(ftp::ActionNotOkay, "Group " + group + " doesn't exist.");
       return cmd::Result::Okay;
     }
   }
   
   owner = fs::Owner(uid, gid);
 
-  Process((client.WorkDir() / pathmaskStr).Expand());
+  Process((client.WorkDir() / pathmask).Expand());
   
   std::ostringstream os;
   os << "CHOWN finished (okay on: "

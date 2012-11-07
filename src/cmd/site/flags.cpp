@@ -26,13 +26,13 @@ cmd::Result FLAGSCommand::Execute()
     }
     catch (const util::RuntimeError& e)
     {
-      control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+      control.Reply(ftp::ActionNotOkay, e.Message());
       return cmd::Result::Okay;
     }
   }
   
   std::ostringstream os;
-  os << "FLAGS for " << user.Name() << "\n\n";
+  os << "Flags for " << user.Name() << "\n\n";
   os << CheckFlag(user, acl::Flag::Siteop)      << " Siteop    -1-\n";
   os << CheckFlag(user, acl::Flag::Gadmin)      << " Gadmin    -2-\n";
   os << CheckFlag(user, acl::Flag::Glock)       << " Glock     -3-\n";

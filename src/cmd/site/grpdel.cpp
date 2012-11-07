@@ -16,19 +16,19 @@ cmd::Result GRPDELCommand::Execute()
   util::Error e = db::user::UsersByACL(users, acl.str());
   if (!e) 
   {
-    control.Reply(ftp::ActionNotOkay, "GRPDEL failed: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
 
   if (!users.empty())
   {
-    control.Reply(ftp::ActionNotOkay, "GRPDEL failed: Group must be empty before deletion.");
+    control.Reply(ftp::ActionNotOkay, "Unable to delete a group with members.");
     return cmd::Result::Okay;
   }
 
   e = acl::GroupCache::Delete(args[1]);
   if (!e)
-    control.Reply(ftp::ActionNotOkay, "GRPDEL failed: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
   else
     control.Reply(ftp::CommandOkay, "Group " + args[1] + " deleted.");
 

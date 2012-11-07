@@ -18,11 +18,6 @@ cmd::Result ADDIPCommand::Execute()
     return cmd::Result::Permission;
   }
   
-  // race condition between the check if user exists and adding ips
-  // possibly we should just start adding the ips to the cache and have 
-  // the cache throw an exception if user doesn't exist.
-  // makes it so it's all in one action -- atomic
-  std::ostringstream os;
   acl::User user;
   try
   {
@@ -30,11 +25,11 @@ cmd::Result ADDIPCommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    os << "Error: " << e.Message();
-    control.Reply(ftp::ActionNotOkay, os.str());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
 
+  std::ostringstream os;
   acl::IPStrength strength;
   std::vector<std::string> deleted;
   for (Args::iterator it = args.begin()+2; it != args.end(); ++it)
@@ -49,9 +44,9 @@ cmd::Result ADDIPCommand::Execute()
     }
     else
     {
-      util::Error ipOkay = acl::IpMaskCache::Add(user, *it, deleted);
-      if (!ipOkay)
-        os << "Error adding " << *it << ": " << ipOkay.Message();
+      util::Error ok = acl::IpMaskCache::Add(user, *it, deleted);
+      if (!ok)
+        os << "Error adding " << *it << ": " << ok.Message();
       else
       {
         os << "IP '" << *it << "' successfully added to " << args[1] << ".";

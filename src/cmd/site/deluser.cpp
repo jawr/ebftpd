@@ -21,13 +21,13 @@ cmd::Result DELUSERCommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
   
   util::Error e = acl::UserCache::Delete(user.Name());
   if (!e)
-    control.Reply(ftp::ActionNotOkay, "Unable to delete user: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
   else
   {
     ftp::TaskPtr task(new ftp::task::KickUser(user.UID()));

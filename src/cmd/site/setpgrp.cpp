@@ -18,14 +18,14 @@ cmd::Result SETPGRPCommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
   
   acl::GroupID oldGID;
   util::Error ok = acl::UserCache::SetPrimaryGID(args[1], group.GID(), oldGID);
   if (!ok)
-    control.Reply(ftp::ActionNotOkay, "Error: " + ok.Message());
+    control.Reply(ftp::ActionNotOkay, ok.Message());
   else
   {
     std::ostringstream os;

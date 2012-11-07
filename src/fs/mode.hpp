@@ -12,7 +12,7 @@ namespace fs
 class InvalidModeString : public util::RuntimeError
 {
 public:
-  InvalidModeString() : std::runtime_error("Invalid mode string") { }
+  InvalidModeString() : std::runtime_error("Invalid mode string.") { }
 };
 
 class Mode

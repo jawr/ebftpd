@@ -1,3 +1,4 @@
+#include <sstream>
 #include <cassert>
 #include <memory>
 #include <vector>
@@ -70,7 +71,7 @@ util::Error UserCache::Create(const std::string& name, const std::string& passwo
   {
     boost::lock_guard<boost::mutex> lock(instance.mutex);
     if (instance.byName.find(name) != instance.byName.end())
-      return util::Error::Failure("User already exists");
+      return util::Error::Failure("User " + name + " already exists.");
 
     std::unique_ptr<acl::User> user(new acl::User(name, uid, password, flags));
       
@@ -88,8 +89,8 @@ util::Error UserCache::Purge(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
-  if (!it->second->Deleted()) return util::Error::Failure("User has not been deleted");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + "doesn't exist.");
+  if (!it->second->Deleted()) return util::Error::Failure("User " + name + " must be deleted first.");
 
   instance.byUID.erase(instance.byUID.find(it->second->UID()));
 
@@ -107,9 +108,11 @@ util::Error UserCache::Delete(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) 
+    return util::Error::Failure("User " + name + "doesn't exist.");
   
-  if (it->second->Deleted()) return util::Error::Failure("User already deleted");
+  if (it->second->Deleted()) 
+    return util::Error::Failure("User " + name + " already deleted.");
   it->second->AddFlag(Flag::Deleted);
 
   db::user::Save(*it->second, "flags");
@@ -121,9 +124,11 @@ util::Error UserCache::Readd(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end())
+    return util::Error::Failure("User " + name + "doesn't exist.");
   
-  if (!it->second->Deleted()) return util::Error::Failure("User not deleted");
+  if (!it->second->Deleted()) 
+    return util::Error::Failure("User " + name + "is not deleted.");
   it->second->DelFlag(Flag::Deleted);
   
   db::user::Save(*it->second, "flags");
@@ -135,10 +140,10 @@ util::Error UserCache::Rename(const std::string& oldName, const std::string& new
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   if (instance.byName.find(newName) != instance.byName.end())
-    return util::Error::Failure("User already exists with new name");
+    return util::Error::Failure("New name " + newName + "taken by another user.");
   
   ByNameMap::iterator it = instance.byName.find(oldName);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + oldName + " doesn't exist.");
 
   it->second->SetName(newName);
   instance.byName.insert(std::make_pair(newName, it->second));
@@ -153,7 +158,7 @@ util::Error UserCache::SetPassword(const std::string& name, const std::string& p
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   
   it->second->SetPassword(password);
   
@@ -167,7 +172,7 @@ util::Error UserCache::SetFlags(const std::string& name, const std::string& flag
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   
   it->second->SetFlags(flags);
 
@@ -180,7 +185,7 @@ util::Error UserCache::AddFlags(const std::string& name, const std::string& flag
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   
   it->second->AddFlags(flags);
   
@@ -193,7 +198,7 @@ util::Error UserCache::DelFlags(const std::string& name, const std::string& flag
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   
   it->second->DelFlags(flags);
   
@@ -206,7 +211,7 @@ util::Error UserCache::SetPrimaryGID(const std::string& name, GroupID gid, Group
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   
   oldPrimaryGID = it->second->PrimaryGID();
   if (oldPrimaryGID != -1)
@@ -225,7 +230,7 @@ util::Error UserCache::AddSecondaryGID(const std::string& name, GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   
   it->second->AddSecondaryGID(gid);
   
@@ -238,7 +243,7 @@ util::Error UserCache::DelSecondaryGID(const std::string& name, GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   
   it->second->DelSecondaryGID(gid);
   
@@ -247,14 +252,13 @@ util::Error UserCache::DelSecondaryGID(const std::string& name, GroupID gid)
   return util::Error::Success();
 }
 
-util::Error UserCache::ResetSecondaryGID(const std::string& name)
+util::Error UserCache::ResetSecondaryGIDs(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
 
-  for (auto& gid: it->second->SecondaryGIDs())
-    DelSecondaryGID(name, gid);
+  it->second->ResetSecondaryGIDs();
 
   db::user::Save(*it->second, "secondary gids");
 
@@ -265,7 +269,9 @@ util::Error UserCache::IncrCredits(const std::string& name, long long kbytes)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end())
+    return util::Error::Failure("Unable to update credits, user " + 
+                                name + " doesn't exist.");
   it->second->IncrCredits(kbytes);
   Save(*it->second);
   return util::Error::Success();
@@ -275,7 +281,9 @@ util::Error UserCache::DecrCredits(const std::string& name, long long kbytes)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User doesn't exist");
+  if (it == instance.byName.end()) 
+    return util::Error::Failure("Unable to update credits, user " + 
+                                name + " doesn't exist.");
   it->second->DecrCredits(kbytes);
   Save(*it->second);
   return util::Error::Success();
@@ -285,7 +293,7 @@ acl::User UserCache::User(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) throw util::RuntimeError("User doesn't exist");
+  if (it == instance.byName.end()) throw util::RuntimeError("User " + name + " doesn't exist.");
   return *it->second;
 }
 
@@ -293,7 +301,12 @@ acl::User UserCache::User(UserID uid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByUIDMap::iterator it = instance.byUID.find(uid);
-  if (it == instance.byUID.end()) throw util::RuntimeError("User doesn't exist");
+  if (it == instance.byUID.end())
+  {
+    std::stringstream os;
+    os << "User with uid " << uid << " doesn't exist.";
+    throw util::RuntimeError(os.str());
+  }
   return *it->second;
 }
 

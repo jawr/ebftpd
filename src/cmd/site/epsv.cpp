@@ -14,13 +14,13 @@ cmd::Result EPSVCommand::Execute()
   }                
   else
   {
-    boost::to_upper(args[1]);
-    if (args[1] == "NORMAL")
+    boost::to_lower(args[1]);
+    if (args[1] == "normal")
     {
       data.SetEPSVMode(ftp::EPSVMode::Normal);
       control.Reply(ftp::SyntaxError, "Extended passive mode now set to 'normal'.");
     }
-    else if (args[1] == "FULL")
+    else if (args[1] == "full")
     {
       data.SetEPSVMode(ftp::EPSVMode::Full);
       control.Reply(ftp::SyntaxError, "Extended passive mode now set to 'full'.");

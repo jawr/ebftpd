@@ -19,20 +19,20 @@ cmd::Result KICKCommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
 
   if (user.CheckFlag(acl::Flag::Siteop))
   {
-    control.Reply(ftp::ActionNotOkay, "Cannot kick a SITEOP.");
+    control.Reply(ftp::ActionNotOkay, "Cannot kick a siteop.");
     return cmd::Result::Okay;
   } 
 
   ftp::TaskPtr task(new ftp::task::KickUser(user.UID()));
   ftp::Listener::PushTask(task);
 
-  control.Reply(ftp::CommandOkay, "Kicked " + args[1]);
+  control.Reply(ftp::CommandOkay, "Kicked " + args[1] + ".");
   return cmd::Result::Okay;
   
 }
