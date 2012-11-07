@@ -11,6 +11,8 @@ namespace cmd { namespace rfc
 
 cmd::Result RETRCommand::Execute()
 {
+  namespace pt = boost::posix_time;
+
   fs::InStreamPtr fin;
   try
   {
@@ -49,6 +51,15 @@ cmd::Result RETRCommand::Execute()
       if (len < 0) break;
       data.State().Update(len);
       data.Write(buffer, len);
+      
+      if (client.Profile().MaxDlSpeed() > 0)
+      {
+        pt::time_duration elapsed = 
+            pt::microsec_clock::local_time() - data.State().StartTime();
+        pt::time_duration minElapsed = pt::microseconds((data.State().Bytes()  / 
+            1024.0 / client.Profile().MaxDlSpeed()) * 1000000);
+        boost::this_thread::sleep(minElapsed - elapsed);
+      }
     }
   }
   catch (const std::ios_base::failure&)
@@ -69,7 +80,7 @@ cmd::Result RETRCommand::Execute()
   }
   
   data.Close();
-  boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
+  pt::time_duration duration = data.State().EndTime() - data.State().StartTime();
   db::stats::Download(client.User(), bytes / 1024, duration.total_milliseconds());
   acl::UserCache::DecrCredits(client.User().Name(), bytes / 1024);
 

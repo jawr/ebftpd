@@ -137,6 +137,7 @@ public:
   
   void Interrupt();
   
+  const acl::UserProfile& Profile() const { return profile; }
   
   static bool SetSiteopOnly()
   {
