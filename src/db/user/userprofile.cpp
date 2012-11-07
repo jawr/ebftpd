@@ -140,11 +140,10 @@ util::Error SetIdleTime(acl::UserID uid, const std::string& value)
   try
   {
     i = boost::lexical_cast<int>(value);
-    if (i <= 0) throw boost::bad_lexical_cast();
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    return util::Error::Failure("Invalid value. Must be a number larger than zero.");
+    return util::Error::Failure("Invalid value.");
   }
   Set(uid, BSON("idle time" << i));
   return util::Error::Success();

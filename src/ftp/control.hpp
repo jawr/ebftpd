@@ -36,7 +36,7 @@ public:
   
   void Accept(util::net::TCPListener& listener);
  
-  std::string NextCommand(const boost::posix_time::time_duration& timeout);
+  std::string NextCommand(const boost::posix_time::time_duration* timeout = 0);
   void PartReply(ReplyCode code, const std::string& message);
   void PartReply(const std::string& message);
   void Reply(ReplyCode code, const std::string& message);

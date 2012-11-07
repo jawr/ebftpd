@@ -70,20 +70,27 @@ void Control::NegotiateTLS()
   socket.HandshakeTLS(util::net::TLSSocket::Server);
 }
 
-std::string Control::NextCommand(const boost::posix_time::time_duration& timeout)
+std::string Control::NextCommand(const boost::posix_time::time_duration* timeout)
 {
   fd_set readSet;
   FD_ZERO(&readSet);
   FD_SET(socket.Socket(), &readSet);
   FD_SET(interruptPipe.ReadFd(), &readSet);
-  
-  struct timeval tv;
-  tv.tv_sec = std::max(0, timeout.total_seconds());
-  tv.tv_usec = 0;
-  
+    
   int max = std::max(socket.Socket(), interruptPipe.ReadFd());
   
-  int n = select(max + 1, &readSet, NULL, NULL, &tv);
+  int n;
+  if (timeout)
+  {
+    struct timeval tv;
+    tv.tv_sec = std::max(0, timeout->total_seconds());
+    tv.tv_usec = 0;
+
+    n = select(max + 1, &readSet, NULL, NULL, &tv);
+  }
+  else
+    n = select(max + 1, &readSet, NULL, NULL, NULL);
+    
   if (!n) throw util::net::NetworkSystemError(ETIMEDOUT);
   if (n < 0) throw util::net::NetworkSystemError(errno);
   

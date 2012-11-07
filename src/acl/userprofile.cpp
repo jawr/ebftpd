@@ -13,7 +13,7 @@ UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
   weeklyAllotment(0),
   homeDir("/"),
   startupDir("/"),
-  idleTime(0),
+  idleTime(-1),
   numLogins(3),
   tagline("Elite tagline."),
   maxDlSpeed(0),

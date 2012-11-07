@@ -64,6 +64,9 @@ void Client::SetLoggedIn(const acl::UserProfile& profile)
     throw util::RuntimeError(os.str());
   }
 
+  SetIdleTimeout(boost::posix_time::seconds(std::min(cfg::
+    Get().IdleTimeout().Timeout().total_seconds(), profile.IdleTime())));
+  
   db::user::Login(user.UID());
   
   boost::lock_guard<boost::mutex> lock(mutex);
@@ -209,8 +212,12 @@ void Client::Handle()
 
   while (State() != ClientState::Finished)
   {
-    pt::time_duration timeout = idleExpires - pt::second_clock::local_time();
-    ExecuteCommand(control.NextCommand(timeout));
+    if (profile.IdleTime() == 0) ExecuteCommand(control.NextCommand());
+    else
+    {
+      pt::time_duration timeout = idleExpires - pt::second_clock::local_time();
+      ExecuteCommand(control.NextCommand(&timeout));
+    }
     cfg::UpdateLocal();
   }
 }

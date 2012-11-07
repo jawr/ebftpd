@@ -11,6 +11,12 @@ cmd::Result IDLECommand::Execute()
 {
   namespace pt = boost::posix_time;
 
+  if (client.Profile().IdleTime() == 0)
+  {
+    control.Reply(ftp::CommandOkay, "This command doesn't apply to you, you have no idle limit.");
+    return cmd::Result::Okay;
+  }
+
   if (args.size() == 1)
   {
     std::ostringstream os;
@@ -32,14 +38,17 @@ cmd::Result IDLECommand::Execute()
     
     const cfg::Config& config = cfg::Get();
     
+    pt::seconds maximum(config.IdleTimeout().Maximum());
+    if (client.Profile().IdleTime() > 0)
+      maximum = pt::seconds(client.Profile().IdleTime());
+    
     if (idleTimeout < config.IdleTimeout().Minimum() ||
-        idleTimeout > config.IdleTimeout().Maximum())
+        idleTimeout > maximum)
     {
       std::ostringstream os;
       os << "IDLE timeout must be between " 
          << config.IdleTimeout().Minimum().total_seconds()
-         << " and " << config.IdleTimeout().Maximum().total_seconds()
-         << " seconds.";
+         << " and " << maximum.total_seconds() << " seconds.";
       control.Reply(ftp::SyntaxError, os.str());
       return cmd::Result::Okay;
     }
