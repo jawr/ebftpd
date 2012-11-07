@@ -26,7 +26,8 @@ UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
 
 bool UserProfile::Expired() const
 {
-  return boost::gregorian::day_clock::local_day() >= expires;
+  if (!expires) return false;
+  return boost::gregorian::day_clock::local_day() >= *expires;
 }
 
 // end

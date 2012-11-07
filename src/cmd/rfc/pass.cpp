@@ -47,9 +47,28 @@ cmd::Result PASSCommand::Execute()
     return cmd::Result::Okay;
   }
 
+  boost::optional<acl::UserProfile> profile;
   try
   {
-    client.SetLoggedIn(db::userprofile::Get(client.User().UID()));
+    profile.reset(db::userprofile::Get(client.User().UID()));
+  }
+  catch (const db::DBError& e)
+  {
+    control.Reply(ftp::ServiceUnavailable, e.Message());
+    client.SetState(ftp::ClientState::Finished);
+    return cmd::Result::Okay;
+  }
+  
+  if (profile->Expired())
+  {
+    control.Reply(ftp::ServiceUnavailable, "Your account has expired.");
+    client.SetState(ftp::ClientState::Finished);
+    return cmd::Result::Okay;
+  }
+  
+  try
+  {
+    client.SetLoggedIn(*profile);
   }
   catch (const util::RuntimeError& e)
   {

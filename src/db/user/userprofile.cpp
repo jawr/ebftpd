@@ -7,6 +7,7 @@
 #include "db/pool.hpp"
 #include "db/bson/userprofile.hpp"
 #include "db/exception.hpp"
+#include "db/bson/bson.hpp"
 
 namespace db { namespace userprofile
 {
@@ -81,6 +82,14 @@ void Set(acl::UserID uid, mongo::BSONObj obj)
   Pool::Queue(task);
 }
 
+void Unset(acl::UserID uid, const std::string& field)
+{
+  mongo::BSONObj obj = BSON("$unset" << BSON(field << 1));
+  mongo::Query query = QUERY("uid" << uid);
+  TaskPtr task(new db::Update("userprofiles", query, obj, false));
+  Pool::Queue(task);
+}
+
 util::Error SetRatio(acl::UserID uid, const std::string& value)
 {
   int i;
@@ -144,18 +153,21 @@ util::Error SetIdleTime(acl::UserID uid, const std::string& value)
 util::Error SetExpires(acl::UserID uid, std::string& value)
 {
   boost::to_lower(value);
-  if (value != "never")
+  if (value == "never")
+  {
+    Unset(uid, "expires");
+  }
+  else
   {
     try
     {
-      value = boost::gregorian::to_simple_string(boost::gregorian::from_simple_string(value));
+      Set(uid, BSON("expires" << db::bson::ToDateT(boost::gregorian::from_simple_string(value))));
     }
     catch (const std::exception& e)
     {
       return util::Error::Failure("Invalid date. Must be in format YYYY-MM-DD or NEVER.");
     }
   }
-  Set(uid, BSON("expires" << value));
   return util::Error::Success();
 }
 
@@ -183,6 +195,7 @@ util::Error SetTagline(acl::UserID uid, const std::string& value)
 
 util::Error SetComment(acl::UserID uid, const std::string& value)
 {
+  
   Set(uid, BSON("comment" << value));
   return util::Error::Success();
 }

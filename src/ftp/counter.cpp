@@ -1,7 +1,5 @@
 #include "ftp/counter.hpp"
 
-#include <iostream>
-
 namespace ftp
 {
 
@@ -18,7 +16,6 @@ bool Counter::LogIn(acl::UserID uid, int limit)
 {
   boost::lock_guard<boost::mutex> lock(loggedInMutex);
   int& count = loggedIn[uid];
-  std::cout << count << " " << limit << std::endl;
   if (count >= limit) return false;
   ++count;
   return true;
