@@ -15,14 +15,16 @@ mongo::BSONObj Group::Serialize(const acl::Group& group)
 
 std::unique_ptr<acl::Group> Group::Unserialize(const mongo::BSONObj& bo)
 {
+  std::unique_ptr<acl::Group> group;
   try
   {
-    return std::unique_ptr<acl::Group>(new acl::Group(bo["name"].String(), bo["gid"].Int()));
+    group.reset(new acl::Group(bo["name"].String(), bo["gid"].Int()));
   }
   catch (const mongo::DBException& e)
   {
     UnserializeFailure("group", e, bo);
   }
+  return group;
 }
 
 } /* bson namespace */

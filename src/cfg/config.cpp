@@ -105,6 +105,12 @@ void Config::Parse(std::string line) {
         acl::ACL::FromString(boost::join(toks, " "))));
   }
   else
+  if (opt == "database")
+  {
+    ParameterCheck(opt, toks, 3);
+    database = setting::Database(toks);
+  }
+  else
   if (opt == "sitepath")
   {
     ParameterCheck(opt, toks, 1);

@@ -6,7 +6,7 @@
 #include "db/types.hpp"
 #include "acl/groupcache.hpp"
 #include "acl/group.hpp"
-#include "logs/logs.hpp"
+#include "db/exception.hpp"
 
 namespace db { namespace user
 {
@@ -32,8 +32,17 @@ acl::UserID GetNewUserID()
 
   if (results.size() == 0) return acl::UserID(1);
 
-  int uid = results.back().getIntField("uid");
-  return acl::UserID(++uid);
+  acl::UserID uid;
+  try
+  {
+    uid = results.back().getIntField("uid") + 1;
+  }
+  catch (const mongo::DBException& e)
+  {
+    IDGenerationFailure("user", e);
+  }
+  
+  return uid;
 }
 
 void Save(const acl::User& user)

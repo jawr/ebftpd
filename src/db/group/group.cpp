@@ -5,7 +5,6 @@
 #include "db/bson/group.hpp"
 #include "acl/group.hpp"
 #include "acl/types.hpp"
-#include "logs/logs.hpp"
 #include "db/exception.hpp"
 
 namespace db { namespace group
@@ -31,15 +30,17 @@ acl::GroupID GetNewGroupID()
 
   if (results.size() == 0) return acl::GroupID(1);
 
+  acl::GroupID gid;
   try
   {
-    return results.back().getIntField("gid");
+    gid = results.back().getIntField("gid") + 1;
   }
   catch (const mongo::DBException& e)
   {
-    logs::db << "Error while getting new group id: " << e.what() << logs::endl;
+    IDGenerationFailure("group", e);
   }
-  throw db::DBError("Unable to get new group id.");
+  
+  return gid;
 }
 
 void Save(const acl::Group& group)

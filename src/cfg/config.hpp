@@ -125,6 +125,7 @@ class Config
   std::vector<setting::SiteCmd> siteCmd;
   int maxSitecmdLines;
   setting::IdleTimeout idleTimeout;
+  setting::Database database;
   
   std::unordered_map<std::string, acl::ACL> commandACLs;  
   
@@ -149,13 +150,12 @@ public:
 
   int Version() const { return version; }
 
-  // getters
+  const setting::Database& Database() const { return database; }
   const fs::Path& Sitepath() const { return sitepath; }
   const fs::Path& Pidfile() const { return pidfile; }
   const fs::Path& TlsCertificate() const { return tlsCertificate; }
   int Port() const { return port; }
   const std::string& DefaultFlags() const { return defaultFlags; }
-  // glftpd
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
   const acl::ACL& Shutdown() const { return shutdown; }
   long FreeSpace() const { return freeSpace; }
@@ -165,23 +165,16 @@ public:
   const std::string& SitenameShort() const { return sitenameShort; }
   const std::string& LoginPrompt() const { return loginPrompt; }
   const fs::Path& Rootpath() const { return rootpath; }
-  //const fs::Path& ReloadConfig() const { return reloadConfig; }
   const std::vector<std::string>& Master() const { return master; }  
   const std::vector<setting::SecureIp>& SecureIp() const { return secureIp; }
   const std::vector<setting::SecurePass>& SecurePass() const { return securePass; }
   const fs::Path& Datapath() const { return datapath; }
-  //const fs::Path& PwdPath() const { return pwdPath; }
-  //const fs::Path& GrpPath() const { return grpPath; }
   const fs::Path& BotscriptPath() const { return botscriptPath; }
   const std::vector<std::string>& BouncerIp() const { return bouncerIp; }
   const std::vector<setting::SpeedLimit>& SpeedLimit() const { return speedLimit; }
   const std::vector<setting::SimXfers>& SimXfers() const { return simXfers; }
   const std::vector<std::string>& CalcCrc() const { return calcCrc; }
   const std::vector<std::string>& Xdupe() const { return xdupe; }
-  //int MmapAmount() const { return mmapAmount; }
-  //int DlSendFile() const { return dlSendFile; }
-  //int UlBufferedForce() const { return ulBufferedForce; }
-  //const fs::Path& MinHomedir() const { return minHomedir; }
   const std::vector<std::string>& ValidIp() const { return validIp; }
   const std::vector<std::string>& ActiveAddr() const { return activeAddr; }
   const std::vector<std::string>& PasvAddr() const { return pasvAddr; }
@@ -196,7 +189,6 @@ public:
   const std::vector<fs::Path>& Cdpath() const { return cdpath; }
   const std::vector<std::string>& IgnoreType() const { return ignoreType; }
   
-
   // rights section
   const std::vector<setting::Right>& Delete() const { return delete_; } 
   const std::vector<setting::Right>& Deleteown() const { return deleteown; } 
@@ -223,7 +215,6 @@ public:
   const std::vector<std::string>& BannedUsers() const { return bannedUsers; }
   const std::vector<setting::Right>& ShowDiz() const { return showDiz; }
   bool DlIncomplete() const { return dlIncomplete; }
-  //bool FileDlCount() const { return fileDlCount; }
   const setting::DupeCheck& DupeCheck() const { return dupeCheck; }
   const std::vector<setting::Cscript>& Cscript() const { return cscript; }
   const std::vector<std::string>& IdleCommands() const { return idleCommands; }
