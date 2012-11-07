@@ -5,6 +5,8 @@
 #include "db/stats/stat.hpp"
 #include "acl/usercache.hpp"
 #include "stats/util.hpp"
+#include "ftp/counter.hpp"
+#include "util/scopeguard.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -12,6 +14,20 @@ namespace cmd { namespace rfc
 cmd::Result STORCommand::Execute()
 {
   namespace pt = boost::posix_time;
+
+  using util::scope_guard;
+  using util::make_guard;
+  
+  if (!ftp::Counter::StartUpload(client.User().UID(), client.Profile().MaxSimUl()))
+  {
+    std::ostringstream os;
+    os << "You have reached your maximum of " << client.Profile().MaxSimUl() 
+       << " simultaenous upload(s).";
+    control.Reply(ftp::ActionNotOkay, os.str());
+    return cmd::Result::Okay;    
+  }
+  
+  scope_guard countGuard = make_guard([&]{ ftp::Counter::StopUpload(client.User().UID()); });  
 
   fs::OutStreamPtr fout;
   try
@@ -81,6 +97,8 @@ cmd::Result STORCommand::Execute()
       stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
 
   return cmd::Result::Okay;
+  
+  (void) countGuard;
 }
 
 } /* rfc namespace */

@@ -51,13 +51,13 @@ cmd::Result PASSCommand::Execute()
   {
     client.SetLoggedIn(db::userprofile::Get(client.User().UID()));
   }
-  catch (const db::DBError& e)
+  catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ServiceUnavailable, e.Message());
     client.SetState(ftp::ClientState::Finished);
     return cmd::Result::Okay;
   }
-  
+    
   control.Reply(ftp::UserLoggedIn, "User " + client.User().Name() + " logged in.");
   return cmd::Result::Okay;
 }

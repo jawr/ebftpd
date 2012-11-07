@@ -22,6 +22,7 @@
 #include "util/string.hpp"
 #include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
+#include "ftp/counter.hpp"
 
 namespace ftp
 {
@@ -47,12 +48,22 @@ void Client::SetState(ClientState state)
 {
   assert(state != ClientState::LoggedIn); // these 2 states have own setter
   assert(state != ClientState::WaitingPassword);
+  
+  if (state == ClientState::Finished) Counter::LogOut(user.UID());
+  
   boost::lock_guard<boost::mutex> lock(mutex);
   this->state = state;
 }
 
 void Client::SetLoggedIn(const acl::UserProfile& profile)
 {
+  if (!Counter::LogIn(user.UID(), profile.NumLogins()))
+  {
+    std::ostringstream os;
+    os << "You have reached your maximum number of " << profile.NumLogins() << " login(s).";
+    throw util::RuntimeError(os.str());
+  }
+
   db::user::Login(user.UID());
   
   boost::lock_guard<boost::mutex> lock(mutex);
