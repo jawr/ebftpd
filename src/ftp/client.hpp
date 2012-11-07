@@ -64,6 +64,7 @@ class Client : public util::Thread
   void ExecuteCommand(const std::string& commandLine);
   void Handle();
   bool CheckState(ClientState reqdState);
+  void InnerRun();
   void Run();
   void LookupIdent();
   void IdleReset(const std::string& commandLine)  ;

@@ -25,6 +25,7 @@ class GroupProfile
   int maxLogins;
   
   std::string comment;
+  
 public:
   GroupProfile() : 
     gid(-1),

@@ -258,7 +258,7 @@ bool Client::ConfirmCommand(const std::string& argStr)
   return true;
 }
 
-void Client::Run()
+void Client::InnerRun()
 {
   using util::scope_guard;
   using util::make_guard;
@@ -282,6 +282,18 @@ void Client::Run()
   }
   
   (void) finishedGuard; /* silence unused variable warning */
+}
+
+void Client::Run()
+{
+  try
+  {
+    InnerRun();
+  }
+  catch (const std::exception& e)
+  {
+    logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
+  }
 }
 
 } /* ftp namespace */

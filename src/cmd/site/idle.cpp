@@ -20,7 +20,7 @@ cmd::Result IDLECommand::Execute()
   if (args.size() == 1)
   {
     std::ostringstream os;
-    os << "Your current IDLE timeout is "
+    os << "Your current idle timeout is "
        << client.IdleTimeout().total_seconds() << " seconds.";
     control.Reply(ftp::CommandOkay, os.str());
   }                

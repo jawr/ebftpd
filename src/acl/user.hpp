@@ -27,8 +27,7 @@ class User
   std::unordered_set<GroupID> secondaryGids;
   
   long long credits;
-  
-  
+   
 public:
   User() : uid(-1), primaryGid(-1) { }
   User(const std::string& name, UserID uid, const std::string& password,
