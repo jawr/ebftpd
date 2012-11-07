@@ -8,8 +8,6 @@ namespace cmd { namespace rfc
 
 class RETRCommand : public Command
 {
-  void SpeedControl();
-  
 public:
   RETRCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
     Command(client, client.Control(), client.Data(), argStr, args) { }
