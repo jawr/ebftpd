@@ -17,26 +17,25 @@ void CHOWNCommand::Process(const fs::Path& pathmask)
 {
   using util::string::WildcardMatch;
   const cfg::Config& config = cfg::Get();
-  fs::Path absolute = (client.WorkDir() / pathmask).Expand();
   try
   {
-    fs::DirContainer dir(client, absolute.Dirname());
+    fs::DirContainer dir(client, pathmask.Dirname());
     for (auto& entry : dir)
     {
-      if (!WildcardMatch(absolute.Basename(), entry))
+      if (!WildcardMatch(pathmask.Basename(), entry))
         continue;
 
-      fs::Path fullPath = (absolute.Dirname() / entry).Expand();
-      fs::Path relative = (pathmask.Dirname() / entry).Expand();
+      fs::Path fullPath = (pathmask.Dirname() / entry).Expand();
+      fs::Path real = config.Sitepath() + fullPath;
       try
       {
-        fs::Status status(config.Sitepath() + fullPath);
-        fs::OwnerCache::Chown(fullPath, owner);
+        fs::Status status(real);
+        fs::OwnerCache::Chown(real, owner);
         if (status.IsDirectory())
         {
           ++dirs;
           if (recursive && !status.IsSymLink()) 
-            Process((relative / "*").Expand());
+            Process((fullPath / "*").Expand());
         }
         else ++files;
       }
@@ -44,7 +43,7 @@ void CHOWNCommand::Process(const fs::Path& pathmask)
       {
         ++failed;
         control.PartReply(ftp::CommandOkay, "CHOWN " + 
-            relative.ToString() + ": " + e.Message());        
+            fullPath.ToString() + ": " + e.Message());        
       }
     }
   }
@@ -59,12 +58,10 @@ void CHOWNCommand::Process(const fs::Path& pathmask)
 bool CHOWNCommand::ParseArgs()
 {
   int n = 1;
-  boost::to_lower(args[1]);
-  if (args[1] == "-r") 
+  if (boost::to_lower_copy(args[1]) == "-r") 
   {
     ++n;
     recursive = true;
-    boost::to_lower(args[n]);
   }
   
   std::vector<std::string> owners;
@@ -119,7 +116,7 @@ cmd::Result CHOWNCommand::Execute()
   
   owner = fs::Owner(uid, gid);
 
-  Process(pathmaskStr);
+  Process((client.WorkDir() / pathmaskStr).Expand());
   
   std::ostringstream os;
   os << "CHOWN finished (okay on: "

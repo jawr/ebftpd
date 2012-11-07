@@ -13,6 +13,7 @@
 #include "fs/status.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
+#include "logs/logs.hpp"
 
 #ifdef CMD_DIRLIST_TEST
 #include <iostream>

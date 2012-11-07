@@ -18,7 +18,7 @@ class CHOWNCommand : public Command
   int files;
   int failed;
   
-  void Process(const fs::Path& pathmask);
+  void Process(const fs::Path& absmask);
   bool ParseArgs();
   
 public:

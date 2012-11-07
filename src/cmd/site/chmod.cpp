@@ -11,21 +11,19 @@
 namespace cmd { namespace site
 {
 
-void CHMODCommand::Process(const fs::Path& pathmask)
+void CHMODCommand::Process(const fs::Path& absmask)
 {
   using util::string::WildcardMatch;
   const cfg::Config& config = cfg::Get();
-  fs::Path absolute = (client.WorkDir() / pathmask).Expand();
   try
   {
-    fs::DirContainer dir(client, absolute.Dirname());
+    fs::DirContainer dir(client, absmask.Dirname());
     for (auto& entry : dir)
     {
-      if (!WildcardMatch(absolute.Basename(), entry))
+      if (!WildcardMatch(absmask.Basename(), entry))
         continue;
 
-      fs::Path fullPath = (absolute.Dirname() / entry).Expand();
-      fs::Path relative = (pathmask.Dirname() / entry).Expand();
+      fs::Path fullPath = (absmask.Dirname() / entry).Expand();
       try
       {
         fs::Status status(config.Sitepath() + fullPath);          
@@ -34,14 +32,14 @@ void CHMODCommand::Process(const fs::Path& pathmask)
         {
           ++failed;
           control.PartReply(ftp::CommandOkay, "CHOWN " + 
-              relative.ToString() + ": " + e.Message());        
+              fullPath.ToString() + ": " + e.Message());        
         }
         else
         if (status.IsDirectory())
         {
           ++dirs;
           if (recursive && !status.IsSymLink()) 
-            Process((relative / "*").Expand());
+            Process((fullPath / "*").Expand());
         }
         else ++files;
       }
@@ -49,7 +47,7 @@ void CHMODCommand::Process(const fs::Path& pathmask)
       {
         ++failed;
         control.PartReply(ftp::CommandOkay, "CHOWN " + 
-            relative.ToString() + ": " + e.Message());        
+            fullPath.ToString() + ": " + e.Message());        
       }
     }
   }
@@ -57,7 +55,7 @@ void CHMODCommand::Process(const fs::Path& pathmask)
   {
     ++failed;
     control.PartReply(ftp::CommandOkay, 
-        "CHMOD " + absolute.Dirname().ToString() + ": " + e.Message());
+        "CHMOD " + absmask.Dirname().ToString() + ": " + e.Message());
   }
 }
 
@@ -107,7 +105,7 @@ cmd::Result CHMODCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  Process(pathmaskStr);
+  Process((client.WorkDir() / pathmaskStr).Expand());
   
   std::ostringstream os;
   os << "CHMOD finished (okay on: "
