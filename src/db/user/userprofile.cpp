@@ -171,7 +171,7 @@ util::Error SetNumLogins(acl::UserID uid, const std::string& value)
   {
     return util::Error::Failure("Invalid value. Must be a number larger than zero.");
   }
-  Set(uid, BSON("idle time" << i));
+  Set(uid, BSON("num logins" << i));
   return util::Error::Success();
 }
 
