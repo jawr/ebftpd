@@ -12,33 +12,31 @@
 namespace cmd { namespace site
 {
 
-void WIPECommand::Process(const fs::Path& pathmask, int depth)
+void WIPECommand::Process(const fs::Path& absmask, int depth)
 {
   using util::string::WildcardMatch;
   const cfg::Config& config = cfg::Get();
-  fs::Path absolute = (client.WorkDir() / pathmask).Expand();
   try
   {
-    fs::DirContainer dir(client, absolute.Dirname());
+    fs::DirContainer dir(client, absmask.Dirname());
     for (auto& entry : dir)
     {
-      if (!WildcardMatch(absolute.Basename(), entry))
+      if (!WildcardMatch(absmask.Basename(), entry))
         continue;
 
-      fs::Path fullPath = (absolute.Dirname() / entry).Expand();
-      fs::Path relative = (pathmask.Dirname() / entry).Expand();
+      fs::Path fullPath = (absmask.Dirname() / entry).Expand();
       try
       {
         fs::Status status(config.Sitepath() + fullPath);
         if (status.IsDirectory())
         {
           if ((recursive || depth == 1) && !status.IsSymLink())
-            Process((relative / "*").Expand(), depth + 1);
+            Process((fullPath / "*").Expand(), depth + 1);
           util::Error e = fs::RemoveDirectory(client, fullPath);
           if (!e)
           {
             control.PartReply(ftp::CommandOkay, "WIPE " + 
-                relative.ToString() + ": " + e.Message());
+                fullPath.ToString() + ": " + e.Message());
             ++failed;
           }
           else
@@ -50,7 +48,7 @@ void WIPECommand::Process(const fs::Path& pathmask, int depth)
           if (!e)
           {
             control.PartReply(ftp::CommandOkay, "WIPE " +
-                relative.ToString() + ": " + e.Message());
+                fullPath.ToString() + ": " + e.Message());
             ++failed;
           }
           else
@@ -61,7 +59,7 @@ void WIPECommand::Process(const fs::Path& pathmask, int depth)
       {
         ++failed;
         control.PartReply(ftp::CommandOkay, "CHOWN " + 
-            relative.ToString() + ": " + e.Message());        
+            fullPath.ToString() + ": " + e.Message());        
       }
     }
   }
@@ -69,7 +67,7 @@ void WIPECommand::Process(const fs::Path& pathmask, int depth)
   {
     ++failed;
     control.PartReply(ftp::CommandOkay, 
-        "WIPE " + absolute.Dirname().ToString() + ": " + e.Message());
+        "WIPE " + absmask.ToString() + ": " + e.Message());
   }
 }
 
@@ -81,12 +79,12 @@ bool WIPECommand::ParseArgs()
   {
     ++n;
     recursive = true;
-    pathmaskStr = argStr.substr(2);
+    pathmask = argStr.substr(2);
   }
   else
-    pathmaskStr = argStr;
+    pathmask = argStr;
   
-  boost::trim(pathmaskStr);
+  boost::trim(pathmask);
   return true;
 }
 
@@ -102,7 +100,7 @@ cmd::Result WIPECommand::Execute()
     return cmd::Result::Okay;
   }
 
-  Process(pathmaskStr);
+  Process((client.WorkDir() / pathmask).Expand());
   
   std::ostringstream os;
   os << "WIPE finished (okay on: "

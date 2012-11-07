@@ -15,7 +15,6 @@ cmd::Result DELIPCommand::Execute()
     return cmd::Result::Permission;
   }
 
-  std::ostringstream os;
   acl::User user;
   try
   {
@@ -23,11 +22,11 @@ cmd::Result DELIPCommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    os << "Error: " << e.Message();
-    control.Reply(ftp::ActionNotOkay, os.str());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
 
+  std::ostringstream os;
   util::Error ipDeleted;
   for (Args::iterator it = args.begin()+2; it != args.end(); ++it)
   {
@@ -36,7 +35,7 @@ cmd::Result DELIPCommand::Execute()
     if (ipDeleted)
       os << "IP (" << *it << ") removed from " << args[1];
     else
-      os << "Error: " << ipDeleted.Message();
+      os << ipDeleted.Message();
   }
 
   control.MultiReply(ftp::CommandOkay, os.str());

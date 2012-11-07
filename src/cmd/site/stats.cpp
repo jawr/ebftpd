@@ -31,7 +31,7 @@ cmd::Result STATSCommand::Execute()
   }
 
   if (os.str().empty())
-    control.Reply(ftp::ActionNotOkay, "Error: No stats for user.");
+    control.Reply(ftp::ActionNotOkay, "No stats for user.");
   else
     control.Reply(ftp::CommandOkay, os.str());
 

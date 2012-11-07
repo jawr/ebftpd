@@ -32,6 +32,8 @@ enum class Flag : char
   Custom5 = 'N'
 };
 
+bool ValidFlags(const std::string& flags);
+
 } /* acl namespace */
 
 #ifndef __ACL_FLAGS_CPP

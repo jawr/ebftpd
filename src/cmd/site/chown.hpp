@@ -9,7 +9,7 @@ namespace cmd { namespace site
 
 class CHOWNCommand : public Command
 {
-  std::string pathmaskStr;
+  std::string pathmask;
   std::string user;
   std::string group;
   fs::Owner owner;

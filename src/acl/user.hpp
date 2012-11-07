@@ -45,7 +45,7 @@ public:
   bool VerifyPassword(const std::string& password) const;
   
   const std::string& Flags() const { return flags; }
-  void SetFlags(const std::string& flags) { this->flags = flags; }
+  void SetFlags(const std::string& flags);
   void AddFlags(const std::string& flags);
   void AddFlag(Flag flag);
   void DelFlags(const std::string& flags);
@@ -62,6 +62,7 @@ public:
   const std::unordered_set<GroupID> SecondaryGIDs() const { return secondaryGids; }
   void AddSecondaryGID(GroupID gid);
   void DelSecondaryGID(GroupID gid);
+  void ResetSecondaryGIDs();
   
   bool CheckGID(GroupID gid);
   

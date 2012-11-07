@@ -17,10 +17,9 @@ cmd::Result CHANGECommand::Execute()
   if (acl[0] != '=') acl = "-" + acl;
 
   util::Error ok = db::user::UsersByACL(users, acl);
-
   if (!ok)
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + ok.Message());
+    control.Reply(ftp::ActionNotOkay, ok.Message());
     return cmd::Result::Okay;
   }
   else if (users.size() == 0)
@@ -66,6 +65,12 @@ cmd::Result CHANGECommand::Execute()
   if (setting == "flags")
   {
     if (!acl::AllowSiteCmd(client.User(), "changeflags")) return cmd::Result::Permission;
+    if (!acl::ValidFlags(value.substr(1)))
+    {
+      control.Reply(ftp::ActionNotOkay, "Value contains one or more invalid flags.\n"
+                                        "See SITE FLAGS for a list.");
+      return cmd::Result::Okay;
+    }
   }
   else
   if (!acl::AllowSiteCmd(client.User(), "change")) return cmd::Result::Permission;
@@ -102,30 +107,34 @@ cmd::Result CHANGECommand::Execute()
       ok = db::userprofile::SetMaxSimUl(user.UID(), value);
     else if (setting == "flags")
     {
-      if (value[0] == '+')
+      ok = util::Error::Failure("You must specify flags and a + or - operator in front.");
+      if (value.length() > 1)
       {
-        value.assign(value.begin()+1, value.end());
-        ok = acl::UserCache::AddFlags(user.Name(), value);
-      }
-      else if (value[0] == '-')
-      {
-        value.assign(value.begin()+1, value.end());
-        ok = acl::UserCache::DelFlags(user.Name(), value);
-      }
-      else
-      {
-        static const char* changeSyntax = "you need to use + or - in front of flags.";
-        ok = util::Error::Failure(changeSyntax);
+        if (value[0] == '+')
+        {
+          value.assign(value.begin()+1, value.end());
+          ok = acl::UserCache::AddFlags(user.Name(), value);
+        }
+        else if (value[0] == '-')
+        {
+          value.assign(value.begin()+1, value.end());
+          ok = acl::UserCache::DelFlags(user.Name(), value);
+        }
+        else if (value[0] == '=')
+        {
+          value.assign(value.begin()+1, value.end());
+          ok = acl::UserCache::SetFlags(user.Name(), value);
+        }
       }
     }
     else
     {
-      control.Reply(ftp::ActionNotOkay, "Error: " + setting + " field not found!");
+      control.Reply(ftp::ActionNotOkay, "Invalid setting: " + setting);
       return cmd::Result::Okay;
     }
 
     if (!ok)
-      os << "Error: " << ok.Message();
+      os << ok.Message();
     else
       os << "Updated " << user.Name() << " " << setting << " to: " << value;
   }

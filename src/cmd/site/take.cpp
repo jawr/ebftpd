@@ -21,7 +21,7 @@ cmd::Result TAKECommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "Error: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
     return cmd::Result::Okay;
   }
 

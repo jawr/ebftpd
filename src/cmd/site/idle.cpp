@@ -46,7 +46,7 @@ cmd::Result IDLECommand::Execute()
         idleTimeout > maximum)
     {
       std::ostringstream os;
-      os << "IDLE timeout must be between " 
+      os << "Idle timeout must be between " 
          << config.IdleTimeout().Minimum().total_seconds()
          << " and " << maximum.total_seconds() << " seconds.";
       control.Reply(ftp::SyntaxError, os.str());
@@ -55,7 +55,7 @@ cmd::Result IDLECommand::Execute()
     
     client.SetIdleTimeout(idleTimeout);
     std::ostringstream os;
-    os << "IDLE timeout set to " << idleTimeout.total_seconds() 
+    os << "Idle timeout set to " << idleTimeout.total_seconds() 
        << " seconds.";
     control.Reply(ftp::CommandOkay, os.str());
   }

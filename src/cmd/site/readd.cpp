@@ -11,7 +11,7 @@ cmd::Result READDCommand::Execute()
   
   util::Error e = acl::UserCache::Readd(args[1]);
   if (!e)
-    control.Reply(ftp::ActionNotOkay, "Unable to readd user: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, e.Message());
   else
     control.Reply(ftp::CommandOkay, "User " + args[1] + " has been readded.");
   return cmd::Result::Okay;
