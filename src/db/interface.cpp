@@ -29,21 +29,16 @@ void Initialize()
   acl::UserCache::Initialize();
   acl::IpMaskCache::Initialize();
 
-  std::vector<TaskPtr> tasks;
-  
-  tasks.emplace_back(new db::EnsureIndex("users",
-    BSON("uid" << 1 << "name" << 1)));
-  tasks.emplace_back(new db::EnsureIndex("groups",
-    BSON("gid" << 1 << "name" << 1)));
-  tasks.emplace_back(new db::EnsureIndex("transfers", BSON("uid" << 1 << 
+  Pool::Queue(TaskPtr(new db::EnsureIndex("users",
+    BSON("uid" << 1 << "name" << 1))));
+  Pool::Queue(TaskPtr(new db::EnsureIndex("groups",
+    BSON("gid" << 1 << "name" << 1))));
+  Pool::Queue(TaskPtr(new db::EnsureIndex("transfers", BSON("uid" << 1 << 
     "direction" << 1 << "day" << 1 << "week" << 1 << "month" << 1 << 
-    "year" << 1)));
-  tasks.emplace_back(new db::EnsureIndex("ipmasks",
-    BSON("uid" << 1 << "mask" << 1)));
+    "year" << 1))));
+  Pool::Queue(TaskPtr(new db::EnsureIndex("ipmasks",
+    BSON("uid" << 1 << "mask" << 1))));
 
-  for (auto& task: tasks)
-    Pool::Queue(task);
-    
   acl::UserCache::Create("biohazard", "password", "1");
   acl::UserCache::Create("io", "password", "1");
 }
