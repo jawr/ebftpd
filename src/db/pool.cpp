@@ -19,15 +19,19 @@ Pool::Pool() :
 
 void Pool::LaunchWorker()
 {
+  const cfg::Config& config = cfg::Get();
+  std::ostringstream host;
+  host << config.Database().Address() << ":" << config.Database().Port();
+  
   try
   {
-    std::unique_ptr<Worker> worker(new Worker("localhost", queue));
+    std::unique_ptr<Worker> worker(new Worker(host.str(), queue));
     worker->Start();
     workers.push_back(worker.release());
   }
-  catch (const DBError& e)
+  catch (const mongo::DBException& e)
   {
-    throw e;
+    logs::db << "Failed to launch worker for db thread pool: " << e.what() << logs::endl;
   }
 }
 

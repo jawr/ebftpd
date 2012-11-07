@@ -1,5 +1,7 @@
 #include "cmd/rfc/pass.hpp"
 #include "fs/directory.hpp"
+#include "db/user/userprofile.hpp"
+#include "db/exception.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -44,9 +46,19 @@ cmd::Result PASSCommand::Execute()
     client.SetState(ftp::ClientState::Finished);
     return cmd::Result::Okay;
   }
+
+  try
+  {
+    client.SetLoggedIn(db::userprofile::Get(client.User().UID()));
+  }
+  catch (const db::DBError& e)
+  {
+    control.Reply(ftp::ServiceUnavailable, e.Message());
+    client.SetState(ftp::ClientState::Finished);
+    return cmd::Result::Okay;
+  }
   
   control.Reply(ftp::UserLoggedIn, "User " + client.User().Name() + " logged in.");
-  client.SetLoggedIn();
   return cmd::Result::Okay;
 }
 

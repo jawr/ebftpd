@@ -6,7 +6,7 @@
 #include "db/types.hpp"
 #include "acl/groupcache.hpp"
 #include "acl/group.hpp"
-#include "logs/logs.hpp"
+#include "db/exception.hpp"
 
 namespace db { namespace user
 {
@@ -32,8 +32,17 @@ acl::UserID GetNewUserID()
 
   if (results.size() == 0) return acl::UserID(1);
 
-  int uid = results.back().getIntField("uid");
-  return acl::UserID(++uid);
+  acl::UserID uid;
+  try
+  {
+    uid = results.back().getIntField("uid") + 1;
+  }
+  catch (const mongo::DBException& e)
+  {
+    IDGenerationFailure("user", e);
+  }
+  
+  return uid;
 }
 
 void Save(const acl::User& user)
@@ -90,7 +99,7 @@ void GetAll(boost::ptr_vector<acl::User>& users)
   if (results.size() == 0) return;
 
   for (auto& obj: results)
-    users.push_back(bson::User::Unserialize(obj));
+    users.push_back(bson::User::Unserialize(obj).release());
 }
 
 
@@ -128,7 +137,7 @@ util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
   future.wait();
 
   for (auto& obj: results)
-    users.push_back(bson::User::Unserialize(obj));
+    users.push_back(bson::User::Unserialize(obj).release());
 
   return util::Error::Success();
 }

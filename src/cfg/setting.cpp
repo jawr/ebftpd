@@ -15,7 +15,20 @@ const boost::posix_time::seconds IdleTimeout::defaultMaximum(7200);
 const boost::posix_time::seconds IdleTimeout::defaultMinimum(1);
 const boost::posix_time::seconds IdleTimeout::defaultTimeout(900);
 
-// glftpd 
+Database::Database(const std::vector<std::string>& toks) : port(-1)
+{
+  name = toks[0];
+  address = toks[1];
+  try
+  {
+    port = boost::lexical_cast<int>(toks[2]);
+    if (port < 0 || port >= 65535) throw boost::bad_lexical_cast();
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    throw ConfigError("Invalid port number");
+  }
+}
 
 AsciiDownloads::AsciiDownloads(const std::vector<std::string>& toks) :
   size(-1)

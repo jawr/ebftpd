@@ -12,6 +12,7 @@
 #include "fs/path.hpp"
 #include "acl/passwdstrength.hpp"
 #include "acl/ipstrength.hpp"
+#include "main.hpp"
 
 namespace cfg { namespace setting
 {
@@ -20,6 +21,20 @@ class Setting // a base class might be useful in the future.. maybe
 {
 public:
   virtual ~Setting() {}
+};
+
+class Database : Setting
+{
+  std::string name;
+  std::string address;
+  int port;
+public:
+  Database() : name(programName), address("localhost"), port(27017) { }
+  Database(const std::vector<std::string>& toks);
+  
+  const std::string& Name() const { return name; }
+  const std::string& Address() const { return address; }
+  int Port() const { return port; }
 };
 
 // generics

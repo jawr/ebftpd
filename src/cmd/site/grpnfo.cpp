@@ -39,11 +39,8 @@ cmd::Result GRPNFOCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  util::Error ok = db::groupprofile::SetDescription(gid, argStr);
-  if (!ok)
-    control.Reply(ftp::ActionNotOkay, ok.Message());
-  else
-    control.Reply(ftp::CommandOkay, "New description for " + args[1] + ": " + argStr);
+  db::groupprofile::SetDescription(gid, argStr);
+  control.Reply(ftp::CommandOkay, "New description for " + args[1] + ": " + argStr);
   
   return cmd::Result::Okay;
 }

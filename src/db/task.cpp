@@ -1,83 +1,115 @@
+#include <boost/thread/future.hpp>
 #include "db/task.hpp"
 #include "db/worker.hpp"
 #include "db/exception.hpp"
 #include "logs/logs.hpp"
-#include <boost/thread/future.hpp>
+#include "cfg/get.hpp"
+
 namespace db
 {
 
-void RunCommand::Execute(Worker& worker)
+Task::Task() : database(cfg::Get().Database().Name()) { }
+
+void RunCommand::Execute(mongo::DBClientConnection& conn)
 {
   try
   {
-    worker.RunCommand(cmd, ret);
+    if (conn.runCommand(database, cmd, ret))
+      ret = ret.getObjectField("result").getObjectField("0");
     promise.set_value(true);
   }
-  catch (const DBError& e)
+  catch (const mongo::DBException& e)
   {
-    logs::db << "Select failure: " << e.Message() << logs::endl;
-  }
-    
-}
-
-void Update::Execute(Worker& worker)
-{
-  try
-  {
-    worker.Update(container, obj, query, upsert);
-  }
-  catch (const DBError& e)
-  {
-    logs::db << "Update failure: " << e.Message() << logs::endl;
+    logs::db << "Query failed: " << database << " : " << cmd.toString() 
+             << " : " << e.what() << logs::endl;
+    promise.set_value(false);
   }
 }
 
-void Delete::Execute(Worker& worker)
+void Update::Execute(mongo::DBClientConnection& conn)
 {
   try
   {
-    worker.Delete(container, query);
+    conn.update(database + "." + collection, query, obj, upsert, false);
+    LastErrorToException(conn);
   }
-  catch (const DBError& e)
+  catch (const mongo::DBException& e)
   {
-    logs::db << "Delete failure: " << e.Message() << logs::endl;
+    logs::db << "Update failed: " << database << "." 
+             << collection << " : " << query.toString() 
+             << " : " << obj.toString() << " upsert=" 
+             << upsert << " : " << e.what() << logs::endl;
   }
 }
 
-void Select::Execute(Worker& worker)
+void Delete::Execute(mongo::DBClientConnection& conn)
 {
   try
   {
-    worker.Get(container, query, results, limit);
+    conn.remove(database + "." + collection, query);
+    LastErrorToException(conn);
+  }
+  catch (const mongo::DBException& e)
+  {
+    logs::db << "Delete failed: " << database << "." << collection 
+             << " : " << query.toString() 
+             << " : " << e.what() << logs::endl;
+  }
+}
+
+void Select::Execute(mongo::DBClientConnection& conn)
+{
+
+  results.clear();
+  results.reserve(limit);
+  
+  try
+  {
+    std::unique_ptr<mongo::DBClientCursor> cursor =
+      conn.query(database + "." + collection, query);
+    int i = 0;
+    while (cursor->more())
+    {
+      results.push_back(cursor->nextSafe().copy());
+      if (limit != 0 && ++i == limit) break;
+    }
+    LastErrorToException(conn);
     promise.set_value(true);
   }
-  catch (const DBError& e)
+  catch (const mongo::DBException& e)
   {
-    logs::db << "Select failure: " << e.Message() << logs::endl;
+    logs::db << "Select query failed: " << database << "." << collection 
+             << " : " << query.toString() << " : limit= " << limit 
+             << " : " << e.what() << logs::endl;
+    promise.set_value(false);
   }
 }
 
-void Insert::Execute(Worker& worker)
+void Insert::Execute(mongo::DBClientConnection& conn)
 {
   try
   {
-    worker.Insert(container, obj);
+    conn.insert(database + "." + collection, obj);
+    LastErrorToException(conn);
   }
-  catch (const DBError& e)
+  catch (const mongo::DBException& e)
   {
-    logs::db << "Insert failure: " << e.Message() << logs::endl;
+    logs::db << "Insert failed: " << database << "." << collection 
+             << " : " << obj.toString() << " : " << e.what() << logs::endl;
   }
 }
 
-void EnsureIndex::Execute(Worker& worker)
+void EnsureIndex::Execute(mongo::DBClientConnection& conn)
 {
   try
   {
-    worker.EnsureIndex(container, obj);
+    conn.ensureIndex(database + "." + collection, obj, true);
+    LastErrorToException(conn);
   }
-  catch(const DBError& e)
+  catch (const mongo::DBException& e)
   {
-    logs::db << "Ensure index failure: " << e.Message() << logs::endl;
+    logs::db << "Ensure index failed: " << database << "." << collection
+             << " : " << obj.toString() << " : " << e.what() << logs::endl;
   }
 }
 

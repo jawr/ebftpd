@@ -1,28 +1,33 @@
 #ifndef __DB_TASK_HPP
 #define __DB_TASK_HPP
+
 #include <mongo/client/dbclient.h>
 #include <boost/thread/future.hpp>
-#include "db/worker.hpp"
-#include <iostream>
+#include "db/types.hpp"
 
 namespace db
 {
 
 class Task
 {
+protected:
+  const std::string database;
+  
 public:
-  virtual ~Task() {};
-  virtual void Execute(Worker& worker) = 0;
+  Task();
+  virtual ~Task() {}
+  virtual void Execute(mongo::DBClientConnection& conn) = 0;
 };
 
 class EnsureIndex : public Task
 {
-  std::string container;
+  std::string collection;
   mongo::BSONObj obj;
+
 public:
-  EnsureIndex(const std::string& container, const mongo::BSONObj& obj) :
-      container(container), obj(obj) {};
-  void Execute(Worker& worker);
+  EnsureIndex(const std::string& collection, const mongo::BSONObj& obj) :
+      collection(collection), obj(obj) {}
+  void Execute(mongo::DBClientConnection& conn);
 };
 
 class RunCommand : public Task
@@ -37,58 +42,58 @@ public:
   {
     future = promise.get_future();
   }
-  void Execute(Worker& worker);
+  void Execute(mongo::DBClientConnection& conn);
 };
 
 class Select : public Task
 {
-  std::string container;
+  std::string collection;
   const mongo::Query& query;
   QueryResults& results;
   boost::unique_future<bool>& future;
   boost::promise<bool> promise;
   int limit;
 public:
-  Select(const std::string& container, const mongo::Query& query,
+  Select(const std::string& collection, const mongo::Query& query,
     QueryResults& results, boost::unique_future<bool>& future, int limit = 0) : 
-      container(container), query(query), results(results), future(future),
+      collection(collection), query(query), results(results), future(future),
       promise(), limit(limit) { future = promise.get_future(); }
 
-  void Execute(Worker& worker);
+  void Execute(mongo::DBClientConnection& conn);
 };
 
 class Delete : public Task
 {
-  std::string container;
+  std::string collection;
   mongo::Query query;
 public:
-  Delete(const std::string& container, const mongo::Query& query) :
-    container(container), query(query) {};
-  void Execute(Worker& worker);
+  Delete(const std::string& collection, const mongo::Query& query) :
+    collection(collection), query(query) {}
+  void Execute(mongo::DBClientConnection& conn);
 };
 
 class Insert : public Task
 {
-  std::string container;
+  std::string collection;
   mongo::BSONObj obj;
 public:
-  Insert(const std::string& container, const mongo::BSONObj& obj) :
-    container(container), obj(obj) {};
-  void Execute(Worker& worker);
+  Insert(const std::string& collection, const mongo::BSONObj& obj) :
+    collection(collection), obj(obj) {}
+  void Execute(mongo::DBClientConnection& conn);
 };
 
 class Update : public Task
 {
 protected:
-  std::string container;
+  std::string collection;
   mongo::BSONObj obj;
   mongo::Query query;
   bool upsert;
 public:
-  Update(const std::string& container, const mongo::Query& query, 
+  Update(const std::string& collection, const mongo::Query& query, 
     const mongo::BSONObj& obj, bool upsert=false) :
-    container(container), obj(obj), query(query), upsert(upsert) {};
-  void Execute(Worker& worker);
+    collection(collection), obj(obj), query(query), upsert(upsert) {}
+  void Execute(mongo::DBClientConnection& conn);
 };
 
 

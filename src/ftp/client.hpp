@@ -78,7 +78,7 @@ public:
   
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;
-  void SetLoggedIn();
+  void SetLoggedIn(const acl::UserProfile& profile);
   void SetWaitingPassword(const acl::User& user);
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;

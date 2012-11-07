@@ -1,5 +1,6 @@
 #include "db/bson/group.hpp"
 #include "acl/group.hpp"
+#include "db/bson/error.hpp"
 
 namespace db { namespace bson
 {
@@ -12,9 +13,18 @@ mongo::BSONObj Group::Serialize(const acl::Group& group)
   return bob.obj();
 }
 
-acl::Group* Group::Unserialize(const mongo::BSONObj& bo)
+std::unique_ptr<acl::Group> Group::Unserialize(const mongo::BSONObj& bo)
 {
-  return new acl::Group(bo["name"].String(), bo["gid"].Int());
+  std::unique_ptr<acl::Group> group;
+  try
+  {
+    group.reset(new acl::Group(bo["name"].String(), bo["gid"].Int()));
+  }
+  catch (const mongo::DBException& e)
+  {
+    UnserializeFailure("group", e, bo);
+  }
+  return group;
 }
 
 } /* bson namespace */

@@ -23,11 +23,13 @@ cmd::Result SEENCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  if (profile.LastLogin().empty())
-    control.Reply(ftp::CommandOkay, "No seen record for " + args[1] + ".");
+  std::ostringstream os;
+  if (profile.LastLogin())
+    os << "User " << args[1] << " has never logged in.";
   else
-    control.Reply(ftp::CommandOkay, 
-      "Last saw " + args[1] + " on " + profile.LastLogin());
+    os << "Last saw " << args[1] << " on " << profile.LastLogin();
+      
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 
