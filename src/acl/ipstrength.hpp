@@ -58,16 +58,16 @@ public:
     if (userStrength.isHostname)
     {
       if (!isHostname)
-        return util::Error::Failure("Hostname's not allowed");
+        return util::Error::Failure("Hostname's not allowed.");
     }
     else
     {
       if (userStrength.numOctets < numOctets)
-        return util::Error::Failure("Not enough octets specified");
+        return util::Error::Failure("Not enough octets specified.");
     }
     
     if (!userStrength.hasIdent && hasIdent)
-      return util::Error::Failure("No ident specified");
+      return util::Error::Failure("No ident specified.");
       
     return util::Error::Success();
   }

@@ -58,7 +58,7 @@ util::Error GroupCache::Create(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   if (instance.byName.find(name) != instance.byName.end())
-    return util::Error::Failure("Group already exists");
+    return util::Error::Failure("Group " + name + " already exists.");
 
   acl::GroupID gid = db::group::GetNewGroupID();
 
@@ -76,7 +76,8 @@ util::Error GroupCache::Delete(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("Group doesn't exist");
+  if (it == instance.byName.end())
+    return util::Error::Failure("Group " + name + " doesn't exist.");
 
   db::group::Delete(it->second->GID());
 
@@ -91,10 +92,10 @@ util::Error GroupCache::Rename(const std::string& oldName, const std::string& ne
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   if (instance.byName.find(newName) != instance.byName.end())
-    return util::Error::Failure("Group already exists with new name");
+    return util::Error::Failure("New name " + newName + " taken by another group.");
   
   ByNameMap::iterator it = instance.byName.find(oldName);
-  if (it == instance.byName.end()) return util::Error::Failure("Group doesn't exist");
+  if (it == instance.byName.end()) return util::Error::Failure("Group " + oldName + " doesn't exist.");
 
   it->second->SetName(newName);
   instance.byName.insert(std::make_pair(newName, it->second));
@@ -109,7 +110,7 @@ acl::Group GroupCache::Group(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) throw util::RuntimeError("Group doesn't exist");
+  if (it == instance.byName.end()) throw util::RuntimeError("Group " + name + " doesn't exist.");
   return *it->second;
 }
 
@@ -117,7 +118,12 @@ acl::Group GroupCache::Group(GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByGIDMap::iterator it = instance.byGID.find(gid);
-  if (it == instance.byGID.end()) throw util::RuntimeError("Group doesn't exist");
+  if (it == instance.byGID.end())
+  {
+    std::ostringstream os;
+    os << "Group with gid " << gid << " doesn't exist.";
+    throw util::RuntimeError(os.str());
+  }
   return *it->second;
 }
 

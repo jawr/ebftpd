@@ -89,7 +89,7 @@ util::Error UserCache::Purge(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User " + name + "doesn't exist.");
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   if (!it->second->Deleted()) return util::Error::Failure("User " + name + " must be deleted first.");
 
   instance.byUID.erase(instance.byUID.find(it->second->UID()));
@@ -109,7 +109,7 @@ util::Error UserCache::Delete(const std::string& name)
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) 
-    return util::Error::Failure("User " + name + "doesn't exist.");
+    return util::Error::Failure("User " + name + " doesn't exist.");
   
   if (it->second->Deleted()) 
     return util::Error::Failure("User " + name + " already deleted.");
@@ -125,10 +125,10 @@ util::Error UserCache::Readd(const std::string& name)
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end())
-    return util::Error::Failure("User " + name + "doesn't exist.");
+    return util::Error::Failure("User " + name + " doesn't exist.");
   
   if (!it->second->Deleted()) 
-    return util::Error::Failure("User " + name + "is not deleted.");
+    return util::Error::Failure("User " + name + " is not deleted.");
   it->second->DelFlag(Flag::Deleted);
   
   db::user::Save(*it->second, "flags");
@@ -140,7 +140,7 @@ util::Error UserCache::Rename(const std::string& oldName, const std::string& new
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   if (instance.byName.find(newName) != instance.byName.end())
-    return util::Error::Failure("New name " + newName + "taken by another user.");
+    return util::Error::Failure("New name " + newName + " taken by another user.");
   
   ByNameMap::iterator it = instance.byName.find(oldName);
   if (it == instance.byName.end()) return util::Error::Failure("User " + oldName + " doesn't exist.");
