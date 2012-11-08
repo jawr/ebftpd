@@ -1,4 +1,5 @@
 #include <ios>
+#include <unistd.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
@@ -20,6 +21,13 @@ cmd::Result STORCommand::Execute()
   using util::scope_guard;
   using util::make_guard;
   
+  off_t offset = data.RestartOffset();
+  if (offset > 0 && data.DataType() == ftp::DataType::ASCII)
+  {
+    control.Reply(ftp::BadCommandSequence, "Resume not supported on ASCII data type.");
+    return cmd::Result::Okay;
+  }
+
   if (!ftp::Counter::StartUpload(client.User().UID(), client.Profile().MaxSimUl()))
   {
     std::ostringstream os;
@@ -31,22 +39,31 @@ cmd::Result STORCommand::Execute()
   
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopUpload(client.User().UID()); });  
 
-  fs::OutStreamPtr fout;
+  fs::FileSinkPtr fout;
   try
   {
-    fout = fs::CreateFile(client, argStr);
+    if (data.RestartOffset() > 0)
+      fout = fs::AppendFile(client, argStr, data.RestartOffset());
+    else
+      fout = fs::CreateFile(client, argStr);
   }
   catch (const util::SystemError& e)
   {
-    control.Reply(ftp::ActionNotOkay,
-                 "Unable to create file: " + e.Message());
+    std::ostringstream os;
+    os << "Unable to " << (data.RestartOffset() > 0 ? "append" : "create")
+       << " file: " << e.Message();
+    control.Reply(ftp::ActionNotOkay, os.str());
     return cmd::Result::Okay;
   }
-
-  control.Reply(ftp::TransferStatusOkay,
-               "Opening data connection for upload of " +
-               fs::Path(argStr).Basename().ToString() + ".");
-
+  
+  std::stringstream os;
+  os << "Opening " << (data.DataType() == ftp::DataType::ASCII ? "ASCII" : "BINARY") 
+     << " connection for upload of " 
+     << fs::Path(argStr).Basename().ToString();
+  if (data.IsTLS()) os << " using TLS/SSL";
+  os << ".";
+  control.Reply(ftp::TransferStatusOkay, os.str());
+  
   try
   {
     data.Open(ftp::TransferType::Upload);
@@ -77,7 +94,6 @@ cmd::Result STORCommand::Execute()
       data.State().Update(len);
       
       fout->write(bufp, len);
-      
       if (client.Profile().MaxUlSpeed() > 0)
         ftp::util::SpeedLimitSleep(data.State(), client.Profile().MaxUlSpeed());
     }
@@ -85,13 +101,24 @@ cmd::Result STORCommand::Execute()
   catch (const util::net::EndOfStream&) { }
   catch (const util::net::NetworkError& e)
   {
+    fout->close();
     data.Close();
+    fs::ForceDeleteFile(client, argStr);
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from data connection: " +
                  e.Message());
     return cmd::Result::Okay;
   }
-
+  catch (const std::ios_base::failure& e)
+  {
+    fout->close();
+    data.Close();
+    fs::ForceDeleteFile(client, argStr);
+    control.Reply(ftp::DataCloseAborted,
+                  "Error while writing to disk: " + std::string(e.what()));
+  }
+  
+  fout->close();
   data.Close();
 
   boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();

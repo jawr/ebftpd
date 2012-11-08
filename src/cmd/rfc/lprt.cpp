@@ -10,7 +10,7 @@ cmd::Result LPRTCommand::Execute()
   util::Error e = util::net::ftp::EndpointFromLPRT(args[1], ep);
   if (!e)
   {
-    control.Reply(ftp::SyntaxError, "LPRT failed: " + e.Message());
+    control.Reply(ftp::SyntaxError, args[1] + ": " + e.Message());
     return cmd::Result::Okay;
   }
   

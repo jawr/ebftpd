@@ -10,7 +10,7 @@ cmd::Result EPRTCommand::Execute()
   util::Error e = util::net::ftp::EndpointFromEPRT(args[1], ep);
   if (!e)
   {
-    control.Reply(ftp::SyntaxError, "EPRT failed: " + e.Message());
+    control.Reply(ftp::SyntaxError, e.Message());
     return cmd::Result::Okay;
   }
   

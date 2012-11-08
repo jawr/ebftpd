@@ -13,7 +13,7 @@ cmd::Result RNFRCommand::Execute()
   util::Error e(PP::FileAllowed<PP::Rename>(client.User(), absolute));
   if (!e)
   {
-    control.Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
     return cmd::Result::Okay;
   }
 
@@ -23,7 +23,7 @@ cmd::Result RNFRCommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "RNFR failed: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
     return cmd::Result::Okay;
   }
   

@@ -22,7 +22,7 @@ cmd::Result PASVCommand::Execute()
   util::Error e = util::net::ftp::EndpointToPORT(ep, portString);
   if (!e)
   {
-    control.Reply(ftp::SyntaxError, "PASV failed: " + e.Message());
+    control.Reply(ftp::SyntaxError, e.Message());
     return cmd::Result::Okay;
   }
   

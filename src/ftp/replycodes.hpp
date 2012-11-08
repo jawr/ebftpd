@@ -45,7 +45,8 @@ enum ReplyCode
   ActionAbortedError = 451,
   PageTypeUnknown = 551,
   NoDiskFree = 452,
-  BadFilename = 553
+  BadFilename = 553,
+  InvalidRESTParameter = 554
 };
 
 }

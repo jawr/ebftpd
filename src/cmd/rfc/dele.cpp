@@ -26,7 +26,7 @@ cmd::Result DELECommand::Execute()
   
   off_t size;
   util::Error e = fs::DeleteFile(client,  argStr, &size);
-  if (!e) control.Reply(ftp::ActionNotOkay, "DELE failed: " + e.Message());
+  if (!e) control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
   else 
   {
     if (losesCredits)

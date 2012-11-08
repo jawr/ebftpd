@@ -7,7 +7,7 @@ namespace cmd { namespace rfc
 cmd::Result MKDCommand::Execute()
 {
   util::Error e = fs::CreateDirectory(client,  argStr);
-  if (!e) control.Reply(ftp::ActionNotOkay, "MKD failed: " + e.Message());
+  if (!e) control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
   else control.Reply(ftp::PathCreated, "MKD command successful."); 
   return cmd::Result::Okay;
 }

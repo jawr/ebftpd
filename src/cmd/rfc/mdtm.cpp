@@ -14,7 +14,7 @@ cmd::Result MDTMCommand::Execute()
   util::Error e(PP::FileAllowed<PP::View>(client.User(), absolute));
   if (!e)
   {
-    control.Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
     return cmd::Result::Okay;
   }
   
@@ -28,7 +28,7 @@ cmd::Result MDTMCommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "MDTM failed: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
     return cmd::Result::Okay;
   }
   

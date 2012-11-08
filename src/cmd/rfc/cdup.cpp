@@ -11,7 +11,7 @@ cmd::Result CDUPCommand::Execute()
   fs::Path path = "..";
   
   util::Error e = fs::ChangeDirectory(client,  path);
-  if (!e) control.Reply(ftp::ActionNotOkay, "CDUP failed: " + e.Message());
+  if (!e) control.Reply(ftp::ActionNotOkay, "..: " + e.Message());
   else control.Reply(ftp::FileActionOkay, "CDUP command successful."); 
   return cmd::Result::Okay;
 }

@@ -7,7 +7,7 @@ namespace cmd { namespace rfc
 cmd::Result RNTOCommand::Execute()
 {
   util::Error e = fs::RenameFile(client, client.RenameFrom(), argStr);
-  if (!e) control.Reply(ftp::ActionNotOkay, "RNTO failed: " + e.Message());
+  if (!e) control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
   else control.Reply(ftp::FileActionOkay, "RNTO command successful.");
   return cmd::Result::Okay;
 }

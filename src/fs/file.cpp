@@ -28,6 +28,15 @@ off_t SizeFile(ftp::Client& client, const Path& path)
   return status.Size();
 }
 
+util::Error ForceDeleteFile(ftp::Client& client, const Path& path)
+{
+  Path absolute = (client.WorkDir() / path).Expand();
+  Path real = cfg::Get().Sitepath() + absolute;
+  if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
+  OwnerCache::Delete(real);
+  return util::Error::Success();
+}
+
 util::Error DeleteFile(ftp::Client& client, const Path& path, off_t* size)
 {
   Path absolute = (client.WorkDir() / path).Expand();
@@ -73,7 +82,7 @@ util::Error RenameFile(ftp::Client& client, const Path& oldPath,
   return util::Error::Success();
 }
 
-OutStreamPtr CreateFile(ftp::Client& client, const Path& path)
+FileSinkPtr CreateFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
   util::Error e(PP::FileAllowed<PP::Upload>(client.User(), absolute));
@@ -85,10 +94,10 @@ OutStreamPtr CreateFile(ftp::Client& client, const Path& path)
 
   OwnerCache::Chown(real, Owner(client.User().UID(), client.User().PrimaryGID()));
 
-  return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
+  return FileSinkPtr(new FileSink(fd, boost::iostreams::close_handle));
 }
 
-OutStreamPtr AppendFile(ftp::Client& client, const Path& path)
+FileSinkPtr AppendFile(ftp::Client& client, const Path& path, off_t offset)
 {
   Path absolute = (client.WorkDir() / path).Expand();
   util::Error e = PP::FileAllowed<PP::Resume>(client.User(), absolute);
@@ -97,10 +106,24 @@ OutStreamPtr AppendFile(ftp::Client& client, const Path& path)
   Path real = cfg::Get().Sitepath() + absolute;
   int fd = open(real.CString(), O_WRONLY | O_APPEND);
   if (fd < 0) throw util::SystemError(errno);
-  return OutStreamPtr(new OutStream(fd, boost::iostreams::close_handle));
+  FileSinkPtr fout(new FileSink(fd, boost::iostreams::close_handle));
+  
+  try
+  {
+    std::streampos size = fout->seek(0, std::ios_base::end);
+    if (offset < size && ftruncate(fout->handle(), offset) < 0)
+      throw util::SystemError(errno);
+    fout->seek(0, std::ios_base::end);  
+  }
+  catch (const std::ios_base::failure& e)
+  {
+    throw util::SystemError(errno);
+  }
+  
+  return fout;
 }
 
-InStreamPtr OpenFile(ftp::Client& client, const Path& path)
+FileSourcePtr OpenFile(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
   util::Error e = PP::FileAllowed<PP::Download>(client.User(), absolute);
@@ -109,7 +132,7 @@ InStreamPtr OpenFile(ftp::Client& client, const Path& path)
   Path real = cfg::Get().Sitepath() + absolute;
   int fd = open(real.CString(), O_RDONLY);
   if (fd < 0) throw util::SystemError(errno);
-  return InStreamPtr(new InStream(fd, boost::iostreams::close_handle));
+  return FileSourcePtr(new FileSource(fd, boost::iostreams::close_handle));
 }
 
 util::Error UniqueFile(ftp::Client& client, const Path& path, 

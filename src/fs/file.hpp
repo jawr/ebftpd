@@ -17,22 +17,21 @@ class Client;
 namespace fs
 {
 
-typedef boost::iostreams::stream<
-        boost::iostreams::file_descriptor_sink> OutStream;
+typedef boost::iostreams::file_descriptor_sink FileSink;
         
-typedef std::shared_ptr<OutStream> OutStreamPtr;
+typedef std::shared_ptr<FileSink> FileSinkPtr;
 
-typedef boost::iostreams::stream<
-        boost::iostreams::file_descriptor_source> InStream;
+typedef boost::iostreams::file_descriptor_source FileSource;
         
-typedef std::shared_ptr<InStream> InStreamPtr;
+typedef std::shared_ptr<FileSource> FileSourcePtr;
         
 util::Error DeleteFile(ftp::Client& client, const Path& path, off_t* size = 0);
+util::Error ForceDeleteFile(ftp::Client& client, const Path& path);
 util::Error RenameFile(ftp::Client& client, const Path& oldPath,
                        const Path& newPath);
-OutStreamPtr CreateFile(ftp::Client& client, const Path& path);
-OutStreamPtr AppendFile(ftp::Client& client, const Path& path);
-InStreamPtr OpenFile(ftp::Client& client, const Path& path);
+FileSinkPtr CreateFile(ftp::Client& client, const Path& path);
+FileSinkPtr AppendFile(ftp::Client& client, const Path& path, off_t offset);
+FileSourcePtr OpenFile(ftp::Client& client, const Path& path);
 util::Error UniqueFile(ftp::Client& client, const Path& path, 
                        size_t filenameLength, Path& uniquePath);
 

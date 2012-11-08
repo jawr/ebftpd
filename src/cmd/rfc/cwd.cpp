@@ -9,7 +9,7 @@ cmd::Result CWDCommand::Execute()
   fs::Path path(argStr);
   
   util::Error e = fs::ChangeDirectory(client,  path);
-  if (!e) control.Reply(ftp::ActionNotOkay, "CWD failed: " + e.Message());
+  if (!e) control.Reply(ftp::ActionNotOkay, argStr + ":" + e.Message());
   else if (path.ToString() != argStr)
     control.Reply(ftp::FileActionOkay, "CWD command successful (Matched: " + 
                  path.ToString() + ").");

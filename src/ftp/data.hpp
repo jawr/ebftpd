@@ -1,6 +1,7 @@
 #ifndef __FTP_DATA_HPP
 #define __FTP_DATA_HPP
 
+#include <sys/types.h>
 #include "util/net/tcplistener.hpp"
 #include "util/net/tcpsocket.hpp"
 #include "util/net/endpoint.hpp"
@@ -55,6 +56,7 @@ class Data : public ReadWriteable
   ::ftp::EPSVMode epsvMode;
   ::ftp::DataType dataType;
   ::ftp::SSCNMode sscnMode;
+  off_t restartOffset;
   
   TransferState state;
 
@@ -65,7 +67,8 @@ public:
     pasvType(PassiveType::None),
     epsvMode(::ftp::EPSVMode::Normal),
     dataType(::ftp::DataType::Binary),
-    sscnMode(::ftp::SSCNMode::Server)
+    sscnMode(::ftp::SSCNMode::Server),
+    restartOffset(0)
   {
   }
 
@@ -80,12 +83,16 @@ public:
   ::ftp::DataType DataType() const { return dataType; }
   void SetDataType(::ftp::DataType dataType) { this->dataType = dataType; }
   
+  void SetRestartOffset(off_t restartOffset) { this->restartOffset = restartOffset; }
+  off_t RestartOffset() const { return restartOffset; }
+  
   void InitPassive(util::net::Endpoint& ep, PassiveType pasvType);
   void InitActive(const util::net::Endpoint& ep);
   void Open(TransferType transferType);
   
   void Close()
   {
+    restartOffset = 0;
     socket.Close();
     state.Stop();
   }
@@ -100,6 +107,8 @@ public:
   const TransferState& State() const { return state; }
   
   void Interrupt() { socket.Shutdown(); }
+  
+  bool IsTLS() const { return socket.IsTLS(); }
 };
 
 } /* ftp namespace */

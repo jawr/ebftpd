@@ -38,6 +38,7 @@
 #include "cmd/rfc/user.hpp"
 #include "cmd/rfc/sscn.hpp"
 #include "cmd/rfc/cpsv.hpp"
+#include "cmd/rfc/rest.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -110,7 +111,8 @@ Factory::Factory()
     { "QUIT",   { 0,  0,  ftp::ClientState::AnyState,
                   CreatorBasePtr(new Creator<rfc::QUITCommand>()), "QUIT" }, },
     { "REIN",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT IMPLEMENTED" }, },
-    { "REST",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT IMPLEMENTED" }, },
+    { "REST",   { 1,  1,  ftp::ClientState::AnyState, 
+                  CreatorBasePtr(new Creator<rfc::RESTCommand>()), "REST <offset>" }, },
     { "RETR",   { 1,  1,  ftp::ClientState::LoggedIn,
                   CreatorBasePtr(new Creator<rfc::RETRCommand>()), "RETR <path>" }, },
     { "RMD",    { 1,  -1,  ftp::ClientState::LoggedIn,
