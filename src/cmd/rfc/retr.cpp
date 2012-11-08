@@ -7,6 +7,8 @@
 #include "stats/util.hpp"
 #include "util/scopeguard.hpp"
 #include "ftp/counter.hpp"
+#include "ftp/util.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -59,13 +61,24 @@ cmd::Result RETRCommand::Execute()
   std::streamsize bytes = 0;
   try
   {
+    std::vector<char> asciiBuf;
     char buffer[16384];
     while (true)
     {
       std::streamsize len = boost::iostreams::read(*fin,buffer, sizeof(buffer));
       if (len < 0) break;
+      
       data.State().Update(len);
-      data.Write(buffer, len);
+      
+      char *bufp = buffer;
+      if (data.DataType() == ftp::DataType::ASCII)
+      {
+        ftp::util::ASCIITranscodeRETR(buffer, len, asciiBuf);
+        len = asciiBuf.size();
+        bufp = asciiBuf.data();
+      }
+      
+      data.Write(bufp, len);
 
       if (client.Profile().MaxDlSpeed() > 0)
       {

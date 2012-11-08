@@ -7,6 +7,8 @@
 #include "stats/util.hpp"
 #include "ftp/counter.hpp"
 #include "util/scopeguard.hpp"
+#include "ftp/util.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -58,12 +60,23 @@ cmd::Result STORCommand::Execute()
   
   try
   {
+    std::vector<char> asciiBuf;
     char buffer[16384];
     while (true)
     {
       size_t len = data.Read(buffer, sizeof(buffer));
+      
+      char *bufp  = buffer;
+      if (data.DataType() == ftp::DataType::ASCII)
+      {
+        ftp::util::ASCIITranscodeSTOR(buffer, len, asciiBuf);
+        len = asciiBuf.size();
+        bufp = asciiBuf.data();
+      }
+      
       data.State().Update(len);
-      fout->write(buffer, len);
+      
+      fout->write(bufp, len);
       
       if (client.Profile().MaxUlSpeed() > 0)
       {

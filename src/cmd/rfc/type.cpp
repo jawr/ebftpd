@@ -12,6 +12,8 @@ cmd::Result TYPECommand::Execute()
     return cmd::Result::Okay;
   }
   
+  data.SetDataType(args[1] == "I" ? ftp::DataType::Binary : ftp::DataType::ASCII);
+  
   control.Reply(ftp::CommandOkay, "TYPE command successful."); 
   return cmd::Result::Okay;
 }

@@ -64,7 +64,7 @@ public:
     protection(false),
     pasvType(PassiveType::None),
     epsvMode(::ftp::EPSVMode::Normal),
-    dataType(::ftp::DataType::ASCII),
+    dataType(::ftp::DataType::Binary),
     sscnMode(::ftp::SSCNMode::Server)
   {
   }
