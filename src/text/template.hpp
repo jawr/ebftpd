@@ -15,10 +15,15 @@ class Template
   std::string buffer;
   std::unordered_map<std::string, Tag> tags;
   std::unordered_map<std::string, std::string> values;
+
+  Tag& GetTag(const std::string& key);
 public:
   Template(const std::string& file);
   void RegisterTag(std::string var);
+
   void RegisterValue(const std::string& key, const std::string& value);
+  void RegisterSize(const std::string& key, long long bytes);
+
   std::string Compile();
 };
 

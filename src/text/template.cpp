@@ -97,14 +97,23 @@ void Template::RegisterTag(std::string var)
   logs::debug << "Type::Format: " << tag.Format() << logs::endl;
 }
 
-void Template::RegisterValue(const std::string& key, const std::string& value)
+Tag& Template::GetTag(const std::string& key)
 {
   auto it = tags.find(key);
   if (it == tags.end()) 
     throw TemplateNoTag("No template tag with key: " + key);
 
-  Tag& tag = it->second;
+  return it->second;
+}
+
   
+void Template::RegisterValue(const std::string& key, const std::string& value)
+{
+  if (values.find(key) != values.end())
+    throw TemplateDuplicateValue("Already registered " + key);
+
+  Tag& tag = GetTag(key);
+ 
   logs::debug << "Template::RegisterValue: " << key << " -> " 
     << value << logs::endl;
 
@@ -113,8 +122,35 @@ void Template::RegisterValue(const std::string& key, const std::string& value)
 
   logs::debug << "|" << os.str() << "|" << logs::endl;   
 
+  values.emplace(std::make_pair(key, os.str()));
+}
+
+void Template::RegisterSize(const std::string& key, long long bytes)
+{
   if (values.find(key) != values.end())
     throw TemplateDuplicateValue("Already registered " + key);
+
+  Tag& tag = GetTag(key);
+  
+  Measurement unit = tag.Unit();
+
+  double value;
+
+  if (unit == Measurement::Kbyte)
+    value = bytes / 1024.0;
+
+  else if (unit == Measurement::Mbyte)
+    value = bytes / 1024.0 / 1024.0;
+
+  else if (unit == Measurement::Gbyte)
+    value = bytes / 1024.0 / 1024.0 / 1024.0; 
+
+  logs::debug << "Bytes: " << value << logs::endl;
+
+  std::ostringstream os;
+  os << boost::format(tag.Format()) % value;
+
+  logs::debug << "|" << os.str() << "|" << logs::endl;   
 
   values.emplace(std::make_pair(key, os.str()));
 }
@@ -138,6 +174,7 @@ int main()
   {
     text::Template temp("data/text/test.tmpl");
     temp.RegisterValue("hello", "Womwata");
+    temp.RegisterSize("amount", 130130130);
     temp.RegisterValue("test", "Womwata");
     logs::debug << temp.Compile() << logs::endl;
   }

@@ -46,7 +46,9 @@ public:
   template <typename T> std::string Format(T value);
   void Register(const std::string& filter);
   void Compile();
+
   const std::string& Format() const { return format; }
+  const Measurement& Unit() const { return measurement; } // rename all to unit?
   
   void SetType(TagType type) { this->type = type; }
 };
