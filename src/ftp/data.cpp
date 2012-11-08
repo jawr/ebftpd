@@ -10,11 +10,10 @@
 namespace ftp
 {
 
-void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
+void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
 {
   using namespace util::net;
 
-  passiveMode = true;
   socket.Close();
   listener.Close();
   
@@ -31,7 +30,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
       if (addr.empty()) break;
       
       if (addr == firstAddr)
-        throw NetworkError("Unable to find a valid local address");
+        throw NetworkError("Unable to find a valid local address.");
       
       try
       {
@@ -60,7 +59,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
     uint16_t port = PortAllocator<PortType::Passive>::NextPort();
     if (!firstPort) firstPort.reset(port);
     else if (port == *firstPort) 
-      throw util::net::NetworkError("All ports exhausted");
+      throw util::net::NetworkError("All ports exhausted.");
       
     try
     {
@@ -73,13 +72,14 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType   pasvType)
         throw;
     }
   }
-  
+
+  this->pasvType = pasvType;
   ep = listener.Endpoint();
 }
 
 void Data::InitActive(const util::net::Endpoint& ep)
 {
-  passiveMode = false;
+  pasvType = PassiveType::None;
   socket.Close();
   listener.Close();
   
@@ -91,7 +91,7 @@ void Data::InitActive(const util::net::Endpoint& ep)
     if (addr.empty()) break;
     
     if (addr == firstAddr)
-      throw util::net::NetworkError("Unable to find a valid local address");
+      throw util::net::NetworkError("Unable to find a valid local address.");
     
     try
     {
@@ -113,7 +113,7 @@ void Data::InitActive(const util::net::Endpoint& ep)
     uint16_t localPort = PortAllocator<PortType::Active>::NextPort();
     if (!firstPort) firstPort.reset(localPort);
     else if (localPort == *firstPort) 
-      throw util::net::NetworkError("All ports exhausted");
+      throw util::net::NetworkError("All ports exhausted.");
       
     try
     {
@@ -130,7 +130,7 @@ void Data::InitActive(const util::net::Endpoint& ep)
 
 void Data::Open(TransferType transferType)
 {
-  if (passiveMode)
+  if (pasvType != PassiveType::None)
   {
     listener.Accept(socket);
     listener.Close();
@@ -157,11 +157,14 @@ void Data::Open(TransferType transferType)
   if (protection)
   {
     util::net::TLSSocket::HandshakeRole role = util::net::TLSSocket::Server;
-    if (sscnMode == ftp::SSCNMode::Client && 
-        (state.Type() == TransferType::Upload ||
-         state.Type() == TransferType::Download))
+    if ((sscnMode == ftp::SSCNMode::Client || 
+         pasvType == PassiveType::CPSV) && 
+        (transferType == TransferType::Upload ||
+         transferType == TransferType::Download))
       role = util::net::TLSSocket::Client;
   
+    if (role == util::net::TLSSocket::Client) logs::debug << "TLS Client handshake" << logs::endl;
+    else logs::debug << "TLS Server handshake" << logs::endl;
     socket.HandshakeTLS(role);
   }
   

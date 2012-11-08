@@ -37,6 +37,7 @@
 #include "cmd/rfc/type.hpp"
 #include "cmd/rfc/user.hpp"
 #include "cmd/rfc/sscn.hpp"
+#include "cmd/rfc/cpsv.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -58,6 +59,8 @@ Factory::Factory()
     { "CCC",    { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT IMPLEMENTED" }, },
     { "CDUP",   { 0,  0,  ftp::ClientState::LoggedIn,
                   CreatorBasePtr(new Creator<rfc::CDUPCommand>()), "CDUP" }, },
+    { "CPSV",   { 0,  0,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::CPSVCommand>()), "CPSV" }, },
     { "CWD",    { 1,  -1,  ftp::ClientState::LoggedIn,
                   CreatorBasePtr(new Creator<rfc::CWDCommand>()), "CWD <path>" }, },
     { "DELE",   { 1,  -1,  ftp::ClientState::LoggedIn,

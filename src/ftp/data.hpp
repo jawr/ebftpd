@@ -33,7 +33,9 @@ enum class PassiveType
 {
   PASV,
   EPSV,
-  LPSV
+  LPSV,
+  CPSV,
+  None
 };
 
 enum class SSCNMode
@@ -48,7 +50,7 @@ class Data : public ReadWriteable
   util::net::TCPListener listener;
   util::net::TCPSocket socket;
   bool protection;
-  bool passiveMode;
+  PassiveType pasvType;
   util::net::Endpoint portEndpoint;
   ::ftp::EPSVMode epsvMode;
   ::ftp::DataType dataType;
@@ -60,7 +62,7 @@ public:
   explicit Data(Client& client) :
     client(client),
     protection(false),
-    passiveMode(false),
+    pasvType(PassiveType::None),
     epsvMode(::ftp::EPSVMode::Normal),
     dataType(::ftp::DataType::ASCII),
     sscnMode(::ftp::SSCNMode::Server)

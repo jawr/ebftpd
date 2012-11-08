@@ -66,7 +66,7 @@ cmd::Result RETRCommand::Execute()
       if (len < 0) break;
       data.State().Update(len);
       data.Write(buffer, len);
-      
+
       if (client.Profile().MaxDlSpeed() > 0)
       {
         pt::time_duration elapsed = 

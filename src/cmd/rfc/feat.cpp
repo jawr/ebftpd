@@ -17,6 +17,7 @@ cmd::Result FEATCommand::Execute()
   control.PartReply(ftp::NoCode, " MDTM");
   control.PartReply(ftp::NoCode, " SIZE");
   control.PartReply(ftp::NoCode, " SSCN");
+  control.PartReply(ftp::NoCode, " CPSV");
   control.Reply(ftp::SystemStatus, "End.");
   return cmd::Result::Okay;
 }
