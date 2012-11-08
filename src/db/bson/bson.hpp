@@ -21,25 +21,26 @@ mongo::BSONArray SerializeContainer(const Container& c)
 inline mongo::Date_t ToDateT(const boost::posix_time::ptime& t)
 {
   struct tm tm(boost::posix_time::to_tm(t));
-  return mongo::Date_t(mktime(&tm));
+  return mongo::Date_t(mktime(&tm) * 1000);
 }
 
 inline mongo::Date_t ToDateT(const boost::gregorian::date& d)
 {
   struct tm tm(boost::gregorian::to_tm(d));
-  return mongo::Date_t(mktime(&tm));
+  return mongo::Date_t(mktime(&tm) * 1000);
 }
 
 inline boost::posix_time::ptime ToPosixTime(const mongo::Date_t& dt)
 {
-  return boost::posix_time::from_time_t(dt.toTimeT());
+  struct tm tm;
+  const_cast<mongo::Date_t*>(&dt)->toTm(&tm);
+  return boost::posix_time::from_time_t(mktime(&tm));
 }
 
 inline boost::gregorian::date ToGregDate(const mongo::Date_t& dt)
 {
-  time_t t = dt.toTimeT();
   struct tm tm;
-  localtime_r(&t, &tm);
+  const_cast<mongo::Date_t*>(&dt)->toTm(&tm);
   return boost::gregorian::date_from_tm(tm);
 }
 
