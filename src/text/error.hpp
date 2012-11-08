@@ -13,6 +13,11 @@ struct TemplateError : public util::RuntimeError
   TemplateError(const std::string& message) : std::runtime_error(message) {}
 };
 
+struct TemplateDuplicateValue : public TemplateError
+{
+  TemplateDuplicateValue(const std::string& message) : std::runtime_error(message) {}
+};
+
 struct TemplateFilterMalform : public TemplateError
 {
   TemplateFilterMalform(const std::string& message) : std::runtime_error(message) {}

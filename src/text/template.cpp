@@ -35,6 +35,7 @@ Template::Template(const std::string& file) : file(file)
 
     if (read)
     {
+      if (c == ' ') continue;
       if (c == '{') throw TemplateMalform(++line, ++i);
       if (c == '}')
       {
@@ -42,11 +43,11 @@ Template::Template(const std::string& file) : file(file)
         open = false;
         first = false;
         RegisterTag(var.str());
-        os << " " << c;
+        os << c;
         continue;
       }
       else if (!first && c == '|') first = true;
-      if (!first) os << c;
+      if (!first) os << static_cast<char>(std::tolower(c));
       var << c;
       continue;
     }
@@ -64,6 +65,7 @@ Template::Template(const std::string& file) : file(file)
 
   logs::debug << "OS:" << logs::endl;
   logs::debug << os.str() << logs::endl;
+  buffer = os.str();
   logs::debug << "Tags: " << tags.size() << logs::endl;
 }
 
@@ -106,8 +108,25 @@ void Template::RegisterValue(const std::string& key, const std::string& value)
   logs::debug << "Template::RegisterValue: " << key << " -> " 
     << value << logs::endl;
 
-  logs::debug << "|" << boost::format(tag.Format()) % value << "|" << logs::endl;   
-  
+  std::ostringstream os;
+  os << boost::format(tag.Format()) % value;
+
+  logs::debug << "|" << os.str() << "|" << logs::endl;   
+
+  if (values.find(key) != values.end())
+    throw TemplateDuplicateValue("Already registered " + key);
+
+  values.emplace(std::make_pair(key, os.str()));
+}
+
+std::string Template::Compile()
+{
+  std::string ret = buffer;
+  for (auto value: values)
+  {
+    boost::replace_all(ret, "{{" + value.first + "}}", value.second);
+  }
+  return ret;
 }
 
 }
@@ -119,6 +138,8 @@ int main()
   {
     text::Template temp("data/text/test.tmpl");
     temp.RegisterValue("hello", "Womwata");
+    temp.RegisterValue("test", "Womwata");
+    logs::debug << temp.Compile() << logs::endl;
   }
   catch (const text::TemplateError& e)
   {
