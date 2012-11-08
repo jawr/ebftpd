@@ -1,6 +1,7 @@
 #include <fstream>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 #include "text/template.hpp"
 #include "text/error.hpp"
 #include "logs/logs.hpp"
@@ -40,7 +41,7 @@ Template::Template(const std::string& file) : file(file)
         read = false;
         open = false;
         first = false;
-        Register(var.str());
+        RegisterTag(var.str());
         os << " " << c;
         continue;
       }
@@ -63,9 +64,10 @@ Template::Template(const std::string& file) : file(file)
 
   logs::debug << "OS:" << logs::endl;
   logs::debug << os.str() << logs::endl;
+  logs::debug << "Tags: " << tags.size() << logs::endl;
 }
 
-void Template::Register(std::string var)
+void Template::RegisterTag(std::string var)
 {
   boost::trim(var);
   boost::to_lower(var);
@@ -88,7 +90,24 @@ void Template::Register(std::string var)
   }
 
   tag.Compile();
+
+  tags.emplace(std::make_pair(name, tag));
   logs::debug << "Type::Format: " << tag.Format() << logs::endl;
+}
+
+void Template::RegisterValue(const std::string& key, const std::string& value)
+{
+  auto it = tags.find(key);
+  if (it == tags.end()) 
+    throw TemplateNoTag("No template tag with key: " + key);
+
+  Tag& tag = it->second;
+  
+  logs::debug << "Template::RegisterValue: " << key << " -> " 
+    << value << logs::endl;
+
+  logs::debug << "|" << boost::format(tag.Format()) % value << "|" << logs::endl;   
+  
 }
 
 }
@@ -99,6 +118,7 @@ int main()
   try
   {
     text::Template temp("data/text/test.tmpl");
+    temp.RegisterValue("hello", "Womwata");
   }
   catch (const text::TemplateError& e)
   {

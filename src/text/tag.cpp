@@ -20,14 +20,20 @@ void Tag::Register(const std::string& filter)
     alignment = Alignment::Center;
 
   else if (filter == "kb")
+  {
+    SetType(TagType::Decimal);
     measurement = Measurement::Kbyte;
-
+  }
   else if (filter == "mb")
+  {
+    SetType(TagType::Decimal);
     measurement = Measurement::Mbyte;
-
+  }
   else if (filter == "gb")
+  {
+    SetType(TagType::Decimal);
     measurement = Measurement::Gbyte;
-
+  }
   else if (filter == "auto")
     measurement = Measurement::Auto;
 
@@ -46,8 +52,10 @@ void Tag::Register(const std::string& filter)
         if (!std::isdigit(c)) 
           throw TemplateFilterMalform("Error parsing filter, should be an integer: " + args.back());
       precision = args.back();
+      SetType(TagType::Float);
     }
   }
+
 }
 
 void Tag::Compile()
@@ -65,6 +73,13 @@ void Tag::Compile()
     os << width;  
     if (!precision.empty()) os << "." << precision;
   }
+
+  if (type == TagType::String) os << "s";
+  else if (type == TagType::Float) os << "f";
+  else if (type == TagType::Decimal) os << "d";
+  else assert(false); // should never get here
+
+
   format = os.str();
 }
 

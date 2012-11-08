@@ -18,6 +18,11 @@ struct TemplateFilterMalform : public TemplateError
   TemplateFilterMalform(const std::string& message) : std::runtime_error(message) {}
 };
 
+struct TemplateNoTag : public TemplateError
+{
+  TemplateNoTag(const std::string& message) : std::runtime_error(message) {}
+};
+
 class TemplateMalform : public TemplateError
 {
   static std::string Format(int line, int i)

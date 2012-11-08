@@ -13,9 +13,11 @@ class Template
 {
   std::string file;
   std::unordered_map<std::string, Tag> tags;
+  std::unordered_map<std::string, std::string> values;
 public:
   Template(const std::string& file);
-  void Register(std::string var);
+  void RegisterTag(std::string var);
+  void RegisterValue(const std::string& key, const std::string& value);
 };
 
 // end
