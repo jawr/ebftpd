@@ -104,7 +104,7 @@ cmd::Result RETRCommand::Execute()
       char *bufp = buffer;
       if (data.DataType() == ftp::DataType::ASCII)
       {
-        ftp::util::ASCIITranscodeRETR(buffer, len, asciiBuf);
+        ftp::ASCIITranscodeRETR(buffer, len, asciiBuf);
         len = asciiBuf.size();
         bufp = asciiBuf.data();
       }
@@ -112,7 +112,7 @@ cmd::Result RETRCommand::Execute()
       data.Write(bufp, len);
 
       if (client.Profile().MaxDlSpeed() > 0)
-        ftp::util::SpeedLimitSleep(data.State(), client.Profile().MaxDlSpeed());
+        ftp::SpeedLimitSleep(data.State(), client.Profile().MaxDlSpeed());
     }
   }
   catch (const std::ios_base::failure& e)

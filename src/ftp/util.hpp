@@ -7,7 +7,7 @@
 #include <boost/thread/thread.hpp>
 #include "ftp/transferstate.hpp"
 
-namespace ftp { namespace util
+namespace ftp
 {
 
 void CRLFtoLF(const char* source, size_t len, std::vector<char>& dest);
@@ -37,7 +37,6 @@ inline void SpeedLimitSleep(const TransferState& state, int maxSpeed)
   boost::this_thread::sleep(minElapsed - elapsed);
 }
 
-} /* util namespace */
 } /* ftp namespace */
 
 #endif

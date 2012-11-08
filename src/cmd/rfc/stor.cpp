@@ -86,7 +86,7 @@ cmd::Result STORCommand::Execute()
       char *bufp  = buffer;
       if (data.DataType() == ftp::DataType::ASCII)
       {
-        ftp::util::ASCIITranscodeSTOR(buffer, len, asciiBuf);
+        ftp::ASCIITranscodeSTOR(buffer, len, asciiBuf);
         len = asciiBuf.size();
         bufp = asciiBuf.data();
       }
@@ -95,7 +95,7 @@ cmd::Result STORCommand::Execute()
       
       fout->write(bufp, len);
       if (client.Profile().MaxUlSpeed() > 0)
-        ftp::util::SpeedLimitSleep(data.State(), client.Profile().MaxUlSpeed());
+        ftp::SpeedLimitSleep(data.State(), client.Profile().MaxUlSpeed());
     }
   }
   catch (const util::net::EndOfStream&) { }

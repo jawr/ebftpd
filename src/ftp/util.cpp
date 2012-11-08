@@ -1,6 +1,6 @@
 #include "ftp/util.hpp"
 
-namespace ftp { namespace util {
+namespace ftp {
 
 void LFtoCRLF(const char* source, size_t len, std::vector<char>& dest)
 {
@@ -25,5 +25,4 @@ void CRLFtoLF(const char* source, size_t len, std::vector<char>& dest)
   }
 }
 
-} /* util namespace */
 } /* ftp namespace */

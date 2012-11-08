@@ -4,8 +4,7 @@ DIRNAME=unity
 PREFIX=unity
 
 
-#rm -f $DIRNAME/*
-
+mkdir $DIRNAME 2>1 >/dev/null
 SOURCE=`find src/ -type f -name "*.cpp" -printf "%P\n" | grep -v "^$DIRNAME/"`
 
 PARTS=$1
