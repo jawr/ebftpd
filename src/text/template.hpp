@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "text/type.hpp"
+#include "text/tag.hpp"
 
 namespace text
 {
@@ -12,7 +12,7 @@ namespace text
 class Template
 {
   std::string file;
-  std::unordered_map<std::string, Type> cookies;
+  std::unordered_map<std::string, Tag> tags;
 public:
   Template(const std::string& file);
   void Register(std::string var);

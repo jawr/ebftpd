@@ -1,15 +1,15 @@
 #include <cctype>
 #include <boost/algorithm/string.hpp>
-#include "text/type.hpp"
+#include "text/tag.hpp"
 #include "text/error.hpp"
 #include "logs/logs.hpp"
 
 namespace text
 {
 
-void Type::Register(const std::string& filter)
+void Tag::Register(const std::string& filter)
 {
-  logs::debug << "Type::Register: " << filter << logs::endl;
+  logs::debug << "Tag::Register: " << filter << logs::endl;
   if (filter == "left")
     alignment = Alignment::Left;
 
@@ -17,7 +17,7 @@ void Type::Register(const std::string& filter)
     alignment = Alignment::Right;
 
   else if (filter == "center")
-    alignment == Alignment::Center;
+    alignment = Alignment::Center;
 
   else if (filter == "kb")
     measurement = Measurement::Kbyte;
@@ -50,7 +50,7 @@ void Type::Register(const std::string& filter)
   }
 }
 
-void Type::Compile()
+void Tag::Compile()
 { 
   std::ostringstream os;
   os << "%";
@@ -63,7 +63,7 @@ void Type::Compile()
   if (!width.empty())
   {
     os << width;  
-    if (!precision.empty()) os << "." << precision << "f";
+    if (!precision.empty()) os << "." << precision;
   }
   format = os.str();
 }

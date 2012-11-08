@@ -77,18 +77,18 @@ void Template::Register(std::string var)
 
   std::string name = args.front();
   args.erase(args.begin()); 
-  Type type;
+  Tag tag;
 
   while (!args.empty())
   {
     auto filter = args.back();
     args.pop_back();
     
-    type.Register(filter);
+    tag.Register(filter);
   }
 
-  type.Compile();
-  logs::debug << "Type::Format: " << type.Format() << logs::endl;
+  tag.Compile();
+  logs::debug << "Type::Format: " << tag.Format() << logs::endl;
 }
 
 }
