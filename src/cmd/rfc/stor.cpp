@@ -79,13 +79,7 @@ cmd::Result STORCommand::Execute()
       fout->write(bufp, len);
       
       if (client.Profile().MaxUlSpeed() > 0)
-      {
-        pt::time_duration elapsed = 
-            pt::microsec_clock::local_time() - data.State().StartTime();
-        pt::time_duration minElapsed = pt::microseconds((data.State().Bytes()  / 
-            1024.0 / client.Profile().MaxUlSpeed()) * 1000000);
-        boost::this_thread::sleep(minElapsed - elapsed);
-      }
+        ftp::util::SpeedLimitSleep(data.State(), client.Profile().MaxUlSpeed());
     }
   }
   catch (const util::net::EndOfStream&) { }

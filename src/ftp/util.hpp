@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <sys/types.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread/thread.hpp>
+#include "ftp/transferstate.hpp"
 
 namespace ftp { namespace util
 {
@@ -22,6 +25,16 @@ inline void ASCIITranscodeSTOR(const char* source, size_t len, std::vector<char>
 #else
   CRLFtoLF(source, len, asciiBuf);
 #endif
+}
+
+inline void SpeedLimitSleep(const TransferState& state, int maxSpeed)
+{
+  namespace pt = boost::posix_time;
+  pt::time_duration elapsed = 
+      pt::microsec_clock::local_time() - state.StartTime();
+  pt::time_duration minElapsed = pt::microseconds((state.Bytes()  / 
+      1024.0 / maxSpeed) * 1000000);
+  boost::this_thread::sleep(minElapsed - elapsed);
 }
 
 } /* util namespace */

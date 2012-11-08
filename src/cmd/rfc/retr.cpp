@@ -81,13 +81,7 @@ cmd::Result RETRCommand::Execute()
       data.Write(bufp, len);
 
       if (client.Profile().MaxDlSpeed() > 0)
-      {
-        pt::time_duration elapsed = 
-            pt::microsec_clock::local_time() - data.State().StartTime();
-        pt::time_duration minElapsed = pt::microseconds((data.State().Bytes()  / 
-            1024.0 / client.Profile().MaxDlSpeed()) * 1000000);
-        boost::this_thread::sleep(minElapsed - elapsed);
-      }
+        ftp::util::SpeedLimitSleep(data.State(), client.Profile().MaxDlSpeed());
     }
   }
   catch (const std::ios_base::failure&)
