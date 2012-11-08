@@ -1,5 +1,5 @@
-#ifndef __TEXT_TYPE_HPP
-#define __TEXT_TYPE_HPP
+#ifndef __TEXT_TAG_HPP
+#define __TEXT_TAG_HPP
 
 #include <string>
 #include <vector>
@@ -19,10 +19,11 @@ enum class Measurement
   Kbyte,
   Mbyte,
   Gbyte,
-  Auto
+  Auto,
+  None
 };
 
-class Type
+class Tag
 {
   std::string width;
   std::string precision;
@@ -31,8 +32,8 @@ class Type
   std::string format;
 public:
   // oportuinity to set defaults from cofig here
-  Type() : alignment(Alignment::Left), measurement(Measurement::Auto) {}
-  ~Type() {}
+  Tag() : alignment(Alignment::Right), measurement(Measurement::None) {}
+  ~Tag() {}
   template <typename T> std::string Format(T value);
   void Register(const std::string& filter);
   void Compile();
