@@ -234,6 +234,8 @@ int main(int argc, char** argv)
     logs::debug << "Initialising TLS context.." << logs::endl;
     util::net::TLSServerContext::Initialise(
         cfg::Get().TlsCertificate().ToString(), "");
+    util::net::TLSClientContext::Initialise(
+        cfg::Get().TlsCertificate().ToString(), "");
   }
   catch (const util::net::NetworkError& e)
   {
