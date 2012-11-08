@@ -156,7 +156,9 @@ void Data::Open(TransferType transferType)
   
   if (protection)
   {
-    socket.HandshakeTLS(util::net::TLSSocket::Server);
+    socket.HandshakeTLS(sscnMode == ftp::SSCNMode::Server ? 
+                        util::net::TLSSocket::Server :
+                        util::net::TLSSocket::Client);
   }
   
   state.Start(transferType);

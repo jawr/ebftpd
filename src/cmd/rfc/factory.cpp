@@ -36,6 +36,7 @@
 #include "cmd/rfc/syst.hpp"
 #include "cmd/rfc/type.hpp"
 #include "cmd/rfc/user.hpp"
+#include "cmd/rfc/sscn.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -120,6 +121,8 @@ Factory::Factory()
     { "SIZE",   { 1,  -1,  ftp::ClientState::LoggedIn,
                   CreatorBasePtr(new Creator<rfc::SIZECommand>()), "SIZE <path>" }, },
     { "SMNT",   { 0,  -1, ftp::ClientState::AnyState, nullptr, "NOT IMPLEMENTED" }, },
+    { "SSCN",   { 0,  1,  ftp::ClientState::LoggedIn,
+                  CreatorBasePtr(new Creator<rfc::SSCNCommand>()), "SSCN [ON|OFF]" }, },
     { "STAT",   { 0,  -1, ftp::ClientState::LoggedIn,
                   CreatorBasePtr(new Creator<rfc::STATCommand>()), "STAT [[-<options] [<path>]]" }, },
     { "STOR",   { 1,  -1, ftp::ClientState::LoggedIn,

@@ -221,7 +221,7 @@ TLSServerContext::TLSServerContext(const std::string& certificate,
 
 void TLSServerContext::CreateContext()
 {
-  context = SSL_CTX_new(TLSv1_server_method());
+  context = SSL_CTX_new(SSLv23_server_method());
   if (!context) throw TLSProtocolError();
 
   unsigned long options = SSL_OP_NO_SSLv2 | SSL_OP_ALL;

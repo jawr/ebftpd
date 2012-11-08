@@ -36,6 +36,12 @@ enum class PassiveType
   LPSV
 };
 
+enum class SSCNMode
+{
+  Server,
+  Client
+};
+
 class Data : public ReadWriteable
 {
   Client& client;
@@ -46,6 +52,7 @@ class Data : public ReadWriteable
   util::net::Endpoint portEndpoint;
   ::ftp::EPSVMode epsvMode;
   ::ftp::DataType dataType;
+  ::ftp::SSCNMode sscnMode;
   
   TransferState state;
 
@@ -55,7 +62,8 @@ public:
     protection(false),
     passiveMode(false),
     epsvMode(::ftp::EPSVMode::Normal),
-    dataType(::ftp::DataType::ASCII)
+    dataType(::ftp::DataType::ASCII),
+    sscnMode(::ftp::SSCNMode::Server)
   {
   }
 
@@ -64,6 +72,9 @@ public:
   ::ftp::EPSVMode EPSVMode() const { return epsvMode; }
   void SetEPSVMode(::ftp::EPSVMode epsvMode) { this->epsvMode = epsvMode; }
 
+  ::ftp::SSCNMode SSCNMode() const { return sscnMode; }
+  void SetSSCNMode(::ftp::SSCNMode sscnMode) { this->sscnMode = sscnMode; }
+  
   ::ftp::DataType DataType() const { return dataType; }
   void SetDataType(::ftp::DataType dataType) { this->dataType = dataType; }
   
