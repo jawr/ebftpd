@@ -73,6 +73,7 @@ public:
   }
 
   void SetProtection(bool protection) { this->protection = protection; }
+  bool Protection() const { return protection; }
 
   ::ftp::EPSVMode EPSVMode() const { return epsvMode; }
   void SetEPSVMode(::ftp::EPSVMode epsvMode) { this->epsvMode = epsvMode; }
@@ -107,8 +108,6 @@ public:
   const TransferState& State() const { return state; }
   
   void Interrupt() { socket.Shutdown(); }
-  
-  bool IsTLS() const { return socket.IsTLS(); }
 };
 
 } /* ftp namespace */

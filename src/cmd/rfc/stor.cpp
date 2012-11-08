@@ -60,7 +60,7 @@ cmd::Result STORCommand::Execute()
   os << "Opening " << (data.DataType() == ftp::DataType::ASCII ? "ASCII" : "BINARY") 
      << " connection for upload of " 
      << fs::Path(argStr).Basename().ToString();
-  if (data.IsTLS()) os << " using TLS/SSL";
+  if (data.Protection()) os << " using TLS/SSL";
   os << ".";
   control.Reply(ftp::TransferStatusOkay, os.str());
   

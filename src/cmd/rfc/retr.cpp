@@ -73,7 +73,7 @@ cmd::Result RETRCommand::Execute()
      << " connection for download of " 
      << fs::Path(argStr).Basename().ToString()
      << " (" << size << " bytes)";
-  if (data.IsTLS()) os << " using TLS/SSL";
+  if (data.Protection()) os << " using TLS/SSL";
   os << ".";
   control.Reply(ftp::TransferStatusOkay, os.str());
 

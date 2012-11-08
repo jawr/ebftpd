@@ -7,8 +7,11 @@ namespace cmd { namespace rfc
 
 cmd::Result LISTCommand::Execute()
 {
-  control.Reply(ftp::TransferStatusOkay,
-               "Opening data connection for directory listing.");
+  std::ostringstream os;
+  os << "Opening connection for directory listing";
+  if (data.Protection()) os << " using TLS/SSL";
+  os << ".";
+  control.Reply(ftp::TransferStatusOkay, os.str());
 
   try
   {
