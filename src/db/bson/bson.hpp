@@ -19,9 +19,12 @@ mongo::BSONArray SerializeContainer(const Container& c)
 }
 
 mongo::Date_t ToDateT(const boost::posix_time::ptime& t);
-mongo::Date_t ToDateT(const boost::gregorian::date& d);
+inline mongo::Date_t ToDateT(const boost::gregorian::date& d)
+{ return ToDateT(boost::posix_time::ptime(d)); }
+
 boost::posix_time::ptime ToPosixTime(const mongo::Date_t& dt);
-boost::gregorian::date ToGregDate(const mongo::Date_t& dt);
+inline boost::gregorian::date ToGregDate(const mongo::Date_t& dt)
+{ return ToPosixTime(dt).date(); }
 
 } /* bson namespace */
 } /* db namespace */

@@ -20,24 +20,11 @@ mongo::Date_t ToDateT(const ptime& t)
   return mongo::Date_t(timegm(&tm) * 1000);
 }
 
-mongo::Date_t ToDateT(const date& d)
-{
-  struct tm tm(to_tm(ptime(d, -UTCOffset())));
-  return mongo::Date_t(timegm(&tm) * 1000);
-}
-
 ptime ToPosixTime(const mongo::Date_t& dt)
 {
   struct tm tm;
   const_cast<mongo::Date_t*>(&dt)->toTm(&tm);
   return local_adj::utc_to_local(from_time_t(timegm(&tm)));
-}
-
-date ToGregDate(const mongo::Date_t& dt)
-{
-  struct tm tm;
-  const_cast<mongo::Date_t*>(&dt)->toTm(&tm);
-  return local_adj::utc_to_local(from_time_t(timegm(&tm))).date();
 }
 
 } /* bson namespace */
