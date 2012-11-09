@@ -107,7 +107,9 @@ cmd::Result PASSCommand::Execute()
     os << "\nKicked " << kickResult.kicked << " (idle " 
        << kickResult.idleTime << ") of " << kickResult.logins << " login(s).";
   }
-    
+  
+  db::userprofile::Login(client.User().UID());
+      
   control.MultiReply(ftp::UserLoggedIn, os.str());
   return cmd::Result::Okay;
 }

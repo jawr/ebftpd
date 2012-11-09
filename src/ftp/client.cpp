@@ -69,8 +69,6 @@ void Client::SetLoggedIn(const acl::UserProfile& profile, bool kicked)
   SetIdleTimeout(boost::posix_time::seconds(std::min(cfg::
     Get().IdleTimeout().Timeout().total_seconds(), profile.IdleTime())));
   
-  db::user::Login(user.UID());
-  
   boost::lock_guard<boost::mutex> lock(mutex);
   this->profile = std::move(profile);
   state = ClientState::LoggedIn;

@@ -37,6 +37,7 @@ namespace db { namespace userprofile
   util::Error SetMaxSimDl(acl::UserID uid, const std::string& value);
   util::Error SetMaxSimUl(acl::UserID uid, const std::string& value);
 
+  void Login(acl::UserID uid);
 // end
 }
 }

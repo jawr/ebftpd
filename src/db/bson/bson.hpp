@@ -18,31 +18,10 @@ mongo::BSONArray SerializeContainer(const Container& c)
   return bab.arr();
 }
 
-inline mongo::Date_t ToDateT(const boost::posix_time::ptime& t)
-{
-  struct tm tm(boost::posix_time::to_tm(t));
-  return mongo::Date_t(mktime(&tm) * 1000);
-}
-
-inline mongo::Date_t ToDateT(const boost::gregorian::date& d)
-{
-  struct tm tm(boost::gregorian::to_tm(d));
-  return mongo::Date_t(mktime(&tm) * 1000);
-}
-
-inline boost::posix_time::ptime ToPosixTime(const mongo::Date_t& dt)
-{
-  struct tm tm;
-  const_cast<mongo::Date_t*>(&dt)->toTm(&tm);
-  return boost::posix_time::from_time_t(mktime(&tm));
-}
-
-inline boost::gregorian::date ToGregDate(const mongo::Date_t& dt)
-{
-  struct tm tm;
-  const_cast<mongo::Date_t*>(&dt)->toTm(&tm);
-  return boost::gregorian::date_from_tm(tm);
-}
+mongo::Date_t ToDateT(const boost::posix_time::ptime& t);
+mongo::Date_t ToDateT(const boost::gregorian::date& d);
+boost::posix_time::ptime ToPosixTime(const mongo::Date_t& dt);
+boost::gregorian::date ToGregDate(const mongo::Date_t& dt);
 
 } /* bson namespace */
 } /* db namespace */

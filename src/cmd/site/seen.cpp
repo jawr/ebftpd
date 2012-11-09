@@ -24,10 +24,10 @@ cmd::Result SEENCommand::Execute()
   }
 
   std::ostringstream os;
-  if (profile.LastLogin())
+  if (!profile.LastLogin())
     os << "User " << args[1] << " has never logged in.";
   else
-    os << "Last saw " << args[1] << " on " << profile.LastLogin();
+    os << "Last saw " << args[1] << " on " << *profile.LastLogin();
       
   control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;

@@ -60,7 +60,10 @@ acl::UserProfile UserProfile::Unserialize(const mongo::BSONObj& bo)
     profile.loggedIn = bo["logged in"].Int();
     
     if (bo.hasField("expires"))
-      profile.expires = ToGregDate(bo["expires"].Date());
+    {
+      profile.expires.reset(ToGregDate(bo["expires"].Date()));
+      std::cout << *profile.expires << std::endl;
+    }
       
     if (bo.hasField("last login"))
       profile.lastLogin.reset(ToPosixTime(bo["last login"].Date()));

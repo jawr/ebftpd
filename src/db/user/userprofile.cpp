@@ -263,6 +263,16 @@ util::Error SetMaxSimUl(acl::UserID uid, const std::string& value)
   return util::Error::Success();
 }
 
+void Login(acl::UserID uid)
+{
+  // updates login count and time
+  mongo::Query query = QUERY("uid" << uid);
+  mongo::BSONObj obj = BSON("$inc" << BSON("logged in" << 1) <<
+    "$set" << BSON("last login" << mongo::DATENOW));
+  TaskPtr task(new db::Update("userprofiles", query, obj, false));
+  Pool::Queue(task);
+}
+
 
 // end
 }
