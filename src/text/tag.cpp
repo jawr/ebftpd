@@ -1,6 +1,7 @@
 #include <cctype>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include "text/tag.hpp"
 #include "text/error.hpp"
 #include "logs/logs.hpp"
@@ -19,6 +20,9 @@ void Tag::Register(const std::string& filter)
 
   else if (filter == "center")
     alignment = Alignment::Center;
+
+  else if (filter == "pretty")
+    pretty = true;
 
   else if (filter == "kb")
   {
@@ -43,6 +47,10 @@ void Tag::Register(const std::string& filter)
     std::vector<std::string> args;
     boost::split(args, filter, boost::is_any_of(".")); 
     if (args.size() > 2) throw TemplateFilterMalform("Error parsing filter, should be '^\\d+(\\.\\d+)?$': " + filter);
+  
+    logs::debug << "TEST, FRONT: " << args.front() << " BACK: " << args.back() << logs::endl;
+
+
     for (auto& c: args.front())
       if (!std::isdigit(c)) throw TemplateFilterMalform("Error parsing filter, should be an integer: " + args.front());
     width = args.front();
@@ -69,11 +77,8 @@ void Tag::Compile()
   else if (alignment == Alignment::Center)
     os << "=";
 
-  if (!width.empty())
-  {
-    os << width;  
-    if (!precision.empty()) os << "." << precision;
-  }
+  if (!width.empty()) os << width;
+  if (!precision.empty()) os << "." << precision;
 
   if (type == TagType::String) os << "s";
   else if (type == TagType::Float) os << "f";
@@ -93,6 +98,13 @@ void Tag::Parse(const std::string& value)
 
 void Tag::ParseSize(long long bytes)
 {
+
+  if (!precision.empty()) 
+  {
+    SetType(TagType::Float);
+    Compile();
+  }
+
   double value;
 
   if (measurement == Measurement::Kbyte)
@@ -102,8 +114,26 @@ void Tag::ParseSize(long long bytes)
   else if (measurement == Measurement::Gbyte)
     value = bytes / 1024.0 / 1024.0 / 1024.0;
 
+  logs::debug << format << logs::endl;
   std::ostringstream os;
   os << boost::format(format) % value;
+  if (pretty)
+  {
+    std::string number = os.str();
+    logs::debug << number << logs::endl;
+    os.str(std::string());
+    os.imbue(std::locale("")); // portability issues?
+    try
+    {
+      os << boost::lexical_cast<long double>(number);
+    }
+    catch (const boost::bad_lexical_cast& e)
+    {
+      // doesn't handle spaces/width very well.. also seems to get rid of .00
+      this->value = number;
+      return;
+    }
+  }
   this->value = os.str();
 }
 

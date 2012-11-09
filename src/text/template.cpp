@@ -172,7 +172,7 @@ int main()
   try
   {
     text::Template temp("data/text/test.tmpl");
-    temp.RegisterSize("a", 1500034);
+    temp.RegisterSize("a", 140509184);
     temp.RegisterValue("b", "this is b");
     logs::debug << temp.Compile() << logs::endl;
   }
