@@ -1,7 +1,6 @@
 #include <fstream>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
-#include <boost/format.hpp>
 #include "text/template.hpp"
 #include "text/error.hpp"
 #include "logs/logs.hpp"
@@ -81,7 +80,7 @@ void Template::RegisterTag(std::string var)
 
   std::string name = args.front();
   args.erase(args.begin()); 
-  Tag tag;
+  Tag tag(name);;
 
   while (!args.empty())
   {
@@ -93,74 +92,74 @@ void Template::RegisterTag(std::string var)
 
   tag.Compile();
 
-  tags.emplace(std::make_pair(name, tag));
+  tags.emplace_back(tag);
+ 
   logs::debug << "Type::Format: " << tag.Format() << logs::endl;
 }
 
-Tag& Template::GetTag(const std::string& key)
+void Template::CheckValueExists(const std::string& key)
 {
-  auto it = tags.find(key);
-  if (it == tags.end()) 
-    throw TemplateNoTag("No template tag with key: " + key);
-
-  return it->second;
+  int i = 0;
+  for (auto& value: values)
+    if (key == value) ++i;
+  if (i > 0)
+    throw TemplateDuplicateValue("Already registered " + key);
 }
-
   
 void Template::RegisterValue(const std::string& key, const std::string& value)
 {
-  if (values.find(key) != values.end())
-    throw TemplateDuplicateValue("Already registered " + key);
+  CheckValueExists(key);
+  
+  bool ok = false;
+  for (auto& tag: tags)
+    if (tag.Name() == key) 
+    {
+      ok = true;
+      tag.Parse(value);
+    }
 
-  Tag& tag = GetTag(key);
- 
-  logs::debug << "Template::RegisterValue: " << key << " -> " 
-    << value << logs::endl;
-
-  std::ostringstream os;
-  os << boost::format(tag.Format()) % value;
-
-  logs::debug << "|" << os.str() << "|" << logs::endl;   
-
-  values.emplace(std::make_pair(key, os.str()));
+  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  values.emplace_back(key);
 }
 
 void Template::RegisterSize(const std::string& key, long long bytes)
 {
-  if (values.find(key) != values.end())
-    throw TemplateDuplicateValue("Already registered " + key);
+  CheckValueExists(key);
 
-  Tag& tag = GetTag(key);
-  
-  Measurement unit = tag.Unit();
+  bool ok = false;
+  for (auto& tag: tags)
+  {
+    ok = true;
+    tag.ParseSize(bytes);
+  }
 
-  double value;
+  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  values.emplace_back(key);
+}
 
-  if (unit == Measurement::Kbyte)
-    value = bytes / 1024.0;
+void Template::RegisterSpeed(const std::string& key, long long bytes, 
+  long long xfertime)
+{
+  CheckValueExists(key);
 
-  else if (unit == Measurement::Mbyte)
-    value = bytes / 1024.0 / 1024.0;
+  bool ok = false;
+  for (auto& tag: tags)
+  {
+    ok = true;
+    tag.ParseSpeed(bytes, xfertime);
+  }
 
-  else if (unit == Measurement::Gbyte)
-    value = bytes / 1024.0 / 1024.0 / 1024.0; 
-
-  logs::debug << "Bytes: " << value << logs::endl;
-
-  std::ostringstream os;
-  os << boost::format(tag.Format()) % value;
-
-  logs::debug << "|" << os.str() << "|" << logs::endl;   
-
-  values.emplace(std::make_pair(key, os.str()));
+  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  values.emplace_back(key);
 }
 
 std::string Template::Compile()
 {
   std::string ret = buffer;
-  for (auto value: values)
+  for (auto& tag: tags)
   {
-    boost::replace_all(ret, "{{" + value.first + "}}", value.second);
+    boost::replace_first(ret, "{{" + tag.Name() + "}}", tag.Value());
+    //boost::replace_all(ret, "{{" + value.first + "}}", value.);
   }
   return ret;
 }
@@ -173,9 +172,8 @@ int main()
   try
   {
     text::Template temp("data/text/test.tmpl");
-    temp.RegisterValue("hello", "Womwata");
-    temp.RegisterSize("amount", 130130130);
-    temp.RegisterValue("test", "Womwata");
+    temp.RegisterSize("a", 1500034);
+    temp.RegisterValue("b", "this is b");
     logs::debug << temp.Compile() << logs::endl;
   }
   catch (const text::TemplateError& e)

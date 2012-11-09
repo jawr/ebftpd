@@ -13,16 +13,17 @@ class Template
 {
   std::string file;
   std::string buffer;
-  std::unordered_map<std::string, Tag> tags;
-  std::unordered_map<std::string, std::string> values;
+  std::vector<Tag> tags;
+  std::vector<std::string> values;
 
-  Tag& GetTag(const std::string& key);
+  void CheckValueExists(const std::string& key);
 public:
   Template(const std::string& file);
   void RegisterTag(std::string var);
 
   void RegisterValue(const std::string& key, const std::string& value);
   void RegisterSize(const std::string& key, long long bytes);
+  void RegisterSpeed(const std::string& key, long long bytes, long long xfertime);
 
   std::string Compile();
 };
