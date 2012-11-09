@@ -12,11 +12,11 @@ std::unordered_map<acl::UserID, int> Counter::curUploads;
 boost::mutex Counter::curDownloadsMutex;
 std::unordered_map<acl::UserID, int> Counter::curDownloads;
 
-bool Counter::LogIn(acl::UserID uid, int limit)
+bool Counter::LogIn(acl::UserID uid, int limit, bool kickLogin)
 {
   boost::lock_guard<boost::mutex> lock(loggedInMutex);
   int& count = loggedIn[uid];
-  if (count >= limit) return false;
+  if (count - kickLogin >= limit) return false;
   ++count;
   return true;
 }

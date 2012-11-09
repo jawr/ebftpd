@@ -14,6 +14,12 @@ public:
     std::runtime_error(message.c_str()) { }
 };
 
+class TimeoutError : public virtual NetworkError
+{
+public:
+  TimeoutError() : std::runtime_error("Timeout error") { }
+};
+
 class NetworkSystemError : public util::SystemError, public virtual NetworkError
 {
 public:

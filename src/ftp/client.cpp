@@ -36,6 +36,7 @@ Client::Client() :
   state(ClientState::LoggedOut),
   passwordAttemps(0),
   ident("*"),
+  kickLogin(false),
   idleTimeout(boost::posix_time::seconds(cfg::Get().IdleTimeout().Timeout()))
 {
 }
@@ -55,9 +56,10 @@ void Client::SetState(ClientState state)
   this->state = state;
 }
 
-void Client::SetLoggedIn(const acl::UserProfile& profile)
+void Client::SetLoggedIn(const acl::UserProfile& profile, bool kicked)
 {
-  if (!Counter::LogIn(user.UID(), profile.NumLogins()))
+  
+  if (!Counter::LogIn(user.UID(), profile.NumLogins(), kicked))
   {
     std::ostringstream os;
     os << "You have reached your maximum number of " << profile.NumLogins() << " login(s).";
@@ -75,12 +77,13 @@ void Client::SetLoggedIn(const acl::UserProfile& profile)
   loggedInAt = boost::posix_time::second_clock::local_time();
 }
 
-void Client::SetWaitingPassword(const acl::User& user)
+void Client::SetWaitingPassword(const acl::User& user, bool kickLogin)
 {
   {
     boost::lock_guard<boost::mutex> lock(mutex);
     state = ClientState::WaitingPassword;
     this->user = std::move(user);
+    this->kickLogin = kickLogin;
   }
 }
 
@@ -274,6 +277,16 @@ void Client::InnerRun()
   {
     DisplayBanner();
     Handle();
+  }
+  catch (const util::net::TimeoutError& e)
+  {
+    try
+    {
+      control.Reply(ftp::ServiceUnavailable, "Idle timeout exceeded, closing connection.");
+    }
+    catch (const util::net::NetworkError&) { }
+    logs::debug << "Client from " << control.RemoteEndpoint()
+                  << " connection timed out" << logs::endl;
   }
   catch (const util::net::NetworkError& e)
   {

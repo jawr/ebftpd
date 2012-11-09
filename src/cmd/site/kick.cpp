@@ -1,3 +1,4 @@
+#include <sstream>
 #include "cmd/site/kick.hpp"
 #include "acl/user.hpp"
 #include "acl/usercache.hpp"
@@ -29,10 +30,15 @@ cmd::Result KICKCommand::Execute()
     return cmd::Result::Okay;
   } 
 
-  ftp::TaskPtr task(new ftp::task::KickUser(user.UID()));
+  boost::unique_future<unsigned> future;
+  ftp::TaskPtr task(new ftp::task::KickUser(user.UID(), future));
   ftp::Listener::PushTask(task);
 
-  control.Reply(ftp::CommandOkay, "Kicked " + args[1] + ".");
+  future.wait();
+  
+  std::ostringstream os;
+  os << "Kicked " << future.get() << " of " << args[1] << "'s login(s).";
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
   
 }

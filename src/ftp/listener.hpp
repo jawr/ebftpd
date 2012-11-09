@@ -74,6 +74,7 @@ public:
   // tasks
   friend class task::KickUser;
   friend class task::GetOnlineUsers;
+  friend class task::LoginKickUser;
   friend void SignalHandler(int);
 };
 

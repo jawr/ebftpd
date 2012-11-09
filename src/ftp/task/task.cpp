@@ -10,10 +10,38 @@ namespace ftp { namespace task
 
 void KickUser::Execute(Listener& listener)
 {
+  unsigned kicked = 0;
   for (auto& client: listener.clients)
   {
-    if (client.User().UID() == uid) client.Interrupt();
+    if (client.User().UID() == uid)
+    {
+      client.Interrupt();
+      ++kicked;
+    }
   }
+  
+  promise.set_value(kicked);
+}
+
+void LoginKickUser::Execute(Listener& listener)
+{
+  Result result;
+  for (auto& client: listener.clients)
+  {
+    if (client.User().UID() == uid && client.State() == ftp::ClientState::LoggedIn)
+    {
+      if (!result.kicked)
+      {
+        client.Interrupt();
+        result.kicked = true;
+        result.idleTime = client.IdleTime();
+      }
+      
+      ++result.logins;
+    }
+  }
+  
+  promise.set_value(result);
 }
 
 void GetOnlineUsers::Execute(Listener& listener)

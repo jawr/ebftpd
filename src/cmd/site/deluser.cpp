@@ -1,3 +1,4 @@
+#include <sstream>
 #include "cmd/site/deluser.hpp"
 #include "acl/user.hpp"
 #include "acl/usercache.hpp"
@@ -30,9 +31,17 @@ cmd::Result DELUSERCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
   else
   {
-    ftp::TaskPtr task(new ftp::task::KickUser(user.UID()));
+    boost::unique_future<unsigned> future;
+    ftp::TaskPtr task(new ftp::task::KickUser(user.UID(), future));
     ftp::Listener::PushTask(task);
-    control.Reply(ftp::CommandOkay, "User " + args[1] + " has been deleted.");
+    
+    future.wait();
+    unsigned kicked = future.get();
+    std::ostringstream os;
+    os << "User " << args[1] << " has been deleted.";
+    if (kicked) os << " (" << kicked << " login(s) kicked)";
+
+    control.Reply(ftp::CommandOkay, os.str());
   }
   return cmd::Result::Okay;
 }

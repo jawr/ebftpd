@@ -47,7 +47,13 @@ void TLSSocket::EvaluateResult(int result)
       int error = ERR_get_error();
       if (error) throw TLSProtocolError();
       else if (!result) throw EndOfStream();
-      else if (result == -1) throw TLSSystemError(errno);
+      else if (result == -1) 
+      {
+        if (errno == EWOULDBLOCK || errno == EAGAIN || errno == ETIMEDOUT)
+          throw TimeoutError();
+        else
+          throw TLSSystemError(errno);
+      }
     }
     default                     :
     {

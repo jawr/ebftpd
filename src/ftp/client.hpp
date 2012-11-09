@@ -48,6 +48,7 @@ class Client : public util::Thread
   ::ftp::XDupeMode xdupeMode;
   std::string confirmCommand;
   std::string currentCommand;
+  bool kickLogin;
 
   acl::UserProfile profile;
 
@@ -79,13 +80,15 @@ public:
   
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;
-  void SetLoggedIn(const acl::UserProfile& profile);
-  void SetWaitingPassword(const acl::User& user);
+  void SetLoggedIn(const acl::UserProfile& profile, bool kicked);
+  void SetWaitingPassword(const acl::User& user, bool kickLogin);
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
   void SetWorkDir(const fs::Path& workDir);
   void SetRenameFrom(const fs::Path& path) { this->renameFrom = path; }
   const fs::Path& RenameFrom() const { return renameFrom; }
+  
+  bool KickLogin() const { return kickLogin; }
   
   ::ftp::Control& Control() { return control; }
   ::ftp::Data& Data() { return data; }

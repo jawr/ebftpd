@@ -91,7 +91,7 @@ std::string Control::NextCommand(const boost::posix_time::time_duration* timeout
   else
     n = select(max + 1, &readSet, NULL, NULL, NULL);
     
-  if (!n) throw util::net::NetworkSystemError(ETIMEDOUT);
+  if (!n) throw util::net::TimeoutError();
   if (n < 0) throw util::net::NetworkSystemError(errno);
   
   if (FD_ISSET(socket.Socket(), &readSet))

@@ -20,7 +20,7 @@ class Counter
   static std::unordered_map<acl::UserID, int> curDownloads;
 
 public:
- static bool LogIn(acl::UserID uid, int limit);
+ static bool LogIn(acl::UserID uid, int limit, bool kickLogin);
  static void LogOut(acl::UserID uid);
  
  static bool StartUpload(acl::UserID uid, int limit);

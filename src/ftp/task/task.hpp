@@ -27,21 +27,44 @@ public:
 class KickUser : public Task
 {
   acl::UserID uid;
+  bool oneOnly;
+  boost::promise<unsigned> promise;
   
 public:
-  KickUser(acl::UserID uid) : uid(uid) {}
+  KickUser(acl::UserID uid, boost::unique_future<unsigned>& future, bool oneOnly = false) : 
+    uid(uid), oneOnly(oneOnly) { future = promise.get_future(); }
+  void Execute(Listener& listener);
+};
+
+class LoginKickUser : public Task
+{
+public:
+  struct Result
+  {
+    bool kicked;
+    boost::posix_time::time_duration idleTime;
+    unsigned logins;
+    Result() : kicked(false), logins(0) { }
+  };
+  
+private:
+  acl::UserID uid;
+  boost::promise<Result> promise;
+  
+public:
+  LoginKickUser(acl::UserID uid, boost::unique_future<Result>& future) : uid(uid)
+  { future = promise.get_future(); }
   void Execute(Listener& listener);
 };
 
 class GetOnlineUsers : public Task
 {
   std::vector<ftp::task::WhoUser>& users;
-  boost::unique_future<bool>& future;
   boost::promise<bool> promise;
   
 public:
   GetOnlineUsers(std::vector<ftp::task::WhoUser>& users, boost::unique_future<bool>& future) : 
-    users(users), future(future) { future = promise.get_future(); }
+    users(users) { future = promise.get_future(); }
     
   void Execute(Listener& listener);
 };

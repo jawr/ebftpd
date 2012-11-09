@@ -104,8 +104,10 @@ void TCPSocket::Connect(const Endpoint& remoteEndpoint,
     {
       int errno_ = errno;
       Close();
-      if (errno_ == EWOULDBLOCK || errno_ == EAGAIN) errno_ = ETIMEDOUT;
-      throw NetworkSystemError(errno_);
+      if (errno_ == EWOULDBLOCK || errno_ == EAGAIN || errno_ == ETIMEDOUT)
+        throw TimeoutError();
+      else
+        throw NetworkSystemError(errno_);
     }
   }
   
@@ -137,8 +139,10 @@ void TCPSocket::Accept(TCPListener& listener)
     boost::this_thread::interruption_point();
     if (errno != EINTR)
     {
-      if (errno == EWOULDBLOCK || errno == EAGAIN) errno = ETIMEDOUT;
-      throw NetworkSystemError(errno);
+      if (errno == EWOULDBLOCK || errno == EAGAIN || errno == ETIMEDOUT)
+        throw TimeoutError();
+      else
+        throw NetworkSystemError(errno);
     }
   }
     
@@ -170,8 +174,10 @@ size_t TCPSocket::Read(char* buffer, size_t bufferSize)
     boost::this_thread::interruption_point();
     if (errno != EINTR)
     {
-      if (errno == EWOULDBLOCK || errno == EAGAIN) errno = ETIMEDOUT;
-      throw NetworkSystemError(errno);
+      if (errno == EWOULDBLOCK || errno == EAGAIN || errno == ETIMEDOUT)
+        throw TimeoutError();
+      else
+        throw NetworkSystemError(errno);
     }
   }
 
@@ -198,8 +204,10 @@ void TCPSocket::Write(const char* buffer, size_t bufferLen)
       boost::this_thread::interruption_point();
       if (errno != EINTR)
       {
-        if (errno == EWOULDBLOCK || errno == EAGAIN) errno = ETIMEDOUT;
-        throw NetworkSystemError(errno);
+        if (errno == EWOULDBLOCK || errno == EAGAIN || errno == ETIMEDOUT)
+          throw TimeoutError();
+        else
+          throw NetworkSystemError(errno);
       }
     } 
     boost::this_thread::interruption_point();

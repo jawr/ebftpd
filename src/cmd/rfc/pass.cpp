@@ -1,7 +1,11 @@
+#include <sstream>
 #include "cmd/rfc/pass.hpp"
 #include "fs/directory.hpp"
 #include "db/user/userprofile.hpp"
 #include "db/exception.hpp"
+#include "ftp/task/task.hpp"
+#include "ftp/listener.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -66,9 +70,20 @@ cmd::Result PASSCommand::Execute()
     return cmd::Result::Okay;
   }
   
+  ftp::task::LoginKickUser::Result kickResult;
+  if (client.KickLogin())
+  {
+    logs::debug << client.User().Name() << " requested a login kick." << logs::endl;
+    boost::unique_future<ftp::task::LoginKickUser::Result> future;
+    ftp::TaskPtr task(new ftp::task::LoginKickUser(client.User().UID(), future));
+    ftp::Listener::PushTask(task);
+    future.wait();
+    kickResult = future.get();
+  }
+  
   try
   {
-    client.SetLoggedIn(*profile);
+    client.SetLoggedIn(*profile, kickResult.kicked);
   }
   catch (const util::RuntimeError& e)
   {
@@ -76,8 +91,16 @@ cmd::Result PASSCommand::Execute()
     client.SetState(ftp::ClientState::Finished);
     return cmd::Result::Okay;
   }
+  
+  std::ostringstream os;
+  os << "User " << client.User().Name() << " logged in.";
+  if (client.KickLogin())
+  {
+    os << "\nKicked " << kickResult.kicked << " (idle " 
+       << kickResult.idleTime << ") of " << kickResult.logins << " login(s).";
+  }
     
-  control.Reply(ftp::UserLoggedIn, "User " + client.User().Name() + " logged in.");
+  control.MultiReply(ftp::UserLoggedIn, os.str());
   return cmd::Result::Okay;
 }
 
