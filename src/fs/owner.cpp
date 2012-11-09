@@ -256,6 +256,10 @@ void OwnerCache::Main()
     {
       if (kv.second.second)
       {
+        // this is doing the save with the mutex locked
+        // might be better to copy the object, release the
+        // lock, then save it, i suspect copying the object
+        // would take much less time than serializing it to disk
         kv.second.first->Save();
         kv.second.second = false;
         loopUsed = true;

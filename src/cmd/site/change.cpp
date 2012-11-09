@@ -81,12 +81,12 @@ cmd::Result CHANGECommand::Execute()
 
     if (setting == "ratio")
       ok = db::userprofile::SetRatio(user.UID(), value);
-    else if (setting == "wkly_allotment")
-      ok = db::userprofile::SetWeeklyAllotment(user.UID(), value);
-    else if (setting == "homedir")
-      ok = db::userprofile::SetHomeDir(user.UID(), value);
-    else if (setting == "startup_dir")
-      ok = db::userprofile::SetStartupDir(user.UID(), value);
+    //else if (setting == "wkly_allotment")
+      //ok = db::userprofile::SetWeeklyAllotment(user.UID(), value);
+    //else if (setting == "homedir")
+      //ok = db::userprofile::SetHomeDir(user.UID(), value);
+    //else if (setting == "startup_dir")
+      //ok = db::userprofile::SetStartupDir(user.UID(), value);
     else if (setting == "idle_time")
       ok = db::userprofile::SetIdleTime(user.UID(), value);
     else if (setting == "expires")

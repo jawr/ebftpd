@@ -1,3 +1,4 @@
+#include <sstream>
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -92,6 +93,8 @@ void Unset(acl::UserID uid, const std::string& field)
 
 util::Error SetRatio(acl::UserID uid, const std::string& value)
 {
+  static const int maximumRatio = 9;
+
   int i;
   try
   {
@@ -100,7 +103,9 @@ util::Error SetRatio(acl::UserID uid, const std::string& value)
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    return util::Error::Failure("Invalid value. Must be a number of zero or larger.");
+    std::ostringstream os;
+    os << "Invalid value. Must be a number be a number from 0 to " << maximumRatio << ".";
+    return util::Error::Failure(os.str());
   }
   Set(uid, BSON("ratio" << i));
   return util::Error::Success();
@@ -116,7 +121,7 @@ util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value)
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    return util::Error::Failure("Invalid value. Must be a number of zero or larger.");
+    return util::Error::Failure("Invalid value. Must be a number of 0 or larger.");
   }
   Set(uid, BSON("weekly allotment" << i));
   return util::Error::Success();
@@ -140,10 +145,11 @@ util::Error SetIdleTime(acl::UserID uid, const std::string& value)
   try
   {
     i = boost::lexical_cast<int>(value);
+    if (i < -1) throw boost::bad_lexical_cast();
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    return util::Error::Failure("Invalid value.");
+    return util::Error::Failure("Invalid value. Must be a number of -1 or larger.");
   }
   Set(uid, BSON("idle time" << i));
   return util::Error::Success();
@@ -180,7 +186,7 @@ util::Error SetNumLogins(acl::UserID uid, const std::string& value)
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    return util::Error::Failure("Invalid value. Must be a number larger than zero.");
+    return util::Error::Failure("Invalid value. Must be a number larger than 0.");
   }
   Set(uid, BSON("num logins" << i));
   return util::Error::Success();
@@ -209,7 +215,7 @@ util::Error SetMaxDlSpeed(acl::UserID uid, const std::string& value)
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    return util::Error::Failure("Invalid value. Must be zero or larger.");
+    return util::Error::Failure("Invalid value. Must be a number of 0 or larger.");
   }
   Set(uid, BSON("max dl speed" << i));
   return util::Error::Success();
@@ -225,7 +231,7 @@ util::Error SetMaxUlSpeed(acl::UserID uid, const std::string& value)
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    return util::Error::Failure("Invalid value. Must be a zero or larger.");
+    return util::Error::Failure("Invalid value. Must be a number of 0 or larger.");
   }
   Set(uid, BSON("max ul speed" << i));
   return util::Error::Success();
@@ -237,11 +243,11 @@ util::Error SetMaxSimDl(acl::UserID uid, const std::string& value)
   try
   {
     i = boost::lexical_cast<int>(value);
-    if (i < 0) throw boost::bad_lexical_cast();
+    if (i < -1) throw boost::bad_lexical_cast();
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    return util::Error::Failure("Invalid value. Must be number of zero or larger.");
+    return util::Error::Failure("Invalid value. Must be number of -1 or larger.");
   }
   Set(uid, BSON("max sim dl" << i));
   return util::Error::Success();
@@ -253,11 +259,11 @@ util::Error SetMaxSimUl(acl::UserID uid, const std::string& value)
   try
   {
     i = boost::lexical_cast<int>(value);
-    if (i < 0) throw boost::bad_lexical_cast();
+    if (i < -1) throw boost::bad_lexical_cast();
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    return util::Error::Failure("Invalid value. Must be a number of zero or larger.");
+    return util::Error::Failure("Invalid value. Must be a number of -1 or larger.");
   }
   Set(uid, BSON("max sim ul" << i));
   return util::Error::Success();
