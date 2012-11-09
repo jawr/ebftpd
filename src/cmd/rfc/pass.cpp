@@ -12,6 +12,14 @@ namespace cmd { namespace rfc
 
 cmd::Result PASSCommand::Execute()
 {
+  if (argStr[0] == '-')
+  {
+    argStr.erase(0, 1);
+    control.SetSingleLineReplies(true);
+  }
+  
+  if (argStr.empty()) return cmd::Result::SyntaxError;
+
   if (!client.VerifyPassword(argStr))
   {
     if (client.PasswordAttemptsExceeded())
@@ -94,7 +102,7 @@ cmd::Result PASSCommand::Execute()
   
   std::ostringstream os;
   os << "User " << client.User().Name() << " logged in.";
-  if (client.KickLogin())
+  if (client.KickLogin() && !control.SingleLineReplies())
   {
     os << "\nKicked " << kickResult.kicked << " (idle " 
        << kickResult.idleTime << ") of " << kickResult.logins << " login(s).";

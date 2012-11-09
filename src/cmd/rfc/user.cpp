@@ -13,6 +13,8 @@ cmd::Result USERCommand::Execute()
     kickLogin = true;
   }
   
+  if (argStr.empty()) return cmd::Result::SyntaxError;
+  
   try
   {
       client.SetWaitingPassword(acl::UserCache::User(argStr), kickLogin);

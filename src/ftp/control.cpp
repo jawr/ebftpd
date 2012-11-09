@@ -17,9 +17,9 @@ void Control::Accept(util::net::TCPListener& listener)
 
 void Control::SendReply(ReplyCode code, bool part, const std::string& message)
 {
+  if (singleLineReplies && part) return;
   std::ostringstream reply;
-  if (code != NoCode)
-    reply << std::setw(3) << code << (part ? "-" : " ");
+  if (code != NoCode) reply << std::setw(3) << code << (part ? "-" : " ");
   reply << message << "\r\n";
   const std::string& str = reply.str();
   socket.Write(str.c_str(), str.length());

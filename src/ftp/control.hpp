@@ -23,6 +23,7 @@ class Control : public ReadWriteable
   util::Pipe interruptPipe;
   ReplyCode lastCode;
   std::string commandLine;
+  bool singleLineReplies;
   
   void SendReply(ReplyCode code, bool part, const std::string& message);
 
@@ -30,7 +31,7 @@ class Control : public ReadWriteable
   { return socket.Read(buffer, size); }
   
 public:
-  Control() : lastCode(CodeNotSet) { }
+  Control() : lastCode(CodeNotSet), singleLineReplies(false) { }
   
   ~Control() { }
   
@@ -43,6 +44,11 @@ public:
   void Reply(const std::string& message);
   void MultiReply(ReplyCode code, const std::string& messages);
 
+  void SetSingleLineReplies(bool singleLineReplies)
+  { this->singleLineReplies = singleLineReplies; }
+  
+  bool SingleLineReplies() const { return singleLineReplies; }
+  
   void NegotiateTLS();
   
   void Write(const char* buffer, size_t len)

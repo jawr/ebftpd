@@ -2,12 +2,16 @@
 #include "cfg/get.hpp"
 #include "main.hpp"
 #include "stats/util.hpp"
+#include "util/scopeguard.hpp"
 
 namespace cmd { namespace rfc
 {
 
 cmd::Result STATCommand::Execute()
 {
+  using util::scope_guard;
+  using util::make_guard;
+
   if (args.size() == 1)
   {
     control.PartReply(ftp::SystemStatus, programFullname + " status:");
@@ -15,6 +19,11 @@ cmd::Result STATCommand::Execute()
     control.Reply("End of status.");
     return cmd::Result::Okay;
   }
+  
+  bool singleLineReplies = control.SingleLineReplies();
+  control.SetSingleLineReplies(false);
+  
+  scope_guard singleLineGuard = make_guard([&]{ control.SetSingleLineReplies(singleLineReplies); });  
 
   std::string options;
   std::string::size_type optOffset = 0;
@@ -41,6 +50,9 @@ cmd::Result STATCommand::Execute()
   control.Reply(ftp::DirectoryStatus, "End of status (" + 
       stats::util::HighResSecondsString(start, end) + ")"); 
   return cmd::Result::Okay;
+  
+  (void) singleLineReplies;
+  (void) singleLineGuard;
 }
 
 } /* rfc namespace */
