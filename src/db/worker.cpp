@@ -17,6 +17,7 @@ void Worker::Run()
   while (true)
   {
     TaskPtr task = queue.Pop();
+    boost::this_thread::disable_interruption noInterrupt;
     task->Execute(conn);
   }
 } 
