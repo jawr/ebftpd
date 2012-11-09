@@ -10,14 +10,15 @@
 
 namespace db { namespace user
 {
-  acl::UserID GetNewUserID();
-  void Save(const acl::User& user);    
-  void Save(const acl::User& user, const std::string& field);
-  void Delete(acl::UserID uid);
-  void GetAll(boost::ptr_vector<acl::User>& users);
 
-  util::Error UsersByACL(boost::ptr_vector<acl::User>& users, 
-    std::string acl);
+acl::UserID GetNewUserID();
+void Save(const acl::User& user);    
+void Save(const acl::User& user, const std::string& field);
+void Delete(acl::UserID uid);
+void GetAll(boost::ptr_vector<acl::User>& users);
+
+util::Error UsersByACL(boost::ptr_vector<acl::User>& users, 
+  std::string acl);
 // end
 }
 }

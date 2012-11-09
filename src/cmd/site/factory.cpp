@@ -42,6 +42,7 @@
 #include "cmd/site/reload.hpp"
 #include "cmd/site/shutdown.hpp"
 #include "cmd/site/sreply.hpp"
+#include "cmd/site/msg.hpp"
 
 namespace cmd { namespace site
 {
@@ -310,7 +311,7 @@ Factory::Factory()
                       "Syntax: SITE GOODBYE",
                       "Display goodbye message" }, },
     { "MSG",        { 1,  -1, "msg|msg*|msg=|msg{",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::MSGCommand>()),
                       "Syntax: SITE MSG <command> [<arguments> ..]",
                       "Messaging system" }, },
     { "REQUEST",    { 1,  1,  "request",
