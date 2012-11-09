@@ -1,4 +1,5 @@
 #include <cctype>
+#include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include "text/tag.hpp"
 #include "text/error.hpp"
@@ -81,6 +82,33 @@ void Tag::Compile()
 
 
   format = os.str();
+}
+
+void Tag::Parse(const std::string& value)
+{
+  std::ostringstream os;
+  os << boost::format(format) % value;
+  this->value = os.str();
+}
+
+void Tag::ParseSize(long long bytes)
+{
+  double value;
+
+  if (measurement == Measurement::Kbyte)
+    value = bytes / 1024.0;
+  else if (measurement == Measurement::Mbyte)
+    value = bytes / 1024.0 / 1024.0;
+  else if (measurement == Measurement::Gbyte)
+    value = bytes / 1024.0 / 1024.0 / 1024.0;
+
+  std::ostringstream os;
+  os << boost::format(format) % value;
+  this->value = os.str();
+}
+
+void Tag::ParseSpeed(long long bytes, long long xfertime)
+{
 }
 
 // end

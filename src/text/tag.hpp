@@ -32,6 +32,8 @@ enum class Measurement
 
 class Tag
 {
+  std::string name;
+  std::string value;
   std::string width;
   std::string precision;
   Alignment alignment;
@@ -40,14 +42,23 @@ class Tag
   TagType type;
 public:
   // oportuinity to set defaults from cofig here
-  Tag() : alignment(Alignment::Right), measurement(Measurement::None), 
+  Tag(const std::string& name) : 
+    name(name),
+    alignment(Alignment::Right), 
+    measurement(Measurement::None), 
     type(TagType::String) {}
   ~Tag() {}
   template <typename T> std::string Format(T value);
   void Register(const std::string& filter);
   void Compile();
+  
+  void Parse(const std::string& value);
+  void ParseSize(long long bytes);
+  void ParseSpeed(long long bytes, long long xfertime);
 
+  const std::string& Name() const { return name; }
   const std::string& Format() const { return format; }
+  const std::string& Value() const { return value; }
   const Measurement& Unit() const { return measurement; } // rename all to unit?
   
   void SetType(TagType type) { this->type = type; }
