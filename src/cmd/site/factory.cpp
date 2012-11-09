@@ -41,6 +41,7 @@
 #include "cmd/site/grpren.hpp"
 #include "cmd/site/reload.hpp"
 #include "cmd/site/shutdown.hpp"
+#include "cmd/site/sreply.hpp"
 
 namespace cmd { namespace site
 {
@@ -331,7 +332,11 @@ Factory::Factory()
     { "SHUTDOWN",   { 1,  1,  "shutdownfull|shutdownsiteop",
                       CreatorBasePtr(new Creator<site::SHUTDOWNCommand>()),
                       "Syntax: SITE SHUTDOWN SITEOP|REOPEN|FULL",
-                      "Shutdown to siteop only or full shutdown and exit" }, }
+                      "Shutdown to siteop only or full shutdown and exit" }, },
+    { "SREPLY",     { 0,  1,  "sreply",
+                      CreatorBasePtr(new Creator<site::SREPLYCommand>()),
+                      "Syntax: SITE SREPLY [ON|OFF]",
+                      "Turn single line replies on and off" }, }
   };
 }
 
