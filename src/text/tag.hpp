@@ -40,13 +40,16 @@ class Tag
   Measurement measurement;
   std::string format;
   TagType type;
+  bool pretty;
 public:
   // oportuinity to set defaults from cofig here
   Tag(const std::string& name) : 
     name(name),
     alignment(Alignment::Right), 
     measurement(Measurement::None), 
-    type(TagType::String) {}
+    type(TagType::String),
+    pretty(false)
+   {}
   ~Tag() {}
   template <typename T> std::string Format(T value);
   void Register(const std::string& filter);
