@@ -4,14 +4,16 @@
 #include <boost/thread/mutex.hpp>
 #include <unordered_map>
 #include "acl/types.hpp"
+#include "util/error.hpp"
 
 namespace ftp
 {
 
 class Counter
-{  
+{
   static boost::mutex loggedInMutex;
   static std::unordered_map<acl::UserID, int> loggedIn;
+  static int totalLoggedIn;
   
   static boost::mutex curUploadsMutex;
   static std::unordered_map<acl::UserID, int> curUploads;
@@ -20,7 +22,7 @@ class Counter
   static std::unordered_map<acl::UserID, int> curDownloads;
 
 public:
- static bool LogIn(acl::UserID uid, int limit, bool kickLogin);
+ static util::Error LogIn(acl::UserID uid, int limit, bool kickLogin, bool exempt);
  static void LogOut(acl::UserID uid);
  
  static bool StartUpload(acl::UserID uid, int limit);

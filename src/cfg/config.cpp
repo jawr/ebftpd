@@ -478,7 +478,7 @@ void Config::Parse(std::string line) {
   else if (opt == "max_users")
   {
     ParameterCheck(opt, toks, 2);
-    maxUsers.emplace_back(toks);
+    maxUsers = setting::MaxUsers(toks);
   }
   else if (opt == "max_ustats")
   {

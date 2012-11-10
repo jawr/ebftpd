@@ -23,6 +23,7 @@
 #include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
 #include "ftp/counter.hpp"
+#include "acl/flags.hpp"
 
 namespace ftp
 {
@@ -59,12 +60,9 @@ void Client::SetState(ClientState state)
 void Client::SetLoggedIn(const acl::UserProfile& profile, bool kicked)
 {
   
-  if (!Counter::LogIn(user.UID(), profile.NumLogins(), kicked))
-  {
-    std::ostringstream os;
-    os << "You have reached your maximum number of " << profile.NumLogins() << " login(s).";
-    throw util::RuntimeError(os.str());
-  }
+  util::Error e(Counter::LogIn(user.UID(), profile.NumLogins(), kicked, 
+                      user.CheckFlag(acl::Flag::Exempt)));
+  if (!e) throw util::RuntimeError(e.Message());
 
   SetIdleTimeout(boost::posix_time::seconds(std::min(cfg::
     Get().IdleTimeout().Timeout().total_seconds(), profile.IdleTime())));

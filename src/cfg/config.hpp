@@ -82,7 +82,7 @@ class Config
   // end rights
   std::vector<setting::StatSection> statSection;
   std::vector<setting::PathFilter> pathFilter;
-  std::vector<setting::MaxUsers> maxUsers;
+  setting::MaxUsers maxUsers;
   setting::ACLInt maxUstats;
   setting::ACLInt maxGstats;
   std::vector<std::string> bannedUsers;
@@ -196,7 +196,7 @@ public:
 
   const std::vector<setting::StatSection>& StatSection() const { return statSection; }
   const std::vector<setting::PathFilter>& PathFilter() const { return pathFilter; }
-  const std::vector<setting::MaxUsers>& MaxUsers() const { return maxUsers; }
+  const setting::MaxUsers& MaxUsers() const { return maxUsers; }
   const setting::ACLInt MaxUstats() const { return maxUstats; }
   const setting::ACLInt MacGstats() const { return maxGstats; }
   const std::vector<std::string>& BannedUsers() const { return bannedUsers; }
