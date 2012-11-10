@@ -76,10 +76,24 @@ struct Traits<Makedir>
 template <>
 struct Traits<Download>
 {
+private:
+  static util::Error CheckNoretrieve(const std::string& path)
+  {
+    const cfg::Config& config = cfg::Get();
+    std::string basename = fs::Path(path).Basename().ToString();
+    for (auto& mask : config.Noretrieve())
+    {
+      if (util::string::WildcardMatch(mask, basename))
+        return util::Error::Failure(EACCES);
+    }
+    return util::Error::Success();
+  }
+  
+public:
   static util::Error Allowed(const User& user, const std::string& path)
   {
     if (Evaluate(cfg::Get().Download(), user, path))
-      return util::Error::Success();
+      return CheckNoretrieve(path);
     else
       return util::Error::Failure(EACCES);
   }
