@@ -11,6 +11,7 @@
 #include "ftp/util.hpp"
 #include "logs/logs.hpp"
 #include "cfg/get.hpp"
+#include "acl/path.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -22,6 +23,15 @@ cmd::Result STORCommand::Execute()
   using util::scope_guard;
   using util::make_guard;
   
+  std::string messagePath;
+  util::Error e(acl::path::Filter(client.User(), fs::Path(argStr).Basename(), messagePath));
+  if (!e)
+  {
+    // should display above messagepath, we'll just reply for now
+    control.Reply(ftp::ActionNotOkay, "File name contains one or more invalid characters.");
+    return cmd::Result::Okay;
+  }
+
   off_t offset = data.RestartOffset();
   if (offset > 0 && data.DataType() == ftp::DataType::ASCII)
   {

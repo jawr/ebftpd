@@ -1,5 +1,6 @@
 #include "cmd/rfc/rnfr.hpp"
 #include "acl/path.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -19,7 +20,7 @@ cmd::Result RNFRCommand::Execute()
 
   try
   {
-    fs::Status status(absolute);
+    fs::Status status(cfg::Get().Sitepath() + absolute);
   }
   catch (const util::SystemError& e)
   {

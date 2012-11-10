@@ -37,6 +37,9 @@ util::Error FileAllowed(const User& user, const std::string& path);
 template <Type type>
 util::Error DirAllowed(const User& user, std::string path);
 
+util::Error Filter(const User& user, const std::string& basename, 
+    std::string& messagePath);
+
 } /* path namespace */
 } /* acl namespace */
 

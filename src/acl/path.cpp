@@ -300,5 +300,23 @@ template util::Error DirAllowed<View>(const User& user, std::string path);
 template util::Error DirAllowed<Hideinwho>(const User& user, std::string path);
 template util::Error DirAllowed<Hideowner>(const User& user, std::string path);
 
+util::Error Filter(const User& user, const std::string& basename, 
+    std::string& messagePath)
+{
+  for (auto& filter : cfg::Get().PathFilter())
+  {
+    if (filter.ACL().Evaluate(user))
+    {
+      if (!boost::regex_match(basename, filter.Regex()))
+      {
+        messagePath = filter.MessagePath();
+        return util::Error::Failure(EACCES);
+      }
+      break;
+    }
+  }
+  return util::Error::Success();
+}
+
 } /* path namespace */
 } /* acl namespace */

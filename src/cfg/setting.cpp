@@ -155,10 +155,17 @@ StatSection::StatSection(const std::vector<std::string>& toks)
 
 PathFilter::PathFilter(std::vector<std::string> toks)   
 {
-  group = toks.at(0);
-  path = toks.at(1);
-  toks.erase(toks.begin(), toks.begin()+2);
-  filters = toks;
+  messagePath = toks[0];
+  try
+  {
+    regex = boost::regex(toks[1]);
+  }
+  catch (const boost::regex_error&)
+  {
+    throw ConfigError("Invalid regular expression.");
+  }
+  toks.erase(toks.begin(), toks.begin() + 2);
+  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
 MaxUsers::MaxUsers(const std::vector<std::string>& toks)   

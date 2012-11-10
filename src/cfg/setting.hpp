@@ -8,6 +8,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/regex.hpp>
 #include <sys/types.h>
 #include "acl/acl.hpp"
 #include "fs/path.hpp"
@@ -18,7 +19,7 @@
 namespace cfg { namespace setting
 {
 
-class Setting // a base class might be useful in the future.. maybe
+class Setting
 {
 public:
   virtual ~Setting() {}
@@ -216,15 +217,16 @@ public:
 
 class PathFilter : public Setting
 {
-  std::string group;
-  std::string path;
-  std::vector<std::string> filters;
+  std::string messagePath;
+  boost::regex regex;
+  acl::ACL acl;
+  
 public:
-  PathFilter() {}
+  PathFilter() { }
   PathFilter(std::vector<std::string> toks);
-  const std::string& Group() const { return group; }
-  const std::string& Path() const { return path; }
-  const std::vector<std::string>& Filters() const { return filters; }
+  const std::string& MessagePath() const { return messagePath; }
+  const boost::regex& Regex() const { return regex; }
+  const acl::ACL& ACL() const { return acl; }
   
 };
 
