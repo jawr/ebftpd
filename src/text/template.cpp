@@ -3,7 +3,6 @@
 #include <boost/algorithm/string.hpp>
 #include "text/template.hpp"
 #include "text/error.hpp"
-#include "logs/logs.hpp"
 
 namespace text
 {
@@ -62,18 +61,16 @@ Template::Template(const std::string& file) : file(file)
     os << c;
   }
 
-  logs::debug << "OS:" << logs::endl;
-  logs::debug << os.str() << logs::endl;
   buffer = os.str();
-  logs::debug << "Tags: " << tags.size() << logs::endl;
+  // strip last char if it's new line
+  if (*buffer.rbegin() == '\n' || *buffer.rbegin() == '\r')
+    buffer.erase(buffer.end()-1, buffer.end());
 }
 
 void Template::RegisterTag(std::string var)
 {
   boost::trim(var);
   boost::to_lower(var);
-
-  logs::debug << "Register cookie: " << var << logs::endl;
 
   std::vector<std::string> args;
   boost::split(args, var, boost::is_any_of("|"));
@@ -94,7 +91,6 @@ void Template::RegisterTag(std::string var)
 
   tags.emplace_back(tag);
  
-  logs::debug << "Type::Format: " << tag.Format() << logs::endl;
 }
 
 void Template::CheckValueExists(const std::string& key)
@@ -167,6 +163,8 @@ std::string Template::Compile()
 }
 
 #ifdef TEXT_TEMPLATE_TEST
+#include "logs/logs.hpp"
+
 int main()
 {
   try

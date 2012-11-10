@@ -4,14 +4,12 @@
 #include <boost/lexical_cast.hpp>
 #include "text/tag.hpp"
 #include "text/error.hpp"
-#include "logs/logs.hpp"
 
 namespace text
 {
 
 void Tag::Register(const std::string& filter)
 {
-  logs::debug << "Tag::Register: " << filter << logs::endl;
   if (filter == "left")
     alignment = Alignment::Left;
 
@@ -48,9 +46,6 @@ void Tag::Register(const std::string& filter)
     boost::split(args, filter, boost::is_any_of(".")); 
     if (args.size() > 2) throw TemplateFilterMalform("Error parsing filter, should be '^\\d+(\\.\\d+)?$': " + filter);
   
-    logs::debug << "TEST, FRONT: " << args.front() << " BACK: " << args.back() << logs::endl;
-
-
     for (auto& c: args.front())
       if (!std::isdigit(c)) throw TemplateFilterMalform("Error parsing filter, should be an integer: " + args.front());
     width = args.front();
@@ -114,13 +109,12 @@ void Tag::ParseSize(long long bytes)
   else if (measurement == Measurement::Gbyte)
     value = bytes / 1024.0 / 1024.0 / 1024.0;
 
-  logs::debug << format << logs::endl;
   std::ostringstream os;
   os << boost::format(format) % value;
+
   if (pretty)
   {
     std::string number = os.str();
-    logs::debug << number << logs::endl;
     os.str(std::string());
     os.imbue(std::locale("")); // portability issues?
     try
@@ -134,6 +128,7 @@ void Tag::ParseSize(long long bytes)
       return;
     }
   }
+
   this->value = os.str();
 }
 
