@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 #include <cerrno>
 #include <cassert>
 #include <boost/algorithm/string/predicate.hpp>
@@ -18,6 +19,17 @@ namespace fs
 {
 namespace 
 {
+
+util::Error FreeDiskSpace(const Path& real, unsigned long long& freeBytes)
+{
+  struct statvfs sfs;
+
+  if (statvfs(real.CString(), &sfs) <0)
+    return util::Error::Failure(errno);
+
+  freeBytes = sfs.f_bsize * sfs.f_bfree;
+  return util::Error::Success();
+}
 
 util::Error RemoveDirectory(const Path& path)
 {
