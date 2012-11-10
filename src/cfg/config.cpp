@@ -11,6 +11,7 @@
 #include "cfg/setting.hpp"
 #include "util/string.hpp"
 #include "logs/logs.hpp"
+#include "main.hpp"
 
 namespace cfg
 {
@@ -592,6 +593,9 @@ void Config::SanityCheck()
   else if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
   else if (!CheckSetting("port")) throw RequiredSetting("port");
   else if (!CheckSetting("valid_ip")) throw RequiredSetting("valid_ip");
+  
+  if (loginPrompt.empty())
+    loginPrompt = sitenameLong + ": " + programFullname + " connected.";
 }
 
 // end namespace

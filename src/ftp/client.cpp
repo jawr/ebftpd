@@ -152,8 +152,7 @@ void Client::DisplayBanner()
     }
   }
 
-  control.Reply(ftp::ServiceReady, config.SitenameLong() + ": " + programFullname + 
-        " connected.");
+  control.Reply(ftp::ServiceReady, config.LoginPrompt());
 }
 
 void Client::IdleReset(const std::string& commandLine)
