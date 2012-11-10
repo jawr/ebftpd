@@ -84,20 +84,24 @@ util::Error RenameFile(ftp::Client& client, const Path& oldPath,
 
 FileSinkPtr CreateFile(ftp::Client& client, const Path& path)
 {
+  const cfg::Config& config = cfg::Get();
+
   Path absolute = (client.WorkDir() / path).Expand();
   util::Error e(PP::FileAllowed<PP::Upload>(client.User(), absolute));
   if (!e) throw util::SystemError(e.Errno());
   
-  Path real = cfg::Get().Sitepath() + absolute;
+  Path real = config.Sitepath() + absolute;
 
   unsigned long long freeBytes;
   e = fs::FreeDiskSpace(real.Dirname(), freeBytes);
   if (!e) throw util::SystemError(e.Errno());
   
-  if (cfg::Get().FreeSpace() > freeBytes / 1024 / 1024)
+  if (config.FreeSpace() > freeBytes / 1024 / 1024)
     throw util::SystemError(ENOSPC);
 
-  int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, 0777);
+  mode_t mode = config.DlIncomplete() ? 0755 : 0644;
+    
+  int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, mode);
   if (fd < 0)
   {
     if (errno != EEXIST) throw util::SystemError(errno);
@@ -105,7 +109,7 @@ FileSinkPtr CreateFile(ftp::Client& client, const Path& path)
     e = PP::FileAllowed<PP::Overwrite>(client.User(), absolute);
     if (!e) throw util::SystemError(EEXIST);
     
-    fd = open(real.CString(), O_WRONLY | O_TRUNC, 0777);
+    fd = open(real.CString(), O_WRONLY | O_TRUNC);
     if (fd < 0) throw util::SystemError(errno);
   }
 
@@ -191,6 +195,25 @@ util::Error UniqueFile(ftp::Client& client, const Path& path,
   }
   
   return util::Error::Failure();
+}
+
+bool IsIncomplete(ftp::Client& client, const Path& path)
+{
+  static const time_t maxInactivity = 30;
+  
+  Path real = cfg::Get().Sitepath() + (client.WorkDir() / path).Expand();
+  
+  try
+  {
+    Status status(real);
+    if (status.IsExecutable() && 
+        status.Native().st_mtime - time(NULL) < maxInactivity)
+      return true;
+  }
+  catch (const util::SystemError&)
+  {
+  }
+  return false;
 }
 
 } /* fs namespace */

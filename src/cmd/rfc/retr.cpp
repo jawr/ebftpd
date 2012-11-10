@@ -100,12 +100,18 @@ cmd::Result RETRCommand::Execute()
   std::streamsize bytes = 0;
   try
   {
+    bool dlIncomplete = cfg::Get().DlIncomplete();
     std::vector<char> asciiBuf;
     char buffer[16384];
     while (true)
     {
       std::streamsize len = fin->read(buffer, sizeof(buffer));
-      if (len < 0) break;
+      if (len < 0) 
+      {
+        if (!dlIncomplete || !fs::IsIncomplete(client, argStr)) break;
+        boost::this_thread::sleep(boost::posix_time::microseconds(10000));
+        continue;
+      }
       
       data.State().Update(len);
       

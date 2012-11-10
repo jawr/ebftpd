@@ -12,6 +12,8 @@
 #include "logs/logs.hpp"
 #include "cfg/get.hpp"
 #include "acl/path.hpp"
+#include "fs/chmod.hpp"
+#include "fs/mode.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -88,6 +90,7 @@ cmd::Result STORCommand::Execute()
   }
   catch (const util::net::NetworkError&e )
   {
+    if (!data.RestartOffset()) fs::ForceDeleteFile(client, argStr);
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
     return cmd::Result::Okay;
@@ -138,6 +141,10 @@ cmd::Result STORCommand::Execute()
   
   fout->close();
   data.Close();
+  
+  e = fs::Chmod(client, argStr, fs::Mode("0666"));
+  if (!e) control.PartReply(ftp::DataClosedOkay, 
+      "Failed to chmod upload: " + e.Message());
 
   boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
   db::stats::Upload(client.User(), data.State().Bytes() / 1024, duration.total_milliseconds());
