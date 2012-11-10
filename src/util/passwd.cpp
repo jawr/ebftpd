@@ -1,8 +1,16 @@
+#if defined(CRYPTOPP)
+#include <cryptopp/osrng.h>
+#include <cryptopp/sha.h>
+#include <cryptopp/hex.h>
+#include <cryptopp/pwdbased.h>
+#include <cryptopp/secblock.h>
+#else
 #include <crypto++/osrng.h>
 #include <crypto++/sha.h>
 #include <crypto++/hex.h>
 #include <crypto++/pwdbased.h>
 #include <crypto++/secblock.h>
+#endif
 #include "util/passwd.hpp"
 
 namespace util { namespace passwd

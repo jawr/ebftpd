@@ -1,6 +1,6 @@
 CXX := g++
 CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic -Winit-self -Winline
-LIBS := -lmongoclient -lcrypto -lcryptopp -lboost_thread -lboost_regex -lboost_serialization
+LIBS := -lmongoclient -lcrypto -lboost_thread -lboost_regex -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lpthread -lssl -lboost_filesystem
 LIBS += -lboost_date_time -lboost_program_options
 INCLUDE := -Isrc -include src/pch.hpp
@@ -53,6 +53,18 @@ else
 ifneq ($(shell cat .state 2>/dev/null),normal)
 $(error You must run make clean before changing build states)
 endif
+endif
+endif
+
+CRYPTOPP_NAME := $(shell scripts/cryptopp.sh 2>/dev/null)
+ifeq ($(CRYPTOPP_NAME),cryptopp)
+CXXFLAGS += -DCRYPTOPP
+LIBS += -lcryptopp
+else
+ifeq ($(CRYPTOPP_NAME),crypto++)
+LIBS += -lcrypto++
+else
+$(error Unable to find crypto++ header files in /usr/include or /usr/local/include)
 endif
 endif
 
