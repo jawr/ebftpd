@@ -6,6 +6,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>                                   
+#include <boost/numeric/conversion/cast.hpp>
 #include "cfg/config.hpp"
 #include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
@@ -50,10 +51,14 @@ Config::Config(const std::string& configFile) :
     {
       Parse(line);
     } 
-    catch (const ConfigError &e) // handle properly
+    catch (const ConfigError& e)
     {
       logs::error << "Error in config at line " << i << ": " << e.Message() << logs::endl;
       okay = false;
+    }
+    catch (const std::bad_cast& e)
+    {
+      logs::error << "Error in config at line " << i << ": " << e.what() << logs::endl;
     }
   }
   
@@ -186,7 +191,7 @@ void Config::Parse(std::string line) {
   else if (opt == "total_users")
   {
     ParameterCheck(opt, toks, 1);
-    totalUsers = boost::lexical_cast<int>(toks.at(0));
+    totalUsers = boost::numeric_cast<unsigned>(boost::lexical_cast<int>(toks[0]));
   }
   else if (opt == "multiplier_max")
   {

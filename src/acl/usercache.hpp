@@ -46,6 +46,8 @@ public:
 
   static util::Error IncrCredits(const std::string& name, long long kbytes);
   static util::Error DecrCredits(const std::string& name, long long kbytes);
+  
+  static unsigned Count(bool includeDeleted = false);
 
   static void Initialize();
   

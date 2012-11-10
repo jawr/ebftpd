@@ -7,6 +7,7 @@
 #include "db/user/userprofile.hpp"
 #include "db/user/user.hpp"
 #include "logs/logs.hpp"
+#include "cfg/get.hpp"
 
 namespace acl
 {
@@ -66,6 +67,14 @@ bool UserCache::Exists(UserID uid)
 util::Error UserCache::Create(const std::string& name, const std::string& password,
                               const std::string& flags, acl::UserID creator)
 {
+  unsigned totalUsers = cfg::Get().TotalUsers();
+  if (totalUsers > 0 && Count() >= totalUsers)
+  {
+    std::ostringstream os;
+    os << "Limit of " << totalUsers << " user(s) has been reached.";
+    return util::Error::Failure(os.str());
+  }
+
   acl::UserID uid = db::user::GetNewUserID();
 
   {
@@ -122,6 +131,14 @@ util::Error UserCache::Delete(const std::string& name)
 
 util::Error UserCache::Readd(const std::string& name)
 {
+  unsigned totalUsers = cfg::Get().TotalUsers();
+  if (totalUsers > 0 && Count() >= totalUsers)
+  {
+    std::ostringstream os;
+    os << "Limit of " << totalUsers << " user(s) has been reached.";
+    return util::Error::Failure(os.str());
+  }
+
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end())
@@ -324,6 +341,18 @@ std::string UserCache::UIDToName(UserID uid)
   ByUIDMap::iterator it = instance.byUID.find(uid);
   if (it == instance.byUID.end()) return "unknown";
   return it->second->Name();
+}
+
+unsigned UserCache::Count(bool includeDeleted)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  if (includeDeleted) return instance.byUID.size();
+  unsigned count = 0;
+  for (auto& kv : instance.byUID)
+  {
+    if (!kv.second->Deleted()) ++count;
+  }
+  return count;
 }
 
 } /* acl namespace */

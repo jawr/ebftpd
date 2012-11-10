@@ -89,11 +89,10 @@ class Config
   std::vector<setting::Right> showDiz;
   std::vector<setting::ShowTotals> showTotals;
   bool dlIncomplete;
-  //bool fileDlCount;
   setting::DupeCheck dupeCheck;
   std::vector<setting::Cscript> cscript;
   std::vector<std::string> idleCommands;
-  int totalUsers;
+  unsigned totalUsers;
   setting::Lslong lslong;
   std::vector<setting::HiddenFiles> hiddenFiles;
   std::vector<std::string> noretrieve;
@@ -205,7 +204,7 @@ public:
   const setting::DupeCheck& DupeCheck() const { return dupeCheck; }
   const std::vector<setting::Cscript>& Cscript() const { return cscript; }
   const std::vector<std::string>& IdleCommands() const { return idleCommands; }
-  int TotalUsers() const { return totalUsers; }
+  unsigned TotalUsers() const { return totalUsers; }
   const setting::Lslong& Lslong() const { return lslong; }
   const std::vector<setting::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
   const std::vector<std::string>& Noretrieve() const { return noretrieve; }
