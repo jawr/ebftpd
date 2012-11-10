@@ -11,6 +11,7 @@
 #include "logs/logs.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
+#include "fs/dircontainer.hpp"
 
 namespace PP = acl::path;
 
@@ -57,10 +58,7 @@ util::Error RemoveDirectory(const Path& path)
 
 }
 
-// we don't literally change the the working dir of the process
-// as the ftpd is multithreaded and this would change work dir
-// of all threads, we instead just check that chdir is possible
-util::Error ChangeDirectory(ftp::Client& client, Path& path)
+util::Error ChangeDirectory(ftp::Client& client, const Path& path)
 {
   Path absolute = (client.WorkDir() / path).Expand();
 
@@ -76,41 +74,67 @@ util::Error ChangeDirectory(ftp::Client& client, Path& path)
   }
   catch (const util::SystemError& e)
   {
-    if (e.Errno() != ENOENT) return util::Error::Failure(e.Errno());
-
-    DirEnumerator dirEnum;    
-    try
-    {
-      dirEnum.Readdir(real.Dirname());
-    }
-    catch (const util::SystemError& e)
-    {
-      return util::Error::Failure(ENOENT);
-    }
-    
-    bool match = false;
-    for (const DirEntry& de : dirEnum)
-    {
-      if (boost::istarts_with(de.Path().ToString(), real.Basename().ToString()) &&
-          de.Status().IsDirectory())
-      {
-        match = true;
-        if (!PP::DirAllowed<PP::View>(client.User(), path))
-          return util::Error::Failure(ENOENT);
-
-        path = absolute = absolute.Dirname() / de.Path();
-        if (!de.Status().IsExecutable()) return util::Error::Failure(EACCES);
-      }
-    }
-    if (!match) return util::Error::Failure(ENOENT);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    return util::Error::Failure();
+    return util::Error::Failure(errno);
   }
   
   client.SetWorkDir(absolute);
   return util::Error::Success();
+}
+
+util::Error ChangeAlias(ftp::Client& client, fs::Path& path)
+{
+  std::string name = boost::to_lower_copy(path.ToString());
+  for (auto& alias : cfg::Get().Alias())
+  {
+    if (alias.Name() == name)
+    {
+      path = alias.Path();
+      return ChangeDirectory(client, alias.Path());
+    }
+  }
+  
+  return util::Error::Failure(ENOENT);
+}
+
+util::Error ChangeMatch(ftp::Client& client, Path& path)
+{
+  Path absolute = (client.WorkDir() / path).Expand();
+
+  util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), absolute));
+  if (!e) return e;
+    
+  Path real = cfg::Get().Sitepath() + absolute;
+
+  try
+  {
+    fs::Status status;
+    for (auto& entry : fs::DirContainer(real.Dirname()))
+    {
+      try
+      {
+        status.Reset(real.Dirname() + entry);
+      }
+      catch (const util::SystemError& e)
+      { continue; }
+      
+      if (boost::istarts_with(entry, path.Basename().ToString()) &&
+          status.IsDirectory())
+      {
+        path = absolute.Dirname() / entry;
+        if (!PP::DirAllowed<PP::View>(client.User(), path))
+          return util::Error::Failure(ENOENT);
+
+        if (!status.IsExecutable()) return util::Error::Failure(EACCES);
+        else return util::Error::Success();
+      }      
+    }
+  }
+  catch (const util::SystemError& e)
+  {
+    return util::Error::Failure(e.Errno());
+  }
+
+  return util::Error::Failure(ENOENT);
 }
 
 util::Error CreateDirectory(ftp::Client& client, const Path& path)

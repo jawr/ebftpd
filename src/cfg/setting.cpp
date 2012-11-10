@@ -135,8 +135,8 @@ AllowFxp::AllowFxp(std::vector<std::string> toks)
 
 Alias::Alias(const std::vector<std::string>& toks)   
 {
-  name = toks.at(0);
-  path = fs::Path(toks.at(1));
+  name = boost::to_lower_copy(toks[0]);
+  path = fs::Path(toks[1]);
 }
 
 Right::Right(std::vector<std::string> toks)

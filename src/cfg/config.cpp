@@ -153,11 +153,6 @@ void Config::Parse(std::string line) {
   {
     NotImplemented(opt);
   }
-  else if (opt == "botscript_path")
-  {
-    ParameterCheck(opt, toks, 1);
-    botscriptPath = fs::Path(toks.at(0));
-  }
   else if (opt == "banner")
   {
     ParameterCheck(opt, toks, 1);

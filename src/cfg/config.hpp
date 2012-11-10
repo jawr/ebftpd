@@ -44,7 +44,6 @@ class Config
   std::vector<setting::SecureIp> secureIp;
   std::vector<setting::SecurePass> securePass;
   fs::Path datapath;
-  fs::Path botscriptPath;
   std::vector<std::string> bouncerIp;
   std::vector<setting::SpeedLimit> speedLimit;
   std::vector<setting::SimXfers> simXfers;
@@ -158,7 +157,6 @@ public:
   const std::vector<setting::SecureIp>& SecureIp() const { return secureIp; }
   const std::vector<setting::SecurePass>& SecurePass() const { return securePass; }
   const fs::Path& Datapath() const { return datapath; }
-  const fs::Path& BotscriptPath() const { return botscriptPath; }
   const std::vector<std::string>& BouncerIp() const { return bouncerIp; }
   const std::vector<setting::SpeedLimit>& SpeedLimit() const { return speedLimit; }
   const std::vector<setting::SimXfers>& SimXfers() const { return simXfers; }

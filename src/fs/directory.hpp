@@ -15,7 +15,9 @@ namespace fs
 
 util::Error CreateDirectory(ftp::Client& client, const Path& path);
 util::Error RemoveDirectory(ftp::Client& client, const Path& path);
-util::Error ChangeDirectory(ftp::Client& client, Path& path);
+util::Error ChangeAlias(ftp::Client& client, fs::Path& path);
+util::Error ChangeMatch(ftp::Client& client, Path& path);
+util::Error ChangeDirectory(ftp::Client& client, const Path& path);
 
 } /* fs namespace */
 
