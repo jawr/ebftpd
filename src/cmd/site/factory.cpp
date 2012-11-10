@@ -1,3 +1,4 @@
+#include <iostream>
 #include <boost/algorithm/string.hpp>
 #include "cmd/site/factory.hpp"
 #include "cmd/site/epsv.hpp"
@@ -37,6 +38,7 @@
 #include "cmd/site/group.hpp"
 #include "cmd/site/groups.hpp"
 #include "cmd/site/grpdel.hpp"
+#include "cmd/site/grpchange.hpp"
 #include "cmd/site/grpnfo.hpp"
 #include "cmd/site/grpren.hpp"
 #include "cmd/site/reload.hpp"

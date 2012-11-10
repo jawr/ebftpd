@@ -4,6 +4,8 @@
 #include <boost/lexical_cast.hpp>
 #include "text/tag.hpp"
 #include "text/error.hpp"
+=======
+#include "logs/logs.hpp"
 
 namespace text
 {
@@ -112,6 +114,9 @@ void Tag::ParseSize(long long bytes)
   std::ostringstream os;
   os << boost::format(format) % value;
 
+  logs::debug << format << logs::endl;
+  std::ostringstream os;
+  os << boost::format(format) % value;
   if (pretty)
   {
     std::string number = os.str();
@@ -128,7 +133,6 @@ void Tag::ParseSize(long long bytes)
       return;
     }
   }
-
   this->value = os.str();
 }
 
