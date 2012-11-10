@@ -13,7 +13,6 @@ class Client;
 namespace fs
 {
 
-util::Error FreeDiskSpace(const Path& real, unsigned long long& freeBytes);
 util::Error CreateDirectory(ftp::Client& client, const Path& path);
 util::Error RemoveDirectory(ftp::Client& client, const Path& path);
 util::Error ChangeDirectory(ftp::Client& client, Path& path);

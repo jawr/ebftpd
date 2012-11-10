@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <cerrno>
+#include <sys/statvfs.h>
 #include "fs/status.hpp"
 #include "util/error.hpp"
 
@@ -99,6 +100,17 @@ off_t Status::Size() const
 const struct stat& Status::Native() const
 {
   return native;
+}
+
+util::Error FreeDiskSpace(const Path& real, unsigned long long& freeBytes)
+{
+  struct statvfs sfs;
+
+  if (statvfs(real.CString(), &sfs) <0)
+    return util::Error::Failure(errno);
+
+  freeBytes = sfs.f_bsize * sfs.f_bfree;
+  return util::Error::Success();
 }
 
 } /* fs namespace */

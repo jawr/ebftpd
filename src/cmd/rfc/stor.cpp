@@ -10,6 +10,7 @@
 #include "util/scopeguard.hpp"
 #include "ftp/util.hpp"
 #include "logs/logs.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -39,6 +40,13 @@ cmd::Result STORCommand::Execute()
   
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopUpload(client.User().UID()); });  
 
+  if (data.DataType() == ftp::DataType::ASCII &&
+     !cfg::Get().AsciiUploads().Allowed(argStr))
+  {
+    control.Reply(ftp::ActionNotOkay, "File can't be uploaded in ASCII, change to BINARY.");
+    return cmd::Result::Okay;
+  }
+  
   fs::FileSinkPtr fout;
   try
   {
@@ -55,7 +63,7 @@ cmd::Result STORCommand::Execute()
     control.Reply(ftp::ActionNotOkay, os.str());
     return cmd::Result::Okay;
   }
-  
+
   std::stringstream os;
   os << "Opening " << (data.DataType() == ftp::DataType::ASCII ? "ASCII" : "BINARY") 
      << " connection for upload of " 

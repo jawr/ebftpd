@@ -25,7 +25,6 @@ Config::Config(const std::string& configFile) :
   defaultFlags("3"),
   freeSpace(100),
   timezone(0),
-  colorMode(false),
   sitenameLong("SITE NAME"),
   sitenameShort("SN"),
   dlIncomplete(true),
@@ -136,11 +135,6 @@ void Config::Parse(std::string line) {
     ParameterCheck(opt, toks, 1);
     tlsCertificate = fs::Path(toks.at(0));
   }
-  else if (opt == "rootpath")
-  {
-    ParameterCheck(opt, toks, 1);
-    rootpath = fs::Path(toks.at(0));
-  }
   else if (opt == "reload_3")
   {
     NotImplemented(opt);
@@ -171,6 +165,10 @@ void Config::Parse(std::string line) {
   else if (opt == "ascii_downloads")
   {
     asciiDownloads = setting::AsciiDownloads(toks);
+  }
+  else if (opt == "ascii_uploads")
+  {
+    asciiUploads = setting::AsciiUploads(toks);
   }
   else if (opt == "free_space")
   {
@@ -214,11 +212,6 @@ void Config::Parse(std::string line) {
     ParameterCheck(opt, toks, 1);
     maxSitecmdLines = boost::lexical_cast<int>(toks.at(0));
   }
-  else if (opt == "shutdown")
-  {
-    ParameterCheck(opt, toks, 1, -1);
-    shutdown = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
-  }
   else if (opt == "hideuser")
   {
     ParameterCheck(opt, toks, 1, -1);
@@ -232,10 +225,6 @@ void Config::Parse(std::string line) {
   {
     ParameterCheck(opt, toks, 1);
     timezone = boost::lexical_cast<int>(toks[0]);
-  }
-  else if (opt == "color_mode")
-  {
-    NotImplemented(opt);
   }
   else if (opt == "dl_incomplete")
   {

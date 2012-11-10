@@ -34,31 +34,22 @@ class Config
   std::string defaultFlags;
   // glftpd
   setting::AsciiDownloads asciiDownloads;
-  acl::ACL shutdown;
-  long freeSpace;
+  setting::AsciiUploads asciiUploads;
+  unsigned freeSpace;
   int timezone;
-  bool colorMode;
   std::string sitenameLong;
   std::string sitenameShort;
   std::string loginPrompt;
-  fs::Path rootpath;
-  //fs::Path reloadConfig;
   std::vector<std::string> master;
   std::vector<setting::SecureIp> secureIp;
   std::vector<setting::SecurePass> securePass;
   fs::Path datapath;
-  //fs::Path pwdPath;
-  //fs::Path grpPath;
   fs::Path botscriptPath;
   std::vector<std::string> bouncerIp;
   std::vector<setting::SpeedLimit> speedLimit;
   std::vector<setting::SimXfers> simXfers;
   std::vector<std::string> calcCrc;
   std::vector<std::string> xdupe;
-  //int mmapAmount;
-  //int dlSendFile;
-  //int ulBufferedForce;
-  //fs::Path minHomedir;
   std::vector<std::string> validIp;
   std::vector<std::string> activeAddr;
   std::vector<std::string> pasvAddr;
@@ -157,14 +148,12 @@ public:
   int Port() const { return port; }
   const std::string& DefaultFlags() const { return defaultFlags; }
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
-  const acl::ACL& Shutdown() const { return shutdown; }
-  long FreeSpace() const { return freeSpace; }
+  const setting::AsciiUploads& AsciiUploads() const { return asciiUploads; } 
+  unsigned FreeSpace() const { return freeSpace; }
   int Timezone() const { return timezone; }
-  bool ColorMode() const { return colorMode; }
   const std::string& SitenameLong() const { return sitenameLong; }
   const std::string& SitenameShort() const { return sitenameShort; }
   const std::string& LoginPrompt() const { return loginPrompt; }
-  const fs::Path& Rootpath() const { return rootpath; }
   const std::vector<std::string>& Master() const { return master; }  
   const std::vector<setting::SecureIp>& SecureIp() const { return secureIp; }
   const std::vector<setting::SecurePass>& SecurePass() const { return securePass; }

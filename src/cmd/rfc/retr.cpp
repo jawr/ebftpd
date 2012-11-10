@@ -9,6 +9,7 @@
 #include "ftp/counter.hpp"
 #include "ftp/util.hpp"
 #include "logs/logs.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -49,10 +50,10 @@ cmd::Result RETRCommand::Execute()
     return cmd::Result::Okay;
   }
 
-  std::streampos size;
+  off_t size;
   try
   {
-    size = fin->seek(0, std::ios_base::end);  
+    size = fin->seek(0, std::ios_base::end) - std::streampos(0);  
     if (offset > size)
     {
       control.Reply(ftp::InvalidRESTParameter, "Restart offset larger than file size.");
@@ -66,6 +67,13 @@ cmd::Result RETRCommand::Execute()
     std::string errmsg = e.what();
     errmsg[0] = std::toupper(errmsg[0]);
     control.Reply(ftp::ActionAbortedError, errmsg);
+  }
+  
+  if (data.DataType() == ftp::DataType::ASCII &&
+      !cfg::Get().AsciiDownloads().Allowed(size, argStr))
+  {
+    control.Reply(ftp::ActionNotOkay, "File can't be downloaded in ASCII, change to BINARY.");
+    return cmd::Result::Okay;
   }
 
   std::stringstream os;

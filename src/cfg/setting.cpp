@@ -6,8 +6,6 @@
 #include "cfg/exception.hpp"
 #include "util/string.hpp"
 
-#include <iostream>
-
 namespace cfg { namespace setting
 {
 
@@ -30,8 +28,7 @@ Database::Database(const std::vector<std::string>& toks) : port(-1)
   }
 }
 
-AsciiDownloads::AsciiDownloads(const std::vector<std::string>& toks) :
-  size(-1)
+AsciiDownloads::AsciiDownloads(const std::vector<std::string>& toks) : size(-1)
 {
   try
   {
@@ -40,6 +37,33 @@ AsciiDownloads::AsciiDownloads(const std::vector<std::string>& toks) :
   catch (const boost::bad_lexical_cast&) { }
   if (size == 0) size = -1;
   masks.assign(toks.begin() + 1, toks.end());
+}
+
+bool AsciiDownloads::Allowed(off_t size, const std::string& path) const
+{
+  if (this->size > 0 && size > this->size) return false;
+  if (masks.empty()) return true;
+  for (auto& mask : masks)
+  {
+    if (util::string::WildcardMatch(mask, path)) return true;
+  }
+  return false;
+}
+
+
+AsciiUploads::AsciiUploads(const std::vector<std::string>& toks)
+{
+  masks.assign(toks.begin(), toks.end());
+}
+
+bool AsciiUploads::Allowed(const std::string& path) const
+{
+  if (masks.empty()) return true;
+  for (auto& mask : masks)
+  {
+    if (util::string::WildcardMatch(mask, path)) return true;
+  }
+  return false;
 }
 
 SecureIp::SecureIp(std::vector<std::string> toks)

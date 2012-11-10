@@ -8,6 +8,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <sys/types.h>
 #include "acl/acl.hpp"
 #include "fs/path.hpp"
 #include "acl/passwdstrength.hpp"
@@ -65,19 +66,23 @@ public:
 
 class AsciiDownloads : public Setting
 {
-  int size;
+  off_t size;
   std::vector<std::string> masks;
+  
 public:
-  AsciiDownloads() :
-    size(20000)
-  {
-    masks.emplace_back("*.[Tt][Xx][Tt]");
-    masks.emplace_back("*.[Dd][Ii][Zz]");
-    masks.emplace_back("*.[Nn][Ff][Oo]");
-  }
+  AsciiDownloads() : size(-1) { }
   AsciiDownloads(const std::vector<std::string>& toks);
-  int Size() const { return size; }
-  const std::vector<std::string>& Masks() const { return masks; }
+  bool Allowed(off_t size, const std::string& path) const;
+};
+
+class AsciiUploads : public Setting
+{
+  std::vector<std::string> masks;
+  
+public:
+  AsciiUploads() { } 
+  AsciiUploads(const std::vector<std::string>& toks);
+  bool Allowed(const std::string& path) const;
 };
 
 class SecureIp : public Setting

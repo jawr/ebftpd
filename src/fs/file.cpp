@@ -87,8 +87,16 @@ FileSinkPtr CreateFile(ftp::Client& client, const Path& path)
   Path absolute = (client.WorkDir() / path).Expand();
   util::Error e(PP::FileAllowed<PP::Upload>(client.User(), absolute));
   if (!e) throw util::SystemError(e.Errno());
-
+  
   Path real = cfg::Get().Sitepath() + absolute;
+
+  unsigned long long freeBytes;
+  e = fs::FreeDiskSpace(real.Dirname(), freeBytes);
+  if (!e) throw util::SystemError(e.Errno());
+  
+  if (cfg::Get().FreeSpace() > freeBytes / 1024 / 1024)
+    throw util::SystemError(ENOSPC);
+
   int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, 0777);
   if (fd < 0) throw util::SystemError(errno);
 
@@ -104,6 +112,14 @@ FileSinkPtr AppendFile(ftp::Client& client, const Path& path, off_t offset)
   if (!e) throw util::SystemError(e.Errno());
 
   Path real = cfg::Get().Sitepath() + absolute;
+
+  unsigned long long freeBytes;
+  e = fs::FreeDiskSpace(real.Dirname(), freeBytes);
+  if (!e) throw util::SystemError(e.Errno());
+  
+  if (cfg::Get().FreeSpace() > freeBytes / 1024 / 1024)
+    throw util::SystemError(ENOSPC);
+
   int fd = open(real.CString(), O_WRONLY | O_APPEND);
   if (fd < 0) throw util::SystemError(errno);
   FileSinkPtr fout(new FileSink(fd, boost::iostreams::close_handle));

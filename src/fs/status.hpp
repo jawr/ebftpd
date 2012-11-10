@@ -3,6 +3,7 @@
 
 #include <sys/stat.h>
 #include "fs/path.hpp"
+#include "util/error.hpp"
 
 namespace fs
 {
@@ -38,6 +39,8 @@ public:
   
   const struct stat& Native() const;
 };
+
+util::Error FreeDiskSpace(const Path& real, unsigned long long& freeBytes);
 
 } /* fs namespace */
 
