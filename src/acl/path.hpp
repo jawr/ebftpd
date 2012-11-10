@@ -16,6 +16,7 @@ enum Type
 {
   Upload,
   Resume,
+  Overwrite,
   Makedir,
   Download,
   Dirlog,

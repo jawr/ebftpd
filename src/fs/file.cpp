@@ -98,7 +98,16 @@ FileSinkPtr CreateFile(ftp::Client& client, const Path& path)
     throw util::SystemError(ENOSPC);
 
   int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, 0777);
-  if (fd < 0) throw util::SystemError(errno);
+  if (fd < 0)
+  {
+    if (errno != EEXIST) throw util::SystemError(errno);
+
+    e = PP::FileAllowed<PP::Overwrite>(client.User(), absolute);
+    if (!e) throw util::SystemError(EEXIST);
+    
+    fd = open(real.CString(), O_WRONLY | O_TRUNC, 0777);
+    if (fd < 0) throw util::SystemError(errno);
+  }
 
   OwnerCache::Chown(real, Owner(client.User().UID(), client.User().PrimaryGID()));
 

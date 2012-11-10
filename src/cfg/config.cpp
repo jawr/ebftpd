@@ -286,6 +286,10 @@ void Config::Parse(std::string line) {
     ParameterCheck(opt, toks, 1, -1);
     ignoreType.insert(ignoreType.end(), toks.begin(), toks.end());
   }
+  else if (opt == "ignore_size")
+  {
+    NotImplemented(opt);
+  }
   else if (opt == "banned_users")
   {
     ParameterCheck(opt, toks, 1, -1);

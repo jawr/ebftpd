@@ -50,6 +50,18 @@ struct Traits<Resume>
 };
 
 template <>
+struct Traits<Overwrite>
+{
+  static util::Error Allowed(const User& user, const std::string& path)
+  {
+    if (Evaluate(cfg::Get().Overwrite(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+};
+
+template <>
 struct Traits<Makedir>
 {
   static util::Error Allowed(const User& user, const std::string& path)
@@ -170,14 +182,11 @@ struct Traits<Delete>
 template <>
 struct Traits<View>
 {
-  static util::Error Allowed(const User& user, const std::string& path)
+  static util::Error Allowed(const User&, const std::string&)
   {
     // always returns true as all the checking for View is done earlier on
     // as hidden files and priv paths
     return util::Error::Success();
-    
-    (void) user;
-    (void) path;
   }
 };
 
@@ -264,6 +273,7 @@ util::Error FileAllowed(const User& user, const std::string& path)
 
 template util::Error FileAllowed<Upload>(const User& user, const std::string& path);
 template util::Error FileAllowed<Resume>(const User& user, const std::string& path);
+template util::Error FileAllowed<Overwrite>(const User& user, const std::string& path);
 template util::Error FileAllowed<Download>(const User& user, const std::string& path);
 template util::Error FileAllowed<Rename>(const User& user, const std::string& path);
 template util::Error FileAllowed<Filemove>(const User& user, const std::string& path);
