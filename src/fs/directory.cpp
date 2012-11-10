@@ -100,6 +100,7 @@ util::Error ChangeMatch(ftp::Client& client, Path& path)
 {
   Path orig(path);
   Path absolute = (client.WorkDir() / path).Expand();
+  std::string lcBasename(boost::to_lower_copy(absolute.Basename().ToString()));
 
   util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), absolute));
   if (!e) return e;
@@ -108,26 +109,13 @@ util::Error ChangeMatch(ftp::Client& client, Path& path)
 
   try
   {
-    fs::Status status;
     for (auto& entry : fs::DirContainer(real.Dirname()))
     {
-      try
-      {
-        status.Reset(real.Dirname() + entry);
-      }
-      catch (const util::SystemError& e)
-      { continue; }
-      
-      if (boost::istarts_with(entry, path.Basename().ToString()) &&
-          status.IsDirectory())
-      {
-        path = absolute.Dirname() / entry;
-        if (!PP::DirAllowed<PP::View>(client.User(), path))
-          return util::Error::Failure(ENOENT);
-
-        if (!status.IsExecutable()) return util::Error::Failure(EACCES);
-        else return util::Error::Success();
-      }      
+      if (!boost::starts_with(boost::to_lower_copy(entry), lcBasename)) continue;
+      path = absolute.Dirname() / entry;
+      e = ChangeDirectory(client, path);
+      if (e || (e.Errno() != ENOENT && e.Errno() != ENOTDIR))
+        return e;
     }
   }
   catch (const util::SystemError& e)
@@ -140,7 +128,6 @@ util::Error ChangeMatch(ftp::Client& client, Path& path)
     for (auto& cdpath : cfg::Get().Cdpath())
     {
       path = cdpath / orig;
-      logs::debug << path << logs::endl;
       e = ChangeMatch(client, path);
       if (e || e.Errno() != ENOENT) return e;
     }

@@ -153,13 +153,10 @@ void Client::DisplayBanner()
   control.Reply(ftp::ServiceReady, config.LoginPrompt());
 }
 
-void Client::IdleReset(const std::string& commandLine)
+void Client::IdleReset(std::string commandLine)
 {
-  for (auto & cmd : cfg::Get().IdleCommands())
-    if (boost::starts_with(commandLine, cmd) &&
-        (commandLine.length() == cmd.length() ||
-         (commandLine.length() >= cmd.length() &&
-          commandLine[cmd.length()] == ' ')))
+  for (auto & mask : cfg::Get().IdleCommands())
+    if (util::string::WildcardMatch(mask, commandLine, true))
       return;
   idleTime = boost::posix_time::second_clock::local_time();
   idleExpires = idleTime + idleTimeout;

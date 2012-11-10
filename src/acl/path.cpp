@@ -4,6 +4,7 @@
 #include "cfg/get.hpp"
 #include "util/string.hpp"
 #include "acl/user.hpp"
+#include "logs/logs.hpp"
 
 namespace acl { namespace path
 {
@@ -256,6 +257,21 @@ struct Traits<Hideowner>
 
 bool HiddenFile(const std::string& path)
 {
+  std::string dirname = fs::Path(path).Dirname();
+  if (dirname[dirname.length() - 1] != '/') dirname += '/';
+  std::string basename = fs::Path(path).Basename();
+
+  for (auto& hf : cfg::Get().HiddenFiles())
+  {
+    if (util::string::WildcardMatch(hf.Path().ToString(), dirname))
+    {
+      for (auto& mask : hf.Masks())
+      {
+        if (util::string::WildcardMatch(mask, basename)) return true;
+      }
+    }
+  }
+  
   return boost::ends_with(path, "/" + fs::OwnerFile::ownerFilename);
 }
 

@@ -68,7 +68,7 @@ class Client : public util::Thread
   void InnerRun();
   void Run();
   void LookupIdent();
-  void IdleReset(const std::string& commandLine)  ;
+  void IdleReset(std::string commandLine)  ;
   
 public:
   Client();

@@ -517,7 +517,7 @@ void Config::Parse(std::string line) {
   }
   else if (opt == "hidden_files")
   {
-    ParameterCheck(opt, toks, 1);
+    ParameterCheck(opt, toks, 2, -1);
     hiddenFiles.emplace_back(toks);
   }
   else if (opt == "creditcheck")
