@@ -20,9 +20,8 @@
 #include "main.hpp"
 #include "util/net/identclient.hpp"
 #include "util/string.hpp"
-#include "db/user/user.hpp"
-#include "db/user/userprofile.hpp"
 #include "ftp/counter.hpp"
+#include "db/mail/mail.hpp"
 
 namespace ftp
 {
@@ -264,7 +263,10 @@ void Client::InnerRun()
   using util::scope_guard;
   using util::make_guard;
   
-  scope_guard finishedGuard = make_guard([&]{ SetState(ClientState::Finished); });
+  scope_guard finishedGuard = make_guard([&]{ 
+    SetState(ClientState::Finished);
+    db::mail::LogOffPurgeTrash(user.UID());
+  });
 
   LookupIdent();
   
@@ -297,14 +299,14 @@ void Client::InnerRun()
 
 void Client::Run()
 {
-  try
-  {
+  //try
+  //{
     InnerRun();
-  }
-  catch (const std::exception& e)
-  {
-    logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
-  }
+  //}
+  //catch (const std::exception& e)
+  //{
+    //logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
+ // }
 }
 
 } /* ftp namespace */

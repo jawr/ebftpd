@@ -1,3 +1,4 @@
+#include <cassert>
 #include <boost/optional.hpp>
 #include "db/bson/message.hpp"
 #include "db/bson/bson.hpp"
@@ -14,7 +15,7 @@ mongo::BSONObj Message::Serialize(const db::mail::Message& message)
   bob.append("sender", message.sender);
   bob.append("time sent", ToDateT(message.timeSent));
   bob.append("body", message.body);
-  bob.append("trash", message.trash);
+  bob.append("status", db::mail::StatusToString(message.status));
   return bob.obj();
 }
 
@@ -27,9 +28,16 @@ db::mail::Message Message::Unserialize(const mongo::BSONObj& bo)
     message.sender = bo["sender"].String();
     message.timeSent = ToPosixTime(bo["time sent"].Date());
     message.body = bo["body"].String();
-    message.trash = bo["trash"].Bool();
+    message.status = db::mail::StatusFromString(bo["status"].String());
+    mongo::BSONElement oid;
+    bo.getObjectID(oid);
+    message.oid = oid.OID();
   }
   catch (const mongo::DBException& e)
+  {
+    UnserializeFailure("message", e, bo);
+  }
+  catch (const std::out_of_range& e)
   {
     UnserializeFailure("message", e, bo);
   }
