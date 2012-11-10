@@ -15,6 +15,17 @@ namespace acl
 UserCache UserCache::instance;
 bool UserCache::initialized = false;
 
+util::Error UserAllowed(const std::string& name)
+{
+  const cfg::Config& config = cfg::Get();
+  if (std::find(config.BannedUsers().begin(), 
+      config.BannedUsers().end(), name) !=
+      config.BannedUsers().end())
+    return util::Error::Failure("User " + name + " is in the banned list.");
+  else
+    return util::Error::Success();
+}
+
 UserCache::~UserCache()
 {
   while (!byName.empty())
@@ -67,14 +78,18 @@ bool UserCache::Exists(UserID uid)
 util::Error UserCache::Create(const std::string& name, const std::string& password,
                               const std::string& flags, acl::UserID creator)
 {
-  unsigned totalUsers = cfg::Get().TotalUsers();
+  const cfg::Config& config = cfg::Get();
+  unsigned totalUsers = config.TotalUsers();
   if (totalUsers > 0 && Count() >= totalUsers)
   {
     std::ostringstream os;
     os << "Limit of " << totalUsers << " user(s) has been reached.";
     return util::Error::Failure(os.str());
   }
-
+  
+  util::Error e(UserAllowed(name));
+  if (!e) return e;
+  
   acl::UserID uid = db::user::GetNewUserID();
 
   {
@@ -155,6 +170,9 @@ util::Error UserCache::Readd(const std::string& name)
 
 util::Error UserCache::Rename(const std::string& oldName, const std::string& newName)
 {
+  util::Error e(UserAllowed(newName));
+  if (!e) return e;
+
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   if (instance.byName.find(newName) != instance.byName.end())
     return util::Error::Failure("New name " + newName + " taken by another user.");
