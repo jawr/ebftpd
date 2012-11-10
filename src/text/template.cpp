@@ -3,6 +3,7 @@
 #include <boost/algorithm/string.hpp>
 #include "text/template.hpp"
 #include "text/error.hpp"
+#include "logs/logs.hpp"
 
 namespace text
 {
@@ -15,15 +16,45 @@ Template::Template(const std::string& file) : file(file)
   
   std::ostringstream os;
   std::ostringstream var;
+  std::ostringstream logicCommand;
 
   bool open = false;
   bool read = false;
   bool first = false;
+  bool logic = false;
+  int skip = 0;
+
+  TemplateSection templ;
+  templ.SetSection(SectionType::Head);
   
   for (int i = 0, line = 0; io.good(); ++i)
   {
     char c;
     io >> std::noskipws >> c;
+
+    // check if we have to skip certainc haracters (when closing logic)
+    if (skip > 0)
+    {
+      --skip;
+      if (c == '\n' || c == '\r' || c == '}' || c == ' ')
+        continue;
+      skip = 0;
+    }
+
+    logs::debug << c << logs::endl;
+
+    if (logic)
+    {
+      if (c == '%')
+      {
+        std::string command = logicCommand.str();
+        logs::debug << "Logic Command: " << command << logs::endl;
+        skip = 2;
+        logic = false;
+        continue;
+      }
+      logicCommand << c;
+    }
 
     if (c == '\n' || c == '\r')
     {
@@ -33,6 +64,7 @@ Template::Template(const std::string& file) : file(file)
 
     if (read)
     {
+
       if (c == ' ') continue;
       if (c == '{') throw TemplateMalform(++line, ++i);
       if (c == '}')
@@ -40,7 +72,7 @@ Template::Template(const std::string& file) : file(file)
         read = false;
         open = false;
         first = false;
-        RegisterTag(var.str());
+        templ.RegisterTag(var.str());
         os << c;
         continue;
       }
@@ -51,6 +83,15 @@ Template::Template(const std::string& file) : file(file)
     }
 
     if (!open && c == '{') open = true;
+    else if (open && c == '%')
+    {
+      logs::debug << "Got logic" << logs::endl;
+      // got logic
+      open = false;
+      logic = true;
+      logicCommand.str(std::string());
+      continue;   
+    }
     else if (open && c != '{') open = false;
     else if (open && c == '{') 
     {
@@ -61,13 +102,13 @@ Template::Template(const std::string& file) : file(file)
     os << c;
   }
 
-  buffer = os.str();
+  //buffer = os.str();
   // strip last char if it's new line
-  if (*buffer.rbegin() == '\n' || *buffer.rbegin() == '\r')
-    buffer.erase(buffer.end()-1, buffer.end());
+  //if (*buffer.rbegin() == '\n' || *buffer.rbegin() == '\r')
+  //  buffer.erase(buffer.end()-1, buffer.end());
 }
 
-void Template::RegisterTag(std::string var)
+void TemplateSection::RegisterTag(std::string var)
 {
   boost::trim(var);
   boost::to_lower(var);
@@ -93,7 +134,7 @@ void Template::RegisterTag(std::string var)
  
 }
 
-void Template::CheckValueExists(const std::string& key)
+void TemplateSection::CheckValueExists(const std::string& key)
 {
   int i = 0;
   for (auto& value: values)
@@ -102,7 +143,7 @@ void Template::CheckValueExists(const std::string& key)
     throw TemplateDuplicateValue("Already registered " + key);
 }
   
-void Template::RegisterValue(const std::string& key, const std::string& value)
+void TemplateSection::RegisterValue(const std::string& key, const std::string& value)
 {
   CheckValueExists(key);
   
@@ -118,7 +159,7 @@ void Template::RegisterValue(const std::string& key, const std::string& value)
   values.emplace_back(key);
 }
 
-void Template::RegisterSize(const std::string& key, long long bytes)
+void TemplateSection::RegisterSize(const std::string& key, long long bytes)
 {
   CheckValueExists(key);
 
@@ -133,7 +174,7 @@ void Template::RegisterSize(const std::string& key, long long bytes)
   values.emplace_back(key);
 }
 
-void Template::RegisterSpeed(const std::string& key, long long bytes, 
+void TemplateSection::RegisterSpeed(const std::string& key, long long bytes, 
   long long xfertime)
 {
   CheckValueExists(key);
@@ -149,7 +190,7 @@ void Template::RegisterSpeed(const std::string& key, long long bytes,
   values.emplace_back(key);
 }
 
-std::string Template::Compile()
+std::string TemplateSection::Compile()
 {
   std::string ret = buffer;
   for (auto& tag: tags)
@@ -170,9 +211,9 @@ int main()
   try
   {
     text::Template temp("data/text/test.tmpl");
-    temp.RegisterSize("a", 140509184);
-    temp.RegisterValue("b", "this is b");
-    logs::debug << temp.Compile() << logs::endl;
+    //temp.RegisterSize("a", 140509184);
+    //temp.RegisterValue("b", "this is b");
+    //logs::debug << temp.Compile() << logs::endl;
   }
   catch (const text::TemplateError& e)
   {
