@@ -98,6 +98,7 @@ util::Error ChangeAlias(ftp::Client& client, fs::Path& path)
 
 util::Error ChangeMatch(ftp::Client& client, Path& path)
 {
+  Path orig(path);
   Path absolute = (client.WorkDir() / path).Expand();
 
   util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), absolute));
@@ -132,6 +133,17 @@ util::Error ChangeMatch(ftp::Client& client, Path& path)
   catch (const util::SystemError& e)
   {
     return util::Error::Failure(e.Errno());
+  }
+  
+  if (orig == orig.Basename())
+  {
+    for (auto& cdpath : cfg::Get().Cdpath())
+    {
+      path = cdpath / orig;
+      logs::debug << path << logs::endl;
+      e = ChangeMatch(client, path);
+      if (e || e.Errno() != ENOENT) return e;
+    }
   }
 
   return util::Error::Failure(ENOENT);

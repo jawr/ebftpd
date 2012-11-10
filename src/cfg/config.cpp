@@ -363,7 +363,8 @@ void Config::Parse(std::string line) {
   }
   else if (opt == "cdpath")
   {
-    NotImplemented(opt);
+    ParameterCheck(opt, toks, 1);
+    cdpath.emplace_back(toks[0]);
   }
   else if (opt == "nodupecheck")
   {
