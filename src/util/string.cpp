@@ -67,6 +67,26 @@ std::string CompressWhitespaceCopy(const std::string& str)
   return CompressWhitespace(temp);
 }
 
+std::string WordWrap(std::string& source, std::string::size_type length)
+{
+  if (source.length() < length)
+  {
+    std::string part = source;
+    source.clear();
+    return part;
+  }
+  
+  std::string part = source.substr(0, length);
+  std::string::size_type pos = part.find_last_of("- \t");
+  if (pos == std::string::npos)
+  { 
+    source.erase(0, part.length());
+    return part;
+  }
+  source.erase(0, pos + 1);
+  return part.substr(0, pos);
+}
+
 } /* string namespace */
 } /* util namespace */
 
@@ -81,6 +101,9 @@ int main()
   std::string s = "    hello how   are you   today !";
   
   std::cout << CompressWhitespace(s) << std::endl;
+
+  while (!s.empty())
+    std::cout << WordWrap(s, 10) << std::endl;
   
 }
 

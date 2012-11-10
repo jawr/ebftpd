@@ -24,6 +24,7 @@
 #include "db/user/userprofile.hpp"
 #include "ftp/counter.hpp"
 #include "acl/flags.hpp"
+#include "db/mail/mail.hpp"
 
 namespace ftp
 {
@@ -258,7 +259,10 @@ void Client::InnerRun()
   using util::scope_guard;
   using util::make_guard;
   
-  scope_guard finishedGuard = make_guard([&]{ SetState(ClientState::Finished); });
+  scope_guard finishedGuard = make_guard([&]{ 
+    SetState(ClientState::Finished);
+    db::mail::LogOffPurgeTrash(user.UID());
+  });
 
   LookupIdent();
   
@@ -297,7 +301,7 @@ void Client::Run()
   }
   catch (const std::exception& e)
   {
-    logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
+    //logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
   }
 }
 

@@ -13,7 +13,7 @@ struct DBUnserializeError : public DBError
     std::runtime_error("Unable to unserialize " + objectName + " from database.") {}
 };
 
-void UnserializeFailure(const std::string& objectName, const mongo::DBException& e, const mongo::BSONObj& bo);
+void UnserializeFailure(const std::string& objectName, const std::exception& e, const mongo::BSONObj& bo);
 
 } /* bson namespace */
 } /* db namespace */

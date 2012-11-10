@@ -32,9 +32,11 @@ void Update::Execute(mongo::DBClientConnection& conn)
   {
     conn.update(database + "." + collection, query, obj, upsert, false);
     LastErrorToException(conn);
+    promise.set_value(conn.getLastErrorDetailed()["n"].Int());
   }
   catch (const mongo::DBException& e)
   {
+    promise.set_value(-1);
     logs::db << "Update failed: " << database << "." 
              << collection << " : " << query.toString() 
              << " : " << obj.toString() << " upsert=" 
@@ -48,9 +50,11 @@ void Delete::Execute(mongo::DBClientConnection& conn)
   {
     conn.remove(database + "." + collection, query);
     LastErrorToException(conn);
+    promise.set_value(conn.getLastErrorDetailed()["n"].Int());
   }
   catch (const mongo::DBException& e)
   {
+    promise.set_value(-1);
     logs::db << "Delete failed: " << database << "." << collection 
              << " : " << query.toString() 
              << " : " << e.what() << logs::endl;
@@ -66,12 +70,11 @@ void Select::Execute(mongo::DBClientConnection& conn)
   try
   {
     std::unique_ptr<mongo::DBClientCursor> cursor =
-      conn.query(database + "." + collection, query);
+      conn.query(database + "." + collection, query, limit, skip);
     int i = 0;
     while (cursor->more())
     {
       results.push_back(cursor->nextSafe().copy());
-      if (limit != 0 && ++i == limit) break;
     }
     LastErrorToException(conn);
     promise.set_value(true);
@@ -80,9 +83,12 @@ void Select::Execute(mongo::DBClientConnection& conn)
   {
     logs::db << "Select query failed: " << database << "." << collection 
              << " : " << query.toString() << " : limit= " << limit 
+             << " : " << "skip=" << skip
              << " : " << e.what() << logs::endl;
     promise.set_value(false);
   }
+  
+  results.shrink_to_fit();
 }
 
 void Insert::Execute(mongo::DBClientConnection& conn)

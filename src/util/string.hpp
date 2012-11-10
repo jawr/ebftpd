@@ -23,6 +23,8 @@ FindNthNonConsecutiveChar(const std::string& str,
 std::string& CompressWhitespace(std::string& str);
 std::string CompressWhitespaceCopy(const std::string& str);
 
+std::string WordWrap(std::string& source, std::string::size_type length);
+
 } /* string namespace */
 } /* util namespace */
 

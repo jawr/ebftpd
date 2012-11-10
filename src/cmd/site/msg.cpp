@@ -1,0 +1,258 @@
+#include <cctype>
+#include <algorithm>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/lexical_cast.hpp>
+#include "cmd/site/msg.hpp"
+#include "logs/logs.hpp"
+#include "db/user/user.hpp"
+#include "db/mail/mail.hpp"
+#include "db/mail/message.hpp"
+#include "util/string.hpp"
+
+namespace cmd { namespace site
+{
+
+void MSGCommand::Read(const std::vector<db::mail::Message>& mail)
+{
+  control.PartReply(ftp::CommandOkay, ".----.--------------------.----------------------------------------------.");
+  
+  unsigned index = 0;
+  for (auto& message : mail)
+  {
+    if (index > 0)
+      control.PartReply(ftp::CommandOkay, "+----.--------------------.----------------------------------------------+");
+    std::ostringstream when;
+    when << message.TimeSent();
+    std::ostringstream os;
+    os << "| " << std::right << std::setw(2) << std::setfill('0') << ++index << std::setfill(' ')
+       << " | Sender: " << std::left << std::setw(10) << message.Sender().substr(0, 10)
+       << " | When: " << std::setw(38) << when.str().substr(0, 38) << " | ";
+    control.PartReply(ftp::CommandOkay, os.str());
+    control.PartReply(ftp::CommandOkay, "+----`--------------------`----------------------------------------------+");
+    
+    std::string body = message.Body();
+    while (!body.empty())
+    {
+      os.str("");
+      os << "| " << std::setw(70) << std::left << util::string::WordWrap(body, 70) << " |";
+      control.PartReply(ftp::CommandOkay, os.str());
+    }
+    
+    if (message.Status() == db::mail::Status::Unread) db::mail::Trash(message);
+  }
+  
+  control.PartReply(ftp::CommandOkay, "`------------------------------------------------------------------------'");
+}
+
+cmd::Result MSGCommand::Read()
+{
+  int index = -1;
+  if (args.size() > 3) return cmd::Result::SyntaxError;
+  if (args.size() == 3)
+  {
+    try
+    {
+      index = boost::lexical_cast<int>(args[2]);
+      if (index < 1)
+      {
+        control.Reply(ftp::ActionNotOkay, "Index must be 1 or larger.");
+        return cmd::Result::Okay;
+      }
+    }
+    catch (const boost::bad_lexical_cast&)
+    { return cmd::Result::SyntaxError; }
+  }
+  
+  std::vector<db::mail::Message> mail(db::mail::Get(client.User().UID()));
+  if (mail.empty())
+  {
+    control.Reply(ftp::CommandOkay, "Your mail box is empty.");
+    return cmd::Result::Okay;
+  }
+  
+  if (index != -1)
+  {
+    if (mail.size() < static_cast<unsigned>(index))
+    {
+      control.Reply(ftp::ActionNotOkay, "No message with index " + args[2] + ".");
+      return cmd::Result::Okay;
+    }
+    
+    Read({ mail[index - 1] });
+    control.Reply(ftp::CommandOkay, "End of message.");
+  }
+  else
+  {
+    mail.erase(std::remove_if(mail.begin(), mail.end(), [](const db::mail::Message& m)
+      { return m.Status() != db::mail::Status::Unread; }), mail.end());
+    if (mail.empty())
+      control.Reply(ftp::CommandOkay, "No unread mail to read.");
+    else
+    {
+      Read(mail);
+      control.Reply(ftp::CommandOkay, "Messages moved to the trash ready for purge.");
+    }
+  }
+
+  return cmd::Result::Okay;
+}
+
+cmd::Result MSGCommand::Send()
+{
+  if (args.size() < 4) return cmd::Result::SyntaxError;
+
+  boost::trim(args[2]);
+  std::vector<std::string> recipients;
+  if (args[2] != "*")
+  {
+    boost::split(recipients, args[2], boost::is_any_of(" "), boost::token_compress_on);
+    for (auto& recipient : recipients)
+      if (recipient[0] != '=' && recipient[0] != '-')
+        recipient.insert(recipient.begin(), '-');
+  }
+  
+  std::string body(boost::join(std::vector<std::
+      string>(args.begin() + 3, args.end()), " "));
+  
+  boost::ptr_vector<acl::User> users;
+  if (recipients.empty()) db::user::GetAll(users);
+  else
+  {
+    for (auto& recipient : recipients)
+      db::user::UsersByACL(users, recipient);
+      
+    std::sort(users.begin(), users.end(), 
+      [](const acl::User& u1, const acl::User& u2)
+      { return u1.UID() < u2.UID(); });
+      
+    users.erase(std::unique(users.begin(), users.end(), 
+      [](const acl::User& u1, const acl::User& u2)
+      { return u1.UID() == u2.UID(); }), users.end());
+  }
+    
+  boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
+  unsigned sentCount = 0;
+  for (auto& user : users)
+  {
+    if (user.Deleted()) continue;
+    if (user.UID() == client.User().UID()) continue;
+    db::mail::Send(db::mail::Message(client.User().Name(), user.UID(), body, now));
+    ++sentCount;
+  }
+  
+  std::ostringstream os;
+  os << "Message sent to " << sentCount << " user(s).";
+  control.Reply(ftp::CommandOkay, os.str());
+  return cmd::Result::Okay;
+}
+
+cmd::Result MSGCommand::SaveTrash()
+{
+  unsigned saved = db::mail::SaveTrash(client.User().UID());
+  std::ostringstream os;
+  os << saved << " message(s) saved from your trash.";
+  control.Reply(ftp::CommandOkay, os.str());
+  return cmd::Result::Okay;
+}
+
+cmd::Result MSGCommand::Save()
+{
+  if (args.size() == 2) return SaveTrash();
+  else if (args.size() > 3) return cmd::Result::SyntaxError;
+
+  int index;
+  try
+  {
+    index = boost::lexical_cast<int>(args[2]);
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    return cmd::Result::SyntaxError;
+  }
+  
+  bool purged = db::mail::Save(client.User().UID(), index - 1);
+  if (!purged) control.Reply(ftp::ActionNotOkay, "Failed to saved message with index " + args[2] + ".");
+  else control.Reply(ftp::CommandOkay, "Message " + args[2] + " saved.");
+  return cmd::Result::Okay;
+}
+
+cmd::Result MSGCommand::PurgeTrash()
+{
+  unsigned purged = db::mail::PurgeTrash(client.User().UID());
+  std::ostringstream os;
+  os << purged << " message(s) purged from your trash.";
+  control.Reply(ftp::CommandOkay, os.str());
+  return cmd::Result::Okay;
+}
+
+cmd::Result MSGCommand::Purge()
+{
+  if (args.size() == 2) return PurgeTrash();
+  else if (args.size() > 3) return cmd::Result::SyntaxError;
+
+  int index;
+  try
+  {
+    index = boost::lexical_cast<int>(args[2]);
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    return cmd::Result::SyntaxError;
+  }
+  
+  bool purged = db::mail::Purge(client.User().UID(), index - 1);
+  if (!purged) control.Reply(ftp::ActionNotOkay, "Failed to purge message with index " + args[2] + ".");
+  else control.Reply(ftp::CommandOkay, "Message " + args[2] + " purged.");
+  return cmd::Result::Okay;
+}
+
+cmd::Result MSGCommand::List()
+{
+  if (args.size() != 2) return cmd::Result::SyntaxError;
+  std::vector<db::mail::Message> mail(db::mail::Get(client.User().UID()));
+  if (mail.empty())
+  {
+    control.Reply(ftp::CommandOkay, "Your mail box is empty.");
+    return cmd::Result::Okay;
+  }
+  
+  control.PartReply(ftp::CommandOkay, ".----.------------.--------.----------------------.----------------------.");
+  control.PartReply(ftp::CommandOkay, "| ## | Sender     | Status | When:                | Message Start        |");
+  control.PartReply(ftp::CommandOkay, "|----+------------+--------+----------------------+----------------------|");
+  
+  unsigned index = 0;
+  for (auto& message : mail)
+  {
+    std::string status(db::mail::StatusToString(message.Status()));
+    status[0] = std::toupper(status[0]);
+    
+    std::ostringstream os;
+    os << "| " << std::setfill('0') << std::setw(2) << ++index << " | " << std::setfill(' ')
+       << std::left << std::setw(10) << message.Sender().substr(0, 10) << " | "
+       << std::left << std::setw(6) << status << " | "
+       << std::left << message.TimeSent() << " | "
+       << std::setw(20) << message.Body().substr(0, 20)  << " |";
+    control.PartReply(ftp::CommandOkay, os.str());
+  }
+  
+  control.PartReply(ftp::CommandOkay, "`----'------------'--------'----------------------'----------------------'");
+  control.Reply(ftp::CommandOkay, "End of mail box list.");
+  return cmd::Result::Okay;
+}
+
+cmd::Result MSGCommand::Execute()
+{
+  std::string cmd(boost::to_lower_copy(args[1]));
+  if (cmd == "read") return Read();
+  else if (cmd == "send") return Send();
+  else if (cmd == "save") return Save();
+  else if (cmd == "purge") return Purge();
+  else if (cmd == "list") return List();
+  return cmd::Result::SyntaxError;
+}
+
+} /* site namespace */
+} /* cmd namespace */

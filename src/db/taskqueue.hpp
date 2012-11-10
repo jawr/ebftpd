@@ -6,6 +6,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include "db/types.hpp"
+#include "logs/logs.hpp"
 
 namespace db
 {
@@ -31,6 +32,7 @@ public:
       while (queue.empty()) newTask.wait(lock);
       task = queue.front();
       queue.pop();
+      logs::debug << "database task popped: " << queue.size() << logs::endl;
     }
     
     changed.notify_one();
@@ -39,6 +41,8 @@ public:
   
   void Push(const TaskPtr& task)
   {
+    logs::debug << "new database task pushed." << logs::endl;
+
     {
       boost::lock_guard<boost::mutex> lock(mutex);
       queue.push(task);

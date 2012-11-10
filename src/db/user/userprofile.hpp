@@ -14,30 +14,30 @@
 namespace db { namespace userprofile
 {
 
-  void Save(const acl::UserProfile& profile);
-  void GetAll(std::vector<acl::UserProfile>& profiles);
-  acl::UserProfile Get(acl::UserID uid);
-  void GetSelection(boost::ptr_vector<acl::User>& users,
-    std::map<acl::UserID, acl::UserProfile>& profiles);
+void Save(const acl::UserProfile& profile);
+void GetAll(std::vector<acl::UserProfile>& profiles);
+acl::UserProfile Get(acl::UserID uid);
+void GetSelection(boost::ptr_vector<acl::User>& users,
+  std::map<acl::UserID, acl::UserProfile>& profiles);
 
-  // setters
-  void Set(acl::UserID uid, mongo::BSONObj obj);
+// setters
+void Set(acl::UserID uid, mongo::BSONObj obj);
 
-  util::Error SetRatio(acl::UserID uid, const std::string& value);
-  util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value);
-  util::Error SetHomeDir(acl::UserID uid, const std::string& value);
-  util::Error SetStartupDir(acl::UserID uid, const std::string& value);
-  util::Error SetIdleTime(acl::UserID uid, const std::string& value);
-  util::Error SetExpires(acl::UserID uid, std::string& value);
-  util::Error SetNumLogins(acl::UserID uid, const std::string& value);
-  util::Error SetTagline(acl::UserID uid, const std::string& value);
-  util::Error SetComment(acl::UserID uid, const std::string& value);
-  util::Error SetMaxDlSpeed(acl::UserID uid, const std::string& value);
-  util::Error SetMaxUlSpeed(acl::UserID uid, const std::string& value);
-  util::Error SetMaxSimDl(acl::UserID uid, const std::string& value);
-  util::Error SetMaxSimUl(acl::UserID uid, const std::string& value);
+util::Error SetRatio(acl::UserID uid, const std::string& value);
+util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value);
+util::Error SetHomeDir(acl::UserID uid, const std::string& value);
+util::Error SetStartupDir(acl::UserID uid, const std::string& value);
+util::Error SetIdleTime(acl::UserID uid, const std::string& value);
+util::Error SetExpires(acl::UserID uid, std::string& value);
+util::Error SetNumLogins(acl::UserID uid, const std::string& value);
+util::Error SetTagline(acl::UserID uid, const std::string& value);
+util::Error SetComment(acl::UserID uid, const std::string& value);
+util::Error SetMaxDlSpeed(acl::UserID uid, const std::string& value);
+util::Error SetMaxUlSpeed(acl::UserID uid, const std::string& value);
+util::Error SetMaxSimDl(acl::UserID uid, const std::string& value);
+util::Error SetMaxSimUl(acl::UserID uid, const std::string& value);
 
-  void Login(acl::UserID uid);
+void Login(acl::UserID uid);
 // end
 }
 }
