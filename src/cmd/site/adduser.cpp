@@ -23,7 +23,7 @@ cmd::Result ADDUSERCommand::Execute()
       << strength.Digits() << " digits, " 
       << strength.Others() << " others, "
       << strength.Length() << " length.";
-    control.MultiReply(ftp::ActionNotOkay, os.str());
+    control.Reply(ftp::ActionNotOkay, os.str());
     return cmd::Result::Okay;
   }
   
@@ -34,7 +34,7 @@ cmd::Result ADDUSERCommand::Execute()
 
   if (!ok)
   {
-    control.MultiReply(ftp::ActionNotOkay, ok.Message());
+    control.Reply(ftp::ActionNotOkay, ok.Message());
     return cmd::Result::Okay;
   }
 
@@ -59,7 +59,7 @@ cmd::Result ADDUSERCommand::Execute()
     }
   }
 
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

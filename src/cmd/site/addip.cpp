@@ -57,7 +57,7 @@ cmd::Result ADDIPCommand::Execute()
     }
   }
 
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 } 
 

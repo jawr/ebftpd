@@ -32,7 +32,7 @@ cmd::Result RELOADCommand::Execute()
     os << "See SITE LOGS ERROR for details.";
   }
   
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

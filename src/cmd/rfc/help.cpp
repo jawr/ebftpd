@@ -26,7 +26,7 @@ cmd::Result HELPCommand::Execute()
     "------------------------------------------------------------------\n"
     "End of list.                         (* Commands not implemented)";
     
-  control.MultiReply(ftp::HelpMessage, reply);
+  control.Reply(ftp::HelpMessage, reply);
   return cmd::Result::Okay;
 }
 

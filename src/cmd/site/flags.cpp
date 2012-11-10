@@ -59,7 +59,7 @@ cmd::Result FLAGSCommand::Execute()
   os << "A '*' denotes an enabled flag.  Only sysop users may change flags.\n";
   os << "Use SITE CHANGE <USER> FLAGS +/-VALUE to change.";
 
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

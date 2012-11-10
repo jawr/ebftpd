@@ -16,7 +16,7 @@ cmd::Result HELPCommand::Syntax()
     std::ostringstream os;
     os << def->Syntax() << "\n";
     os << "Description: " << def->Description();
-    control.MultiReply(ftp::CommandOkay, os.str());
+    control.Reply(ftp::CommandOkay, os.str());
   }
 
   return cmd::Result::Okay;
@@ -49,7 +49,7 @@ cmd::Result HELPCommand::List()
   }
     
   os << "\n End of list";
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

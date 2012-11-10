@@ -31,7 +31,7 @@ cmd::Result SETPGRPCommand::Execute()
     std::ostringstream os;
     if (oldGID != -1) os << "Moved old primary group " << acl::GroupCache::GIDToName(oldGID) << " to secondary.\n";
     os << "Set primary group for " << args[1] << " to: " << group.Name();
-    control.MultiReply(ftp::CommandOkay, os.str());
+    control.Reply(ftp::CommandOkay, os.str());
   }
   return cmd::Result::Okay;
 }

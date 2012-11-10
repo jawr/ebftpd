@@ -106,7 +106,7 @@ cmd::Result USERCommand::Execute()
     os << "\n| Weekly Allotment: " << profile.WeeklyAllotment() / 1024 << "MB";
   os << "\n+=======================================================================+";
 
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

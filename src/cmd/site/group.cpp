@@ -70,7 +70,7 @@ cmd::Result GROUPCommand::Execute()
   os << "\n|   Free Ratio Slots: Unlimited   Free Leech Slots: 0                   |";
   os << "\n`-----------------------------------------------------------------------'";
 
-  control.MultiReply(ftp::CommandOkay, os.str()); 
+  control.Reply(ftp::CommandOkay, os.str()); 
   return cmd::Result::Okay;
 }
 

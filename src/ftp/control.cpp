@@ -27,31 +27,19 @@ void Control::SendReply(ReplyCode code, bool part, const std::string& message)
   lastCode = code;
 }
 
-void Control::PartReply(ReplyCode code, const std::string& message)
+void Control::PartReply(ReplyCode code, const std::string& messages)
 {
-  SendReply(code, true, message);
+  MultiReply(code, false, messages);
 }
 
-void Control::PartReply(const std::string& message)
-{
-  verify(lastCode != CodeNotSet);
-  PartReply(lastCode, message);
-}
 
-void Control::Reply(ReplyCode code, const std::string& message)
+void Control::Reply(ReplyCode code, const std::string& messages)
 {
-  std::ostringstream reply;
-  SendReply(code, false, message);
+  MultiReply(code, true, messages);
   lastCode = CodeNotSet;
 }
 
-void Control::Reply(const std::string& message)
-{
-  verify(lastCode != CodeNotSet);
-  Reply(lastCode, message);
-}
-
-void Control::MultiReply(ReplyCode code, const std::string& messages)
+void Control::MultiReply(ReplyCode code, bool final, const std::string& messages)
 {
   std::vector<std::string> splitMessages;
   boost::split(splitMessages, messages, boost::is_any_of("\n"));
@@ -60,9 +48,9 @@ void Control::MultiReply(ReplyCode code, const std::string& messages)
   for (std::vector<std::string>::const_iterator it =
        splitMessages.begin(); it != end; ++it)
   {
-    PartReply(code, *it);
+    SendReply(code, true, *it);
   }
-  Reply(code, splitMessages.back());
+  SendReply(code, !final, splitMessages.back());
 }
 
 void Control::NegotiateTLS()

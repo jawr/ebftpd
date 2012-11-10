@@ -27,9 +27,8 @@ cmd::Result RNFRCommand::Execute()
     return cmd::Result::Okay;
   }
   
-  control.PartReply(ftp::PendingMoreInfo, std::string(absolute));
   client.SetRenameFrom(absolute);
-  control.Reply("File exists, ready for destination name."); 
+  control.Reply(ftp::PendingMoreInfo, "File exists, ready for destination name."); 
   return cmd::Result::Okay;
 }
 

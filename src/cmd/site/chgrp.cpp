@@ -71,7 +71,7 @@ cmd::Result CHGRPCommand::Execute()
       os << "\n" << *it << " okay.";
   }
   os << "\nCommand finished.";
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

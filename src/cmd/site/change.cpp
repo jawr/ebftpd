@@ -139,7 +139,7 @@ cmd::Result CHANGECommand::Execute()
       os << "Updated " << user.Name() << " " << setting << " to: " << value;
   }
 
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

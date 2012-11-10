@@ -26,6 +26,7 @@ class Control : public ReadWriteable
   bool singleLineReplies;
   
   void SendReply(ReplyCode code, bool part, const std::string& message);
+  void MultiReply(ReplyCode code, bool final, const std::string& messages);
 
   size_t Read(char* buffer, size_t size)
   { return socket.Read(buffer, size); }
@@ -39,10 +40,7 @@ public:
  
   std::string NextCommand(const boost::posix_time::time_duration* timeout = 0);
   void PartReply(ReplyCode code, const std::string& message);
-  void PartReply(const std::string& message);
   void Reply(ReplyCode code, const std::string& message);
-  void Reply(const std::string& message);
-  void MultiReply(ReplyCode code, const std::string& messages);
 
   void SetSingleLineReplies(bool singleLineReplies)
   { this->singleLineReplies = singleLineReplies; }

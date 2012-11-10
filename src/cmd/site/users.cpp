@@ -37,7 +37,7 @@ cmd::Result USERSCommand::Execute()
       os << "\nUser: " << user.Name() << " ";
     }
     
-    control.MultiReply(ftp::CommandOkay, os.str());
+    control.Reply(ftp::CommandOkay, os.str());
   }
   else
     control.Reply(ftp::ActionNotOkay, "Error, no users found.");

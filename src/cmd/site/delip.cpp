@@ -38,7 +38,7 @@ cmd::Result DELIPCommand::Execute()
       os << ipDeleted.Message();
   }
 
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

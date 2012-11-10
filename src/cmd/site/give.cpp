@@ -86,7 +86,7 @@ cmd::Result GIVECommand::Execute()
   // give user the credits
   acl::UserCache::IncrCredits(user.Name(), credits);
   os << "Given " << credits << "KB credits to " << user.Name() << ".";
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

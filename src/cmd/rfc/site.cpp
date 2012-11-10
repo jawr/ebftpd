@@ -27,7 +27,7 @@ cmd::Result SITECommand::Execute()
   }
   else if (!def->CheckArgs(args))
   {
-    control.MultiReply(ftp::SyntaxError, def->Syntax());
+    control.Reply(ftp::SyntaxError, def->Syntax());
   }
   else
   {
@@ -40,7 +40,7 @@ cmd::Result SITECommand::Execute()
     {
       cmd::Result result = command->Execute();
       if (result == cmd::Result::SyntaxError)
-        control.MultiReply(ftp::SyntaxError, def->Syntax());
+        control.Reply(ftp::SyntaxError, def->Syntax());
       else
       if (result == cmd::Result::Permission)
         control.Reply(ftp::ActionNotOkay, "SITE " + args[0] + ": Permission denied");

@@ -14,9 +14,11 @@ cmd::Result STATCommand::Execute()
 
   if (args.size() == 1)
   {
-    control.PartReply(ftp::SystemStatus, programFullname + " status:");
-    control.PartReply("< Insert status info here >");
-    control.Reply("End of status.");
+    std::ostringstream os;
+    os << programFullname << " status\n";
+    os << "< Insert status info here >\n";
+    os << "End of status.";
+    control.Reply(ftp::SystemStatus, os.str());
     return cmd::Result::Okay;
   }
   

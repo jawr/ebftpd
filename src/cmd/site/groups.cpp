@@ -32,7 +32,7 @@ cmd::Result GROUPSCommand::Execute()
   else
     os << "No groups added.";
 
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   
   return cmd::Result::Okay;
 }

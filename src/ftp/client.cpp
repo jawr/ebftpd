@@ -147,7 +147,7 @@ void Client::DisplayBanner()
     std::string banner;
     if (util::ReadFileToString(config.Banner(), banner))
     {
-      control.MultiReply(ftp::ServiceReady, banner);
+      control.Reply(ftp::ServiceReady, banner);
       return;
     }
   }

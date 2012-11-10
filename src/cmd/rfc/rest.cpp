@@ -15,7 +15,7 @@ cmd::Result RESTCommand::Execute()
   }
   catch (const boost::bad_lexical_cast&)
   {
-    control.MultiReply(ftp::InvalidRESTParameter, "Invalid parameter, restart offset set to 0.");
+    control.Reply(ftp::InvalidRESTParameter, "Invalid parameter, restart offset set to 0.");
     data.SetRestartOffset(0);
     return cmd::Result::Okay;
   }

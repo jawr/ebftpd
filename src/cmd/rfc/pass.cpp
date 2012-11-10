@@ -110,7 +110,7 @@ cmd::Result PASSCommand::Execute()
   
   db::userprofile::Login(client.User().UID());
       
-  control.MultiReply(ftp::UserLoggedIn, os.str());
+  control.Reply(ftp::UserLoggedIn, os.str());
   return cmd::Result::Okay;
 }
 

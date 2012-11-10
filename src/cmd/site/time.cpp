@@ -30,7 +30,7 @@ cmd::Result TIMECommand::Execute()
      << "Logged in at : " << client.LoggedInAt() << "\n"
      << "Time online  : " << FormatDuration(now - client.LoggedInAt());
   
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

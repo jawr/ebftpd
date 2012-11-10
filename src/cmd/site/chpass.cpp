@@ -22,7 +22,7 @@ cmd::Result CHPASSCommand::Execute()
        << strength.Digits() << " digits, "
        << strength.Others() << " others, "
        << strength.Length() << " length.";
-    control.MultiReply(ftp::ActionNotOkay, os.str());
+    control.Reply(ftp::ActionNotOkay, os.str());
     return cmd::Result::Okay;
   }
 
