@@ -19,7 +19,11 @@ class Worker : public util::Thread
   virtual void Run();
 
 public:
-  Worker(const std::string& host, TaskQueue& queue);
+  Worker(const std::string& host, 
+         const std::string& database,
+         TaskQueue& queue, 
+         const std::string& login, 
+         const std::string& password);
 };
 
 }

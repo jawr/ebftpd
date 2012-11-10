@@ -107,7 +107,7 @@ void Config::Parse(std::string line) {
   else
   if (opt == "database")
   {
-    ParameterCheck(opt, toks, 3);
+    ParameterCheck(opt, toks, 3, 5);
     database = setting::Database(toks);
   }
   else

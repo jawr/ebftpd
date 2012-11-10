@@ -19,19 +19,24 @@ Pool::Pool() :
 
 void Pool::LaunchWorker()
 {
-  const cfg::Config& config = cfg::Get();
+  const cfg::setting::Database& dbConfig = cfg::Get().Database();
   std::ostringstream host;
-  host << config.Database().Address() << ":" << config.Database().Port();
+  host << dbConfig.Address() << ":" << dbConfig.Port();
   
   try
   {
-    std::unique_ptr<Worker> worker(new Worker(host.str(), queue));
+    std::unique_ptr<Worker> worker(new Worker(host.str(), dbConfig.Name(), queue, 
+        dbConfig.Login(), dbConfig.Password()));
     worker->Start();
     workers.push_back(worker.release());
   }
   catch (const mongo::DBException& e)
   {
     logs::db << "Failed to launch worker for db thread pool: " << e.what() << logs::endl;
+  }
+  catch (const DBError& e)
+  {
+    logs::db << "Failed to launch worker for db thread pool: " << e.Message() << logs::endl;
   }
 }
 
@@ -62,8 +67,6 @@ void Pool::HandleWorkers(size_t queueSize)
 
 void Pool::Run()
 {
-  LaunchWorker();
-
   TaskQueue::size_type queueSize = 0;
   while (true)
   {
@@ -79,6 +82,8 @@ void Pool::Run()
 void Pool::StartThread()
 {
   logs::debug << "Starting mongodb connection thread pool.." << logs::endl;
+  instance.LaunchWorker();
+  if (instance.workers.empty()) throw DBError("Failed to start database thread pool.");
   instance.Start();
 }
 

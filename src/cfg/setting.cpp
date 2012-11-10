@@ -26,6 +26,12 @@ Database::Database(const std::vector<std::string>& toks) : port(-1)
   {
     throw ConfigError("Invalid port number");
   }
+  
+  if (toks.size() == 3) return;
+  if (toks.size() != 5) throw ConfigError("Wrong numer of Parameters for database");
+  
+  login = toks[3];
+  password = toks[4];
 }
 
 AsciiDownloads::AsciiDownloads(const std::vector<std::string>& toks) : size(-1)

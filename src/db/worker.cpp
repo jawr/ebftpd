@@ -7,9 +7,22 @@
 namespace db
 {
 
-Worker::Worker(const std::string& host, TaskQueue& queue) : queue(queue)
+Worker::Worker(const std::string& host, 
+    const std::string& database,
+    TaskQueue& queue,
+    const std::string& login,
+    const std::string& password) :
+  queue(queue)
 {
   conn.connect(host);
+  if (!login.empty())
+  {
+    std::string errmsg;
+    if (!conn.auth(database, login, password, errmsg))
+    {
+      throw DBError("Failed to authetnicate with the database.");
+    }
+  }
 }
 
 void Worker::Run()

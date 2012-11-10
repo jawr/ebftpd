@@ -30,6 +30,9 @@ class Database : Setting
   std::string name;
   std::string address;
   int port;
+  std::string login;
+  std::string password;
+  
 public:
   Database() : name(programName), address("localhost"), port(27017) { }
   Database(const std::vector<std::string>& toks);
@@ -37,6 +40,8 @@ public:
   const std::string& Name() const { return name; }
   const std::string& Address() const { return address; }
   int Port() const { return port; }
+  const std::string& Login() const { return login; }
+  const std::string& Password() const { return password; }
 };
 
 // generics
