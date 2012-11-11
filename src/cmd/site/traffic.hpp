@@ -15,8 +15,8 @@ namespace cmd { namespace site
 
 class TRAFFICCommand : public Command
 {
-  std::string FormatProtocol(const std::string& timeframe, 
-            const db::stats::ProtocolTotal& t);
+  std::string Format(const std::string& timeframe, long long sendBytes, 
+            long long receiveBytes, const std::string& section = "");
             
 public:
   TRAFFICCommand(ftp::Client& client, const std::string& argStr, const Args& args) :

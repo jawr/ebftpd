@@ -13,6 +13,9 @@ enum class Timeframe
   Alltime
 };
 
+std::string TimeframeToString(Timeframe tf);
+Timeframe TimeframeFromString(std::string& s);
+
 } /* stats namespace */
 
 #endif

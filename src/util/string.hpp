@@ -25,6 +25,9 @@ std::string CompressWhitespaceCopy(const std::string& str);
 
 std::string WordWrap(std::string& source, std::string::size_type length);
 
+void TitleCase(std::string& s);
+std::string TitleCaseCopy(const std::string& s);
+
 } /* string namespace */
 } /* util namespace */
 
