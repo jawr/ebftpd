@@ -11,7 +11,6 @@ namespace db { namespace mail
 void Send(const Message& message)
 {
   mongo::BSONObj obj = db::bson::Message::Serialize(message);
-  logs::debug << obj.toString() << logs::endl;
   TaskPtr task(new db::Insert("mail", obj));
   Pool::Queue(task);
 }
@@ -41,7 +40,6 @@ bool Save(acl::UserID recipient, int index)
   {
     mongo::Query query = QUERY("recipient" << recipient);
     boost::unique_future<bool> future;
-    logs::debug << "Save: " << query.toString() << logs::endl;
     TaskPtr task(new db::Select("mail", query, results, future, 1, index));
     Pool::Queue(task);
     future.wait();
@@ -53,7 +51,6 @@ bool Save(acl::UserID recipient, int index)
   results.front().getObjectID(oid);
   mongo::Query query = QUERY("_id" << oid.OID());
   boost::unique_future<int> future;
-  logs::debug << "Save Update: " << query.toString() << logs::endl;
   TaskPtr task(new db::Update("mail", query, BSON("$set" << BSON("status" << "saved")), future));
   Pool::Queue(task);
   

@@ -25,16 +25,21 @@ class Control : public ReadWriteable
   std::string commandLine;
   bool singleLineReplies;
   
+  long bytesRead;
+  long bytesWrite;
+  
   void SendReply(ReplyCode code, bool part, const std::string& message);
   void MultiReply(ReplyCode code, bool final, const std::string& messages);
 
   size_t Read(char* buffer, size_t size)
-  { return socket.Read(buffer, size); }
+  { 
+    size_t len = socket.Read(buffer, size);
+    if (len > 0) bytesRead += len;
+    return len;
+  }
   
 public:
-  Control() : lastCode(CodeNotSet), singleLineReplies(false) { }
-  
-  ~Control() { }
+  Control() : lastCode(CodeNotSet), singleLineReplies(false), bytesRead(0), bytesWrite(0) { }
   
   void Accept(util::net::TCPListener& listener);
  
@@ -51,7 +56,10 @@ public:
   void NegotiateTLS();
   
   void Write(const char* buffer, size_t len)
-  { socket.Write(buffer, len); }
+  {
+    socket.Write(buffer, len);
+    bytesWrite += len;
+  }
   
   const util::net::Endpoint& RemoteEndpoint() const
   { return socket.RemoteEndpoint(); }
@@ -62,6 +70,9 @@ public:
   bool IsTLS() const { return socket.IsTLS(); }
   
   void Interrupt(){ socket.Shutdown(); }
+  
+  long long BytesRead() const { return bytesRead; }
+  long long BytesWrite() const { return bytesWrite; }
 };
 
 } /* ftp namespace */

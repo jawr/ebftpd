@@ -25,6 +25,7 @@
 #include "ftp/counter.hpp"
 #include "acl/flags.hpp"
 #include "db/mail/mail.hpp"
+#include "db/stats/protocol.hpp"
 
 namespace ftp
 {
@@ -254,14 +255,22 @@ bool Client::ConfirmCommand(const std::string& argStr)
   return true;
 }
 
+void Client::LogTraffic() const
+{
+  db::stats::ProtocolUpdate(user.UID(), control.BytesWrite() + data.BytesWrite(),
+        control.BytesRead() + data.BytesRead());
+}
+
 void Client::InnerRun()
 {
   using util::scope_guard;
   using util::make_guard;
   
-  scope_guard finishedGuard = make_guard([&]{ 
+  scope_guard finishedGuard = make_guard([&]
+  {
     SetState(ClientState::Finished);
     db::mail::LogOffPurgeTrash(user.UID());
+    LogTraffic();
   });
 
   LookupIdent();
@@ -287,7 +296,7 @@ void Client::InnerRun()
   catch (const util::net::NetworkError& e)
   {
     logs::debug << "Client from " << control.RemoteEndpoint()
-                  << " lost connection: " << e.Message() << logs::endl;
+                << " lost connection: " << e.Message() << logs::endl;
   }
   
   (void) finishedGuard; /* silence unused variable warning */

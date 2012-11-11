@@ -141,6 +141,8 @@ public:
   
   void Interrupt();
   
+  void LogTraffic() const;
+  
   const acl::UserProfile& Profile() const { return profile; }
   
   static bool SetSiteopOnly()

@@ -48,6 +48,7 @@ void Counter::LogOut(acl::UserID uid)
   boost::lock_guard<boost::mutex> lock(loggedInMutex);
   int& count = loggedIn[uid];
   if (count > 0) --count;
+  if (totalLoggedIn > 0) --totalLoggedIn;
 }
 
 bool Counter::StartUpload(acl::UserID uid, int limit)

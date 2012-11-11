@@ -58,6 +58,9 @@ class Data : public ReadWriteable
   ::ftp::SSCNMode sscnMode;
   off_t restartOffset;
   
+  long long bytesRead;
+  long long bytesWrite;
+  
   TransferState state;
 
 public:
@@ -68,7 +71,9 @@ public:
     epsvMode(::ftp::EPSVMode::Normal),
     dataType(::ftp::DataType::Binary),
     sscnMode(::ftp::SSCNMode::Server),
-    restartOffset(0)
+    restartOffset(0),
+    bytesRead(0),
+    bytesWrite(0)
   {
   }
 
@@ -96,18 +101,27 @@ public:
     restartOffset = 0;
     socket.Close();
     state.Stop();
+    if (state.Type() == TransferType::List)
+      bytesWrite += state.Bytes();
   }
   
   size_t Read(char* buffer, size_t size)
-  { return socket.Read(buffer, size); }
+  {
+    return socket.Read(buffer, size);
+  }
   
   void Write(const char* buffer, size_t len)
-  { socket.Write(buffer, len); }
+  {
+    socket.Write(buffer, len);
+  }
   
   TransferState& State() { return state; }
   const TransferState& State() const { return state; }
   
   void Interrupt() { socket.Shutdown(); }
+  
+  long long BytesRead() const { return bytesRead; }
+  long long BytesWrite() const { return bytesWrite; }
 };
 
 } /* ftp namespace */
