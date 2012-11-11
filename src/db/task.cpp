@@ -14,6 +14,7 @@ void RunCommand::Execute(mongo::DBClientConnection& conn)
 {
   try
   {
+    logs::debug << cmd << logs::endl;
     if (conn.runCommand(database, cmd, ret))
       ret = ret.getObjectField("result").getObjectField("0");
     promise.set_value(true);
@@ -71,11 +72,9 @@ void Select::Execute(mongo::DBClientConnection& conn)
   {
     std::unique_ptr<mongo::DBClientCursor> cursor =
       conn.query(database + "." + collection, query, limit, skip);
-    int i = 0;
-    while (cursor->more())
-    {
-      results.push_back(cursor->nextSafe().copy());
-    }
+    
+    while (cursor->more()) results.push_back(cursor->nextSafe().copy());
+    
     LastErrorToException(conn);
     promise.set_value(true);
   }

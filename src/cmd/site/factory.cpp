@@ -43,6 +43,7 @@
 #include "cmd/site/shutdown.hpp"
 #include "cmd/site/sreply.hpp"
 #include "cmd/site/msg.hpp"
+#include "cmd/site/traffic.hpp"
 
 namespace cmd { namespace site
 {
@@ -221,7 +222,7 @@ Factory::Factory()
                       "Syntax: SITE EMULATE <user>",
                       "Become another user by temporarily loading their userfile" }, },
     { "TRAFFIC",    { 0,  0,  "traffic",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::TRAFFICCommand>()),
                       "Syntax: SITE TRAFFIC",
                       "Display traffic statistics" }, },
     { "WHO",        { 0,  0,  "who",

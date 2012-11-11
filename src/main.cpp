@@ -201,6 +201,7 @@ bool Daemonise(bool foreground)
 #ifndef TEST
 int main(int argc, char** argv)
 {
+
   bool foreground;
   
   if (!ParseOptions(argc, argv, foreground)) return 1;
@@ -218,7 +219,7 @@ int main(int argc, char** argv)
     logs::error << "Failed to load config: " << e.Message() << logs::endl;
     return 1;
   }
-  
+
   logs::Initialise(cfg::Get().Datapath() + "/logs");
   if (!Daemonise(foreground)) return 1;
   

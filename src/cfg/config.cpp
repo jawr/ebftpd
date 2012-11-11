@@ -34,7 +34,8 @@ Config::Config(const std::string& configFile) :
   multiplierMax(10),
   oneliners(10),
   emptyNuke(102400),
-  maxSitecmdLines(-1) // unlimited
+  maxSitecmdLines(-1),
+  weekStart(::cfg::WeekStart::Sunday)  // unlimited
 {
   std::string line;
   std::ifstream io(configFile.c_str());
@@ -564,6 +565,14 @@ void Config::Parse(std::string line) {
   {
     ParameterCheck(opt, toks, 3);
     idleTimeout = setting::IdleTimeout(toks);
+  }
+  else if (opt == "week_start")
+  {
+    ParameterCheck(opt, toks, 1);
+    boost::to_lower(toks[0]);
+    if (toks[0] == "sunday") weekStart = ::cfg::WeekStart::Sunday;
+    else if (toks[0] == "monday") weekStart = ::cfg::WeekStart::Monday;
+    else throw ConfigError("week_start must be either sunday or monday.");
   }
   else
   {

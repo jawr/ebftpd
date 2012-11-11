@@ -101,8 +101,6 @@ public:
     restartOffset = 0;
     socket.Close();
     state.Stop();
-    if (state.Type() == TransferType::List)
-      bytesWrite += state.Bytes();
   }
   
   size_t Read(char* buffer, size_t size)
@@ -113,6 +111,8 @@ public:
   void Write(const char* buffer, size_t len)
   {
     socket.Write(buffer, len);
+    if (state.Type() == TransferType::List)
+      bytesWrite += len;
   }
   
   TransferState& State() { return state; }

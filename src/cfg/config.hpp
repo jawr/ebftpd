@@ -13,6 +13,8 @@
 namespace cfg
 {
 
+enum class WeekStart { Sunday, Monday };
+
 class Config
 { 
   int version;
@@ -115,6 +117,7 @@ class Config
   int maxSitecmdLines;
   setting::IdleTimeout idleTimeout;
   setting::Database database;
+  ::cfg::WeekStart weekStart;
   
   std::unordered_map<std::string, acl::ACL> commandACLs;  
   
@@ -226,6 +229,7 @@ public:
   const std::vector<setting::SiteCmd>& SiteCmd() const { return siteCmd; }
   int MaxSitecmdLines() const { return maxSitecmdLines; }
   const setting::IdleTimeout& IdleTimeout() const { return idleTimeout; }
+  ::cfg::WeekStart WeekStart() const { return weekStart; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

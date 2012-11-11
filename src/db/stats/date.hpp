@@ -8,15 +8,23 @@ namespace db { namespace stats
 
 class Date
 {
-  boost::gregorian::date date;
+  int day, week, month, year;
   
 public:
-  Date() : date(boost::gregorian::day_clock::local_day()) { }
+  Date(bool mondayWeekStart)
+  {
+    boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+    day = today.day();
+    if (mondayWeekStart) week = today.week_number();
+    else week = (today + boost::gregorian::date_duration(1)).week_number();
+    month = today.month();
+    year = today.year();
+  }
   
-  int Day() const { return date.day(); }
-  int Week() const { return date.week_number(); }
-  int Month() const { return date.month(); }
-  int Year() const { return date.year(); }
+  int Day() const { return day; }
+  int Week() const { return week; }
+  int Month() const { return month; }
+  int Year() const { return year; }
 };
 
 } /* stats namespace */

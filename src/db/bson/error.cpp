@@ -3,12 +3,13 @@
 
 namespace db { namespace bson {
 
-void UnserializeFailure(const std::string& objectName, const std::exception& e, const mongo::BSONObj& bo)
+void UnserializeFailure(const std::string& objectName, const std::exception& e, 
+    const mongo::BSONObj& bo, bool logOnly)
 {
   logs::db << "Error while unserializing " << objectName << ": " 
            << e.what() << ": " << bo.toString() << logs::endl;
            
-  throw DBUnserializeError(objectName);
+  if (!logOnly) throw DBUnserializeError(objectName);
 }
 
 } /* bson namespace */

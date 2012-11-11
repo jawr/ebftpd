@@ -19,6 +19,7 @@ inline double CalculateSpeed(long long bytes, const boost::posix_time::ptime& st
 }
         
 std::string AutoUnitSpeedString(double speed);
+std::string AutoUnitString(double amount);
 std::string HighResSecondsString(const boost::posix_time::time_duration& duration);
 inline std::string HighResSecondsString(const boost::posix_time::ptime& start, 
         const boost::posix_time::ptime& end)
