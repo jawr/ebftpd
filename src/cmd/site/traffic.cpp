@@ -52,9 +52,10 @@ cmd::Result TRAFFICCommand::Execute()
 
   for (auto tf : timeframes)
   {
-    db::stats::ProtocolTotal t(db::stats::CalculateTotal(tf));
-    os << Format(util::string::TitleCaseCopy(stats::
-        TimeframeToString(tf)), t.SendBytes(), t.ReceiveBytes()) << "\n";
+    db::stats::Protocol t(db::stats::CalculateTotal(tf));
+    os << Format(util::string::TitleCaseCopy(
+            ::util::EnumToString(tf)), 
+            t.SendBytes(), t.ReceiveBytes()) << "\n";
     combined[tf].first += t.SendBytes();
     combined[tf].second += t.ReceiveBytes();
   }
@@ -65,8 +66,8 @@ cmd::Result TRAFFICCommand::Execute()
 
    for (auto tf : timeframes)
   {
-    os << Format(util::string::TitleCaseCopy(stats::
-        TimeframeToString(tf)), combined[tf].first, 
+    os << Format(util::string::TitleCaseCopy(
+            ::util::EnumToString(tf)), combined[tf].first, 
         combined[tf].second) << "\n";
   }
      

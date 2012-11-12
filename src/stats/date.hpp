@@ -3,7 +3,7 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-namespace db { namespace stats
+namespace stats
 {
 
 class Date
@@ -28,6 +28,5 @@ public:
 };
 
 } /* stats namespace */
-} /* db namespace */
 
 #endif

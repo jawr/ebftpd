@@ -12,6 +12,25 @@ namespace acl { namespace path
 namespace
 {
 
+bool HiddenFile(const std::string& path)
+{
+  std::string dirname = fs::Path(path).Dirname();
+  if (dirname[dirname.length() - 1] != '/') dirname += '/';
+  std::string basename = fs::Path(path).Basename();
+
+  for (auto& hf : cfg::Get().HiddenFiles())
+  {
+    if (util::string::WildcardMatch(hf.Path().ToString(), dirname))
+    {
+      for (auto& mask : hf.Masks())
+      {
+        if (util::string::WildcardMatch(mask, basename)) return true;
+      }
+    }
+  }
+  return false;
+}
+
 bool Evaluate(const std::vector<cfg::setting::Right>& rights, 
               const User& user, const std::string& path)
 {
@@ -197,11 +216,10 @@ struct Traits<Delete>
 template <>
 struct Traits<View>
 {
-  static util::Error Allowed(const User&, const std::string&)
+  static util::Error Allowed(const User&, const std::string& path)
   {
-    // always returns true as all the checking for View is done earlier on
-    // as hidden files and priv paths
-    return util::Error::Success();
+    if (HiddenFile(path)) return util::Error::Failure(ENOENT);
+    else return util::Error::Success();
   }
 };
 
@@ -255,26 +273,6 @@ struct Traits<Hideowner>
 
 }
 
-bool HiddenFile(const std::string& path)
-{
-  std::string dirname = fs::Path(path).Dirname();
-  if (dirname[dirname.length() - 1] != '/') dirname += '/';
-  std::string basename = fs::Path(path).Basename();
-
-  for (auto& hf : cfg::Get().HiddenFiles())
-  {
-    if (util::string::WildcardMatch(hf.Path().ToString(), dirname))
-    {
-      for (auto& mask : hf.Masks())
-      {
-        if (util::string::WildcardMatch(mask, basename)) return true;
-      }
-    }
-  }
-  
-  return boost::ends_with(path, "/" + fs::OwnerFile::ownerFilename);
-}
-
 bool PrivatePath(const std::string& path, const User& user)
 {
   const std::vector<cfg::setting::Privpath>& privPath = 
@@ -297,7 +295,8 @@ util::Error Allowed(const User& user, const std::string& path)
 template <Type type>
 util::Error FileAllowed(const User& user, const std::string& path)
 {  
-  if (HiddenFile(path)) return util::Error::Failure(ENOENT);
+  if (boost::ends_with(path, "/" + fs::OwnerFile::ownerFilename)) 
+    return util::Error::Failure(ENOENT);
   return Allowed<type>(user, path);
 }
 

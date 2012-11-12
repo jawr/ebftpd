@@ -11,6 +11,7 @@
 #include "db/mail/mail.hpp"
 #include "db/mail/message.hpp"
 #include "util/string.hpp"
+#include "util/enum.hpp"
 
 namespace cmd { namespace site
 {
@@ -226,7 +227,7 @@ cmd::Result MSGCommand::List()
   unsigned index = 0;
   for (auto& message : mail)
   {
-    std::string status(db::mail::StatusToString(message.Status()));
+    std::string status(util::EnumToString(message.Status()));
     status[0] = std::toupper(status[0]);
     
     std::ostringstream os;

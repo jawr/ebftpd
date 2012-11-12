@@ -15,7 +15,7 @@ mongo::BSONObj Message::Serialize(const db::mail::Message& message)
   bob.append("sender", message.sender);
   bob.append("time sent", ToDateT(message.timeSent));
   bob.append("body", message.body);
-  bob.append("status", db::mail::StatusToString(message.status));
+  bob.append("status", util::EnumToString(message.status));
   return bob.obj();
 }
 
@@ -28,7 +28,8 @@ db::mail::Message Message::Unserialize(const mongo::BSONObj& bo)
     message.sender = bo["sender"].String();
     message.timeSent = ToPosixTime(bo["time sent"].Date());
     message.body = bo["body"].String();
-    message.status = db::mail::StatusFromString(bo["status"].String());
+    message.status = util::EnumFromString<db::mail
+        ::Status>(bo["status"].String());
     mongo::BSONElement oid;
     bo.getObjectID(oid);
     message.oid = oid.OID();

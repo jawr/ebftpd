@@ -6,33 +6,13 @@
 namespace db { namespace mail
 {
 
-//namespace
-//{
-
-const std::string statusStrings[] = 
+template <> const char* util::EnumStrings<Status>::values[] =
 {
   "unread",
   "trash",
-  "saved"
+  "saved",
+  ""
 };
-
-//}
-
-std::string StatusToString(db::mail::Status status)
-{
-  unsigned index = static_cast<unsigned>(status);
-  assert(index < sizeof(statusStrings) / sizeof(std::string));
-  return statusStrings[index];
-}
-
-Status StatusFromString(const std::string& status)
-{
-  auto begin = std::begin(statusStrings);
-  auto end = std::end(statusStrings);
-  auto it = std::find(begin, end, status);
-  if (it == end) throw std::out_of_range("Invalid status string");
-  return static_cast<Status>(std::distance(begin, it));
-}
 
 } /* mail namespace */
 } /* db namespace */

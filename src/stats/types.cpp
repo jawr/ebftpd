@@ -1,36 +1,24 @@
-#include <algorithm>
-#include <boost/algorithm/string/case_conv.hpp>
 #include "stats/types.hpp"
 
 namespace stats
 {
-namespace
-{
-const std::string timeframeStrings[] =
+
+template <> const char* util::EnumStrings<Timeframe>::values[] = 
 {
   "day",
   "week",
   "month",
   "year",
-  "alltime"
+  "alltime",
+  ""
 };
-}
 
-std::string TimeframeToString(Timeframe tf)
+template <> const char* util::EnumStrings<Direction>::values[] =
 {
-  unsigned index = static_cast<unsigned>(tf);
-  assert(index < sizeof(timeframeStrings) / sizeof(std::string));
-  return timeframeStrings[index];
-}
+  "upload",
+  "download",
+  ""
+};
 
-Timeframe TimeframeFromString(std::string s)
-{
-  boost::to_lower(s);
-  auto begin = std::begin(timeframeStrings);
-  auto end = std::end(timeframeStrings);
-  auto it = std::find(begin, end, s);
-  if (it == end) throw std::out_of_range("Invalid timeframe string");
-  return static_cast<Timeframe>(std::distance(begin, it));
-}
 
-} /* stats namespace */
+}

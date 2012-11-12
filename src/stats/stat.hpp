@@ -2,20 +2,15 @@
 #define __STATS_DAY_HPP
 
 #include "acl/types.hpp"
+#include "stats/types.hpp"
 
 namespace db { namespace bson {
-    class Stat;
-  } 
+class Stat;
+} 
 }
 
 namespace stats
 {
-
-enum class Direction
-{
-  Upload,
-  Download
-};
 
 class Stat
 {

@@ -5,6 +5,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <mongo/client/dbclient.h>
 #include "acl/types.hpp"
+#include "util/enum.hpp"
 
 namespace db { namespace bson
 {
@@ -15,6 +16,8 @@ namespace mail
 {
 
 enum class Status : unsigned { Unread, Trash, Saved };
+
+template <> const char* util::EnumStrings<Status>::values[];
 
 class Message
 {
