@@ -1,3 +1,4 @@
+#include <stack>
 #include <boost/lexical_cast.hpp>
 #include "cmd/site/logs.hpp"
 #include "logs/logs.hpp"
@@ -42,15 +43,22 @@ void LOGSCommand::Show(const std::string& path)
   try
   {
     util::ReverseLogReader in(path);
+    std::stack<std::string> lines;
     std::string line;
     int count = 0;
     while (in.Getline(line) && count < number)
     {
       if (CheckStrings(line))
       {
-        control.PartReply(ftp::CommandOkay, line);
+        lines.push(line);
         ++count;
       }
+    }
+    
+    while (!lines.empty())
+    {
+      control.PartReply(ftp::CommandOkay, lines.top());
+      lines.pop();
     }
   
     control.Reply(ftp::CommandOkay, "LOGS command finished");
@@ -71,6 +79,7 @@ cmd::Result LOGSCommand::Execute()
   else if (log == "sysop") Show(logs::sysop.Path());
   else if (log == "events") Show(logs::events.Path());
   else if (log == "db") Show(logs::db.Path());
+  else if (log == "debug") Show(logs::db.Path());
   else return cmd::Result::SyntaxError;
   
   return cmd::Result::Okay;
