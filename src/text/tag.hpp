@@ -63,7 +63,7 @@ public:
   const std::string& Format() const { return format; }
   const std::string& Value() const { return value; }
   const Measurement& Unit() const { return measurement; } // rename all to unit?
-  
+ 
   void SetType(TagType type) { this->type = type; }
 };
 

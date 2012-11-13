@@ -30,13 +30,16 @@ struct TemplateNoTag : public TemplateError
 
 class TemplateMalform : public TemplateError
 {
-  static std::string Format(int line, int i)
+  static std::string Format(int line, int i, const std::string& msg = "")
   {
     std::ostringstream os;
-    os << "Error parsing template (Line " << line << ": Char: " << i << ")";
+    os << "Error parsing template (Line " << line << ": Char: " << i << "). "
+      << msg ;
     return os.str();
   }
 public:
+  TemplateMalform(int line, int i, const std::string& msg) :
+    std::runtime_error(Format(line, i, msg)) { }
   TemplateMalform(int line, int i) :
     std::runtime_error(Format(line, i)) { }
 };

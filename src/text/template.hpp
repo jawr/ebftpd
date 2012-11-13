@@ -25,7 +25,7 @@ class TemplateSection
 
   void CheckValueExists(const std::string& key);
 public:
-  TemplateSection() {}
+  TemplateSection(SectionType section) : section(section) {}
 
   void RegisterBuffer(const std::string& buffer) { this->buffer = buffer; }
   void RegisterTag(std::string var);
@@ -34,7 +34,8 @@ public:
   void RegisterSpeed(const std::string& key, long long bytes, long long xfertime);
 
   SectionType Section() const { return section; } 
-  void SetSection(SectionType section) { this->section = section; }
+
+  const std::string& Buffer() const { return buffer; }
 
   std::string Compile();
 };
