@@ -14,9 +14,10 @@ namespace
 
 bool HiddenFile(const std::string& path)
 {
-  std::string dirname = fs::Path(path).Dirname();
+  fs::Path ppath(path);
+  std::string dirname(ppath.Dirname().ToString());
   if (dirname[dirname.length() - 1] != '/') dirname += '/';
-  std::string basename = fs::Path(path).Basename();
+  std::string basename(ppath.Basename().ToString());
 
   for (auto& hf : cfg::Get().HiddenFiles())
   {
