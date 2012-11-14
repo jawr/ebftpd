@@ -1,4 +1,5 @@
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 #include "text/template.hpp"
@@ -29,7 +30,7 @@ Template::Template(const std::string& file) :
   bool logic = false;
   int skip = 0;
 
-  TemplateSection& templ = head;
+  TemplateSection* templ = &head;
   
   for (int i = 0, line = 0; io.good(); ++i)
   {
@@ -60,15 +61,12 @@ Template::Template(const std::string& file) :
         {
           // handle end of block
           logic = false;
-          logs::debug << "OS:" << logs::endl;
-          logs::debug << os.str() << logs::endl;
-          templ.RegisterBuffer(os.str());
-          logs::debug << "Buffer: " << templ.Buffer() << logs::endl;
+          templ->RegisterBuffer(os.str());
         }
         else if (command == "body")
-          templ = body;
+          templ = &body;
         else if (command == "foot")
-          templ = foot;
+          templ = &foot;
         else if (command != "head")
         {
           throw TemplateMalform(++line, ++i, command 
@@ -79,7 +77,6 @@ Template::Template(const std::string& file) :
         logic = false;
 
         // reset os for block
-        logs::debug << "os.clear" << logs::endl;
         os.str(std::string());
 
         continue;
@@ -113,7 +110,7 @@ Template::Template(const std::string& file) :
         open = false;
         close = false;
         first = false;
-        templ.RegisterTag(var.str());
+        templ->RegisterTag(var.str());
         os << "{{" << buf.str() << "}}";
         continue;
       }
@@ -148,7 +145,6 @@ Template::Template(const std::string& file) :
       read = true;
       continue;
     }
-    logs::debug << c << logs::endl;
     os << c;
   }
 
@@ -162,8 +158,6 @@ void TemplateSection::RegisterTag(std::string var)
 {
   boost::trim(var);
   boost::to_lower(var);
-
-  logs::debug << "TemplateSection::RegstierTag: " << var << logs::endl;
 
   std::vector<std::string> args;
   boost::split(args, var, boost::is_any_of("|"));
@@ -183,8 +177,6 @@ void TemplateSection::RegisterTag(std::string var)
   tag.Compile();
 
   tags.emplace_back(tag);
-  logs::debug << " tags.size: " << tags.size() << logs::endl;
- 
 }
 
 void TemplateSection::CheckValueExists(const std::string& key)
@@ -204,11 +196,9 @@ void TemplateSection::RegisterValue(const std::string& key, const std::string& v
   bool ok = false;
   for (auto& tag: tags)
   {
-    if (tag.Name() == key) 
-    {
-      ok = true;
-      tag.Parse(value);
-    }
+    if (tag.Name() != key) continue;
+    ok = true;
+    tag.Parse(value);
   }
 
   if (!ok) throw TemplateNoTag("No template tag with key: " + key);
@@ -222,6 +212,7 @@ void TemplateSection::RegisterSize(const std::string& key, long long bytes)
   bool ok = false;
   for (auto& tag: tags)
   {
+    if (tag.Name() != key) continue;
     ok = true;
     tag.ParseSize(bytes);
   }
@@ -238,6 +229,7 @@ void TemplateSection::RegisterSpeed(const std::string& key, long long bytes,
   bool ok = false;
   for (auto& tag: tags)
   {
+    if (tag.Name() != key) continue;
     ok = true;
     tag.ParseSpeed(bytes, xfertime);
   }
@@ -252,7 +244,6 @@ std::string TemplateSection::Compile()
   for (auto& tag: tags)
   {
     boost::replace_first(ret, "{{" + tag.Name() + "}}", tag.Value());
-    //boost::replace_all(ret, "{{" + value.first + "}}", value.);
   }
   return ret;
 }
@@ -267,11 +258,14 @@ int main()
   try
   {
     text::Template temp("data/text/test.tmpl");
-    text::TemplateSection& head = temp.Body();
-    head.RegisterSize("a", 140509184);
-    logs::debug << "----" << logs::endl;
+    text::TemplateSection& head = temp.Head();
+    head.RegisterValue("user", "io");
+    head.RegisterValue("group", "some group");
     logs::debug << head.Compile() << logs::endl;
-    //temp.RegisterSize("a", 140509184);
+    text::TemplateSection& body = temp.Body();
+    body.RegisterSize("amount", 15000000);
+    body.RegisterSpeed("speed", 15000000, 666);
+    logs::debug << body.Compile() << logs::endl;
     //temp.RegisterValue("b", "this is b");
     //logs::debug << temp.Compile() << logs::endl;
   }

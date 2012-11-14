@@ -134,6 +134,25 @@ void Tag::ParseSize(long long bytes)
 
 void Tag::ParseSpeed(long long bytes, long long xfertime)
 {
+  if (!precision.empty())
+  {
+    SetType(TagType::Float);
+    Compile();
+  }
+
+  float value;
+
+  if (measurement == Measurement::Kbyte)
+    value = (bytes / 1024.0) / (xfertime / 1000.0);
+  else if (measurement == Measurement::Mbyte)
+    value = (bytes / 1024.0 / 1024.0) / (xfertime / 1000.0);
+  else if (measurement == Measurement::Gbyte)
+    value = (bytes / 1024.0 / 1024.0 / 1024.0) / (xfertime / 1000.0);
+
+  std::ostringstream os;
+  os << boost::format(format) % value;
+
+  this->value = os.str();
 }
 
 // end

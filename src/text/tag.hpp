@@ -45,6 +45,7 @@ public:
   // oportuinity to set defaults from cofig here
   Tag(const std::string& name) : 
     name(name),
+    value("{{" + name + "}}"),
     alignment(Alignment::Right), 
     measurement(Measurement::None), 
     type(TagType::String),
