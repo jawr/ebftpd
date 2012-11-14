@@ -6,6 +6,7 @@
 #include "util/verify.hpp"
 #include "util/net/tcplistener.hpp"
 #include "logs/logs.hpp"
+#include "ftp/error.hpp"
 
 namespace ftp
 {
@@ -25,6 +26,8 @@ void Control::SendReply(ReplyCode code, bool part, const std::string& message)
   const std::string& str = reply.str();
   Write(str.c_str(), str.length());
   logs::debug << str << logs::endl;
+  if (lastCode != code && lastCode != CodeNotSet)
+    throw ProtocolError("Invalid reply code sequence.");
   lastCode = code;
 }
 

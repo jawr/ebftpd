@@ -26,6 +26,7 @@
 #include "acl/flags.hpp"
 #include "db/mail/mail.hpp"
 #include "db/stats/protocol.hpp"
+#include "ftp/error.hpp"
 
 namespace ftp
 {
@@ -169,7 +170,7 @@ void Client::ExecuteCommand(const std::string& commandLine)
   std::vector<std::string> args;
   boost::split(args, commandLine, boost::is_any_of(" "),
                boost::token_compress_on);
-  if (args.empty()) throw util::net::NetworkError("FTP protocal violation");
+  if (args.empty()) throw ProtocolError("Empty command.");
   
   std::string argStr(commandLine.substr(args[0].length()));
   boost::trim(argStr);
