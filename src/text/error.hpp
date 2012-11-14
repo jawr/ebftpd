@@ -33,7 +33,7 @@ class TemplateMalform : public TemplateError
   static std::string Format(int line, int i, const std::string& msg = "")
   {
     std::ostringstream os;
-    os << "Error parsing template (Line " << line << ": Char: " << i << "). "
+    os << "Error parsing template (Line: " << line << ", Char: " << i << "). "
       << msg ;
     return os.str();
   }
