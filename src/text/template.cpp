@@ -197,7 +197,8 @@ void TemplateSection::RegisterValue(const std::string& key, const std::string& v
     tag.Parse(value);
   }
 
-  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  //if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  if (!ok) return;
   values.emplace_back(key);
 }
 
@@ -215,7 +216,8 @@ void TemplateSection::RegisterValue(const std::string& key, int value)
     ok = true;
     tag.Parse(os.str());
   }
-  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  //if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  if (!ok) return;
   values.emplace_back(key);
 }
 
@@ -232,7 +234,8 @@ void TemplateSection::RegisterSize(const std::string& key, long long bytes)
     tag.ParseSize(bytes);
   }
 
-  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  //if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  if (!ok) return;
   values.emplace_back(key);
 }
 
@@ -249,7 +252,8 @@ void TemplateSection::RegisterSpeed(const std::string& key, long long bytes,
     tag.ParseSpeed(bytes, xfertime);
   }
 
-  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  //if (!ok) throw TemplateNoTag("No template tag with key: " + key); 
+  if (!ok) return;
   values.emplace_back(key);
 }
 
