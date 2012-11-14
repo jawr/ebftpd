@@ -58,6 +58,7 @@ boost::ptr_vector<acl::Group> GetAllPtr()
 
   return groups;
 }
+
 // need to refactor this so that they both have the same query logic in another function
 std::vector<acl::Group> GetAll()
 {
@@ -66,7 +67,7 @@ std::vector<acl::Group> GetAll()
   QueryResults results;
   mongo::Query query;
   boost::unique_future<bool> future;
-  TaskPtr task(new db::Select("group", query, results, future));
+  TaskPtr task(new db::Select("groups", query, results, future));
   Pool::Queue(task);
   future.wait();
 
