@@ -1,30 +1,57 @@
 #include <sstream>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 #include "cmd/site/groups.hpp"
 #include "acl/group.hpp"
 #include "acl/user.hpp"
 #include "db/user/user.hpp"
 #include "db/group/group.hpp"
+#include "text/error.hpp"
+#include "text/factory.hpp"
+#include "text/template.hpp"
+#include "text/tag.hpp"
 
 namespace cmd { namespace site
 {
 
 cmd::Result GROUPSCommand::Execute()
 {
-  boost::ptr_vector<acl::Group> groups = db::group::GetAllPtr();
+  std::vector<acl::Group> groups = db::group::GetAll();
+
+  logs::debug << "groups: " << groups.size() << logs::endl;
+
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("groups"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return cmd::Result::Okay;
+  }
 
   std::ostringstream os;
 
   if (groups.size() > 0)
   {
-    os << "(Users)  Name      Group Description";
-    os << "\n----------------------------------------------------------------------";
+    text::TemplateSection& head = templ->Head();
+    os << head.Compile();
+
+    text::TemplateSection& body = templ->Body();
 
     for (auto& group: groups)
     {
       std::vector<acl::User> users = db::user::GetByACL("=" + group.Name());
-      os << "\n(" << users.size() << ") " << group.Name();
+
+      body.Reset();
+      body.RegisterValue("users", users.size());
+      body.RegisterValue("group", group.Name());
+      os << body.Compile();
     }
+
+    text::TemplateSection& foot = templ->Foot();
+    foot.RegisterValue("total_groups", groups.size());
+    os << foot.Compile();
   }
   else
     os << "No groups added.";
