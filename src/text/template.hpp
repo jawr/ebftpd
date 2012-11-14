@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "text/tag.hpp"
+#include "util/error.hpp"
 
 namespace text
 {
@@ -47,7 +48,14 @@ class Template
   TemplateSection body;
   TemplateSection foot;
 public:
-  Template(const std::string& file);
+  Template(const std::string& file) :
+    file(file),
+    head(SectionType::Head),
+    body(SectionType::Body),
+    foot(SectionType::Foot)
+  {}
+
+  void Initalize();
 
   TemplateSection& Head() { return head; }
   TemplateSection& Body() { return body; }

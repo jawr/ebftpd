@@ -9,11 +9,7 @@
 namespace text
 {
 
-Template::Template(const std::string& file) : 
-  file(file),
-  head(SectionType::Head),
-  body(SectionType::Body),
-  foot(SectionType::Foot)
+void Template::Initalize()
 {
   std::string line;
   std::ifstream io(file.c_str());
@@ -252,9 +248,15 @@ std::string TemplateSection::Compile()
 
 #ifdef TEXT_TEMPLATE_TEST
 #include "logs/logs.hpp"
-
+#include "text/factory.hpp"
+#include "cfg/get.hpp"
+#include "cfg/config.hpp"
 int main()
 {
+  cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config("ftpd.conf"))); 
+  text::Factory::Initalize();
+  logs::debug << "Templates loaded: " << text::Factory::Size() << logs::endl;
+  return 0;
   try
   {
     text::Template temp("data/text/test.tmpl");
