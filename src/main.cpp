@@ -243,6 +243,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  logs::debug << "Initalising Templates.." << logs::endl;
   try
   {
     text::Factory::Initalize();

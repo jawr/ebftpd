@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include "text/template.hpp"
+#include "text/templatesection.hpp"
 #include "util/error.hpp"
 
 namespace text

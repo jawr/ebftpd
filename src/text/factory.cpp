@@ -20,6 +20,9 @@ util::Error Factory::Initalize()
   {
     fs::DirIterator it(datapath);
     fs::DirIterator end;
+   
+    // let's get all error's in one go 
+    int errors = 0;
 
     for (; it != end; ++it)
     {
@@ -44,7 +47,14 @@ util::Error Factory::Initalize()
       catch (const text::TemplateError& e)
       {
         logs::error << "Template Initalize error (" + *it + "): " + e.Message() << logs::endl;
+        ++errors;
       }
+    }
+    if (errors > 0)
+    {
+      std::ostringstream os;
+      os << errors << " template errors. Please review errors above.";
+      throw text::TemplateError(os.str());
     }
   }
   catch (const util::SystemError& e)

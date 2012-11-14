@@ -8,6 +8,7 @@
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "text/template.hpp"
+#include "text/templatesection.hpp"
 #include "text/tag.hpp"
 
 namespace cmd { namespace site
@@ -15,9 +16,8 @@ namespace cmd { namespace site
 
 cmd::Result GROUPSCommand::Execute()
 {
+#include <boost/optional/optional.hpp>
   std::vector<acl::Group> groups = db::group::GetAll();
-
-  logs::debug << "groups: " << groups.size() << logs::endl;
 
   boost::optional<text::Template> templ;
   try
