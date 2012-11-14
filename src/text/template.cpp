@@ -201,6 +201,25 @@ void TemplateSection::RegisterValue(const std::string& key, const std::string& v
   values.emplace_back(key);
 }
 
+void TemplateSection::RegisterValue(const std::string& key, int value)
+{
+  CheckValueExists(key);
+
+  std::ostringstream os;
+  os << value;
+
+  bool ok = false;
+  for (auto& tag: tags)
+  {
+    if (tag.Name() != key) continue;
+    ok = true;
+    tag.Parse(os.str());
+  }
+  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
+  values.emplace_back(key);
+}
+
+
 void TemplateSection::RegisterSize(const std::string& key, long long bytes)
 {
   CheckValueExists(key);
@@ -256,6 +275,34 @@ int main()
   cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config("ftpd.conf"))); 
   text::Factory::Initalize();
   logs::debug << "Templates loaded: " << text::Factory::Size() << logs::endl;
+
+  try
+  {
+    text::Template groups = text::Factory::GetTemplate("groups");
+    std::ostringstream os;
+    text::TemplateSection& head = groups.Head();
+    os << head.Compile();
+    text::TemplateSection& body = groups.Body();
+    for (int i = 0; i < 5; ++i)
+    {
+      body.Reset();
+      body.RegisterValue("users", i);
+      body.RegisterValue("group", i);
+      body.RegisterValue("description", "HELLO THIS IS A DESCR");
+      os << body.Compile();
+    }
+    text::TemplateSection& foot = groups.Foot();
+    foot.RegisterValue("total_groups", 5);
+    os << foot.Compile();
+    logs::debug << "COMPILED:" << logs::endl;
+    logs::debug << os.str() << logs::endl;
+  }
+  catch (const text::TemplateError& e)
+  {
+    logs::error << e.Message() << logs::endl;
+    return 1;
+  }
+  
   return 0;
   try
   {

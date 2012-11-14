@@ -18,6 +18,7 @@ public:
   
   static util::Error Initalize();
   static int Size() { return instance.templates.size(); }
+  static Template GetTemplate(const std::string& templ);
 };
   
 // end

@@ -55,5 +55,13 @@ util::Error Factory::Initalize()
   return util::Error::Success();
 }
 
+Template Factory::GetTemplate(const std::string& templ)
+{
+  std::string name = boost::to_lower_copy(templ);
+  if (instance.templates.find(name) == instance.templates.end())
+    throw TemplateError("No such template (" + templ + ")");
+  return instance.templates.at(name);
+}
+  
 // end
 }
