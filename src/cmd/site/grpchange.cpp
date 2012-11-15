@@ -88,7 +88,7 @@ cmd::Result GRPCHANGECommand::Execute()
       os << "Updated " << group.Name() << " " << setting << " to: " << value;
   } 
 
-  control.MultiReply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, os.str());
   return cmd::Result::Okay;
 }
 

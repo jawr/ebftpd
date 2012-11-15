@@ -23,7 +23,7 @@ mongo::BSONObj User::Serialize(const acl::User& user)
   return bob.obj();
 }
 
-std::unique_ptr<acl::User> User::Unserialize(const mongo::BSONObj& bo)
+std::unique_ptr<acl::User> User::UnserializePtr(const mongo::BSONObj& bo)
 {
   std::unique_ptr<acl::User> user(new acl::User());
 

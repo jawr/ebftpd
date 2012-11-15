@@ -33,7 +33,7 @@ cmd::Result GROUPCommand::Execute()
 
   if (users.empty())
   {
-    control.Reply(ftp::ActionNotOkay, ok.Message());
+    control.Reply(ftp::ActionNotOkay, "SITE GROUP: No users.");
     return cmd::Result::Okay;
 }
 

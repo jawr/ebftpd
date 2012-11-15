@@ -13,7 +13,7 @@ mongo::BSONObj Group::Serialize(const acl::Group& group)
   return bob.obj();
 }
 
-std::unique_ptr<acl::Group> Group::Unserialize(const mongo::BSONObj& bo)
+std::unique_ptr<acl::Group> Group::UnserializePtr(const mongo::BSONObj& bo)
 {
   std::unique_ptr<acl::Group> group;
   try

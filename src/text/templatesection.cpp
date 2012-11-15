@@ -1,5 +1,7 @@
-#include "text/tag.hpp"
+#include <boost/algorithm/string.hpp>
 #include "text/templatesection.hpp"
+#include "text/error.hpp"
+#include "text/tag.hpp"
 
 namespace text
 {

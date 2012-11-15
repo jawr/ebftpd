@@ -87,7 +87,7 @@ boost::ptr_vector<acl::User> GetAllPtr()
   future.wait();
 
   for (auto& obj: results)
-    users.push_back(bson::User::UnserializePtr(obj));
+    users.push_back(bson::User::UnserializePtr(obj).release());
 
   return users;
 }
