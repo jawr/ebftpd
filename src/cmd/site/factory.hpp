@@ -5,8 +5,11 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <boost/optional.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
+#include "cfg/setting.hpp"
 
 namespace cmd { namespace site
 {
@@ -18,7 +21,7 @@ public:
   CreatorBase() { }
   virtual ~CreatorBase() { }
   
-  virtual BaseT *Create(ftp::Client& client, const std::string& argStr,
+  virtual BaseT* Create(ftp::Client& client, const std::string& argStr,
                         const Args& args) = 0;
 };
 
@@ -27,10 +30,35 @@ class Creator : public CreatorBase<cmd::Command>
 {
 public:
   Creator() { }
-  cmd::Command *Create(ftp::Client& client, const std::string& argStr,
+  cmd::Command* Create(ftp::Client& client, const std::string& argStr,
                   const Args& args)
   {
     return new CommandT(client, argStr, args);
+  }
+};
+
+template <class CommandT>
+class CustomCreator : public CreatorBase<cmd::Command>
+{
+  cfg::setting::SiteCmd custSiteCmd;
+  
+public:
+  CustomCreator(const cfg::setting::SiteCmd& custSiteCmd) : custSiteCmd(custSiteCmd) { }
+  cmd::Command* Create(ftp::Client& client, const std::string& argStr, 
+                  const Args&)
+  {
+    // prepend custom command arguments to user passed arguments
+    std::string cArgStr(custSiteCmd.Arguments());
+    cArgStr += ' ';
+    cArgStr += argStr;
+    boost::trim(cArgStr);
+    
+    // rebuild args
+    std::vector<std::string> cArgs;
+    boost::split(cArgs, cArgStr, boost::is_any_of(" "), boost::token_compress_on);
+    cArgs.insert(cArgs.begin(), custSiteCmd.Command());
+    
+    return new CommandT(custSiteCmd, client, cArgStr, cArgs);
   }
 };
 
@@ -62,6 +90,11 @@ public:
     description(description)
   { }
   
+  CommandDef(const std::string& aclKeyword,
+             const CreatorBasePtr& creator) :
+    minimumArgs(0), maximumArgs(-1), aclKeyword(aclKeyword), 
+    creator(creator) { }
+  
   bool CheckArgs(const std::vector<std::string>& args) const
   {
     int argsSize = static_cast<int>(args.size()) - 1;
@@ -81,7 +114,7 @@ public:
   const std::string& ACLKeyword() const { return aclKeyword; }
 };
 
-typedef boost::optional<const CommandDef&> CommandDefOptRef;
+typedef boost::optional<CommandDef> CommandDefOpt;
 
 class Factory
 {
@@ -93,10 +126,12 @@ private:
    
   Factory();
   
+  static CommandDefOpt LookupCustom(const std::string& command);
+
   static Factory factory;
-  
+ 
 public:
-  static CommandDefOptRef Lookup(const std::string& command);
+  static CommandDefOpt Lookup(const std::string& command, bool noCustom = false);
   
   static const CommandDefsMap& Commands()
   { return factory.defs; }

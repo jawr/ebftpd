@@ -9,7 +9,7 @@ namespace cmd { namespace site
 cmd::Result HELPCommand::Syntax()
 {
   boost::to_upper(args[1]);
-  cmd::site::CommandDefOptRef def(cmd::site::Factory::Lookup(args[1]));
+  cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(args[1]));
   if (!def) control.Reply(ftp::CommandUnrecognised, "Command not understood");
   else
   {

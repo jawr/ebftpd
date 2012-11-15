@@ -18,6 +18,7 @@
 #include "ftp/data.hpp"
 #include "ftp/control.hpp"
 #include "ftp/xdupe.hpp"
+#include "util/processreader.hpp"
 
 namespace ftp 
 {
@@ -38,6 +39,7 @@ class Client : public util::Thread
   
   ::ftp::Control control;
   ::ftp::Data data;
+  util::ProcessReader child;
   
   fs::Path workDir;
   acl::User user;
@@ -92,6 +94,7 @@ public:
   
   ::ftp::Control& Control() { return control; }
   ::ftp::Data& Data() { return data; }
+  util::ProcessReader& Child() { return child; }
 
   void SetIdleTimeout(const boost::posix_time::seconds& idleTimeout)
   { this->idleTimeout = idleTimeout; }

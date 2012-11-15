@@ -16,9 +16,9 @@ cmd::Result SITECommand::Execute()
   argStr = argStr.substr(args[0].length());
   boost::trim(argStr);
 
-  cmd::site::CommandDefOptRef def(cmd::site::Factory::Lookup(args[0]));
+  cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(args[0]));
   if (!def)
-  {
+  { 
     control.Reply(ftp::CommandUnrecognised, "Command not understood");
   }
   else if (!acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
@@ -46,6 +46,7 @@ cmd::Result SITECommand::Execute()
         control.Reply(ftp::ActionNotOkay, "SITE " + args[0] + ": Permission denied");
     }
   }
+  
   return cmd::Result::Okay;
 }
 

@@ -16,7 +16,6 @@ void Control::Accept(util::net::TCPListener& listener)
   listener.Accept(socket);
 }
 
-
 void Control::SendReply(ReplyCode code, bool part, const std::string& message)
 {
   if (singleLineReplies && part) return;
@@ -26,16 +25,15 @@ void Control::SendReply(ReplyCode code, bool part, const std::string& message)
   const std::string& str = reply.str();
   Write(str.c_str(), str.length());
   logs::debug << str << logs::endl;
-  if (lastCode != code && lastCode != CodeNotSet)
+  if (lastCode != code && lastCode != CodeNotSet && code != ftp::NoCode)
     throw ProtocolError("Invalid reply code sequence.");
-  lastCode = code;
+  if (code != ftp::NoCode) lastCode = code;
 }
 
 void Control::PartReply(ReplyCode code, const std::string& messages)
 {
   MultiReply(code, false, messages);
 }
-
 
 void Control::Reply(ReplyCode code, const std::string& messages)
 {

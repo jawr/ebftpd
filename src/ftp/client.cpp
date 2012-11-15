@@ -226,6 +226,7 @@ void Client::Interrupt()
   Stop();
   control.Interrupt();
   data.Interrupt();
+  child.Interrupt();
 }
 
 void Client::LookupIdent()
@@ -311,7 +312,7 @@ void Client::Run()
   }
   catch (const std::exception& e)
   {
-    //logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
+    logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
   }
 }
 

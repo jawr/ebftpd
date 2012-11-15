@@ -44,6 +44,9 @@
 #include "cmd/site/sreply.hpp"
 #include "cmd/site/msg.hpp"
 #include "cmd/site/traffic.hpp"
+#include "cmd/site/customcommand.hpp"
+#include "cfg/get.hpp"
+#include "util/verify.hpp"
 
 namespace cmd { namespace site
 {
@@ -342,11 +345,61 @@ Factory::Factory()
   };
 }
 
-CommandDefOptRef Factory::Lookup(const std::string& command)
+CommandDefOpt Factory::LookupCustom(const std::string& command)
 {
-  CommandDefsMap::const_iterator it = factory.defs.find(command);
-  if (it != factory.defs.end()) return CommandDefOptRef(it->second);
-  return CommandDefOptRef();
+  const cfg::setting::SiteCmd* match = nullptr;
+  for (auto& siteCmd : cfg::Get().SiteCmd())
+  {
+    if (siteCmd.Command() == command)
+    {
+      match = &siteCmd;
+      break;
+    }
+  }
+  
+  if (!match) return CommandDefOpt();
+  
+  CommandDefOpt def;
+  std::string aclKeyword("custom-" + command);
+  switch (match->GetType())
+  {
+    case cfg::setting::SiteCmd::Type::EXEC  :
+    {
+      def.reset(CommandDef(boost::to_lower_copy(aclKeyword), 
+          CreatorBasePtr(new CustomCreator<site::CustomEXECCommand>(*match))));
+      break;
+    }
+    case cfg::setting::SiteCmd::Type::TEXT  :
+    {
+      def.reset(CommandDef(boost::to_lower_copy(aclKeyword), 
+          CreatorBasePtr(new CustomCreator<site::CustomTEXTCommand>(*match))));
+      break;
+    }
+    case cfg::setting::SiteCmd::Type::ALIAS :
+    {
+      def.reset(CommandDef(boost::to_lower_copy(aclKeyword), 
+          CreatorBasePtr(new CustomCreator<site::CustomALIASCommand>(*match))));
+      break;
+    }
+    default                                 :
+    {
+      verify(false);
+    }
+  }
+  
+  return def;
+}
+
+CommandDefOpt Factory::Lookup(const std::string& command, bool noCustom)
+{
+  CommandDefOpt def;
+  if (!noCustom) def = LookupCustom(command);
+  if (!def)
+  {
+    CommandDefsMap::const_iterator it = factory.defs.find(command);
+    if (it != factory.defs.end()) def.reset(it->second);
+  }
+  return def;
 }
 
 std::unordered_set<std::string> Factory::ACLKeywords()
