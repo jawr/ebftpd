@@ -1,0 +1,17 @@
+{% head %}
+Detailed User Listing...
+-------------------------------------------------------------------------------
+{% endblock %}
+
+{% body %}
+{{ user|left|15 }} ({{ group|left|10 }}) Up: {{ upload|mb }}mb Dn: {{ download|mb }}mb
+{% endblock %}
+
+{% foot %}
+-------------------------------------------------------------------------------
+Total up: {{ total_uploaded|mb }}mb / {{ total_uploaded_files }}f
+Total dn: {{ total_downloaded|mb }}mb / {{ total_downloaded_Files }}f
+-------------------------------------------------------------------------------
+Total users: {{ total_users }}
+{% endblock %}
+
