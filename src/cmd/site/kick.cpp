@@ -24,7 +24,7 @@ void KICKCommand::Execute()
     return;
   }
 
-  if (user.CheckFlag(acl::Flag::Siteop))
+  if (user.CheckFlag(acl::Flag::Siteop) && user.UID() != client.User().UID())
   {
     control.Reply(ftp::ActionNotOkay, "Cannot kick a siteop.");
     return;
