@@ -44,8 +44,8 @@ void UserCache::Initialize()
 
   assert(acl::GroupCache::Initialized());
 
-  boost::ptr_vector<acl::User> users;
-  db::user::GetAll(users);
+  boost::ptr_vector<acl::User> users = db::user::GetAllPtr();
+
   while (!users.empty())
   {
     auto user = users.release(users.begin());
@@ -300,26 +300,32 @@ util::Error UserCache::ResetSecondaryGIDs(const std::string& name)
   return util::Error::Success();
 }
 
-util::Error UserCache::IncrCredits(const std::string& name, long long kbytes)
+util::Error UserCache::IncrCredits(const std::string& name, long long bytes)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
+
   if (it == instance.byName.end())
     return util::Error::Failure("Unable to update credits, user " + 
                                 name + " doesn't exist.");
-  it->second->IncrCredits(kbytes);
+
+  it->second->IncrCredits(bytes);
+
   Save(*it->second);
   return util::Error::Success();
 }
 
-util::Error UserCache::DecrCredits(const std::string& name, long long kbytes)
+util::Error UserCache::DecrCredits(const std::string& name, long long bytes)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
+
   if (it == instance.byName.end()) 
     return util::Error::Failure("Unable to update credits, user " + 
                                 name + " doesn't exist.");
-  it->second->DecrCredits(kbytes);
+
+  it->second->DecrCredits(bytes);
+
   Save(*it->second);
   return util::Error::Success();
 }
@@ -328,7 +334,8 @@ acl::User UserCache::User(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) throw util::RuntimeError("User " + name + " doesn't exist.");
+  if (it == instance.byName.end())
+    throw util::RuntimeError("User (" + name + ") doesn't exist");
   return *it->second;
 }
 

@@ -23,6 +23,8 @@
 #include "util/error.hpp"
 #include "util/daemonise.hpp"
 #include "cmd/site/factory.hpp"
+#include "text/factory.hpp"
+#include "text/error.hpp"
 
 #include "version.hpp"
 
@@ -240,6 +242,17 @@ int main(int argc, char** argv)
   catch (const util::net::NetworkError& e)
   {
     logs::error << "TLS failed to initialise: " << e.Message() << logs::endl;
+    return 1;
+  }
+
+  logs::debug << "Initalising Templates.." << logs::endl;
+  try
+  {
+    text::Factory::Initalize();
+  }
+  catch (const text::TemplateError& e)
+  {
+    logs::error << "Templates failed to initalise: " << e.Message() << logs::endl;
     return 1;
   }
     

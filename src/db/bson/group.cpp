@@ -27,6 +27,11 @@ std::unique_ptr<acl::Group> Group::Unserialize(const mongo::BSONObj& bo)
   return group;
 }
 
+acl::Group Group::Unserialize(const mongo::BSONObj& bo)
+{
+  return acl::Group(bo["name"].String(), bo["gid"].Int());
+}
+
 } /* bson namespace */
 } /* db namespace */
 

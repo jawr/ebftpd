@@ -23,8 +23,7 @@ void GroupCache::Initialize()
   logs::debug << "Initialising group cache.." << logs::endl;
   assert(!instance.initialized);
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  boost::ptr_vector<acl::Group> groups;
-  db::group::GetAll(groups);
+  boost::ptr_vector<acl::Group> groups = db::group::GetAllPtr();
   while (!groups.empty())
   {
     auto group = groups.release(groups.begin());
@@ -110,7 +109,10 @@ acl::Group GroupCache::Group(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) throw util::RuntimeError("Group " + name + " doesn't exist.");
+
+  if (it == instance.byName.end()) 
+    throw util::RuntimeError("Group (" + name + ") doesn't exist.");
+
   return *it->second;
 }
 

@@ -74,9 +74,9 @@ void Delete(acl::UserID uid)
     Pool::Queue(task);      
 }
 
-void GetAll(boost::ptr_vector<acl::User>& users)
+boost::ptr_vector<acl::User> GetAllPtr()
 {
-  users.clear();
+  boost::ptr_vector<acl::User> users;
 
   QueryResults results;
   mongo::Query query;
@@ -86,16 +86,36 @@ void GetAll(boost::ptr_vector<acl::User>& users)
 
   future.wait();
 
-  if (results.size() == 0) return;
+  for (auto& obj: results)
+    users.push_back(bson::User::UnserializePtr(obj));
+
+  return users;
+}
+
+std::vector<acl::User> GetAll()
+{
+  std::vector<acl::User> users;
+
+  QueryResults results;
+  mongo::Query query;
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("users", query, results, future));
+  Pool::Queue(task);
+
+  future.wait();
 
   for (auto& obj: results)
-    users.push_back(bson::User::Unserialize(obj).release());
+    users.emplace_back(bson::User::Unserialize(obj));
+
+  return users;
 }
 
 
-util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
-  std::string acl)
+// change to objects rather than pointers
+std::vector<acl::User> GetByACL(std::string acl)
 {
+  std::vector<acl::User> users;
+
   mongo::Query query;
   if (acl[0] == '-')
   {
@@ -112,13 +132,17 @@ util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
     }
     catch (const util::RuntimeError& e)
     {
-      return util::Error::Failure(e.Message());
+      // group not found
+      return users;
     }
-    query = QUERY("$or" << BSON_ARRAY(BSON("primary gid" << group.GID()) << BSON("secondary gids" << group.GID())));
+    query = QUERY("$or" << BSON_ARRAY(
+      BSON("primary gid" << group.GID()) << 
+      BSON("secondary gids" << group.GID())
+    ));
   }
   else
     query = QUERY("flags" << acl);
-    
+
   QueryResults results;
   boost::unique_future<bool> future;
   TaskPtr task(new db::Select("users", query, results, future));
@@ -127,9 +151,9 @@ util::Error UsersByACL(boost::ptr_vector<acl::User>& users,
   future.wait();
 
   for (auto& obj: results)
-    users.push_back(bson::User::Unserialize(obj).release());
+    users.emplace_back(bson::User::Unserialize(obj));
 
-  return util::Error::Success();
+  return users;
 }
 
 // end

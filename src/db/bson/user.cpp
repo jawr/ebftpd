@@ -47,6 +47,23 @@ std::unique_ptr<acl::User> User::Unserialize(const mongo::BSONObj& bo)
 
   return user;
 }
+
+acl::User User::Unserialize(const mongo::BSONObj& bo)
+{
+  acl::User user;
+  user.name = bo["name"].String();
+  user.salt = bo["salt"].String();
+  user.credits = bo["credits"].Long();
+  user.password = bo["password"].String();
+  user.flags = bo["flags"].String();
+  user.uid = bo["uid"].Int();
+  user.primaryGid = bo["primary gid"].Int();
+  std::vector<mongo::BSONElement> secondaryGids = bo["secondary gids"].Array();
+  for (const auto& el: secondaryGids)
+    user.secondaryGids.insert(el.Int());
+
+  return user;
+}
   
 } /* bson namespace */
 } /* db namespace */

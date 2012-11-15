@@ -51,9 +51,9 @@ void Save(const acl::Group& group)
   Pool::Queue(task);
 }
 
-void GetAll(boost::ptr_vector<acl::Group>& groups)
+boost::ptr_vector<acl::Group> GetAllPtr()
 {
-  groups.clear();
+  boost::ptr_vector<acl::Group> groups;
 
   QueryResults results;
   mongo::Query query;
@@ -64,7 +64,27 @@ void GetAll(boost::ptr_vector<acl::Group>& groups)
   future.wait();
 
   for (auto& obj: results)
-    groups.push_back(bson::Group::Unserialize(obj).release());
+    groups.push_back(bson::Group::UnserializePtr(obj).release());
+
+  return groups;
+}
+
+// need to refactor this so that they both have the same query logic in another function
+std::vector<acl::Group> GetAll()
+{
+  std::vector<acl::Group> groups;
+
+  QueryResults results;
+  mongo::Query query;
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("groups", query, results, future));
+  Pool::Queue(task);
+  future.wait();
+
+  for (auto& obj: results)
+    groups.emplace_back(bson::Group::Unserialize(obj));
+
+  return groups;
 }
 
 void Delete(acl::GroupID gid)
