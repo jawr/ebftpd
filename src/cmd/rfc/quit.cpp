@@ -3,11 +3,11 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result QUITCommand::Execute()
+void QUITCommand::Execute()
 {
   control.Reply(ftp::ClosingControl, "Bye bye"); 
   client.SetState(ftp::ClientState::Finished);
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

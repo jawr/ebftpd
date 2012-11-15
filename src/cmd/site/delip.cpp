@@ -3,16 +3,17 @@
 #include "acl/usercache.hpp"
 #include "acl/ipmaskcache.hpp"
 #include "acl/allowsitecmd.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result DELIPCommand::Execute()
+void DELIPCommand::Execute()
 {
   if (args[1] != client.User().Name() &&
      !acl::AllowSiteCmd(client.User(), "delip"))
   {
-    return cmd::Result::Permission;
+    throw cmd::PermissionError();
   }
 
   acl::User user;
@@ -23,7 +24,7 @@ cmd::Result DELIPCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::ostringstream os;
@@ -39,7 +40,6 @@ cmd::Result DELIPCommand::Execute()
   }
 
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 // end

@@ -1,10 +1,11 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/sreply.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result SREPLYCommand::Execute()
+void SREPLYCommand::Execute()
 {
   if (args.size() == 1)
   {
@@ -25,9 +26,8 @@ cmd::Result SREPLYCommand::Execute()
       control.Reply(ftp::SyntaxError, "Single line reply mode now set to off.");
     }
     else
-      return cmd::Result::SyntaxError;
+      throw cmd::SyntaxError();
   }
-  return cmd::Result::Okay;
 }
 
 } /* site namespace */

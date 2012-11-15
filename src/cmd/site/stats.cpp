@@ -6,7 +6,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result STATSCommand::Execute()
+void STATSCommand::Execute()
 {
   std::ostringstream os;
   os.imbue(std::locale(""));
@@ -34,8 +34,6 @@ cmd::Result STATSCommand::Execute()
     control.Reply(ftp::ActionNotOkay, "No stats for user.");
   else
     control.Reply(ftp::CommandOkay, os.str());
-
-  return cmd::Result::Okay;
 }
 
 // end

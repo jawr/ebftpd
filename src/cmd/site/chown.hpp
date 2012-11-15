@@ -26,7 +26,7 @@ public:
     Command(client, client.Control(), client.Data(), argStr, args),
     owner(-1, -1), recursive(false), dirs(0), files(0), failed(0) { }
 
-  cmd::Result Execute();
+  void Execute();
 };
 
 } /* site namespace */

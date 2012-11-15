@@ -14,7 +14,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result RETRCommand::Execute()
+void RETRCommand::Execute()
 {
   namespace pt = boost::posix_time;
   using util::scope_guard;
@@ -24,7 +24,7 @@ cmd::Result RETRCommand::Execute()
   if (offset > 0 && data.DataType() == ftp::DataType::ASCII)
   {
     control.Reply(ftp::BadCommandSequence, "Resume not supported on ASCII data type.");
-    return cmd::Result::Okay;
+    return;
   }
   
   if (!ftp::Counter::StartDownload(client.User().UID(), client.Profile().MaxSimDl()))
@@ -33,7 +33,7 @@ cmd::Result RETRCommand::Execute()
     os << "You have reached your maximum of " << client.Profile().MaxSimDl() 
        << " simultaenous download(s).";
     control.Reply(ftp::ActionNotOkay, os.str());
-    return cmd::Result::Okay;    
+    return;    
   }
   
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopDownload(client.User().UID()); });  
@@ -47,7 +47,7 @@ cmd::Result RETRCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay,
                  "Unable to open file: " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   off_t size;
@@ -57,7 +57,7 @@ cmd::Result RETRCommand::Execute()
     if (offset > size)
     {
       control.Reply(ftp::InvalidRESTParameter, "Restart offset larger than file size.");
-      return cmd::Result::Okay;
+      return;
     }
 
     fin->seek(offset, std::ios_base::beg);
@@ -73,7 +73,7 @@ cmd::Result RETRCommand::Execute()
       !cfg::Get().AsciiDownloads().Allowed(size, argStr))
   {
     control.Reply(ftp::ActionNotOkay, "File can't be downloaded in ASCII, change to BINARY.");
-    return cmd::Result::Okay;
+    return;
   }
 
   std::stringstream os;
@@ -94,7 +94,7 @@ cmd::Result RETRCommand::Execute()
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " +
                  e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::streamsize bytes = 0;
@@ -135,7 +135,7 @@ cmd::Result RETRCommand::Execute()
     data.Close();
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from disk: " + std::string(e.what()));
-    return cmd::Result::Okay;
+    return;
   }
   catch (const util::net::NetworkError& e)
   {
@@ -144,7 +144,7 @@ cmd::Result RETRCommand::Execute()
     control.Reply(ftp::DataCloseAborted,
                  "Error while writing to data connection: " +
                  e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   fin->close();
@@ -155,7 +155,7 @@ cmd::Result RETRCommand::Execute()
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
       stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
-  return cmd::Result::Okay;
+  return;
   
   (void) countGuard;
 }

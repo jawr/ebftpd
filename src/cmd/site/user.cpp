@@ -10,16 +10,17 @@
 #include "db/group/group.hpp"
 #include "util/error.hpp"
 #include "acl/allowsitecmd.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result USERCommand::Execute()
+void USERCommand::Execute()
 {
   if (args.size() == 2 && args[1] != client.User().Name() && 
       !acl::AllowSiteCmd(client.User(), "user"))
   {
-    return cmd::Result::Permission;
+    throw cmd::PermissionError();
   }
 
   std::string userName = args.size() == 2 ? args[1] : client.User().Name();
@@ -31,7 +32,7 @@ cmd::Result USERCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   acl::UserProfile profile;
@@ -42,7 +43,7 @@ cmd::Result USERCommand::Execute()
   catch (const util::RuntimeError&e )
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   std::string creator = "<ebftpd>";
@@ -107,7 +108,6 @@ cmd::Result USERCommand::Execute()
   os << "\n+=======================================================================+";
 
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 

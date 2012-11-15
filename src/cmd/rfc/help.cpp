@@ -4,7 +4,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result HELPCommand::Execute()
+void HELPCommand::Execute()
 {
   if (args.size() == 2)
   {
@@ -12,7 +12,7 @@ cmd::Result HELPCommand::Execute()
     CommandDefOptRef def(Factory::Lookup(args[1]));
     if (!def) control.Reply(ftp::CommandUnrecognised, "Command not understood");
     else control.Reply(ftp::CommandOkay, "Syntax: " + def->Syntax());
-    return cmd::Result::Okay;
+    return;
   }
 
   static const char* reply =
@@ -27,7 +27,7 @@ cmd::Result HELPCommand::Execute()
     "End of list.                         (* Commands not implemented)";
     
   control.Reply(ftp::HelpMessage, reply);
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

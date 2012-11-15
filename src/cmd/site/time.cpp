@@ -21,7 +21,7 @@ std::string FormatDuration(const boost::posix_time::time_duration& duration)
 
 }
 
-cmd::Result TIMECommand::Execute()
+void TIMECommand::Execute()
 {
   pt::ptime now = pt::second_clock::local_time();
   
@@ -31,7 +31,7 @@ cmd::Result TIMECommand::Execute()
      << "Time online  : " << FormatDuration(now - client.LoggedInAt());
   
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* site namespace */

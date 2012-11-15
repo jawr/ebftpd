@@ -3,18 +3,19 @@
 #include <boost/lexical_cast.hpp>
 #include "cmd/site/idle.hpp"
 #include "cfg/get.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result IDLECommand::Execute()
+void IDLECommand::Execute()
 {
   namespace pt = boost::posix_time;
 
   if (client.Profile().IdleTime() == 0)
   {
     control.Reply(ftp::CommandOkay, "This command doesn't apply to you, you have no idle limit.");
-    return cmd::Result::Okay;
+    return;
   }
 
   if (args.size() == 1)
@@ -33,7 +34,7 @@ cmd::Result IDLECommand::Execute()
     }
     catch (const boost::bad_lexical_cast&)
     {
-      return cmd::Result::SyntaxError;
+      throw cmd::SyntaxError();
     }
     
     const cfg::Config& config = cfg::Get();
@@ -50,7 +51,7 @@ cmd::Result IDLECommand::Execute()
          << config.IdleTimeout().Minimum().total_seconds()
          << " and " << maximum.total_seconds() << " seconds.";
       control.Reply(ftp::SyntaxError, os.str());
-      return cmd::Result::Okay;
+      return;
     }
     
     client.SetIdleTimeout(idleTimeout);
@@ -60,7 +61,7 @@ cmd::Result IDLECommand::Execute()
     control.Reply(ftp::CommandOkay, os.str());
   }
   
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* site namespace */

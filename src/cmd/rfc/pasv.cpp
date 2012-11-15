@@ -4,7 +4,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result PASVCommand::Execute()
+void PASVCommand::Execute()
 {
   util::net::Endpoint ep;
   try
@@ -15,7 +15,7 @@ cmd::Result PASVCommand::Execute()
   {
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to listen for data connection: " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::string portString;
@@ -23,11 +23,11 @@ cmd::Result PASVCommand::Execute()
   if (!e)
   {
     control.Reply(ftp::SyntaxError, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   control.Reply(ftp::PassiveMode, "Entering passive mode (" + portString + ")");
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

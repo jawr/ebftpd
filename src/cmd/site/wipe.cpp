@@ -8,6 +8,7 @@
 #include "cfg/get.hpp"
 #include "fs/directory.hpp"
 #include "fs/file.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
@@ -88,16 +89,16 @@ bool WIPECommand::ParseArgs()
   return true;
 }
 
-cmd::Result WIPECommand::Execute()
+void WIPECommand::Execute()
 {
-  if (!ParseArgs()) return cmd::Result::SyntaxError;
+  if (!ParseArgs()) throw cmd::SyntaxError();
 
   if (recursive && !client.ConfirmCommand(argStr))
   {
     control.Reply(ftp::CommandOkay, 
         "Repeat the command to confirm you "
         "want to do recursive wipe!");
-    return cmd::Result::Okay;
+    return;
   }
 
   Process((client.WorkDir() / pathmask).Expand());
@@ -107,7 +108,6 @@ cmd::Result WIPECommand::Execute()
      << dirs << " directories, " << files 
      << " files / failures: " << failed << ").";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 } /* site namespace */

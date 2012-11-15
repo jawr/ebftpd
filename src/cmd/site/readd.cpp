@@ -4,7 +4,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result READDCommand::Execute()
+void READDCommand::Execute()
 {
   // needs further checking to ensure
   // gadmins can't exceed their slots
@@ -14,7 +14,7 @@ cmd::Result READDCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
   else
     control.Reply(ftp::CommandOkay, "User " + args[1] + " has been readded.");
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* site namespace */

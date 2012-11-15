@@ -18,7 +18,7 @@ bool GRPNFOCommand::Valid(const std::string& tagline)
   return true;
 }
 
-cmd::Result GRPNFOCommand::Execute()
+void GRPNFOCommand::Execute()
 {
   argStr.erase(0, args[1].length());
   boost::trim(argStr);
@@ -27,7 +27,7 @@ cmd::Result GRPNFOCommand::Execute()
   if (gid == -1)
   {
     control.Reply(ftp::ActionNotOkay, "Group doesn't exist.");
-    return cmd::Result::Okay;
+    return;
   }
   
   if (!Valid(argStr))
@@ -36,13 +36,11 @@ cmd::Result GRPNFOCommand::Execute()
                   "Tagline most contain only printable "
                   "characters and none of the following: " +
                   charsNotAllowed);
-    return cmd::Result::Okay;
+    return;
   }
 
   db::groupprofile::SetDescription(gid, argStr);
   control.Reply(ftp::CommandOkay, "New description for " + args[1] + ": " + argStr);
-  
-  return cmd::Result::Okay;
 }
 
 } /* site namespace */

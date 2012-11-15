@@ -1,11 +1,12 @@
 #include "cmd/rfc/sscn.hpp"
 #include "util/net/ftp.hpp"
 #include "ftp/data.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {
 
-cmd::Result SSCNCommand::Execute()
+void SSCNCommand::Execute()
 {
   if (args.size() == 2)
   {
@@ -14,7 +15,7 @@ cmd::Result SSCNCommand::Execute()
     else
     if (args[1] == "off") data.SetSSCNMode(ftp::SSCNMode::Server);
     else
-      return cmd::Result::SyntaxError;
+      throw cmd::SyntaxError();
   }
 
   std::stringstream os;
@@ -22,8 +23,6 @@ cmd::Result SSCNCommand::Execute()
   if (data.SSCNMode() == ftp::SSCNMode::Server) os << "SERVER METHOD";
   else os << "CLIENT METHOD";
   control.Reply(ftp::CommandOkay, os.str());  
-  
-  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

@@ -7,7 +7,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result SIZECommand::Execute()
+void SIZECommand::Execute()
 {
   namespace PP = acl::path;
 
@@ -17,7 +17,7 @@ cmd::Result SIZECommand::Execute()
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, "SIZE failed 2: " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   try
@@ -28,10 +28,10 @@ cmd::Result SIZECommand::Execute()
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, "SIZE failed 1: " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

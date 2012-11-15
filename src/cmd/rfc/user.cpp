@@ -1,10 +1,11 @@
 #include "cmd/rfc/user.hpp"
 #include "acl/usercache.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {
 
-cmd::Result USERCommand::Execute()
+void USERCommand::Execute()
 {
   bool kickLogin = false;
   if (argStr[0] == '!')
@@ -13,7 +14,7 @@ cmd::Result USERCommand::Execute()
     kickLogin = true;
   }
   
-  if (argStr.empty()) return cmd::Result::SyntaxError;
+  if (argStr.empty()) throw cmd::SyntaxError();
   
   try
   {
@@ -22,11 +23,11 @@ cmd::Result USERCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
-    return cmd::Result::Okay;
+    return;
   }
   
   control.Reply(ftp::NeedPassword, "Password required for " + argStr + "."); 
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

@@ -16,14 +16,6 @@ class Data;
 namespace cmd
 {
 
-enum class Result : int
-{
-  SyntaxError,
-  Finished,
-  Permission,
-  Okay
-};
-
 typedef std::vector<std::string> Args;
 
 class Command
@@ -42,7 +34,7 @@ public:
 
   virtual ~Command() { }
     
-  virtual Result Execute() = 0;
+  virtual void Execute() = 0;
 };
 
 typedef std::shared_ptr<Command> CommandPtr;

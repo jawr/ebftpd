@@ -15,7 +15,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result GROUPCommand::Execute()
+void GROUPCommand::Execute()
 {
   acl::Group group;
   try
@@ -25,7 +25,7 @@ cmd::Result GROUPCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   boost::ptr_vector<acl::User> users;
@@ -34,7 +34,7 @@ cmd::Result GROUPCommand::Execute()
   if (!ok)
   {
     control.Reply(ftp::ActionNotOkay, ok.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::map<acl::UserID, acl::UserProfile> profiles;
@@ -71,7 +71,6 @@ cmd::Result GROUPCommand::Execute()
   os << "\n`-----------------------------------------------------------------------'";
 
   control.Reply(ftp::CommandOkay, os.str()); 
-  return cmd::Result::Okay;
 }
 
 // end

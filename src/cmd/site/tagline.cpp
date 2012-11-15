@@ -17,7 +17,7 @@ bool TAGLINECommand::Valid(const std::string& tagline)
   return true;
 }
 
-cmd::Result TAGLINECommand::Execute()
+void TAGLINECommand::Execute()
 {
   if (!Valid(argStr))
   {
@@ -25,7 +25,7 @@ cmd::Result TAGLINECommand::Execute()
                   "Tagline most contain only printable "
                   "characters and none of the following: " +
                   charsNotAllowed);
-    return cmd::Result::Okay;
+    return;
   }
 
   util::Error ok = db::userprofile::SetTagline(client.User().UID(), argStr);
@@ -34,7 +34,7 @@ cmd::Result TAGLINECommand::Execute()
   else
     control.Reply(ftp::CommandOkay, "New Tagline: " + argStr);
   
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* site namespace */

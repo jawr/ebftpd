@@ -4,7 +4,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result RESTCommand::Execute()
+void RESTCommand::Execute()
 {
   off_t restart;
   
@@ -17,7 +17,7 @@ cmd::Result RESTCommand::Execute()
   {
     control.Reply(ftp::InvalidRESTParameter, "Invalid parameter, restart offset set to 0.");
     data.SetRestartOffset(0);
-    return cmd::Result::Okay;
+    return;
   }
   
   data.SetRestartOffset(restart);
@@ -25,7 +25,6 @@ cmd::Result RESTCommand::Execute()
   std::ostringstream os;
   os << "Restart offset set to " << restart << ".";
   control.Reply(ftp::CommandOkay, os.str()); 
-  return cmd::Result::Okay;
 }
 
 } /* rfc namespace */

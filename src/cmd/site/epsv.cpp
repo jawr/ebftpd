@@ -1,10 +1,11 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/epsv.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result EPSVCommand::Execute()
+void EPSVCommand::Execute()
 {
   if (args.size() == 1)
   {
@@ -26,9 +27,9 @@ cmd::Result EPSVCommand::Execute()
       control.Reply(ftp::SyntaxError, "Extended passive mode now set to 'full'.");
     }
     else
-      return cmd::Result::SyntaxError;
+      throw cmd::SyntaxError();
   }
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* site namespace */

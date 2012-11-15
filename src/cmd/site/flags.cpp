@@ -5,16 +5,17 @@
 #include "acl/flags.hpp"
 #include "util/error.hpp"
 #include "acl/allowsitecmd.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result FLAGSCommand::Execute()
+void FLAGSCommand::Execute()
 {
   if (args.size() == 2 && args[1] != client.User().Name() &&
       !acl::AllowSiteCmd(client.User(), "flags"))
   {
-    return cmd::Result::Permission;
+    throw cmd::PermissionError();
   }
 
   acl::User user(client.User());
@@ -27,7 +28,7 @@ cmd::Result FLAGSCommand::Execute()
     catch (const util::RuntimeError& e)
     {
       control.Reply(ftp::ActionNotOkay, e.Message());
-      return cmd::Result::Okay;
+      return;
     }
   }
   
@@ -60,7 +61,6 @@ cmd::Result FLAGSCommand::Execute()
   os << "Use SITE CHANGE <USER> FLAGS +/-VALUE to change.";
 
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 // end

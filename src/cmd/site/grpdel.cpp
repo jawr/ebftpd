@@ -7,7 +7,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result GRPDELCommand::Execute()
+void GRPDELCommand::Execute()
 {
   std::ostringstream acl;
   acl << "=" << args[1];
@@ -17,13 +17,13 @@ cmd::Result GRPDELCommand::Execute()
   if (!e) 
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   if (!users.empty())
   {
     control.Reply(ftp::ActionNotOkay, "Unable to delete a group with members.");
-    return cmd::Result::Okay;
+    return;
   }
 
   e = acl::GroupCache::Delete(args[1]);
@@ -31,8 +31,6 @@ cmd::Result GRPDELCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
   else
     control.Reply(ftp::CommandOkay, "Group " + args[1] + " deleted.");
-
-  return cmd::Result::Okay;
 }
 
 } /* site namespace */

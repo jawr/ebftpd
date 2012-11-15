@@ -3,10 +3,10 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result NOOPCommand::Execute()
+void NOOPCommand::Execute()
 {
   control.Reply(ftp::CommandOkay, "NOOP command successful."); 
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

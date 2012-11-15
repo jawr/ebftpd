@@ -16,19 +16,19 @@ namespace cmd { namespace site
 class MSGCommand : public Command
 {
   void Read(const std::vector<db::mail::Message>& mail);
-  cmd::Result Read();
-  cmd::Result Send();
-  cmd::Result SaveTrash();
-  cmd::Result Save();
-  cmd::Result PurgeTrash();
-  cmd::Result Purge();
-  cmd::Result List();
+  void Read();
+  void Send();
+  void SaveTrash();
+  void Save();
+  void PurgeTrash();
+  void Purge();
+  void List();
   
 public:
   MSGCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
     Command(client, client.Control(), client.Data(), argStr, args) { }
 
-  cmd::Result Execute();
+  void Execute();
 };
 
 } /* site namespace */

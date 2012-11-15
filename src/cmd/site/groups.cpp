@@ -9,7 +9,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result GROUPSCommand::Execute()
+void GROUPSCommand::Execute()
 {
   boost::ptr_vector<acl::Group> groups; 
 
@@ -33,8 +33,6 @@ cmd::Result GROUPSCommand::Execute()
     os << "No groups added.";
 
   control.Reply(ftp::CommandOkay, os.str());
-  
-  return cmd::Result::Okay;
 }
 
 // end

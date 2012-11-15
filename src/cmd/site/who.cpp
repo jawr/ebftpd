@@ -19,7 +19,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result WHOCommand::Execute()
+void WHOCommand::Execute()
 {
   boost::unique_future<bool> future;
   std::vector<ftp::task::WhoUser> users;
@@ -80,7 +80,7 @@ cmd::Result WHOCommand::Execute()
 
   os << "\n`------------------------------------------------------------------------------'";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay; 
+  return; 
 }
 
 // end

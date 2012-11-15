@@ -6,11 +6,12 @@
 #include "ftp/task/task.hpp"
 #include "ftp/listener.hpp"
 #include "logs/logs.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {
 
-cmd::Result PASSCommand::Execute()
+void PASSCommand::Execute()
 {
   if (argStr[0] == '-')
   {
@@ -18,7 +19,7 @@ cmd::Result PASSCommand::Execute()
     control.SetSingleLineReplies(true);
   }
   
-  if (argStr.empty()) return cmd::Result::SyntaxError;
+  if (argStr.empty()) throw cmd::SyntaxError();
 
   if (!client.VerifyPassword(argStr))
   {
@@ -33,20 +34,20 @@ cmd::Result PASSCommand::Execute()
       control.Reply(ftp::NotLoggedIn, "Login incorrect.");
       client.SetState(ftp::ClientState::LoggedOut);
     }
-    return cmd::Result::Okay;
+    return;
   }
   
   if (client.User().Deleted())
   {
     control.Reply(ftp::ServiceUnavailable, "You have been deleted. Goodbye.");
     client.SetState(ftp::ClientState::Finished);
-    return cmd::Result::Okay;
+    return;
   }
 
   if (ftp::Client::IsSiteopOnly() && !client.User().CheckFlag(acl::Flag::Siteop))
   {
     control.Reply(ftp::ServiceUnavailable, "Server has been shutdown.");
-    return cmd::Result::Okay;
+    return;
   }
   
   fs::Path rootPath("/");
@@ -56,7 +57,7 @@ cmd::Result PASSCommand::Execute()
     control.Reply(ftp::ServiceUnavailable, 
       "Unable to change to site root directory: " + e.Message());
     client.SetState(ftp::ClientState::Finished);
-    return cmd::Result::Okay;
+    return;
   }
 
   boost::optional<acl::UserProfile> profile;
@@ -68,14 +69,14 @@ cmd::Result PASSCommand::Execute()
   {
     control.Reply(ftp::ServiceUnavailable, e.Message());
     client.SetState(ftp::ClientState::Finished);
-    return cmd::Result::Okay;
+    return;
   }
   
   if (profile->Expired())
   {
     control.Reply(ftp::ServiceUnavailable, "Your account has expired.");
     client.SetState(ftp::ClientState::Finished);
-    return cmd::Result::Okay;
+    return;
   }
   
   ftp::task::LoginKickUser::Result kickResult;
@@ -97,7 +98,7 @@ cmd::Result PASSCommand::Execute()
   {
     control.Reply(ftp::ServiceUnavailable, e.Message());
     client.SetState(ftp::ClientState::Finished);
-    return cmd::Result::Okay;
+    return;
   }
   
   std::ostringstream os;
@@ -111,7 +112,7 @@ cmd::Result PASSCommand::Execute()
   db::userprofile::Login(client.User().UID());
       
   control.Reply(ftp::UserLoggedIn, os.str());
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

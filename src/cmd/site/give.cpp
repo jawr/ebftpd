@@ -15,7 +15,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result GIVECommand::Execute()
+void GIVECommand::Execute()
 {
   acl::User user;
   try
@@ -25,7 +25,7 @@ cmd::Result GIVECommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::string amount = args[2];
@@ -45,7 +45,7 @@ cmd::Result GIVECommand::Execute()
   catch (const boost::bad_lexical_cast& e)
   {
     control.Reply(ftp::ActionNotOkay, "Error parsing number!");
-    return cmd::Result::Okay;
+    return;
   }
 
   if (type == "G")
@@ -63,13 +63,13 @@ cmd::Result GIVECommand::Execute()
       if (profile.Ratio() == 0)
       {
         control.Reply(ftp::ActionNotOkay, "Not allowed to give credits when you have leech!");
-        return cmd::Result::Okay;
+        return;
       }
     }
     catch (const util::RuntimeError& e)
     {
       control.Reply(ftp::ActionNotOkay, "Unable to load your user profile.");
-      return cmd::Result::Okay;
+      return;
     }
     // take away users credits/warn them
     
@@ -77,7 +77,7 @@ cmd::Result GIVECommand::Execute()
     {
       os << "You only have " << client.User().Credits() << "KB credits left.";
       control.Reply(ftp::ActionNotOkay, os.str());
-      return cmd::Result::Okay;
+      return;
     }
     
     acl::UserCache::DecrCredits(client.User().Name(), credits);
@@ -87,7 +87,6 @@ cmd::Result GIVECommand::Execute()
   acl::UserCache::IncrCredits(user.Name(), credits);
   os << "Given " << credits << "KB credits to " << user.Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 // end

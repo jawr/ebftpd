@@ -10,7 +10,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result USERSCommand::Execute()
+void USERSCommand::Execute()
 {
   std::ostringstream os;
   boost::ptr_vector<acl::User> users;
@@ -21,7 +21,7 @@ cmd::Result USERSCommand::Execute()
     if (!ok)
     {
       control.Reply(ftp::ActionNotOkay, ok.Message());
-      return cmd::Result::Okay;
+      return;
     }
   }
   else
@@ -42,7 +42,7 @@ cmd::Result USERSCommand::Execute()
   else
     control.Reply(ftp::ActionNotOkay, "Error, no users found.");
 
-  return cmd::Result::Okay;    
+  return;    
 }
 
 // end

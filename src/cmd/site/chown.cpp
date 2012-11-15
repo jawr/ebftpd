@@ -9,6 +9,7 @@
 #include "cfg/get.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
@@ -79,16 +80,16 @@ bool CHOWNCommand::ParseArgs()
   return true;
 }
 
-cmd::Result CHOWNCommand::Execute()
+void CHOWNCommand::Execute()
 {
-  if (!ParseArgs()) return cmd::Result::SyntaxError;
+  if (!ParseArgs()) throw cmd::SyntaxError();
 
   if (recursive && !client.ConfirmCommand(argStr))
   {
     control.Reply(ftp::CommandOkay, 
         "Repeat the command to confirm you "
         "want to do recursive chown!");
-    return cmd::Result::Okay;
+    return;
   }
   
   acl::UserID uid = -1;
@@ -98,7 +99,7 @@ cmd::Result CHOWNCommand::Execute()
     if (uid == -1)
     {
       control.Reply(ftp::ActionNotOkay, "User " + user + " doesn't exist.");
-      return cmd::Result::Okay;
+      return;
     }
   }
   
@@ -109,7 +110,7 @@ cmd::Result CHOWNCommand::Execute()
     if (gid == -1)
     {
       control.Reply(ftp::ActionNotOkay, "Group " + group + " doesn't exist.");
-      return cmd::Result::Okay;
+      return;
     }
   }
   
@@ -122,7 +123,6 @@ cmd::Result CHOWNCommand::Execute()
      << dirs << " directories, " << files 
      << " files / failures: " << failed << ").";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 } /* site namespace */

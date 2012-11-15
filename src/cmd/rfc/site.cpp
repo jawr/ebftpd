@@ -5,11 +5,12 @@
 #include "cfg/get.hpp"
 #include "acl/allowsitecmd.hpp"
 #include "cmd/splitargs.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {
 
-cmd::Result SITECommand::Execute()
+void SITECommand::Execute()
 {
   cmd::SplitArgs(argStr, args);
   boost::to_upper(args[0]);
@@ -38,16 +39,22 @@ cmd::Result SITECommand::Execute()
     }
     else
     {
-      cmd::Result result = command->Execute();
-      if (result == cmd::Result::SyntaxError)
+      try
+      {
+        command->Execute();
+      }
+      catch (const cmd::SyntaxError&)
+      {
         control.Reply(ftp::SyntaxError, def->Syntax());
-      else
-      if (result == cmd::Result::Permission)
+      }
+      catch (const cmd::PermissionError&)
+      {
         control.Reply(ftp::ActionNotOkay, "SITE " + args[0] + ": Permission denied");
+      }
     }
   }
   
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

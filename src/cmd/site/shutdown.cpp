@@ -2,11 +2,12 @@
 #include "logs/logs.hpp"
 #include "ftp/task/task.hpp"
 #include "ftp/listener.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result SHUTDOWNCommand::Execute()
+void SHUTDOWNCommand::Execute()
 {
   boost::to_lower(args[1]);
   if (args[1] == "siteop")
@@ -39,9 +40,7 @@ cmd::Result SHUTDOWNCommand::Execute()
     ftp::Listener::PushTask(task);
   }
   else
-    return cmd::Result::SyntaxError;
-    
-  return cmd::Result::Okay;
+    throw cmd::SyntaxError();
 }
 
 } /* site namespace */

@@ -3,11 +3,11 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result PWDCommand::Execute()
+void PWDCommand::Execute()
 {
   control.Reply(ftp::PathCreated, "\"" + client.WorkDir().ToString() +
                "\" is your working directory.");
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

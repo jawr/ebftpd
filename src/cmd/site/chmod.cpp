@@ -7,6 +7,7 @@
 #include "fs/dircontainer.hpp"
 #include "util/string.hpp"
 #include "cfg/get.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
@@ -82,16 +83,16 @@ bool CHMODCommand::ParseArgs()
 }
 
 // SITE CHMOD [-R] <MODE> <PATHMASK.. ..>
-cmd::Result CHMODCommand::Execute()
+void CHMODCommand::Execute()
 {
-  if (!ParseArgs()) return cmd::Result::SyntaxError;
+  if (!ParseArgs()) throw cmd::SyntaxError();
 
   if (recursive && !client.ConfirmCommand(argStr))
   {
     control.Reply(ftp::CommandOkay, 
         "Repeat the command to confirm you "
         "want to do recursive chmod!");
-    return cmd::Result::Okay;
+    return;
   }
 
   try
@@ -101,7 +102,7 @@ cmd::Result CHMODCommand::Execute()
   catch (const fs::InvalidModeString& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   Process((client.WorkDir() / pathmask).Expand());
@@ -111,7 +112,6 @@ cmd::Result CHMODCommand::Execute()
      << dirs << " directories, " << files 
      << " files / failures: " << failed << ").";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 } /* site namespace */

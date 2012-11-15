@@ -12,7 +12,7 @@ public:
   TAKECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
     Command(client, client.Control(), client.Data(), argStr, args) { }
 
-  cmd::Result Execute();
+  void Execute();
 };
 
 } /* site namespace */

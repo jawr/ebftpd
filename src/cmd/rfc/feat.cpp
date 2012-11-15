@@ -5,7 +5,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result FEATCommand::Execute()
+void FEATCommand::Execute()
 {
   using util::scope_guard;
   using util::make_guard;
@@ -28,7 +28,7 @@ cmd::Result FEATCommand::Execute()
   control.PartReply(ftp::NoCode, " SSCN");
   control.PartReply(ftp::NoCode, " CPSV");
   control.Reply(ftp::SystemStatus, "End.");
-  return cmd::Result::Okay;
+  return;
   
   (void) singleLineReplies;
   (void) singleLineGuard;

@@ -4,14 +4,14 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result LPRTCommand::Execute()
+void LPRTCommand::Execute()
 {
   util::net::Endpoint ep;
   util::Error e = util::net::ftp::EndpointFromLPRT(args[1], ep);
   if (!e)
   {
     control.Reply(ftp::SyntaxError, args[1] + ": " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   try
@@ -22,11 +22,11 @@ cmd::Result LPRTCommand::Execute()
   {
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   control.Reply(ftp::CommandOkay, "LPRT command successful.");
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

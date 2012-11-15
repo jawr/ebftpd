@@ -27,6 +27,7 @@
 #include "db/mail/mail.hpp"
 #include "db/stats/protocol.hpp"
 #include "ftp/error.hpp"
+#include "cmd/error.hpp"
 
 namespace ftp
 {
@@ -194,7 +195,11 @@ void Client::ExecuteCommand(const std::string& commandLine)
     }
     else
     {
-      if (command->Execute() == cmd::Result::SyntaxError)
+      try
+      {
+        command->Execute();
+      }
+      catch (const cmd::SyntaxError&)
       {
         control.Reply(ftp::SyntaxError, "Syntax: " + def->Syntax());
       }

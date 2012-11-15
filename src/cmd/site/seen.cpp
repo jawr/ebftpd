@@ -8,7 +8,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result SEENCommand::Execute()
+void SEENCommand::Execute()
 {
   acl::User user;
   acl::UserProfile profile;
@@ -20,7 +20,7 @@ cmd::Result SEENCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::ostringstream os;
@@ -30,7 +30,6 @@ cmd::Result SEENCommand::Execute()
     os << "Last saw " << args[1] << " on " << *profile.LastLogin();
       
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 }

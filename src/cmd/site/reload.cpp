@@ -6,7 +6,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result RELOADCommand::Execute()
+void RELOADCommand::Execute()
 {
   using namespace ftp::task;
 
@@ -33,7 +33,6 @@ cmd::Result RELOADCommand::Execute()
   }
   
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 } /* site namespace */

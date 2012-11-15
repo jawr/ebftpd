@@ -3,6 +3,7 @@
 #include "cmd/site/logs.hpp"
 #include "logs/logs.hpp"
 #include "util/reverselogreader.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
@@ -70,9 +71,9 @@ void LOGSCommand::Show(const std::string& path)
   }
 }
 
-cmd::Result LOGSCommand::Execute()
+void LOGSCommand::Execute()
 { 
-  if (!ParseArgs()) return cmd::Result::SyntaxError;
+  if (!ParseArgs()) throw cmd::SyntaxError();
 
   if (log == "error") Show(logs::error.Path());
   else if (log == "security") Show(logs::security.Path());
@@ -80,9 +81,9 @@ cmd::Result LOGSCommand::Execute()
   else if (log == "events") Show(logs::events.Path());
   else if (log == "db") Show(logs::db.Path());
   else if (log == "debug") Show(logs::db.Path());
-  else return cmd::Result::SyntaxError;
+  else throw cmd::SyntaxError();
   
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* site namespace */

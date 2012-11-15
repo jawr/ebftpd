@@ -5,7 +5,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result STOUCommand::Execute()
+void STOUCommand::Execute()
 {
   static size_t filenameLength = 10;
 
@@ -15,7 +15,7 @@ cmd::Result STOUCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay,
                  "Unable to generate a unique filename.");
-    return cmd::Result::Okay;
+    return;
   }
   
   argStr = uniquePath.ToString();

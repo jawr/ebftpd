@@ -7,7 +7,7 @@
 namespace cmd { namespace site 
 {
 
-cmd::Result CHGRPCommand::Execute()
+void CHGRPCommand::Execute()
 {
   acl::User user;
   try
@@ -17,7 +17,7 @@ cmd::Result CHGRPCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   int8_t iterPoint = 2;
   Method method = Method::Default;
@@ -40,7 +40,7 @@ cmd::Result CHGRPCommand::Execute()
     if (!ok)
     {
       control.Reply(ftp::ActionNotOkay, ok.Message());
-      return cmd::Result::Okay;
+      return;
     }
     method = Method::Add;
     os << "Setting group(s) for " << args[1] << ":";
@@ -72,7 +72,6 @@ cmd::Result CHGRPCommand::Execute()
   }
   os << "\nCommand finished.";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 // end

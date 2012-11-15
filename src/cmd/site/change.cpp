@@ -6,11 +6,12 @@
 #include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
 #include "acl/allowsitecmd.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result CHANGECommand::Execute()
+void CHANGECommand::Execute()
 {
   boost::ptr_vector<acl::User> users;
   std::string acl = args[1];
@@ -20,12 +21,12 @@ cmd::Result CHANGECommand::Execute()
   if (!ok)
   {
     control.Reply(ftp::ActionNotOkay, ok.Message());
-    return cmd::Result::Okay;
+    return;
   }
   else if (users.size() == 0)
   {
     control.Reply(ftp::ActionNotOkay, "No user(s) found.");
-    return cmd::Result::Okay;
+    return;
   }
 
   std::ostringstream os;
@@ -49,31 +50,31 @@ cmd::Result CHANGECommand::Execute()
   
   if (setting == "ratio")
   {
-    if (!acl::AllowSiteCmd(client.User(), "changeratio")) return cmd::Result::Permission;
+    if (!acl::AllowSiteCmd(client.User(), "changeratio")) throw cmd::PermissionError();
   }
   else
   if (setting == "wkly_allotment")
   {
-    if (!acl::AllowSiteCmd(client.User(), "changeallot")) return cmd::Result::Permission;
+    if (!acl::AllowSiteCmd(client.User(), "changeallot")) throw cmd::PermissionError();
   }
   else
   if (setting == "homedir")
   {
-    if (!acl::AllowSiteCmd(client.User(), "changehomedir")) return cmd::Result::Permission;
+    if (!acl::AllowSiteCmd(client.User(), "changehomedir")) throw cmd::PermissionError();
   }
   else
   if (setting == "flags")
   {
-    if (!acl::AllowSiteCmd(client.User(), "changeflags")) return cmd::Result::Permission;
+    if (!acl::AllowSiteCmd(client.User(), "changeflags")) throw cmd::PermissionError();
     if (!acl::ValidFlags(value.substr(1)))
     {
       control.Reply(ftp::ActionNotOkay, "Value contains one or more invalid flags.\n"
                                         "See SITE FLAGS for a list.");
-      return cmd::Result::Okay;
+      return;
     }
   }
   else
-  if (!acl::AllowSiteCmd(client.User(), "change")) return cmd::Result::Permission;
+  if (!acl::AllowSiteCmd(client.User(), "change")) throw cmd::PermissionError();
 
   for (auto& user: users)
   {
@@ -130,7 +131,7 @@ cmd::Result CHANGECommand::Execute()
     else
     {
       control.Reply(ftp::ActionNotOkay, "Invalid setting: " + setting);
-      return cmd::Result::Okay;
+      return;
     }
 
     if (!ok)
@@ -140,7 +141,6 @@ cmd::Result CHANGECommand::Execute()
   }
 
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 // end

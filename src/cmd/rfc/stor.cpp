@@ -18,7 +18,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result STORCommand::Execute()
+void STORCommand::Execute()
 {
   namespace pt = boost::posix_time;
 
@@ -31,14 +31,14 @@ cmd::Result STORCommand::Execute()
   {
     // should display above messagepath, we'll just reply for now
     control.Reply(ftp::ActionNotOkay, "File name contains one or more invalid characters.");
-    return cmd::Result::Okay;
+    return;
   }
 
   off_t offset = data.RestartOffset();
   if (offset > 0 && data.DataType() == ftp::DataType::ASCII)
   {
     control.Reply(ftp::BadCommandSequence, "Resume not supported on ASCII data type.");
-    return cmd::Result::Okay;
+    return;
   }
 
   if (!ftp::Counter::StartUpload(client.User().UID(), client.Profile().MaxSimUl()))
@@ -47,7 +47,7 @@ cmd::Result STORCommand::Execute()
     os << "You have reached your maximum of " << client.Profile().MaxSimUl() 
        << " simultaenous upload(s).";
     control.Reply(ftp::ActionNotOkay, os.str());
-    return cmd::Result::Okay;    
+    return;    
   }
   
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopUpload(client.User().UID()); });  
@@ -56,7 +56,7 @@ cmd::Result STORCommand::Execute()
      !cfg::Get().AsciiUploads().Allowed(argStr))
   {
     control.Reply(ftp::ActionNotOkay, "File can't be uploaded in ASCII, change to BINARY.");
-    return cmd::Result::Okay;
+    return;
   }
   
   fs::FileSinkPtr fout;
@@ -73,7 +73,7 @@ cmd::Result STORCommand::Execute()
     os << "Unable to " << (data.RestartOffset() > 0 ? "append" : "create")
        << " file: " << e.Message();
     control.Reply(ftp::ActionNotOkay, os.str());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::stringstream os;
@@ -93,7 +93,7 @@ cmd::Result STORCommand::Execute()
     if (!data.RestartOffset()) fs::ForceDeleteFile(client, argStr);
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   try
@@ -128,7 +128,7 @@ cmd::Result STORCommand::Execute()
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from data connection: " +
                  e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   catch (const std::ios_base::failure& e)
   {
@@ -155,7 +155,7 @@ cmd::Result STORCommand::Execute()
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
       stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
 
-  return cmd::Result::Okay;
+  return;
   
   (void) countGuard;
 }

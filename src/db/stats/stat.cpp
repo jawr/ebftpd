@@ -23,8 +23,6 @@ void Get(mongo::Query& query, QueryResults& results)
   future.wait();
 
   if (results.empty()) throw util::RuntimeError("No results");
-  
-  return;
 }
 
 ::stats::Stat GetWeekDown(acl::UserID uid, int week, int year)

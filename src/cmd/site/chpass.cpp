@@ -6,7 +6,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result CHPASSCommand::Execute()
+void CHPASSCommand::Execute()
 {
   // checking to ensure gadmins can't change users not in their
   // group, also exclude self from all checking
@@ -23,7 +23,7 @@ cmd::Result CHPASSCommand::Execute()
        << strength.Others() << " others, "
        << strength.Length() << " length.";
     control.Reply(ftp::ActionNotOkay, os.str());
-    return cmd::Result::Okay;
+    return;
   }
 
   util::Error e = acl::UserCache::SetPassword(args[1], args[2]);
@@ -31,7 +31,7 @@ cmd::Result CHPASSCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
   else
     control.Reply(ftp::CommandOkay, "Password changed.");
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* site namespace */

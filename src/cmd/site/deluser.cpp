@@ -9,7 +9,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result DELUSERCommand::Execute()
+void DELUSERCommand::Execute()
 {
   // needs further flag checking to ensure users with more
   // seniority can't be deleted by those below them
@@ -23,7 +23,7 @@ cmd::Result DELUSERCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   util::Error e = acl::UserCache::Delete(user.Name());
@@ -43,7 +43,6 @@ cmd::Result DELUSERCommand::Execute()
 
     control.Reply(ftp::CommandOkay, os.str());
   }
-  return cmd::Result::Okay;
 }
 
 } /* site namespace */

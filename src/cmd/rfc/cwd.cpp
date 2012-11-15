@@ -4,7 +4,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result CWDCommand::Execute()
+void CWDCommand::Execute()
 {
   fs::Path path(argStr);
   
@@ -12,7 +12,7 @@ cmd::Result CWDCommand::Execute()
   if (e)
   {
     control.Reply(ftp::FileActionOkay, "CWD command successful."); 
-    return cmd::Result::Okay;
+    return;
   }
 
   if (e.Errno() == ENOENT)
@@ -22,7 +22,7 @@ cmd::Result CWDCommand::Execute()
     {
       control.Reply(ftp::FileActionOkay, "CWD command successful (Alias: " + 
             path.ToString() + ").");
-      return cmd::Result::Okay;
+      return;
     }
     
     if (e.Errno() == ENOENT)
@@ -32,13 +32,13 @@ cmd::Result CWDCommand::Execute()
       {
         control.Reply(ftp::FileActionOkay, "CWD command successful (Matched: " + 
                      path.ToString() + ").");
-        return cmd::Result::Okay;
+        return;
       }
     }
   }
     
   control.Reply(ftp::ActionNotOkay, argStr + ":" + e.Message());
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

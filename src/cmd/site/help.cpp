@@ -6,7 +6,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result HELPCommand::Syntax()
+void HELPCommand::Syntax()
 {
   boost::to_upper(args[1]);
   cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(args[1]));
@@ -19,10 +19,10 @@ cmd::Result HELPCommand::Syntax()
     control.Reply(ftp::CommandOkay, os.str());
   }
 
-  return cmd::Result::Okay;
+  return;
 }
 
-cmd::Result HELPCommand::List()
+void HELPCommand::List()
 {
   const Factory::CommandDefsMap& commands = Factory::Commands();
 
@@ -50,10 +50,10 @@ cmd::Result HELPCommand::List()
     
   os << "\n End of list";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
+  return;
 }
 
-cmd::Result HELPCommand::Execute()
+void HELPCommand::Execute()
 {
   if (args.size() == 2) return Syntax();
   else return List();

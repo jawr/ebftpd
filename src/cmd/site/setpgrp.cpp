@@ -9,7 +9,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result SETPGRPCommand::Execute()
+void SETPGRPCommand::Execute()
 {
   acl::Group group;
   try
@@ -19,7 +19,7 @@ cmd::Result SETPGRPCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   acl::GroupID oldGID;
@@ -33,7 +33,6 @@ cmd::Result SETPGRPCommand::Execute()
     os << "Set primary group for " << args[1] << " to: " << group.Name();
     control.Reply(ftp::CommandOkay, os.str());
   }
-  return cmd::Result::Okay;
 }
 
 }

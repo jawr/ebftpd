@@ -3,10 +3,10 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result ABORCommand::Execute()
+void ABORCommand::Execute()
 {
   control.Reply(ftp::DataClosedOkay, "ABOR command successful."); 
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

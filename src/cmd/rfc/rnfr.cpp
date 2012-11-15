@@ -5,7 +5,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result RNFRCommand::Execute()
+void RNFRCommand::Execute()
 {
   namespace PP = acl::path;
   
@@ -15,7 +15,7 @@ cmd::Result RNFRCommand::Execute()
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   try
@@ -25,12 +25,12 @@ cmd::Result RNFRCommand::Execute()
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   client.SetRenameFrom(absolute);
   control.Reply(ftp::PendingMoreInfo, "File exists, ready for destination name."); 
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

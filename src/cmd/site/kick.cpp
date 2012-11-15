@@ -11,7 +11,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result KICKCommand::Execute()
+void KICKCommand::Execute()
 {
   acl::User user;
   try
@@ -21,13 +21,13 @@ cmd::Result KICKCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   if (user.CheckFlag(acl::Flag::Siteop))
   {
     control.Reply(ftp::ActionNotOkay, "Cannot kick a siteop.");
-    return cmd::Result::Okay;
+    return;
   } 
 
   boost::unique_future<unsigned> future;
@@ -39,7 +39,7 @@ cmd::Result KICKCommand::Execute()
   std::ostringstream os;
   os << "Kicked " << future.get() << " of " << args[1] << "'s login(s).";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
+  return;
   
 }
 

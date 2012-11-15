@@ -20,7 +20,7 @@ bool DELECommand::LosesCredits() const
           fs::OwnerCache::Owner(real).UID() == client.User().UID();
 }
 
-cmd::Result DELECommand::Execute()
+void DELECommand::Execute()
 {
   bool losesCredits = LosesCredits(); // must check before deleting file
   
@@ -42,7 +42,7 @@ cmd::Result DELECommand::Execute()
     else
       control.Reply(ftp::FileActionOkay, "DELE command successful."); 
   }
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

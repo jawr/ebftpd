@@ -1,11 +1,12 @@
 #include <sstream>
 #include "cmd/site/xdupe.hpp"
 #include "ftp/xdupe.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result XDUPECommand::Execute()
+void XDUPECommand::Execute()
 {
   if (args.size() == 1)
   {
@@ -18,7 +19,7 @@ cmd::Result XDUPECommand::Execute()
          << " is enabled.";
       control.Reply(ftp::CommandOkay, os.str());
     }
-    return cmd::Result::Okay;
+    return;
   }
   
   int mode;
@@ -28,19 +29,19 @@ cmd::Result XDUPECommand::Execute()
   }
   catch (const boost::bad_lexical_cast&)
   {
-    return cmd::Result::SyntaxError;
+    throw cmd::SyntaxError();
   }
   
   if (mode < 0 || mode > 4)
   {
-    return cmd::Result::SyntaxError;
+    throw cmd::SyntaxError();
   }
   
   client.SetXDupeMode(static_cast<ftp::XDupeMode>(mode));
   std::ostringstream os;
   os << "Activated extended dupe mode " << mode << ".";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* site namespace */

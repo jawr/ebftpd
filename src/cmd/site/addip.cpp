@@ -6,16 +6,17 @@
 #include "acl/secureip.hpp"
 #include "acl/ipstrength.hpp"
 #include "acl/allowsitecmd.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-cmd::Result ADDIPCommand::Execute()
+void ADDIPCommand::Execute()
 {
   if (args[1] != client.User().Name() &&
      !acl::AllowSiteCmd(client.User(), "addip"))
   {
-    return cmd::Result::Permission;
+    throw cmd::PermissionError();
   }
   
   acl::User user;
@@ -26,7 +27,7 @@ cmd::Result ADDIPCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::ostringstream os;
@@ -58,7 +59,7 @@ cmd::Result ADDIPCommand::Execute()
   }
 
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
+  return;
 } 
 
 // end 

@@ -5,7 +5,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result RNTOCommand::Execute()
+void RNTOCommand::Execute()
 {
   std::string messagePath;
   util::Error e(acl::path::Filter(client.User(), fs::Path(argStr).Basename(), messagePath));
@@ -13,13 +13,13 @@ cmd::Result RNTOCommand::Execute()
   {
     // should display above messagepath, we'll just reply for now
     control.Reply(ftp::ActionNotOkay, "Path name contains one or more invalid characters.");
-    return cmd::Result::Okay;
+    return;
   }
 
   e = fs::RenameFile(client, client.RenameFrom(), argStr);
   if (!e) control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
   else control.Reply(ftp::FileActionOkay, "RNTO command successful.");
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

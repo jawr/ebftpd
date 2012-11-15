@@ -25,7 +25,7 @@ std::string TRAFFICCommand::Format(const std::string& timeframe,
   return os.str();
 }
 
-cmd::Result TRAFFICCommand::Execute()
+void TRAFFICCommand::Execute()
 {
   static stats::Timeframe timeframes[] =
   { stats::Timeframe::Day, stats::Timeframe::Week, 
@@ -74,7 +74,6 @@ cmd::Result TRAFFICCommand::Execute()
   os << "`-----------'-----------'------------'------------'\n";
   
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 } /* site namespace */

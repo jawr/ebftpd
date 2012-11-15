@@ -8,7 +8,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result PASSWDCommand::Execute()
+void PASSWDCommand::Execute()
 {
   std::string cpArgStr("CHPASS ");
   cpArgStr += client.User().Name();
@@ -22,7 +22,7 @@ cmd::Result PASSWDCommand::Execute()
       Lookup(cpArgs[0])->Create(client, cpArgStr, cpArgs));
   assert(command.get());
   command->Execute();
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* site namespace */

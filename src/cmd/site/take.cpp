@@ -12,7 +12,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result TAKECommand::Execute()
+void TAKECommand::Execute()
 {
   acl::User user;
   try
@@ -22,7 +22,7 @@ cmd::Result TAKECommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::string amount = args[2];
@@ -42,7 +42,7 @@ cmd::Result TAKECommand::Execute()
   catch (const boost::bad_lexical_cast& e)
   {
     control.Reply(ftp::ActionNotOkay, "Error parsing number!");
-    return cmd::Result::Okay;
+    return;
   }
 
   if (type == "G")
@@ -56,7 +56,6 @@ cmd::Result TAKECommand::Execute()
   os << "Taken " << std::fixed << std::setprecision(2) << credits 
      << "KB credits from " << user.Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 // end

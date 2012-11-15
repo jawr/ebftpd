@@ -7,7 +7,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result STATCommand::Execute()
+void STATCommand::Execute()
 {
   using util::scope_guard;
   using util::make_guard;
@@ -19,7 +19,7 @@ cmd::Result STATCommand::Execute()
     os << "< Insert status info here >\n";
     os << "End of status.";
     control.Reply(ftp::SystemStatus, os.str());
-    return cmd::Result::Okay;
+    return;
   }
   
   bool singleLineReplies = control.SingleLineReplies();
@@ -51,7 +51,7 @@ cmd::Result STATCommand::Execute()
   
   control.Reply(ftp::DirectoryStatus, "End of status (" + 
       stats::util::HighResSecondsString(start, end) + ")"); 
-  return cmd::Result::Okay;
+  return;
   
   (void) singleLineReplies;
   (void) singleLineGuard;

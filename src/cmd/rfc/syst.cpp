@@ -3,10 +3,10 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result SYSTCommand::Execute()
+void SYSTCommand::Execute()
 {
   control.Reply(ftp::SystemType, "UNIX Type: L8"); 
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

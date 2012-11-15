@@ -18,7 +18,7 @@ public:
     Command(client, client.Control(), client.Data(), argStr, args),
     custSiteCmd(custSiteCmd) { }
 
-  virtual cmd::Result Execute() = 0;
+  virtual void Execute() = 0;
 };
 
 class CustomEXECCommand : public CustomCommand
@@ -28,7 +28,7 @@ public:
                     const std::string& argStr, const Args& args) :
     CustomCommand(custSiteCmd, client, argStr, args) { }
     
-  cmd::Result Execute();
+  void Execute();
 };
 
 class CustomTEXTCommand : public CustomCommand
@@ -38,7 +38,7 @@ public:
                     const std::string& argStr, const Args& args) :
     CustomCommand(custSiteCmd, client, argStr, args) { }
 
-  cmd::Result Execute();
+  void Execute();
 };
 
 
@@ -49,7 +49,7 @@ public:
                     const std::string& argStr, const Args& args) :
     CustomCommand(custSiteCmd, client, argStr, args) { }
 
-  cmd::Result Execute();
+  void Execute();
 };
 
 } /* site namespace */

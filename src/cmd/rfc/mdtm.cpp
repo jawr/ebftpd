@@ -5,7 +5,7 @@
 namespace cmd { namespace rfc
 {
 
-cmd::Result MDTMCommand::Execute()
+void MDTMCommand::Execute()
 {
   namespace PP = acl::path;
 
@@ -15,7 +15,7 @@ cmd::Result MDTMCommand::Execute()
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   const std::string& Sitepath = cfg::Get().Sitepath();
@@ -29,14 +29,14 @@ cmd::Result MDTMCommand::Execute()
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    return cmd::Result::Okay;
+    return;
   }
   
   char timestamp[15];
   strftime(timestamp, sizeof(timestamp), "%Y%m%d%H%M%S",
            localtime(&status.Native().st_mtime));
   control.Reply(ftp::FileStatus, timestamp);
-  return cmd::Result::Okay;
+  return;
 }
 
 } /* rfc namespace */

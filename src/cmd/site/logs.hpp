@@ -23,7 +23,7 @@ public:
     Command(client, client.Control(), client.Data(), argStr, args),
     number(defaultNumberLines) { }
 
-  cmd::Result Execute();
+  void Execute();
 };
 
 } /* site namespace */

@@ -12,6 +12,7 @@
 #include "db/mail/message.hpp"
 #include "util/string.hpp"
 #include "util/enum.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
@@ -48,10 +49,10 @@ void MSGCommand::Read(const std::vector<db::mail::Message>& mail)
   control.PartReply(ftp::CommandOkay, "`------------------------------------------------------------------------'");
 }
 
-cmd::Result MSGCommand::Read()
+void MSGCommand::Read()
 {
   int index = -1;
-  if (args.size() > 3) return cmd::Result::SyntaxError;
+  if (args.size() > 3) throw cmd::SyntaxError();
   if (args.size() == 3)
   {
     try
@@ -60,18 +61,18 @@ cmd::Result MSGCommand::Read()
       if (index < 1)
       {
         control.Reply(ftp::ActionNotOkay, "Index must be 1 or larger.");
-        return cmd::Result::Okay;
+        return;
       }
     }
     catch (const boost::bad_lexical_cast&)
-    { return cmd::Result::SyntaxError; }
+    { throw cmd::SyntaxError(); }
   }
   
   std::vector<db::mail::Message> mail(db::mail::Get(client.User().UID()));
   if (mail.empty())
   {
     control.Reply(ftp::CommandOkay, "Your mail box is empty.");
-    return cmd::Result::Okay;
+    return;
   }
   
   if (index != -1)
@@ -79,7 +80,7 @@ cmd::Result MSGCommand::Read()
     if (mail.size() < static_cast<unsigned>(index))
     {
       control.Reply(ftp::ActionNotOkay, "No message with index " + args[2] + ".");
-      return cmd::Result::Okay;
+      return;
     }
     
     Read({ mail[index - 1] });
@@ -97,13 +98,11 @@ cmd::Result MSGCommand::Read()
       control.Reply(ftp::CommandOkay, "Messages moved to the trash ready for purge.");
     }
   }
-
-  return cmd::Result::Okay;
 }
 
-cmd::Result MSGCommand::Send()
+void MSGCommand::Send()
 {
-  if (args.size() < 4) return cmd::Result::SyntaxError;
+  if (args.size() < 4) throw cmd::SyntaxError();
 
   boost::trim(args[2]);
   std::vector<std::string> recipients;
@@ -147,22 +146,20 @@ cmd::Result MSGCommand::Send()
   std::ostringstream os;
   os << "Message sent to " << sentCount << " user(s).";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
-cmd::Result MSGCommand::SaveTrash()
+void MSGCommand::SaveTrash()
 {
   unsigned saved = db::mail::SaveTrash(client.User().UID());
   std::ostringstream os;
   os << saved << " message(s) saved from your trash.";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
-cmd::Result MSGCommand::Save()
+void MSGCommand::Save()
 {
   if (args.size() == 2) return SaveTrash();
-  else if (args.size() > 3) return cmd::Result::SyntaxError;
+  else if (args.size() > 3) throw cmd::SyntaxError();
 
   int index;
   try
@@ -171,28 +168,26 @@ cmd::Result MSGCommand::Save()
   }
   catch (const boost::bad_lexical_cast&)
   {
-    return cmd::Result::SyntaxError;
+    throw cmd::SyntaxError();
   }
   
   bool purged = db::mail::Save(client.User().UID(), index - 1);
   if (!purged) control.Reply(ftp::ActionNotOkay, "Failed to saved message with index " + args[2] + ".");
   else control.Reply(ftp::CommandOkay, "Message " + args[2] + " saved.");
-  return cmd::Result::Okay;
 }
 
-cmd::Result MSGCommand::PurgeTrash()
+void MSGCommand::PurgeTrash()
 {
   unsigned purged = db::mail::PurgeTrash(client.User().UID());
   std::ostringstream os;
   os << purged << " message(s) purged from your trash.";
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
-cmd::Result MSGCommand::Purge()
+void MSGCommand::Purge()
 {
   if (args.size() == 2) return PurgeTrash();
-  else if (args.size() > 3) return cmd::Result::SyntaxError;
+  else if (args.size() > 3) throw cmd::SyntaxError();
 
   int index;
   try
@@ -201,23 +196,22 @@ cmd::Result MSGCommand::Purge()
   }
   catch (const boost::bad_lexical_cast&)
   {
-    return cmd::Result::SyntaxError;
+    throw cmd::SyntaxError();
   }
   
   bool purged = db::mail::Purge(client.User().UID(), index - 1);
   if (!purged) control.Reply(ftp::ActionNotOkay, "Failed to purge message with index " + args[2] + ".");
   else control.Reply(ftp::CommandOkay, "Message " + args[2] + " purged.");
-  return cmd::Result::Okay;
 }
 
-cmd::Result MSGCommand::List()
+void MSGCommand::List()
 {
-  if (args.size() != 2) return cmd::Result::SyntaxError;
+  if (args.size() != 2) throw cmd::SyntaxError();
   std::vector<db::mail::Message> mail(db::mail::Get(client.User().UID()));
   if (mail.empty())
   {
     control.Reply(ftp::CommandOkay, "Your mail box is empty.");
-    return cmd::Result::Okay;
+    return;
   }
   
   control.PartReply(ftp::CommandOkay, ".----.------------.--------.----------------------.----------------------.");
@@ -241,10 +235,9 @@ cmd::Result MSGCommand::List()
   
   control.PartReply(ftp::CommandOkay, "`----'------------'--------'----------------------'----------------------'");
   control.Reply(ftp::CommandOkay, "End of mail box list.");
-  return cmd::Result::Okay;
 }
 
-cmd::Result MSGCommand::Execute()
+void MSGCommand::Execute()
 {
   std::string cmd(boost::to_lower_copy(args[1]));
   if (cmd == "read") return Read();
@@ -252,7 +245,7 @@ cmd::Result MSGCommand::Execute()
   else if (cmd == "save") return Save();
   else if (cmd == "purge") return Purge();
   else if (cmd == "list") return List();
-  return cmd::Result::SyntaxError;
+  throw cmd::SyntaxError();
 }
 
 } /* site namespace */

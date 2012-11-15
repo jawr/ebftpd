@@ -11,7 +11,7 @@
 namespace cmd { namespace site
 {
 
-cmd::Result ADDUSERCommand::Execute()
+void ADDUSERCommand::Execute()
 {
   acl::PasswdStrength strength;
   if (!acl::SecurePass(client.User(), args[2], strength))
@@ -24,7 +24,7 @@ cmd::Result ADDUSERCommand::Execute()
       << strength.Others() << " others, "
       << strength.Length() << " length.";
     control.Reply(ftp::ActionNotOkay, os.str());
-    return cmd::Result::Okay;
+    return;
   }
   
   const cfg::Config& cfg = cfg::Get();
@@ -35,7 +35,7 @@ cmd::Result ADDUSERCommand::Execute()
   if (!ok)
   {
     control.Reply(ftp::ActionNotOkay, ok.Message());
-    return cmd::Result::Okay;
+    return;
   }
 
   std::ostringstream os;
@@ -60,7 +60,6 @@ cmd::Result ADDUSERCommand::Execute()
   }
 
   control.Reply(ftp::CommandOkay, os.str());
-  return cmd::Result::Okay;
 }
 
 // end
