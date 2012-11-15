@@ -1,6 +1,7 @@
 #include <ios>
 #include <unistd.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/crc.hpp>
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
 #include "db/stats/stat.hpp"
@@ -14,9 +15,27 @@
 #include "acl/path.hpp"
 #include "fs/chmod.hpp"
 #include "fs/mode.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace rfc
 {
+
+namespace 
+{
+const fs::Mode completeMode(fs::Mode("0666"));
+}
+
+bool STORCommand::CalcCRC(const fs::Path& path)
+{
+  std::string absolute((client.WorkDir() / path).Expand().ToString());
+  
+  for (auto& mask : cfg::Get().CalcCrc())
+  {
+    if (util::string::WildcardMatch(mask, absolute)) return true;
+  }
+  
+  return false;
+}
 
 void STORCommand::Execute()
 {
@@ -96,6 +115,9 @@ void STORCommand::Execute()
     return;
   }
   
+  bool calcCrc = CalcCRC(argStr);
+  boost::crc_32_type crc;
+  
   try
   {
     std::vector<char> asciiBuf;
@@ -115,6 +137,9 @@ void STORCommand::Execute()
       data.State().Update(len);
       
       fout->write(bufp, len);
+      
+      if (calcCrc) crc.process_bytes(bufp, len);
+      
       if (client.Profile().MaxUlSpeed() > 0)
         ftp::SpeedLimitSleep(data.State(), client.Profile().MaxUlSpeed());
     }
@@ -142,7 +167,10 @@ void STORCommand::Execute()
   fout->close();
   data.Close();
   
-  e = fs::Chmod(client, argStr, fs::Mode("0666"));
+  logs::debug << "CRC Calculated: " << std::hex 
+             << std::uppercase << crc.checksum() << logs::endl;
+  
+  e = fs::Chmod(client, argStr, completeMode);
   if (!e) control.PartReply(ftp::DataClosedOkay, 
       "Failed to chmod upload: " + e.Message());
 

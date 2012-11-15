@@ -39,8 +39,6 @@ void KICKCommand::Execute()
   std::ostringstream os;
   os << "Kicked " << future.get() << " of " << args[1] << "'s login(s).";
   control.Reply(ftp::CommandOkay, os.str());
-  return;
-  
 }
 
 // end

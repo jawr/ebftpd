@@ -33,7 +33,7 @@ void ProcessReader::DoChild()
   pipe.CloseWrite();
 
   execvpe(file.c_str(), PrepareArgv(argv), PrepareArgv(env));
-  exit(1);
+  _exit(0);
 }
 
 void ProcessReader::Open()

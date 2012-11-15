@@ -57,7 +57,7 @@ util::Error Daemonise()
 {
   pid_t pid = fork();
   if (pid < 0) return util::Error::Failure(errno);
-  if (pid > 0) exit(0);
+  if (pid > 0) _exit(0);
   
   setsid();
   
