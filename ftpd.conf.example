@@ -1,7 +1,7 @@
-port            45678
+port            1234
 valid_ip        ::
 tls_certificate ebftpd.pem
-sitepath        /glftpd/site
+sitepath        site
 
 makedir         *       *
 upload          *       *
@@ -97,5 +97,5 @@ renameown       *       *
 -reqfilled      *
 -requests       *
 -reload         *
--shutdownexit   *
+-shutdownfull   *
 -shutdownsiteop *
