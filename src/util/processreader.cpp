@@ -5,8 +5,6 @@ namespace util
 
 ProcessReader::~ProcessReader()
 {
-  FreeArgv(&argv);
-  FreeArgv(&env);
   if (pid != -1)
   {
     try
@@ -34,7 +32,7 @@ void ProcessReader::DoChild()
   if (dup2(pipe.WriteFd(), fileno(stdout)) < 0) return;
   pipe.CloseWrite();
 
-  execvpe(file.c_str(), argv, env);
+  execvpe(file.c_str(), PrepareArgv(argv), PrepareArgv(env));
   exit(1);
 }
 
@@ -146,23 +144,15 @@ char** ProcessReader::PrepareArgv(const ArgvType& argv)
   return a;
 }
 
-void ProcessReader::FreeArgv(char*** argv)
-{
-  if (!*argv) return;
-  for (size_t i = 0; *argv[i]; ++i) delete [] *argv[i];
-  delete [] *argv;
-  *argv = nullptr;
-}
-
 ProcessReader::ProcessReader() : 
-  argv(nullptr), env(nullptr), pid(-1), exitStatus(-1), eof(false),
+  pid(-1), exitStatus(-1), eof(false),
   getcharBufferPos(nullptr), getcharBufferLen(0)
 {
 }
 
 ProcessReader::ProcessReader(const std::string& file, 
     const ArgvType& argv, const ArgvType& env) : 
-  file(file), argv(PrepareArgv(argv)), env(PrepareArgv(env)), pid(-1), 
+  file(file), argv(argv), env(env), pid(-1), 
   exitStatus(-1), eof(false), getcharBufferPos(nullptr), 
   getcharBufferLen(0)
 {
@@ -172,12 +162,9 @@ ProcessReader::ProcessReader(const std::string& file,
 void ProcessReader::Open(const std::string& file, 
     const ArgvType& argv, const ArgvType& env)
 { 
-  if (this->argv || this->env) 
-    throw std::logic_error("Must call Close before calling Open again");
-
   this->file.assign(file);
-  this->argv = PrepareArgv(argv);
-  this->env = PrepareArgv(env);
+  this->argv.assign(argv.begin(), argv.end());
+  this->env.assign(env.begin(), env.end());
   Open();
 }
 
@@ -185,13 +172,10 @@ bool ProcessReader::Close()
 {
   pipe.Reset();
   eof = false;
-  FreeArgv(&argv);
-  FreeArgv(&env);
   
   if (pid == -1) return true;
   while (true)
   {
-    //sleep(10);
     int result = waitpid(pid, &exitStatus, WNOHANG);
     if (!result) return false;
     if (result < 0)
@@ -229,7 +213,7 @@ bool ProcessReader::Kill(int signo, const util::TimePair& timeout)
     if (errno == ESRCH) return Close();
     throw util::SystemError(errno);
   }
-  
+   
   suseconds_t toMicroseconds = (timeout.Seconds() * 1000000) + timeout.Microseconds();
   while (toMicroseconds > 0)
   {

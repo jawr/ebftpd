@@ -9,6 +9,11 @@ namespace util
 class ProcessReader;
 }
 
+namespace ftp
+{
+class Client;
+}
+
 namespace exec
 {
 
@@ -18,7 +23,7 @@ class Reader
   bool open;
   
 public:
-  Reader(util::ProcessReader& child, const std::string& file, 
+  Reader(ftp::Client& client, const std::string& file, 
       std::vector<std::string> argv);
       
   ~Reader();

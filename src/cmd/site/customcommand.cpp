@@ -15,11 +15,11 @@ cmd::Result CustomEXECCommand::Execute()
   try
   {
     util::ProcessReader::ArgvType argv(args.begin() + 1, args.end());
-    exec::Reader reader(client.Child(), custSiteCmd.Target(), argv);
+    exec::Reader reader(client, custSiteCmd.Target(), argv);
     try
     {
       std::string line;
-      while (client.Child().Getline(line)) control.PartReply(ftp::CommandOkay, line);
+      while (reader.Getline(line)) control.PartReply(ftp::CommandOkay, line);
     }
     catch (const util::SystemError& e)
     {

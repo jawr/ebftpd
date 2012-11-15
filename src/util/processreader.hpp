@@ -24,8 +24,8 @@ private:
   static const time_t defaultKillTimeout = 1;
 
   std::string file;
-  char** argv;
-  char** env;
+  ArgvType argv;
+  ArgvType env;
   pid_t pid;
   util::Pipe pipe;
   util::InterruptPipe interruptPipe;
@@ -44,7 +44,6 @@ private:
   int GetcharBuffered(const util::TimePair* timeout);
   bool Getline(std::string& buffer, const util::TimePair* timeout);
   static char** PrepareArgv(const ArgvType& argv);
-  static void FreeArgv(char*** argv);
 
 public:
 
