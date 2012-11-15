@@ -72,19 +72,24 @@ bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port
 
 void Listener::HandleClients()
 {
-  // erase any clients that are done
-  boost::lock_guard<boost::mutex> lock(clientMtx); // move into loop?
+  boost::lock_guard<boost::mutex> lock(clientMtx);
   for (ClientList::iterator it = clients.begin();
        it != clients.end();)
   {
     ftp::Client& client = *it;
     if (client.State() == ClientState::Finished)
     {
-      client.Join();
-      clients.erase(it++);
-      logs::debug << "Client finished" << logs::endl;
+      if (client.TryJoin())
+      {
+        clients.erase(it++);
+        logs::debug << "Client finished" << logs::endl;
+      }
+      else
+        ++it;
+      // we should probably log if a client hasnt been joinable for too long
     }
-    else ++it;
+    else 
+      ++it;
   }
 }
 

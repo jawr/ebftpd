@@ -24,6 +24,7 @@ public:
 
   void Start();
   void Join();
+  bool TryJoin();
   void Stop(bool join = false);
   bool Started() const { return started; }
 };

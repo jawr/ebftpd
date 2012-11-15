@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <exception>
 #include <boost/thread/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "util/thread.hpp"
 #include "util/error.hpp"
 
@@ -34,6 +35,17 @@ void Thread::Join()
     thread.join();
     started = false;
   }
+}
+
+bool Thread::TryJoin()
+{
+  if (!started) return true;
+  if (thread.timed_join(boost::posix_time::seconds(0)))
+  {
+    started = false;
+    return true;
+  }
+  return false;
 }
 
 void Thread::Main()
