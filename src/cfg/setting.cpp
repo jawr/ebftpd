@@ -310,14 +310,19 @@ Privpath::Privpath(std::vector<std::string> toks)
 
 SiteCmd::SiteCmd(const std::vector<std::string>& toks)   
 {
-  command = boost::to_upper_copy(toks.at(0));
-  if (toks.at(1) == "EXEC") type = EXEC;
-  else if (toks.at(1) == "TEXT") type = TEXT;
-  else if (toks.at(1) == "IS") type = IS;
+  command = boost::to_upper_copy(toks[0]);
+  target = toks[2];
+  std::string typeStr(boost::to_upper_copy(toks[1]));
+  if (typeStr == "EXEC") type = Type::EXEC;
+  else if (typeStr == "TEXT") type = Type::TEXT;
+  else if (typeStr == "ALIAS")
+  {
+    type = Type::ALIAS;
+    boost::to_upper(target);
+  }
   else
     throw cfg::ConfigError("Invalid site_cmd parameter");
-  script = toks.at(2);
-  arguments.assign(toks.begin() + 4, toks.end());
+  if (toks.size() == 4) arguments = toks[3];
 }
 
 Cscript::Cscript(const std::vector<std::string>& toks)   

@@ -98,16 +98,14 @@ void Config::Parse(std::string line) {
   if (boost::starts_with(opt, "custom-"))
   {
     ParameterCheck(opt, toks, 1, -1);
-    std::string keyword(opt.substr(7));
+    std::string command(boost::to_upper_copy(opt.substr(7)));
     if (std::find_if(siteCmd.begin(), siteCmd.end(), 
         [&](const setting::SiteCmd& sc)
-        {
-          return boost::to_upper_copy(keyword) == sc.Command();
-        }) == siteCmd.end())
+        { return command == sc.Command();}) == siteCmd.end())
     {
-      throw ConfigError("Invalid custom command acl keyword: " + keyword);
+      throw ConfigError("Invalid custom command acl keyword: " + command);
     }
-    commandACLs.insert(std::make_pair(keyword, 
+    commandACLs.insert(std::make_pair(boost::to_lower_copy(opt), 
         acl::ACL::FromString(boost::join(toks, " "))));
   }
   else
@@ -553,7 +551,7 @@ void Config::Parse(std::string line) {
   }
   else if (opt == "site_cmd")
   {
-    ParameterCheck(opt, toks, 3);
+    ParameterCheck(opt, toks, 3, 4);
     siteCmd.emplace_back(toks);
   }
   else if (opt == "requests")

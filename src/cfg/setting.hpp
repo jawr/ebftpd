@@ -393,18 +393,22 @@ public:
 
 class SiteCmd : public Setting
 {
-  std::string command;
-  enum Type { EXEC, TEXT, IS };
-  Type type;
-  std::string script;
-  std::vector<std::string> arguments;
 public:
+  enum class Type { EXEC, TEXT, ALIAS };
+  
+private:
+  std::string command;
+  Type type;
+  std::string target;
+  std::string arguments;
+public:
+
   SiteCmd() {}
   SiteCmd(const std::vector<std::string>& toks);
   const std::string& Command() const { return command; }
-  Type GetType() const { return type; } // anonymous enum?                 
-  const std::vector<std::string>& Arguments() const { return arguments; }
-  const std::string& Script() const { return script; }
+  Type GetType() const { return type; }
+  const std::string& Arguments() const { return arguments; }
+  const std::string& Target() const { return target; }
 };
 
 class Cscript : public Setting
