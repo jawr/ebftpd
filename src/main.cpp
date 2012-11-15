@@ -1,4 +1,3 @@
-#include <csignal>
 #include <memory>
 #include <cstring>
 #include <boost/program_options/options_description.hpp>
@@ -23,6 +22,7 @@
 #include "util/error.hpp"
 #include "util/daemonise.hpp"
 #include "cmd/site/factory.hpp"
+#include "signals/signal.hpp"
 
 #include "version.hpp"
 
@@ -100,63 +100,6 @@ bool ParseOptions(int argc, char** argv, bool& foreground)
   return true;
 }
 
-void SignalHandler(int signo)
-{
-  switch (signo)
-  {
-    case SIGHUP   :
-    {
-      try
-      {
-        LoadConfig();
-      }
-      catch (const cfg::ConfigError& e)
-      {
-        logs::error << "Failed to load config: " + e.Message() << logs::endl;
-      }
-      break;
-    }
-    case SIGTERM  :
-    case SIGQUIT  :
-    case SIGINT   :
-    {
-      logs::debug << "Server interrupted!" << logs::endl;
-      ftp::Listener::SetShutdown();
-      break;
-    }
-  }
-}
-
-util::Error SetupSignals()
-{
-  {
-    struct sigaction ignore;
-    memset(&ignore, 0, sizeof(ignore));
-    ignore.sa_handler = SIG_IGN;
-    ignore.sa_flags = 0;
-    
-    if (sigaction(SIGPIPE, &ignore, 0) < 0) return util::Error::Failure(errno);
-    if (sigaction(SIGCHLD, &ignore, 0) < 0) return util::Error::Failure(errno);
-    if (sigaction(SIGTSTP, &ignore, 0) < 0) return util::Error::Failure(errno);
-    if (sigaction(SIGTTOU, &ignore, 0) < 0) return util::Error::Failure(errno);
-    if (sigaction(SIGTTIN, &ignore, 0) < 0) return util::Error::Failure(errno);
-  }
-  
-  {
-    struct sigaction handle;
-    memset(&handle, 0, sizeof(handle));
-    handle.sa_handler = SignalHandler;
-    handle.sa_flags = 0;
-    
-    if (sigaction(SIGHUP, &handle, 0) < 0) return util::Error::Failure(errno);
-    if (sigaction(SIGINT, &handle, 0) < 0) return util::Error::Failure(errno);
-    if (sigaction(SIGTERM, &handle, 0) < 0) return util::Error::Failure(errno);
-    if (sigaction(SIGQUIT, &handle, 0) < 0) return util::Error::Failure(errno);
-  }
-  
-  return util::Error::Success();
-}
-
 bool Daemonise(bool foreground)
 {
   const std::string& pidfile = cfg::Get().Pidfile();
@@ -202,13 +145,10 @@ bool Daemonise(bool foreground)
 #ifndef TEST
 int main(int argc, char** argv)
 {
-
-  bool foreground;
-  
+  bool foreground; 
   if (!ParseOptions(argc, argv, foreground)) return 1;
 
   logs::debug << "Starting " << programFullname << " .. " << logs::endl;
-
   cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
   
   try
@@ -224,13 +164,15 @@ int main(int argc, char** argv)
   logs::Initialise(cfg::Get().Datapath() + "/logs");
   if (!Daemonise(foreground)) return 1;
   
-  util::Error sige = SetupSignals();
-  if (!sige)
   {
-    logs::error << "Failed to setup signal handlers: " << sige.Message() << logs::endl;
-    return 1;
+    util::Error e = signals::Initialise();
+    if (!e)
+    {
+      logs::error << "Failed to setup signal handlers: " << e.Message() << logs::endl;
+      return 1;
+    }
   }
-
+  
   try
   {
     logs::debug << "Initialising TLS context.." << logs::endl;
@@ -264,9 +206,11 @@ int main(int argc, char** argv)
     exitStatus = 1;
   }
   else
-  {  
+  { 
+    signals::Handler::StartThread();
     ftp::Listener::StartThread();
     ftp::Listener::JoinThread();
+    signals::Handler::StopThread();
   }
 
   db::Cleanup();
