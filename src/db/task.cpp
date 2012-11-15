@@ -88,7 +88,7 @@ void Select::Execute(mongo::DBClientConnection& conn)
     promise.set_value(false);
   }
   
-  results.shrink_to_fit();
+  //results.shrink_to_fit(); // segment fault on gcc 4.7.1
 }
 
 void Insert::Execute(mongo::DBClientConnection& conn)
