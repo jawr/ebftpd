@@ -131,6 +131,7 @@ util::Error SetupSignals()
 {
   {
     struct sigaction ignore;
+    memset(&ignore, 0, sizeof(ignore));
     ignore.sa_handler = SIG_IGN;
     ignore.sa_flags = 0;
     
