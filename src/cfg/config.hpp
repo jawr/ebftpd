@@ -32,6 +32,7 @@ class Config
   fs::Path sitepath;
   fs::Path pidfile;
   fs::Path tlsCertificate;
+  fs::Path tlsCiphers;
   int port;
   std::string defaultFlags;
   // glftpd
@@ -146,6 +147,7 @@ public:
   const fs::Path& Sitepath() const { return sitepath; }
   const fs::Path& Pidfile() const { return pidfile; }
   const fs::Path& TlsCertificate() const { return tlsCertificate; }
+  const fs::Path& TlsCiphers() const { return tlsCiphers; }
   int Port() const { return port; }
   const std::string& DefaultFlags() const { return defaultFlags; }
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 

@@ -69,6 +69,12 @@ bool RequireStopStart()
     required = true;
   }
   
+  if (shared->TlsCiphers() != old.TlsCiphers())
+  {
+    logs::error << "'tls_ciphers' option changed, full stop start required." << logs::endl;
+    required = true;
+  }
+
   if (shared->Database().Address() != old.Database().Address() ||   
       shared->Database().Port() != old.Database().Port())
   {

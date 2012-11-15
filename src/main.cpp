@@ -177,9 +177,11 @@ int main(int argc, char** argv)
   {
     logs::debug << "Initialising TLS context.." << logs::endl;
     util::net::TLSServerContext::Initialise(
-        cfg::Get().TlsCertificate().ToString(), "");
+        cfg::Get().TlsCertificate().ToString(), 
+        cfg::Get().TlsCiphers().ToString());
     util::net::TLSClientContext::Initialise(
-        cfg::Get().TlsCertificate().ToString(), "");
+        cfg::Get().TlsCertificate().ToString(), 
+        cfg::Get().TlsCiphers().ToString());
   }
   catch (const util::net::NetworkError& e)
   {

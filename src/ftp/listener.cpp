@@ -161,6 +161,8 @@ void Listener::Run()
     AcceptClients();
     HandleClients();
   }
+  
+  StopClients();
 }
 
 } // end ftp namespace

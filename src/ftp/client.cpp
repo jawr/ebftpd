@@ -68,7 +68,6 @@ void Client::SetLoggedIn(const acl::UserProfile& profile, bool kicked)
                       user.CheckFlag(acl::Flag::Exempt)));
   if (!e) throw util::RuntimeError(e.Message());
 
-
   if (profile.IdleTime() == -1)
     SetIdleTimeout(cfg::Get().IdleTimeout().Timeout());
   else

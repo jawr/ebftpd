@@ -140,6 +140,11 @@ void Config::Parse(std::string line) {
     ParameterCheck(opt, toks, 1);
     tlsCertificate = fs::Path(toks.at(0));
   }
+  else if (opt == "tls_ciphers")
+  {
+    ParameterCheck(opt, toks, 1);
+    tlsCiphers = fs::Path(toks[0]);
+  }
   else if (opt == "reload_3")
   {
     NotImplemented(opt);
