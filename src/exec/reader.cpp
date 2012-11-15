@@ -8,11 +8,9 @@
 namespace exec
 {
 
-Reader::Reader(ftp::Client& client, const std::string& file,
-    std::vector<std::string> argv) :
+Reader::Reader(ftp::Client& client, const std::vector<std::string>& argv) :
   client(client), open(false)
 {
-  argv.insert(argv.begin(), file);
   util::ProcessReader::ArgvType env;
   client.Child().Open(argv[0], argv, BuildEnv(client));
   open = true;

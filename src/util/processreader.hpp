@@ -36,8 +36,6 @@ private:
   char* getcharBufferPos;
   size_t getcharBufferLen;
   
-  void DoParent();
-  void DoChild();
   void Open();
   
   size_t Read(char* buffer, size_t size, const util::TimePair* timeout);
@@ -59,7 +57,7 @@ public:
   bool Getline(std::string& buffer)
   { return Getline(buffer, nullptr); }
  
-  bool Close();  
+  bool Close(bool nohang = true);  
   bool Close(const util::TimePair& timeout);
   int ExitStatus() const { return exitStatus; }
   bool Kill(int signo, const util::TimePair& timeout);

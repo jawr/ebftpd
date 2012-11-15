@@ -13,10 +13,11 @@ namespace cmd { namespace site
 
 void CustomEXECCommand::Execute()
 {
+  util::ProcessReader::ArgvType argv(args.begin() + 1, args.end());
+  argv.insert(argv.begin(), custSiteCmd.Target());
   try
   {
-    util::ProcessReader::ArgvType argv(args.begin() + 1, args.end());
-    exec::Reader reader(client, custSiteCmd.Target(), argv);
+    exec::Reader reader(client, argv);
     try
     {
       std::string line;
@@ -25,12 +26,18 @@ void CustomEXECCommand::Execute()
     catch (const util::SystemError& e)
     {
       control.Reply(ftp::CommandOkay, "Error while reading from pipe: " + e.Message());
+      logs::error << "Error while reading from child process pipe: "
+                  << boost::join(argv, " ") 
+                  << ": " << e.Message() << logs::endl;
       return;
     }
   }
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, "Unable to execute command: " + e.Message());
+    logs::error << "Failed to execute custom site command: " 
+                << boost::join(argv, " ") 
+                << ": " << e.Message() << logs::endl;
     return;
   }
   

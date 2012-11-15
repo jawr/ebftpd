@@ -20,8 +20,7 @@ class Reader
   std::vector<std::string> argv;
   
 public:
-  Reader(ftp::Client& client, const std::string& file, 
-      std::vector<std::string> argv);
+  Reader(ftp::Client& client, const std::vector<std::string>& argv);
       
   ~Reader();
       

@@ -21,30 +21,46 @@ ProcessReader::~ProcessReader()
   }
 }
 
-void ProcessReader::DoParent()
-{
-  pipe.CloseWrite();
-}
-
-void ProcessReader::DoChild()
-{
-  pipe.CloseRead();
-  if (dup2(pipe.WriteFd(), fileno(stdout)) < 0) return;
-  pipe.CloseWrite();
-
-  execvpe(file.c_str(), PrepareArgv(argv), PrepareArgv(env));
-  _exit(0);
-}
-
 void ProcessReader::Open()
 {
   if (pid != -1) throw std::logic_error("Must call Close before calling Open again");
-   
+
+  util::Pipe errorPipe;
+  
+  if (fcntl(errorPipe.WriteFd(), F_SETFD, fcntl(errorPipe.WriteFd(), F_GETFD) | FD_CLOEXEC) < 0)
+   throw util::SystemError(errno);
+  
   pid = fork();
   if (pid < 0) throw util::SystemError(errno);
   
-  if (pid) DoParent();
-  else DoChild();
+  if (pid)
+  {
+    pipe.CloseWrite();
+    errorPipe.CloseWrite();
+    int error;
+    ssize_t len;
+    while ((len = read(errorPipe.ReadFd(), &error, sizeof(error))) < 0)
+      if (errno != EINTR && errno != EAGAIN) break;
+    if (len > 0)
+    {
+      Close(false);
+      throw util::SystemError(error);
+    }
+  }
+  else
+  {
+    errorPipe.CloseRead();
+    pipe.CloseRead();
+    if (dup2(pipe.WriteFd(), fileno(stdout)) < 0) return;
+    pipe.CloseWrite();
+
+    execvpe(file.c_str(), PrepareArgv(argv), PrepareArgv(env));
+
+    int error = errno;
+    while (write(errorPipe.WriteFd(), &error, sizeof(error)) < 0)
+      if (errno != EINTR && errno != EAGAIN) break;
+    _exit(0);
+  }
 }
 
 size_t ProcessReader::Read(char* buffer, size_t size, const util::TimePair* timeout)
@@ -168,7 +184,7 @@ void ProcessReader::Open(const std::string& file,
   Open();
 }
 
-bool ProcessReader::Close()
+bool ProcessReader::Close(bool nohang)
 {
   pipe.Reset();
   eof = false;
@@ -176,7 +192,7 @@ bool ProcessReader::Close()
   if (pid == -1) return true;
   while (true)
   {
-    int result = waitpid(pid, &exitStatus, WNOHANG);
+    int result = waitpid(pid, &exitStatus, nohang ? WNOHANG : 0);
     if (!result) return false;
     if (result < 0)
     {
