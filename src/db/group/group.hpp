@@ -8,10 +8,12 @@
 namespace db { namespace group
 {
 
-acl::GroupID GetNewGroupID();
-void Save(const acl::Group& group);
-void GetAll(boost::ptr_vector<acl::Group>& groups);
-void Delete(const acl::GroupID gid);
+  acl::GroupID GetNewGroupID();
+  void Save(const acl::Group& group);
+  std::vector<acl::Group> GetAll();
+  boost::ptr_vector<acl::Group> GetAllPtr();
+  void Delete(const acl::GroupID gid);
+
 // end
 }
 }

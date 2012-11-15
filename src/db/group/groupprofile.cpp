@@ -31,39 +31,91 @@ void Set(acl::GroupID gid, mongo::BSONObj obj)
   Pool::Queue(task);
 }
 
-void SetSlots(acl::GroupID gid, int slots)
+util::Error SetSlots(acl::GroupID gid, const std::string& slots)
 {
-  Set(gid, BSON("slots" << slots));
+  int i;
+  try
+  {
+    i = boost::lexical_cast<int>(slots);
+  }
+  catch (const boost::bad_lexical_cast& e)
+  {
+    return util::Error::Failure("Failed to parse number!");
+  }
+  Set(gid, BSON("slots" << i));
+  return util::Error::Success();
 }
 
-void SetLeechSlots(acl::GroupID gid, int slots)
+util::Error SetLeechSlots(acl::GroupID gid, const std::string& slots)
 {
-  Set(gid, BSON("leech slots" << slots));
+  int i;
+  try
+  {
+    i = boost::lexical_cast<int>(slots);
+  }
+  catch (const boost::bad_lexical_cast& e)
+  {
+    return util::Error::Failure("Failed to parse number!");
+  }
+  Set(gid, BSON("leech slots" << i));
+  return util::Error::Success();
 }
 
-void SetAllotSlots(acl::GroupID gid, int slots)
+util::Error SetAllotSlots(acl::GroupID gid, const std::string& slots)
 {
-  Set(gid, BSON("allotment slots" << slots));
+  int i;
+  try
+  {
+    i = boost::lexical_cast<int>(slots);
+  }
+  catch (const boost::bad_lexical_cast& e)
+  {
+    return util::Error::Failure("Failed to parse number!");
+  }
+  Set(gid, BSON("allotment slots" << i));
+  return util::Error::Success();
 }
 
-void SetMaxAllotSlots(acl::GroupID gid, int slots)
+util::Error SetMaxAllotSlots(acl::GroupID gid, const std::string& slots)
 {
-  Set(gid, BSON("max allotment slots" << slots));
+  int i;
+  try
+  {
+    i = boost::lexical_cast<int>(slots);
+  }
+  catch (const boost::bad_lexical_cast& e)
+  {
+    return util::Error::Failure("Failed to parse number!");
+  }
+  Set(gid, BSON("max allotment slots" << i));
+  return util::Error::Success();
 }
 
-void SetMaxLogins(acl::GroupID gid, int maxLogins) 
+util::Error SetMaxLogins(acl::GroupID gid, const std::string& maxLogins) 
 {
-  Set(gid, BSON("max logins" << maxLogins));
+  int i;
+  try
+  {
+    i = boost::lexical_cast<int>(maxLogins);
+  }
+  catch (const boost::bad_lexical_cast& e)
+  {
+    return util::Error::Failure("Failed to parse number!");
+  }
+  Set(gid, BSON("max logins" << i));
+  return util::Error::Success();
 }
 
-void SetDescription(acl::GroupID gid, const std::string& description)
+util::Error SetDescription(acl::GroupID gid, const std::string& description)
 {
   Set(gid, BSON("description" << description));
+  return util::Error::Success();
 }
 
-void SetComment(acl::GroupID gid, const std::string& comment)
+util::Error SetComment(acl::GroupID gid, const std::string& comment)
 {
   Set(gid, BSON("comment" << comment));
+  return util::Error::Success();
 }
 // end
 }

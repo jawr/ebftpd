@@ -2,7 +2,7 @@
 #include "cmd/site/grpdel.hpp"
 #include "acl/groupcache.hpp"
 #include "db/user/user.hpp"
-#include "main.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
@@ -11,14 +11,7 @@ void GRPDELCommand::Execute()
 {
   std::ostringstream acl;
   acl << "=" << args[1];
-  boost::ptr_vector<acl::User> users;
-  
-  util::Error e = db::user::UsersByACL(users, acl.str());
-  if (!e) 
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
-    return;
-  }
+  std::vector<acl::User> users = db::user::GetByACL(acl.str());
 
   if (!users.empty())
   {
@@ -26,7 +19,7 @@ void GRPDELCommand::Execute()
     return;
   }
 
-  e = acl::GroupCache::Delete(args[1]);
+  util::Error e = acl::GroupCache::Delete(args[1]);
   if (!e)
     control.Reply(ftp::ActionNotOkay, e.Message());
   else

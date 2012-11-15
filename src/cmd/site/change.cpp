@@ -1,11 +1,12 @@
 #include <sstream>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string.hpp>
 #include "cmd/site/change.hpp"
 #include "acl/usercache.hpp"
 #include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
 #include "acl/allowsitecmd.hpp"
+#include "util/error.hpp"
 #include "cmd/error.hpp"
 
 namespace cmd { namespace site
@@ -13,22 +14,6 @@ namespace cmd { namespace site
 
 void CHANGECommand::Execute()
 {
-  boost::ptr_vector<acl::User> users;
-  std::string acl = args[1];
-  if (acl[0] != '=') acl = "-" + acl;
-
-  util::Error ok = db::user::UsersByACL(users, acl);
-  if (!ok)
-  {
-    control.Reply(ftp::ActionNotOkay, ok.Message());
-    return;
-  }
-  else if (users.size() == 0)
-  {
-    control.Reply(ftp::ActionNotOkay, "No user(s) found.");
-    return;
-  }
-
   std::ostringstream os;
   std::string setting = args[2];
   std::string value = args[3];
@@ -40,14 +25,54 @@ void CHANGECommand::Execute()
   }
   
   boost::to_lower(setting);
-  
-  int i = 0;
-  if (users.size() > 1)
+
+  std::vector<acl::User> users;
+
+  if (args[1] == "*")
+    users = db::user::GetAll();
+  else
   {
-    os << "Updating (" << users.size() << ") users:";
-    ++i;
+    std::vector<std::string> userToks;
+    boost::trim(args[1]);
+    boost::split(userToks, args[1], boost::is_any_of("\t "),
+      boost::token_compress_on);
+
+    if (userToks.empty()) throw cmd::SyntaxError();
+  
+    for (auto& tok: userToks)
+    {
+      // could also check by flag here if need be. glftpd doesn't so for now..
+      if (tok[0] == '=')
+      {
+        std::vector<acl::User> tempUsers = db::user::GetByACL(tok);
+        users.insert(users.end(), tempUsers.begin(), tempUsers.end()); // emplace not working
+      }
+      else
+      { 
+        // user
+        try
+        {
+          users.emplace_back(acl::UserCache::User(tok));
+        }
+        catch (const util::RuntimeError& e)
+        {
+          os << "Error: " << e.Message() << "\n";
+        }
+      }
+    }
   }
   
+  if (users.size() > 0)
+    os << "Updating (" << users.size() << ") users:";
+  else
+  {
+    control.Reply(ftp::ActionNotOkay, "Error: No users found.");
+    return;
+  }
+  
+  // shouldn't change permission be checked first and override all these? i.e.
+  // a user hat has access to change has access to * whereas a user who has access
+  // to ratio has access only to ratio...
   if (setting == "ratio")
   {
     if (!acl::AllowSiteCmd(client.User(), "changeratio")) throw cmd::PermissionError();
@@ -76,9 +101,11 @@ void CHANGECommand::Execute()
   else
   if (!acl::AllowSiteCmd(client.User(), "change")) throw cmd::PermissionError();
 
+  util::Error ok;
+
   for (auto& user: users)
   {
-    if (i++ != 0) os << "\n";
+    os << "\n";
 
     if (setting == "ratio")
       ok = db::userprofile::SetRatio(user.UID(), value);

@@ -13,7 +13,7 @@ mongo::BSONObj Group::Serialize(const acl::Group& group)
   return bob.obj();
 }
 
-std::unique_ptr<acl::Group> Group::Unserialize(const mongo::BSONObj& bo)
+std::unique_ptr<acl::Group> Group::UnserializePtr(const mongo::BSONObj& bo)
 {
   std::unique_ptr<acl::Group> group;
   try
@@ -25,6 +25,11 @@ std::unique_ptr<acl::Group> Group::Unserialize(const mongo::BSONObj& bo)
     UnserializeFailure("group", e, bo);
   }
   return group;
+}
+
+acl::Group Group::Unserialize(const mongo::BSONObj& bo)
+{
+  return acl::Group(bo["name"].String(), bo["gid"].Int());
 }
 
 } /* bson namespace */

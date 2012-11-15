@@ -12,13 +12,15 @@ namespace db { namespace groupprofile
 acl::GroupProfile Get(acl::GroupID gid);
 void Set(acl::GroupID gid, mongo::BSONObj obj); 
 
-void  SetSlots(acl::GroupID gid, int slots); 
-void  SetLeechSlots(acl::GroupID gid, int slots); 
-void  SetAllotSlots(acl::GroupID gid, int slots); 
-void  SetMaxAllotSlots(acl::GroupID gid, int slots); 
-void  SetMaxLogins(acl::GroupID gid, int maxLogins); 
-void  SetDescription(acl::GroupID gid, const std::string& description);
-void  SetComment(acl::GroupID gid, const std::string& comment);
+util::Error SetSlots(acl::GroupID gid, const std::string& slots); 
+util::Error SetLeechSlots(acl::GroupID gid, const std::string& slots); 
+util::Error SetAllotSlots(acl::GroupID gid, const std::string& slots); 
+util::Error SetMaxAllotSlots(acl::GroupID gid, const std::string& slots); 
+util::Error SetMaxLogins(acl::GroupID gid, const std::string& maxLogins); 
+util::Error SetDescription(acl::GroupID gid, 
+  const std::string& description);
+util::Error SetComment(acl::GroupID gid, 
+  const std::string& comment);
 
 }
 }

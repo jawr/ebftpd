@@ -22,15 +22,14 @@ class Stat
   int year;
 
   int files;
-  // might need to store bytes rather than kbytes as we lose files < certain siez
-  long long kbytes;
+  long long bytes;
   long long xfertime;
 
   Direction direction;
 
 
 public:
-  Stat() : files(0), kbytes(0), xfertime(0) {}
+  Stat() : files(0), bytes(0), xfertime(0) {}
   ~Stat() {}
 
   acl::UserID UID() const { return uid; }
@@ -39,11 +38,11 @@ public:
   int Month() const { return month; }
   int Year() const { return year; }
   int Files() const { return files; }
-  long long Kbytes() const { return kbytes; }
+  long long Bytes() const { return bytes; }
   long long Xfertime() const { return xfertime; }
 
   void IncrFiles(int files) { this->files += files; }
-  void IncrKbytes(long long kbytes) { this->kbytes += kbytes; }
+  void IncrBytes(long long bytes) { this->bytes += bytes; }
   void IncrXfertime(long long xfertime) { this->xfertime += xfertime; }
 
   friend class db::bson::Stat;

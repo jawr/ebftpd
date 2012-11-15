@@ -1,4 +1,5 @@
 #include <cctype>
+#include <vector>
 #include <algorithm>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -117,12 +118,16 @@ void MSGCommand::Send()
   std::string body(boost::join(std::vector<std::
       string>(args.begin() + 3, args.end()), " "));
   
-  boost::ptr_vector<acl::User> users;
-  if (recipients.empty()) db::user::GetAll(users);
+  std::vector<acl::User> users;
+  if (recipients.empty()) 
+    users = db::user::GetAll();
   else
   {
     for (auto& recipient : recipients)
-      db::user::UsersByACL(users, recipient);
+    {
+      auto tempUsers = db::user::GetByACL(recipient);
+      users.insert(users.end(), tempUsers.begin(), tempUsers.end());
+    }
       
     std::sort(users.begin(), users.end(), 
       [](const acl::User& u1, const acl::User& u2)

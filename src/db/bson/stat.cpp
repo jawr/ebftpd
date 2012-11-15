@@ -16,7 +16,7 @@ mongo::BSONObj Stat::Serialize(const ::stats::Stat& stat)
   bob.append("week", stat.week);
   bob.append("year", stat.year);
   bob.append("files", stat.files);
-  bob.append("kbytes ", stat.kbytes);
+  bob.append("bytes ", stat.bytes);
   bob.append("xfertime", stat.xfertime);
   if (stat.direction == ::stats::Direction::Upload)
     bob.append("direction", "up");
@@ -32,7 +32,7 @@ mongo::BSONObj Stat::Serialize(const ::stats::Stat& stat)
   {
     stat.uid = bo["_id"].Int();
     stat.files = bo["files"].Int();
-    stat.kbytes = bo["kbytes"].Long();
+    stat.bytes = bo["bytes"].Long();
     stat.xfertime = bo["xfertime"].Long();
   }
   catch (const mongo::DBException& e)
@@ -52,7 +52,7 @@ mongo::BSONObj Stat::Serialize(const ::stats::Stat& stat)
     stat.uid = bo["uid"].Int(); 
 
     stat.files = bo["files"].Int();
-    stat.kbytes = bo["kbytes"].Long();
+    stat.bytes = bo["bytes"].Long();
     stat.xfertime = bo["xfertime"].Long();
 
     if (bo["direction"].String() == "up")

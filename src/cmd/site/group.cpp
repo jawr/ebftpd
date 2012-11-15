@@ -11,6 +11,7 @@
 #include "util/time.hpp"
 #include "stats/stat.hpp"
 #include "db/stats/stat.hpp"
+#include "stats/conversions.hpp"
 
 namespace cmd { namespace site
 {
@@ -28,22 +29,19 @@ void GROUPCommand::Execute()
     return;
   }
 
-  boost::ptr_vector<acl::User> users;
-  util::Error ok = db::user::UsersByACL(users, "=" + args[1]);
+  std::vector<acl::User> users = db::user::GetByACL("=" + args[1]);
 
-  if (!ok)
+  if (users.empty())
   {
-    control.Reply(ftp::ActionNotOkay, ok.Message());
+    control.Reply(ftp::ActionNotOkay, "SITE GROUP: No users.");
     return;
-  }
+}
 
-  std::map<acl::UserID, acl::UserProfile> profiles;
-  db::userprofile::GetSelection(users, profiles);
+  std::map<acl::UserID, acl::UserProfile> profiles = 
+    db::userprofile::GetSelection(users);
 
-  std::map<acl::UserID, ::stats::Stat> dnStats;
-  std::map<acl::UserID, ::stats::Stat> upStats;
-  db::stats::GetAllDown(users, dnStats);
-  db::stats::GetAllUp(users, upStats);
+  std::map<acl::UserID, ::stats::Stat> dnStats = db::stats::GetAllDown(users);
+  std::map<acl::UserID, ::stats::Stat> upStats = db::stats::GetAllUp(users);
 
   std::ostringstream os;
   os << ",-----------+--------+-----------+--------+-----------+-------+---------.";
@@ -57,9 +55,11 @@ void GROUPCommand::Execute()
     flag = (user.CheckFlag(acl::Flag::Siteop)) ? "*" : flag;
     os << flag << std::left << std::setw(8) << user.Name().substr(0, 8) << " | ";
     os << std::right << std::setw(6) << upStats[user.UID()].Files() << " | ";
-    os << std::right << std::setw(9) << upStats[user.UID()].Kbytes()/1024.0 << " | ";
+    os << std::right << std::setw(9) 
+      << ::stats::tostring::Mbyte(upStats[user.UID()]) << " | ";
     os << std::right << std::setw(6) << dnStats[user.UID()].Files() << " | ";
-    os << std::right << std::setw(9) << dnStats[user.UID()].Kbytes()/1024.0 << " | ";
+    os << std::right << std::setw(9) 
+      << ::stats::tostring::Mbyte(dnStats[user.UID()]) << " | ";
     os << std::right << std::setw(5) << profiles[user.UID()].Ratio() << " | "; 
     os << std::right << std::setw(7) << profiles[user.UID()].WeeklyAllotment() << " | ";
   }

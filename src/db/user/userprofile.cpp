@@ -29,9 +29,11 @@ acl::UserProfile Get(acl::UserID uid)
   return bson::UserProfile::Unserialize(*results.begin());
 }
 
-void GetSelection(boost::ptr_vector<acl::User>& users,
-  std::map<acl::UserID, acl::UserProfile>& profiles)
+std::map<acl::UserID, acl::UserProfile> GetSelection(
+  const std::vector<acl::User>& users)
 {
+  std::map<acl::UserID, acl::UserProfile> profiles;
+
   QueryResults results;
   mongo::BSONArrayBuilder b;
   for (auto& user: users)
@@ -49,6 +51,8 @@ void GetSelection(boost::ptr_vector<acl::User>& users,
     acl::UserProfile profile = db::bson::UserProfile::Unserialize(result);
     profiles.insert(std::make_pair(profile.UID(), profile));
   }
+
+  return profiles;
 }
 
 void Save(const acl::UserProfile& profile)
@@ -59,8 +63,10 @@ void Save(const acl::UserProfile& profile)
   Pool::Queue(task);
 }
 
-void GetAll(std::vector<acl::UserProfile>& profiles)
+std::vector<acl::UserProfile> GetAll()
 {
+  std::vector<acl::UserProfile> profiles;
+
   QueryResults results;
   mongo::Query query;
   boost::unique_future<bool> future;
@@ -69,10 +75,10 @@ void GetAll(std::vector<acl::UserProfile>& profiles)
 
   future.wait();
 
-  if (results.size() == 0) return;
-
   for (auto& obj: results)
     profiles.push_back(bson::UserProfile::Unserialize(obj));
+
+  return profiles;
 }
 
 void Set(acl::UserID uid, mongo::BSONObj obj)
