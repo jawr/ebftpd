@@ -4,11 +4,6 @@
 #include <string>
 #include <vector>
 
-namespace util
-{
-class ProcessReader;
-}
-
 namespace ftp
 {
 class Client;
@@ -19,8 +14,10 @@ namespace exec
 
 class Reader
 {
-  util::ProcessReader& child;
+  ftp::Client& client;
   bool open;
+  std::string file;
+  std::vector<std::string> argv;
   
 public:
   Reader(ftp::Client& client, const std::string& file, 
