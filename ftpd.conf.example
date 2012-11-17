@@ -27,6 +27,7 @@ renameown       *       *
 -flagsown       *
 -delip          *
 -delownip       *
+-setpgrp        *
 -change         *
 -changeallot    *
 -changeflags    *
@@ -44,7 +45,6 @@ renameown       *       *
 -user           *
 -userown        *
 -tagline        *
--chgrp          *
 -chgrp          *
 -ranks          *
 -grpranks       *
@@ -70,7 +70,7 @@ renameown       *       *
 -securitylog    *
 -eventlog       *
 -dblog          *
--sysoplog       *
+#-sysoplog       *
 -laston         *
 -onel           *
 -oneladd        *
