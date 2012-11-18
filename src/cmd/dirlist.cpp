@@ -33,7 +33,10 @@ enum Options
   OptReverse      = 'r',  // reverse order while sorting
   OptRecursive    = 'R',  // list subdirectories recursively
   OptSizeSort     = 'S',  // sort by file size
-  OptModTimeSort  = 't'   // sort by modification time, newest first
+  OptModTimeSort  = 't',  // sort by modification time, newest first
+  OptNoGroup      = 'o',  // skip group in long format
+  OptNoOwners     = 'y',  // don't load owners
+  OptSizeName     = 'z'   // display size and name only
 };
 
 }
@@ -46,7 +49,10 @@ ListOptions::ListOptions(const std::string& userDefined,
   reverse(false),
   recursive(false),
   sizeSort(false),
-  modTimeSort(false)
+  modTimeSort(false),
+  noGroup(false),
+  sizeName(false),
+  noOwners(false)
 {
   std::string combined(forced);
   combined += userDefined;
@@ -98,6 +104,21 @@ void ListOptions::ParseOption(char option)
     {
       modTimeSort = true;
       sizeSort = false;
+      break;
+    }
+    case OptNoGroup     :
+    {
+      noGroup = true;
+      break;
+    }
+    case OptSizeName    :
+    {
+      sizeName = true;
+      break;
+    }
+    case OptNoOwners    :
+    {
+      noOwners = true;
       break;
     }
     default             :
@@ -161,9 +182,9 @@ void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
 void DirectoryList::Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirEnum) const
 {
 #ifdef CMD_DIRLIST_TEST
-  dirEnum.Readdir(path);
+  dirEnum.Readdir(path, !options.NoOwners() && !options.SizeName());
 #else
-  dirEnum.Readdir(client, path);
+  dirEnum.Readdir(client, path, !options.NoOwners() && !options.SizeName());
 #endif
 
   if (options.SizeSort())
@@ -249,15 +270,27 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
       
       if (options.LongFormat())
       {
-        message << Permissions(de.Status()) << " "
-                << std::setw(3) << de.Status().Native().st_nlink << " "
-                << std::left << std::setw(10) 
-                << UIDToName(de.Owner().UID()).substr(0, 10) << " "
-                << std::left << std::setw(10) 
-                << GIDToName(de.Owner().GID()).substr(0, 10) << " "
-                << std::right << std::setw(8) << de.Status().Size() << " "
-                << Timestamp(de.Status()) << " "
-                << de.Path();
+        if (options.SizeName())
+        {
+          message << std::left << std::setw(8) << de.Status().Size() << " "
+                  << de.Path();
+        }
+        else
+        {
+          message << Permissions(de.Status()) << " "
+                  << std::setw(3) << de.Status().Native().st_nlink << " "
+                  << std::left << std::setw(10) 
+                  << UIDToName(de.Owner().UID()).substr(0, 10) << " ";
+          
+          if (!options.NoGroup())
+          message << std::left << std::setw(10) 
+                  << GIDToName(de.Owner().GID()).substr(0, 10) << " ";
+                  
+          message << std::right << std::setw(8) << de.Status().Size() << " "
+                  << Timestamp(de.Status()) << " "
+                  << de.Path();
+        }
+        
         if (options.SlashDirs() && de.Status().IsDirectory()) message << "/";
         message << "\r\n";
         Output(message.str());

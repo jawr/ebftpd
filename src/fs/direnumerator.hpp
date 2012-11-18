@@ -37,6 +37,7 @@ class DirEnumerator
   ftp::Client* client;
   fs::RealPath path;
   uintmax_t totalBytes;
+  bool loadOwners;
   
   std::vector<DirEntry> entries;
   
@@ -48,11 +49,11 @@ public:
   typedef std::vector<DirEntry>::size_type size_type;
 
   explicit DirEnumerator();
-  explicit DirEnumerator(const fs::Path& path);
-  explicit DirEnumerator(ftp::Client& client, const fs::VirtualPath& path);
+  explicit DirEnumerator(const fs::Path& path, bool loadOwners = true);
+  explicit DirEnumerator(ftp::Client& client, const fs::VirtualPath& path, bool loadOwners = true);
   
-  void Readdir(const fs::Path& path);
-  void Readdir(ftp::Client& client, const fs::VirtualPath& path);
+  void Readdir(const fs::Path& path, bool loadOwners = true);
+  void Readdir(ftp::Client& client, const fs::VirtualPath& path, bool loadOwners = true);
 
   uintmax_t TotalBytes() const { return totalBytes; }
   

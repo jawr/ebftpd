@@ -31,6 +31,9 @@ class ListOptions
   bool recursive;
   bool sizeSort;
   bool modTimeSort;
+  bool noGroup;
+  bool sizeName;
+  bool noOwners;
 
   void ParseOption(char option);
   
@@ -44,6 +47,9 @@ public:
   bool Recursive() const { return recursive; }
   bool SizeSort() const { return sizeSort; }
   bool ModTimeSort() const { return modTimeSort; }
+  bool NoGroup() const { return noGroup; }
+  bool SizeName() const { return sizeName; }
+  bool NoOwners() const { return noOwners; }
 };
 
 class DirectoryList

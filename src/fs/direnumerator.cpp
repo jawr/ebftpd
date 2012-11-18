@@ -15,41 +15,47 @@ namespace fs
 
 DirEnumerator::DirEnumerator() :
   client(nullptr),
-  totalBytes(0)
+  totalBytes(0),
+  loadOwners(true)
 {
 }
 
-DirEnumerator::DirEnumerator(const fs::Path& path) :
+DirEnumerator::DirEnumerator(const fs::Path& path, bool loadOwners) :
   client(nullptr),
   path(path),
-  totalBytes(0)
+  totalBytes(0),
+  loadOwners(loadOwners)
 {
   Readdir();
 }
 
-DirEnumerator::DirEnumerator(ftp::Client& client, const fs::VirtualPath& path) :
+DirEnumerator::DirEnumerator(ftp::Client& client, const fs::VirtualPath& path, bool loadOwners) :
   client(&client),
   path(MakeReal(path)),
-  totalBytes(0)
+  totalBytes(0),
+  loadOwners(loadOwners)
 {
   Readdir();
 }
 
-void DirEnumerator::Readdir(const fs::Path& path)
+void DirEnumerator::Readdir(const fs::Path& path, bool loadOwners)
 {
   this->path = RealPath(path);
+  this->loadOwners = loadOwners;
   Readdir();
 }
 
-void DirEnumerator::Readdir(ftp::Client& client, const fs::VirtualPath& path)
+void DirEnumerator::Readdir(ftp::Client& client, const fs::VirtualPath& path, bool loadOwners)
 {
   this->client  = &client;
   this->path = MakeReal(path);
+  this->loadOwners = loadOwners;
   Readdir();
 }
 
 void DirEnumerator::Readdir()
 {
+  std::cout << "owners? " << loadOwners << std::endl;
   namespace PP = acl::path;
 
   if (client && !PP::DirAllowed<PP::View>(client->User(), 
@@ -92,15 +98,15 @@ void DirEnumerator::Readdir()
           hideOwner = PP::FileAllowed<PP::Hideowner>(client->User(), virtPath);
         }
         
-        if (hideOwner)
-          entries.emplace_back(fs::Path(de.d_name), status, fs::Owner(0,0));
-        else
-          entries.emplace_back(fs::Path(de.d_name), status, 
-                               OwnerCache::Owner(entryPath));
+        Owner owner(0, 0);
+        if (!hideOwner && loadOwners) owner = OwnerCache::Owner(entryPath);
+        entries.emplace_back(fs::Path(de.d_name), status, owner);
       }
       else
       {
-        entries.emplace_back(fs::Path(de.d_name), status, OwnerCache::Owner(entryPath));
+        Owner owner(0, 0);
+        if (loadOwners) owner = OwnerCache::Owner(entryPath);
+        entries.emplace_back(fs::Path(de.d_name), status, owner);
       }
     }
     catch (const util::SystemError&)
