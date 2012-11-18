@@ -55,7 +55,6 @@ void DirEnumerator::Readdir(ftp::Client& client, const fs::VirtualPath& path, bo
 
 void DirEnumerator::Readdir()
 {
-  std::cout << "owners? " << loadOwners << std::endl;
   namespace PP = acl::path;
 
   if (client && !PP::DirAllowed<PP::View>(client->User(), 
