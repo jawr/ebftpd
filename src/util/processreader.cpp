@@ -52,9 +52,11 @@ void ProcessReader::Open()
     errorPipe.CloseRead();
     pipe.CloseRead();
     if (dup2(pipe.WriteFd(), fileno(stdout)) < 0) return;
-    pipe.CloseWrite();
 
     execvpe(file.c_str(), PrepareArgv(argv), PrepareArgv(env));
+    pipe.CloseWrite();
+    _exit(0);
+
 
     int error = errno;
     while (write(errorPipe.WriteFd(), &error, sizeof(error)) < 0)
@@ -188,6 +190,8 @@ bool ProcessReader::Close(bool nohang)
 {
   pipe.Reset();
   eof = false;
+  getcharBufferPos = getcharBuffer;
+  getcharBufferLen = 0;
   
   if (pid == -1) return true;
   while (true)

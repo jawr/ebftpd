@@ -24,7 +24,8 @@ Reader::~Reader()
   }
   catch (const util::SystemError& e)
   {
-    
+    logs::error << "Error while closing child process executed by " << client.User().Name() 
+                << ": " << boost::join(argv, " ") << logs::endl;
   }
 }
 

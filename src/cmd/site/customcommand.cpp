@@ -7,6 +7,7 @@
 #include "util/processreader.hpp"
 #include "exec/reader.hpp"
 #include "cmd/error.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace site
 {
@@ -21,7 +22,10 @@ void CustomEXECCommand::Execute()
     try
     {
       std::string line;
-      while (reader.Getline(line)) control.PartReply(ftp::CommandOkay, line);
+      int maxLineCount = cfg::Get().MaxSitecmdLines();
+      int lineCount = 0;
+      while ((maxLineCount < 0 || ++lineCount <= maxLineCount) && reader.Getline(line))
+        control.PartReply(ftp::CommandOkay, line);
     }
     catch (const util::SystemError& e)
     {
@@ -31,6 +35,7 @@ void CustomEXECCommand::Execute()
                   << ": " << e.Message() << logs::endl;
       return;
     }
+    reader.Close();
   }
   catch (const util::SystemError& e)
   {
