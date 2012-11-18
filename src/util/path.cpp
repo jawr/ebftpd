@@ -1,5 +1,5 @@
 #include <vector>
-#include <boost/algorithm/string/split.hpp>
+#include <stdexcept>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include "util/path.hpp"
@@ -22,15 +22,60 @@ std::string TrimTrailingSlashCopy(const std::string& path, bool keepRootSlash)
   return result;
 }
 
-std::string Expand(const std::string& path)
+void SplitSegments(const std::string& path, std::vector<std::string>& segments)
 {
-  if (path.empty()) return "";
+  segments.clear();
+  std::string::size_type pos1 = 0;
+  std::string::size_type pos2 = 0;
+  size_t total = 1;
+
+  while ((pos2 = path.find('/', pos1)) != std::string::npos)
+  {
+    ++total;
+    pos1 = pos2 + 1;
+  }
+  
+  segments.reserve(total);
+
+  pos1 = 0;
+  while ((pos2 = path.find('/', pos1)) != std::string::npos)
+  {
+    if (pos2 != pos1 || pos1 == 0) 
+      segments.push_back(path.substr(pos1, pos2 - pos1));
+    pos1 = pos2 + 1;
+  }
+
+  if (pos2 != path.length() - 1) segments.push_back(path.substr(pos1));
+}
+
+std::string JoinSegments(const std::vector<std::string>& segments)
+{
+  if (segments.empty()) return std::string();
+  
+  std::string::size_type len = 0;
+  std::vector<std::string>::size_type size = segments.size();
+  for (std::vector<std::string>::size_type i = 0; i < size; ++i)
+    len += segments[i].length() + 1;
+  
+  std::string result(segments[0]);
+  result.reserve(len);
+  for (std::vector<std::string>::size_type i = 1; i < size; ++i)
+  {
+    result += '/';
+    result += segments[i];
+  }
+
+  return result;
+}
+
+std::string Resolve(const std::string& path)
+{
+  if (path.empty()) return std::string();
   bool absolute = path[0] == '/';
   
   std::vector<std::string> segments;
-  boost::split(segments, path, boost::is_any_of("/"), boost::token_compress_on);
-  for (std::vector<std::string>::iterator it =
-       segments.begin(); it != segments.end();)
+  SplitSegments(path, segments);
+  for (auto it = segments.begin(); it != segments.end();)
   {
     if (*it == ".") it = segments.erase(it);
     else if (*it == "..")
@@ -42,7 +87,7 @@ std::string Expand(const std::string& path)
       ++it;
   }
   
-  std::string result = boost::join(segments, "/");
+  std::string result(JoinSegments(segments));
   if (result.empty()) return "/";
   if (absolute && result[0] != '/') result.insert(0, 1, '/');
   TrimTrailingSlash(result);
@@ -104,6 +149,42 @@ std::string Extension(const std::string& path)
   return path.substr(pos + 1);
 }
 
+std::string NoExtension(const std::string& path)
+{
+  std::string basename(Basename(path));
+  return basename.substr(0, basename.find_last_of('.'));
+}
+
+std::string Relative(const std::string& workPath, const std::string& path)
+{
+   if (path.empty()) return std::string();
+  if (path[0] != '/') return path;
+  
+  if (workPath.empty() || workPath[0] != '/') 
+    throw std::logic_error("workPath must be absolute work directory");
+
+  if (workPath == "/") return path.substr(1);
+    
+  std::vector<std::string> wpSegments;
+  SplitSegments(workPath, wpSegments);
+  
+  std::vector<std::string> pSegments;
+  SplitSegments(path, pSegments);
+  
+  std::vector<std::string> result;
+  
+  size_t maxLen = std::min(wpSegments.size(), pSegments.size() - 1);
+  size_t i = 0;
+  for (; i < maxLen; ++i)
+    if (wpSegments[i] != pSegments[i]) break;
+    
+  for (size_t j = i; j < wpSegments.size(); ++j)
+    result.push_back("..");
+    
+  result.insert(result.end(), pSegments.begin() + i, pSegments.end());
+  return JoinSegments(result);
+}
+
 } /* path namespace */
 } /* util namespace */
 
@@ -130,9 +211,13 @@ int main()
   std::cout << "basename: " << Basename("another_path") << std::endl;
   std::cout << "extension: " << Extension("/some/path/file.ext") << std::endl;
   std::cout << "extension: " << Extension("/some/path/file_no_exit") << std::endl;
-  std::cout << "expand: " << Expand("/test/./two/three/four/../../wow") << std::endl;
-  std::cout << "expand: " << Expand("/..") << std::endl;
-  std::cout << "expand: " << Expand("/../somewhere///multiple//slashes///") << std::endl;
+  std::cout << "expand: " << Resolve("/test/./two/three/four/../../wow") << std::endl;
+  std::cout << "expand: " << Resolve("/..") << std::endl;
+  std::cout << "expand: " << Resolve("/../somewhere///multiple//slashes///") << std::endl;
+  
+  
+  std::cout << "relative: " << Relative("/tmp/some/work/dir", "/some/other/dir") << std::endl;
+  std::cout << "relative: " << Relative("/tmp/some", "/tmp/some/other/dir") << std::endl;
 }
 
 #endif

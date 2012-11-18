@@ -1,4 +1,6 @@
 #include <csignal>
+#include <cerrno>
+#include <sys/ptrace.h>
 #include "ftp/listener.hpp"
 #include "signals/signal.hpp"
 #include "logs/logs.hpp"
@@ -61,8 +63,13 @@ util::Error Initialise()
 {
   sigset_t set;
   sigfillset(&set);
+  
+  // allow interruption inside gdb
+  if (ptrace(PTRACE_TRACEME, 0, NULL, 0) < 0 && errno == EPERM)
+    sigdelset(&set, SIGINT);
+
   if (pthread_sigmask(SIG_BLOCK, &set, nullptr) < 0)
-    return util::Error::Failure(errno);
+    return util::Error::Failure(errno);  
 
   return util::Error::Success();
 }

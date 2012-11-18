@@ -6,41 +6,40 @@
 #include "fs/chmod.hpp"
 #include "fs/dircontainer.hpp"
 #include "util/string.hpp"
-#include "cfg/get.hpp"
 #include "cmd/error.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
 
-void CHMODCommand::Process(const fs::Path& absmask)
+void CHMODCommand::Process(fs::VirtualPath pathmask)
 {
   using util::string::WildcardMatch;
-  const cfg::Config& config = cfg::Get();
+  
   try
-  {
-    fs::DirContainer dir(client, absmask.Dirname());
-    for (auto& entry : dir)
+  {  
+    for (auto& entry : fs::DirContainer(client, pathmask.Dirname()))
     {
-      if (!WildcardMatch(absmask.Basename(), entry))
+      if (!WildcardMatch(pathmask.Basename().ToString(), entry.ToString()))
         continue;
 
-      fs::Path fullPath = (absmask.Dirname() / entry).Expand();
+      fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try
       {
-        fs::Status status(config.Sitepath() + fullPath);          
-        util::Error e = fs::Chmod(client, fullPath, *mode);
+        fs::Status status(fs::MakeReal(entryPath));          
+        util::Error e = fs::Chmod(client, entryPath, *mode);
         if (!e)
         {
           ++failed;
           control.PartReply(ftp::CommandOkay, "CHOWN " + 
-              fullPath.ToString() + ": " + e.Message());        
+              entryPath.ToString() + ": " + e.Message());        
         }
         else
         if (status.IsDirectory())
         {
           ++dirs;
           if (recursive && !status.IsSymLink()) 
-            Process((fullPath / "*").Expand());
+            Process(entryPath / "*");
         }
         else ++files;
       }
@@ -48,7 +47,7 @@ void CHMODCommand::Process(const fs::Path& absmask)
       {
         ++failed;
         control.PartReply(ftp::CommandOkay, "CHOWN " + 
-            fullPath.ToString() + ": " + e.Message());        
+            entryPath.ToString() + ": " + e.Message());        
       }
     }
   }
@@ -56,11 +55,11 @@ void CHMODCommand::Process(const fs::Path& absmask)
   {
     ++failed;
     control.PartReply(ftp::CommandOkay, 
-        "CHMOD " + absmask.Dirname().ToString() + ": " + e.Message());
+        "CHMOD " + pathmask.Dirname().ToString() + ": " + e.Message());
   }
 }
 
-bool CHMODCommand::ParseArgs()
+void CHMODCommand::ParseArgs()
 {
   int n = 1;
   boost::to_lower(args[1]);
@@ -75,17 +74,15 @@ bool CHMODCommand::ParseArgs()
   
   std::string::size_type pos =
       util::string::FindNthNonConsecutiveChar(argStr, ' ', n);
-  if (pos == std::string::npos) return false;
+  if (pos == std::string::npos) throw cmd::SyntaxError();
   
-  pathmask = argStr.substr(pos);
-  boost::trim(pathmask);
-  return true;
+  patharg = argStr.substr(pos);
+  boost::trim(patharg);
 }
 
-// SITE CHMOD [-R] <MODE> <PATHMASK.. ..>
 void CHMODCommand::Execute()
 {
-  if (!ParseArgs()) throw cmd::SyntaxError();
+  ParseArgs();
 
   if (recursive && !client.ConfirmCommand(argStr))
   {
@@ -104,8 +101,8 @@ void CHMODCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
     return;
   }
-
-  Process((client.WorkDir() / pathmask).Expand());
+  
+  Process(fs::PathFromUser(patharg));
   
   std::ostringstream os;
   os << "CHMOD finished (okay on: "

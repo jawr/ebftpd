@@ -17,27 +17,25 @@ class Client;
 namespace fs
 {
 
-typedef boost::iostreams::file_descriptor_sink FileSink;
-        
+typedef boost::iostreams::file_descriptor_sink FileSink;        
 typedef std::shared_ptr<FileSink> FileSinkPtr;
-
 typedef boost::iostreams::file_descriptor_source FileSource;
-        
 typedef std::shared_ptr<FileSource> FileSourcePtr;
-        
-util::Error DeleteFile(ftp::Client& client, const Path& path, off_t* size = 0);
-util::Error ForceDeleteFile(ftp::Client& client, const Path& path);
-util::Error RenameFile(ftp::Client& client, const Path& oldPath,
-                       const Path& newPath);
-FileSinkPtr CreateFile(ftp::Client& client, const Path& path);
-FileSinkPtr AppendFile(ftp::Client& client, const Path& path, off_t offset);
-FileSourcePtr OpenFile(ftp::Client& client, const Path& path);
-util::Error UniqueFile(ftp::Client& client, const Path& path, 
-                       size_t filenameLength, Path& uniquePath);
 
-off_t SizeFile(ftp::Client& client, const Path& path); // throws an exception and doesn't check perms
-bool IsIncomplete(ftp::Client& client, const Path& path);
+util::Error DeleteFile(const RealPath& path);
+util::Error DeleteFile(ftp::Client& client, const VirtualPath& path, off_t* size = 0);
 
+util::Error RenameFile(const RealPath& oldPath, const RealPath& newPath);
+util::Error RenameFile(ftp::Client& client, const VirtualPath& oldPath,
+                       const VirtualPath& newPath);
+
+FileSinkPtr CreateFile(ftp::Client& client, const VirtualPath& path);
+FileSinkPtr AppendFile(ftp::Client& client, const VirtualPath& path, off_t offset);
+FileSourcePtr OpenFile(ftp::Client& client, const VirtualPath& path);
+util::Error UniqueFile(ftp::Client& client, const VirtualPath& path, 
+                       size_t filenameLength, VirtualPath& uniquePath);
+
+bool IsIncomplete(const RealPath& path);
 
 } /* fs namespace */
 

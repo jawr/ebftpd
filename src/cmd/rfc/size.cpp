@@ -11,23 +11,20 @@ void SIZECommand::Execute()
 {
   namespace PP = acl::path;
 
-  fs::Path absolute = (client.WorkDir() / argStr).Expand();
+  fs::VirtualPath path(fs::PathFromUser(argStr));
 
-  util::Error e(PP::FileAllowed<PP::View>(client.User(), absolute));
-  if (!e)
-  {
-    control.Reply(ftp::ActionNotOkay, "SIZE failed 2: " + e.Message());
-    return;
-  }
-  
   try
   {
-    control.Reply(ftp::FileStatus, 
-      boost::lexical_cast<std::string>(fs::SizeFile(client, argStr))); 
+    fs::Status status(client, path);
+    if (status.IsRegularFile())
+      control.Reply(ftp::FileStatus, 
+        boost::lexical_cast<std::string>(status.Size())); 
+    else
+      control.Reply(ftp::ActionNotOkay, argStr + ": Not a plain file.");
   }
   catch (const util::SystemError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "SIZE failed 1: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
     return;
   }
   

@@ -21,122 +21,107 @@ namespace PP = acl::path;
 namespace fs
 {
 
-off_t SizeFile(ftp::Client& client, const Path& path)
+util::Error DeleteFile(const RealPath& path)
 {
-  Path absolute = (client.WorkDir() / path).Expand();
-  fs::Status status(cfg::Get().Sitepath() + absolute); // catch throw in parent
-  return status.Size();
-}
-
-util::Error ForceDeleteFile(ftp::Client& client, const Path& path)
-{
-  Path absolute = (client.WorkDir() / path).Expand();
-  Path real = cfg::Get().Sitepath() + absolute;
-  if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
-  OwnerCache::Delete(real);
+  if (unlink(path.CString()) < 0) return util::Error::Failure(errno);
+  OwnerCache::Delete(path);
   return util::Error::Success();
 }
 
-util::Error DeleteFile(ftp::Client& client, const Path& path, off_t* size)
+util::Error DeleteFile(ftp::Client& client, const VirtualPath& path, off_t* size)
 {
-  Path absolute = (client.WorkDir() / path).Expand();
-  util::Error e = PP::FileAllowed<PP::Delete>(client.User(), absolute);
+  util::Error e = PP::FileAllowed<PP::Delete>(client.User(), path);
   if (!e) return e;
   
   if (size)
   {
     try
     {
-      *size = SizeFile(client, absolute);
+      *size = Status(MakeReal(path)).Size();
     }
     catch (const util::SystemError& e)
     {
       return util::Error::Failure(e.Errno());
     }
   }
-  
-  Path real = cfg::Get().Sitepath() + absolute;
-  if (unlink(real.CString()) < 0) return util::Error::Failure(errno);
-  OwnerCache::Delete(real);
-  return util::Error::Success();
+
+  return DeleteFile(MakeReal(path));
 }
 
-util::Error RenameFile(ftp::Client& client, const Path& oldPath,
-                 const Path& newPath)
+util::Error RenameFile(const RealPath& oldPath, const RealPath& newPath)
 {
-  Path oldAbsolute = (client.WorkDir() / oldPath).Expand();
-  util::Error e(PP::FileAllowed<PP::Rename>(client.User(), oldAbsolute));
-  if (!e) return e;
-
-  Path newAbsolute = (client.WorkDir() / newPath).Expand();
-  e = PP::FileAllowed<PP::Upload>(client.User(), newAbsolute);
-  if (!e) return e;
-
-  Path oldReal = cfg::Get().Sitepath() + oldAbsolute;
-  Path newReal = cfg::Get().Sitepath() + newAbsolute;
-
-  Owner owner = OwnerCache::Owner(oldReal);
-  if (rename(oldReal.CString(), newReal.CString()) < 0) return util::Error::Failure(errno);
-  OwnerCache::Chown(newReal, owner);
-  OwnerCache::Delete(oldReal);
-  return util::Error::Success();
-}
-
-FileSinkPtr CreateFile(ftp::Client& client, const Path& path)
-{
-  const cfg::Config& config = cfg::Get();
-
-  Path absolute = (client.WorkDir() / path).Expand();
-  util::Error e(PP::FileAllowed<PP::Upload>(client.User(), absolute));
-  if (!e) throw util::SystemError(e.Errno());
-  
-  Path real = config.Sitepath() + absolute;
-
-  unsigned long long freeBytes;
-  e = fs::FreeDiskSpace(real.Dirname(), freeBytes);
-  if (!e) throw util::SystemError(e.Errno());
-  
-  if (config.FreeSpace() > freeBytes / 1024 / 1024)
-    throw util::SystemError(ENOSPC);
-
-  mode_t mode = config.DlIncomplete() ? 0755 : 0644;
-    
-  int fd = open(real.CString(), O_CREAT | O_WRONLY | O_EXCL, mode);
-  if (fd < 0)
+  Owner owner = OwnerCache::Owner(oldPath);
+  OwnerCache::Delete(oldPath);
+  if (rename(oldPath.CString(), newPath.CString()) < 0) 
   {
-    if (errno != EEXIST) throw util::SystemError(errno);
-
-    e = PP::FileAllowed<PP::Overwrite>(client.User(), absolute);
-    if (!e) throw util::SystemError(EEXIST);
-    
-    fd = open(real.CString(), O_WRONLY | O_TRUNC);
-    if (fd < 0) throw util::SystemError(errno);
+    OwnerCache::Chown(oldPath, owner);
+    return util::Error::Failure(errno);
   }
-
-  OwnerCache::Chown(real, Owner(client.User().UID(), client.User().PrimaryGID()));
-
-  return FileSinkPtr(new FileSink(fd, boost::iostreams::close_handle));
+  OwnerCache::Chown(newPath, owner);
+  return util::Error::Success();
 }
 
-FileSinkPtr AppendFile(ftp::Client& client, const Path& path, off_t offset)
+util::Error RenameFile(ftp::Client& client, const VirtualPath& oldPath,
+                 const VirtualPath& newPath)                 
 {
-  Path absolute = (client.WorkDir() / path).Expand();
-  util::Error e = PP::FileAllowed<PP::Resume>(client.User(), absolute);
+  util::Error e = PP::FileAllowed<PP::Rename>(client.User(), oldPath);
+  if (!e) return e;
+
+  e = PP::FileAllowed<PP::Upload>(client.User(), newPath);
+  if (!e) return e;
+  
+  return RenameFile(MakeReal(oldPath), MakeReal(newPath));
+}
+
+FileSinkPtr CreateFile(ftp::Client& client, const VirtualPath& path)
+{
+  util::Error e(PP::FileAllowed<PP::Upload>(client.User(), path));
   if (!e) throw util::SystemError(e.Errno());
-
-  Path real = cfg::Get().Sitepath() + absolute;
-
+  
   unsigned long long freeBytes;
-  e = fs::FreeDiskSpace(real.Dirname(), freeBytes);
+  e = fs::FreeDiskSpace(MakeReal(path).Dirname(), freeBytes);
   if (!e) throw util::SystemError(e.Errno());
   
   if (cfg::Get().FreeSpace() > freeBytes / 1024 / 1024)
     throw util::SystemError(ENOSPC);
 
-  int fd = open(real.CString(), O_WRONLY | O_APPEND);
-  if (fd < 0) throw util::SystemError(errno);
-  FileSinkPtr fout(new FileSink(fd, boost::iostreams::close_handle));
+  mode_t mode = cfg::Get().DlIncomplete() ? 0755 : 0644;
+    
+  int fd = open(MakeReal(path).CString(), O_CREAT | O_WRONLY | O_EXCL, mode);
+  if (fd < 0)
+  {
+    if (errno != EEXIST) throw util::SystemError(errno);
+
+    e = PP::FileAllowed<PP::Overwrite>(client.User(), path);
+    if (!e) throw util::SystemError(EEXIST);
+    
+    fd = open(MakeReal(path).CString(), O_WRONLY | O_TRUNC);
+    if (fd < 0) throw util::SystemError(errno);
+  }
+
+  OwnerCache::Chown(MakeReal(path), Owner(client.User().UID(), 
+      client.User().PrimaryGID()));
+
+  return FileSinkPtr(new FileSink(fd, boost::iostreams::close_handle));
+}
+
+FileSinkPtr AppendFile(ftp::Client& client, const VirtualPath& path, off_t offset)
+{
+  util::Error e = PP::FileAllowed<PP::Resume>(client.User(), path);
+  if (!e) throw util::SystemError(e.Errno());
+
+  unsigned long long freeBytes;
+  e = fs::FreeDiskSpace(MakeReal(path).Dirname(), freeBytes);
+  if (!e) throw util::SystemError(e.Errno());
   
+  if (cfg::Get().FreeSpace() > freeBytes / 1024 / 1024)
+    throw util::SystemError(ENOSPC);
+
+  int fd = open(MakeReal(path).CString(), O_WRONLY | O_APPEND);
+  if (fd < 0) throw util::SystemError(errno);
+ 
+ FileSinkPtr fout(new FileSink(fd, boost::iostreams::close_handle));
+
   try
   {
     std::streampos size = fout->seek(0, std::ios_base::end);
@@ -152,44 +137,35 @@ FileSinkPtr AppendFile(ftp::Client& client, const Path& path, off_t offset)
   return fout;
 }
 
-FileSourcePtr OpenFile(ftp::Client& client, const Path& path)
+FileSourcePtr OpenFile(ftp::Client& client, const VirtualPath& path)
 {
-  Path absolute = (client.WorkDir() / path).Expand();
-  util::Error e = PP::FileAllowed<PP::Download>(client.User(), absolute);
+  util::Error e = PP::FileAllowed<PP::Download>(client.User(), path);
   if (!e) throw util::SystemError(e.Errno());
 
-  Path real = cfg::Get().Sitepath() + absolute;
-  int fd = open(real.CString(), O_RDONLY);
+  int fd = open(MakeReal(path).CString(), O_RDONLY);
   if (fd < 0) throw util::SystemError(errno);
   return FileSourcePtr(new FileSource(fd, boost::iostreams::close_handle));
 }
 
-util::Error UniqueFile(ftp::Client& client, const Path& path, 
-                       size_t filenameLength, Path& uniquePath)
+util::Error UniqueFile(ftp::Client& client, const VirtualPath& path, 
+                       size_t filenameLength, VirtualPath& uniquePath)
 { 
-  Path absolute = (client.WorkDir() / path).Expand();
-  
-  util::Error e = PP::FileAllowed<PP::Upload>(client.User(), absolute / "dummyfile");
+  util::Error e = PP::FileAllowed<PP::Upload>(client.User(), path / "dummyfile");
   if (!e) throw util::SystemError(e.Errno());
-
-  Path real = cfg::Get().Sitepath() + absolute;
 
   for (int i = 0; i < 1000; ++i)
   {
-    std::string filename =
-        util::RandomString(filenameLength, util::RandomString::alphaNumeric);
-    Path realUniquePath = real / filename;
+    std::string filename = util::RandomString(filenameLength, 
+            util::RandomString::alphaNumeric);
+    
+    uniquePath = path / filename;
     try
     {
-      Status status(realUniquePath);
+      Status status(MakeReal(uniquePath));
     }
     catch (const util::SystemError& e)
     {
-      if (e.Errno() == ENOENT)
-      {
-        uniquePath = absolute / filename;
-        return util::Error::Success();
-      }
+      if (e.Errno() == ENOENT) return util::Error::Success();
       else return util::Error::Failure(e.Errno());
     }
   }
@@ -197,22 +173,21 @@ util::Error UniqueFile(ftp::Client& client, const Path& path,
   return util::Error::Failure();
 }
 
-bool IsIncomplete(ftp::Client& client, const Path& path)
+bool IsIncomplete(const RealPath& path)
 {
   static const time_t maxInactivity = 30;
   
-  Path real = cfg::Get().Sitepath() + (client.WorkDir() / path).Expand();
-  
   try
   {
-    Status status(real);
+    Status status(path);
     if (status.IsExecutable() && 
-        status.Native().st_mtime - time(NULL) < maxInactivity)
+        time(NULL) - status.Native().st_mtime < maxInactivity)
       return true;
   }
   catch (const util::SystemError&)
   {
   }
+  
   return false;
 }
 

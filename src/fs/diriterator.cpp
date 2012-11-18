@@ -9,14 +9,14 @@
 namespace fs
 {
 
-DirIterator::DirIterator(const fs::Path& path) :
-  client(nullptr), path(path), dep(nullptr)
+DirIterator::DirIterator(const Path& path) :
+  client(nullptr), path(RealPath(path)), dep(nullptr)
 {
   Opendir();
 }
 
-DirIterator::DirIterator(const ftp::Client& client, const fs::Path& path) :
-  client(&client), path(path), dep(nullptr)
+DirIterator::DirIterator(const ftp::Client& client, const VirtualPath& path) :
+  client(&client), path(MakeReal(path)), dep(nullptr)
 {
   Opendir();
 }
@@ -27,15 +27,11 @@ void DirIterator::Opendir()
   
   if (client)
   {  
-    absolute = (client->WorkDir() / path).Expand();
-    util::Error e = PP::DirAllowed<PP::View>(client->User(), absolute);
+    util::Error e = PP::DirAllowed<PP::View>(client->User(), MakeVirtual(path));
     if (!e) throw util::SystemError(e.Errno());
-    real = cfg::Get().Sitepath() + absolute;
   }
-  else
-    real = path;
 
-  dp.reset(opendir(real.CString()),closedir);
+  dp.reset(opendir(path.CString()),closedir);
   if (!dp.get()) throw util::SystemError(errno);
   
   NextEntry();
@@ -48,31 +44,35 @@ void DirIterator::NextEntry()
   {
     if (readdir_r(dp.get(), &de, &dep) < 0)
       throw util::SystemError(errno);
-    if (!dep || !client) break;
+    if (!dep) break;
 
     if (!strcmp(de.d_name, ".") ||
         !strcmp(de.d_name, ".."))
         continue;
- 
-    try
+        
+    if (client)
     {
-      Status status(real / de.d_name);
-      if (status.IsDirectory())
+      try
       {
-        if (!PP::DirAllowed<PP::View>(client->User(), 
-            absolute / de.d_name)) continue;
+        Status status(path / de.d_name);
+        if (status.IsDirectory())
+        {
+          if (!PP::DirAllowed<PP::View>(client->User(), 
+              MakeVirtual(path) / de.d_name)) continue;
+        }
+        else
+        {
+          if (!PP::FileAllowed<PP::View>(client->User(), 
+              MakeVirtual(path) / de.d_name)) continue;          
+        }
       }
-      else
-      {
-        if (!PP::FileAllowed<PP::View>(client->User(), 
-            absolute / de.d_name)) continue;          
-      }
+      catch (const util::SystemError& e)
+      {  continue; }
     }
-    catch (const util::SystemError& e)
-    {  continue; }
+    
+    current = de.d_name;
     break;
   }
-  current = de.d_name;
 }
 
 DirIterator& DirIterator::operator++()

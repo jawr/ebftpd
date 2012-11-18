@@ -3,6 +3,8 @@
 #include <sys/statvfs.h>
 #include "fs/status.hpp"
 #include "util/error.hpp"
+#include "acl/path.hpp"
+#include "ftp/client.hpp"
 
 #include <iostream>
 
@@ -10,14 +12,26 @@ namespace fs
 {
 
 Status::Status() :
+  client(nullptr),
   linkDirectory(false),
   linkRegularFile(false),
   statOkay(false)
 {
 }
 
-Status::Status(const fs::Path& path) :
-  path(path),
+Status::Status(const Path& path) :
+  client(nullptr),
+  path(RealPath(path)),
+  linkDirectory(false),
+  linkRegularFile(false),
+  statOkay(false)
+{
+  Reset();
+}
+
+Status::Status(ftp::Client& client, const VirtualPath& path) :
+  client(&client),
+  path(MakeReal(path)),
   linkDirectory(false),
   linkRegularFile(false),
   statOkay(false)
@@ -27,10 +41,23 @@ Status::Status(const fs::Path& path) :
 
 Status& Status::Reset()
 {
-  if (path.Empty()) throw std::logic_error("no path set");
+  if (path.IsEmpty()) throw std::logic_error("no path set");
   if (!statOkay)
   {
+    if (client)
+    {
+      util::Error e = acl::path::FileAllowed<acl::path::View>(client->User(), MakeVirtual(path));
+      if (!e) throw util::SystemError(e.Errno());
+    }
+    
     if (lstat(path.CString(), &native) < 0) throw util::SystemError(errno);
+    
+    if (client && IsDirectory())
+    {
+      util::Error e = acl::path::DirAllowed<acl::path::View>(client->User(), MakeVirtual(path));
+      if (!e) throw util::SystemError(e.Errno());
+    }
+    
     if (IsSymLink())
     {
       struct stat st;
@@ -43,10 +70,19 @@ Status& Status::Reset()
   return *this;
 }
 
-Status& Status::Reset(const fs::Path& path)
+Status& Status::Reset(const Path& path)
 {
   statOkay = false;
-  this->path = path;
+  this->path = RealPath(path);
+  Reset();
+  return *this;
+}
+
+Status& Status::Reset(ftp::Client& client, const VirtualPath& path)
+{
+  this->client = &client;
+  statOkay = false;
+  this->path = MakeReal(path);
   Reset();
   return *this;
 }
@@ -87,11 +123,6 @@ bool Status::IsReadable() const
          (getegid() == native.st_gid && (native.st_mode & S_IRGRP));
 }
 
-const fs::Path& Status::Path() const
-{
-  return path;
-}
-
 off_t Status::Size() const
 {
   return native.st_size;
@@ -122,7 +153,7 @@ util::Error FreeDiskSpace(const Path& real, unsigned long long& freeBytes)
 int main()
 {
   {
-    fs::Status stat;
+    Status stat;
     
     std::cout << "isfile: " << stat.Reset("/home/bioboy").IsRegularFile() << std::endl;
     
@@ -136,9 +167,9 @@ int main()
   
   try
   {
-    fs::Status stat("/home/notexist");
+    Status stat("/home/notexist");
   }
-  catch (fs::util::SystemError& e)
+  catch (util::SystemError& e)
   {
     if (e.ValidErrno()) std::cout << "errno: " << e.Errno() << " ";
     std::cout << e.what() << std::endl;
@@ -146,7 +177,7 @@ int main()
   
   try
   {
-    fs::Status stat;
+    Status stat;
     // path hasn't been passed to constructor or
     // assigned using Reset()
     stat.Size();

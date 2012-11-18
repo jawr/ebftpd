@@ -9,7 +9,6 @@
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "logs/logs.hpp"
-#include <iostream>
 
 namespace fs
 {
@@ -28,9 +27,9 @@ DirEnumerator::DirEnumerator(const fs::Path& path) :
   Readdir();
 }
 
-DirEnumerator::DirEnumerator(ftp::Client& client, const fs::Path& path) :
+DirEnumerator::DirEnumerator(ftp::Client& client, const fs::VirtualPath& path) :
   client(&client),
-  path(path),
+  path(MakeReal(path)),
   totalBytes(0)
 {
   Readdir();
@@ -38,33 +37,30 @@ DirEnumerator::DirEnumerator(ftp::Client& client, const fs::Path& path) :
 
 void DirEnumerator::Readdir(const fs::Path& path)
 {
-  this->path = path;
+  this->path = RealPath(path);
   Readdir();
 }
 
-void DirEnumerator::Readdir(ftp::Client& client, const fs::Path& path)
+void DirEnumerator::Readdir(ftp::Client& client, const fs::VirtualPath& path)
 {
   this->client  = &client;
-  this->path = path;
+  this->path = MakeReal(path);
   Readdir();
 }
 
 void DirEnumerator::Readdir()
 {
   namespace PP = acl::path;
-  
-  Path real(path);
-  if (client)
-  {  
-    Path absolute = (client->WorkDir() / path).Expand();
-    if (!PP::DirAllowed<PP::View>(client->User(), absolute)) return;
-    real = cfg::Get().Sitepath() + absolute;
+
+  if (client && !PP::DirAllowed<PP::View>(client->User(), 
+      MakeVirtual(path))) 
+  {
+    return;
   }
 
-  std::shared_ptr<DIR> dp(opendir(real.CString()), closedir);
+  std::shared_ptr<DIR> dp(opendir(path.CString()), closedir);
   if (!dp.get()) throw util::SystemError(errno);
   
-  size_t siteRootLen = cfg::Get().Sitepath().ToString().length();
   struct dirent de;
   struct dirent* dep;
   while (true)
@@ -73,39 +69,38 @@ void DirEnumerator::Readdir()
     if (!dep) break;
 
      if (!strcmp(de.d_name, ".") || !strcmp(de.d_name, "..")) continue;
-    
-    fs::Path fullPath(real);
-    fullPath /= de.d_name;
-        
+
+    fs::RealPath entryPath(path / de.d_name);
+
     try
     {
-      fs::Status status(fullPath);
+      fs::Status status(entryPath);
       totalBytes += status.Size();
       
       if (client)
       {
-        fs::Path absolute = fullPath.ToString().substr(siteRootLen);
+        fs::VirtualPath virtPath(MakeVirtual(entryPath));
         util::Error hideOwner;
         if (status.IsDirectory())
         {
-          if (!PP::DirAllowed<PP::View>(client->User(), absolute)) continue;
-          hideOwner = PP::DirAllowed<PP::Hideowner>(client->User(), absolute);
+          if (!PP::DirAllowed<PP::View>(client->User(), virtPath)) continue;
+          hideOwner = PP::DirAllowed<PP::Hideowner>(client->User(), virtPath);
         }
         else
         {
-          if (!PP::FileAllowed<PP::View>(client->User(), absolute)) continue;
-          hideOwner = PP::FileAllowed<PP::Hideowner>(client->User(), absolute);
+          if (!PP::FileAllowed<PP::View>(client->User(), virtPath)) continue;
+          hideOwner = PP::FileAllowed<PP::Hideowner>(client->User(), virtPath);
         }
+        
         if (hideOwner)
           entries.emplace_back(fs::Path(de.d_name), status, fs::Owner(0,0));
         else
           entries.emplace_back(fs::Path(de.d_name), status, 
-                               OwnerCache::Owner(fullPath));
+                               OwnerCache::Owner(entryPath));
       }
       else
       {
-        fs::Owner owner(OwnerCache::Owner(fullPath));
-        entries.emplace_back(fs::Path(de.d_name), status, owner);
+        entries.emplace_back(fs::Path(de.d_name), status, OwnerCache::Owner(entryPath));
       }
     }
     catch (const util::SystemError&)

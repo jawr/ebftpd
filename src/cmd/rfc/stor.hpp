@@ -3,12 +3,17 @@
 
 #include "cmd/command.hpp"
 
+namespace fs
+{
+class VirtualPath;
+}
+
 namespace cmd { namespace rfc
 {
 
 class STORCommand : public Command
 {
-  bool CalcCRC(const fs::Path& path);
+  bool CalcCRC(const fs::VirtualPath& path);
 
   
 public:

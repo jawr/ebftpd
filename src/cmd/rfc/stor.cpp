@@ -25,13 +25,11 @@ namespace
 const fs::Mode completeMode(fs::Mode("0666"));
 }
 
-bool STORCommand::CalcCRC(const fs::Path& path)
+bool STORCommand::CalcCRC(const fs::VirtualPath& path)
 {
-  std::string absolute((client.WorkDir() / path).Expand().ToString());
-  
   for (auto& mask : cfg::Get().CalcCrc())
   {
-    if (util::string::WildcardMatch(mask, absolute)) return true;
+    if (util::string::WildcardMatch(mask, path.ToString())) return true;
   }
   
   return false;
@@ -43,9 +41,11 @@ void STORCommand::Execute()
 
   using util::scope_guard;
   using util::make_guard;
+
+  fs::VirtualPath path(fs::PathFromUser(argStr));
   
-  std::string messagePath;
-  util::Error e(acl::path::Filter(client.User(), fs::Path(argStr).Basename(), messagePath));
+  fs::Path messagePath;
+  util::Error e(acl::path::Filter(client.User(), path.Basename(), messagePath));
   if (!e)
   {
     // should display above messagepath, we'll just reply for now
@@ -72,7 +72,7 @@ void STORCommand::Execute()
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopUpload(client.User().UID()); });  
 
   if (data.DataType() == ftp::DataType::ASCII &&
-     !cfg::Get().AsciiUploads().Allowed(argStr))
+     !cfg::Get().AsciiUploads().Allowed(path.ToString()))
   {
     control.Reply(ftp::ActionNotOkay, "File can't be uploaded in ASCII, change to BINARY.");
     return;
@@ -82,9 +82,9 @@ void STORCommand::Execute()
   try
   {
     if (data.RestartOffset() > 0)
-      fout = fs::AppendFile(client, argStr, data.RestartOffset());
+      fout = fs::AppendFile(client, path, data.RestartOffset());
     else
-      fout = fs::CreateFile(client, argStr);
+      fout = fs::CreateFile(client, path);
   }
   catch (const util::SystemError& e)
   {
@@ -98,7 +98,7 @@ void STORCommand::Execute()
   std::stringstream os;
   os << "Opening " << (data.DataType() == ftp::DataType::ASCII ? "ASCII" : "BINARY") 
      << " connection for upload of " 
-     << fs::Path(argStr).Basename().ToString();
+     << fs::MakePretty(path).ToString();
   if (data.Protection()) os << " using TLS/SSL";
   os << ".";
   control.Reply(ftp::TransferStatusOkay, os.str());
@@ -109,13 +109,13 @@ void STORCommand::Execute()
   }
   catch (const util::net::NetworkError&e )
   {
-    if (!data.RestartOffset()) fs::ForceDeleteFile(client, argStr);
+    if (!data.RestartOffset()) fs::DeleteFile(fs::MakeReal(path));
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
     return;
   }
   
-  bool calcCrc = CalcCRC(argStr);
+  bool calcCrc = CalcCRC(path);
   boost::crc_32_type crc;
   
   try
@@ -149,7 +149,7 @@ void STORCommand::Execute()
   {
     fout->close();
     data.Close();
-    fs::ForceDeleteFile(client, argStr);
+    fs::DeleteFile(fs::MakeReal(path));
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from data connection: " +
                  e.Message());
@@ -159,7 +159,7 @@ void STORCommand::Execute()
   {
     fout->close();
     data.Close();
-    fs::ForceDeleteFile(client, argStr);
+    fs::DeleteFile(fs::MakeReal(path));
     control.Reply(ftp::DataCloseAborted,
                   "Error while writing to disk: " + std::string(e.what()));
   }
@@ -170,7 +170,7 @@ void STORCommand::Execute()
   logs::debug << "CRC Calculated: " << std::hex 
              << std::uppercase << crc.checksum() << logs::endl;
   
-  e = fs::Chmod(client, argStr, completeMode);
+  e = fs::Chmod(client, path, completeMode);
   if (!e) control.PartReply(ftp::DataClosedOkay, 
       "Failed to chmod upload: " + e.Message());
 

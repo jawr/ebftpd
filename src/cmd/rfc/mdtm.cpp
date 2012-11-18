@@ -9,26 +9,29 @@ void MDTMCommand::Execute()
 {
   namespace PP = acl::path;
 
-  fs::Path absolute = client.WorkDir() / argStr;
+  fs::VirtualPath path(fs::PathFromUser(argStr));
   
-  util::Error e(PP::FileAllowed<PP::View>(client.User(), absolute));
+  util::Error e(PP::FileAllowed<PP::View>(client.User(), path));
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
     return;
   }
   
-  const std::string& Sitepath = cfg::Get().Sitepath();
-  fs::Path real = fs::Path(Sitepath) + absolute;
-  
   fs::Status status;
   try
   {
-    status.Reset(real);
+    status.Reset(fs::MakeReal(path));
   }
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
+    return;
+  }
+
+  if (!status.IsRegularFile())
+  {
+    control.Reply(ftp::ActionNotOkay, argStr + ": Not a plain file.");
     return;
   }
   
@@ -36,7 +39,6 @@ void MDTMCommand::Execute()
   strftime(timestamp, sizeof(timestamp), "%Y%m%d%H%M%S",
            localtime(&status.Native().st_mtime));
   control.Reply(ftp::FileStatus, timestamp);
-  return;
 }
 
 } /* rfc namespace */

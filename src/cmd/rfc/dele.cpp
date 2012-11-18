@@ -12,37 +12,34 @@
 namespace cmd { namespace rfc
 {
 
-bool DELECommand::LosesCredits() const
-{
-  fs::Path absolute = (client.WorkDir() / argStr).Expand();
-  fs::Path real = cfg::Get().Sitepath() + absolute;
-  return !acl::path::FileAllowed<acl::path::Nostats>(client.User(), absolute) && 
-          fs::OwnerCache::Owner(real).UID() == client.User().UID();
-}
-
 void DELECommand::Execute()
 {
-  bool losesCredits = LosesCredits(); // must check before deleting file
+  fs::VirtualPath path(fs::PathFromUser(argStr));
+
+  bool loseCredits = 
+    !acl::path::FileAllowed<acl::path::Nostats>(client.User(), path) && 
+    fs::OwnerCache::Owner(fs::MakeReal(path)).UID() == client.User().UID();
   
   off_t size;
-  util::Error e = fs::DeleteFile(client,  argStr, &size);
-  if (!e) control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-  else 
+  util::Error e = fs::DeleteFile(client,  path, &size);
+  if (!e)
   {
-    if (losesCredits)
-    {
-      long long creditLoss = (size * client.UserProfile().Ratio()) / 1024;
-      acl::UserCache::DecrCredits(client.User().Name(), creditLoss);
-      db::stats::UploadDecr(client.User(), size / 1024);
-      std::ostringstream os;
-      os << "DELE command successful. (" << std::fixed << std::setprecision(2) 
-         << creditLoss / 1024.0 << "MB credits lost)";
-      control.Reply(ftp::FileActionOkay, os.str()); 
-    }
-    else
-      control.Reply(ftp::FileActionOkay, "DELE command successful."); 
+    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
+    return;
   }
-  return;
+
+  if (loseCredits)
+  {
+    long long creditLoss = (size * client.UserProfile().Ratio()) / 1024;
+    acl::UserCache::DecrCredits(client.User().Name(), creditLoss);
+    db::stats::UploadDecr(client.User(), size / 1024);
+    std::ostringstream os;
+    os << "DELE command successful. (" << std::fixed << std::setprecision(2) 
+       << creditLoss / 1024.0 << "MB credits lost)";
+    control.Reply(ftp::FileActionOkay, os.str()); 
+  }
+  else
+    control.Reply(ftp::FileActionOkay, "DELE command successful."); 
 }
 
 } /* rfc namespace */

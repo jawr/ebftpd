@@ -18,7 +18,7 @@ enum Type
 };
 
 template <Type type>
-std::string Choose(const User& user);
+fs::Path Choose(const User& user);
 
 }
               

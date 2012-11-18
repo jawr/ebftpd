@@ -47,14 +47,14 @@ public:
 // generics
 class Right : public Setting
 {
-  std::string path;
+  fs::Path path;
   // includes wildcards and possibley regex so can't be fs::Path path;
   acl::ACL acl;
 public:
   Right() {}
   Right(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
-  const std::string& Path() const { return path; }
+  const fs::Path& Path() const { return path; }
 };
 
 class ACLInt : public Setting

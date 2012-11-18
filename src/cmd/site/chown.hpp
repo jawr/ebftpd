@@ -9,7 +9,7 @@ namespace cmd { namespace site
 
 class CHOWNCommand : public Command
 {
-  std::string pathmask;
+  std::string patharg;
   std::string user;
   std::string group;
   fs::Owner owner;
@@ -18,8 +18,8 @@ class CHOWNCommand : public Command
   int files;
   int failed;
   
-  void Process(const fs::Path& absmask);
-  bool ParseArgs();
+  void Process(fs::VirtualPath pathmask);
+  void ParseArgs();
   
 public:
   CHOWNCommand(ftp::Client& client, const std::string& argStr, const Args& args) :

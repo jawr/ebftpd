@@ -6,7 +6,8 @@ namespace cmd { namespace rfc
 
 void RMDCommand::Execute()
 {
-  util::Error e = fs::RemoveDirectory(client,  argStr);
+  fs::VirtualPath path(fs::Resolve(fs::VirtualPath(argStr)));
+  util::Error e = fs::RemoveDirectory(client,  path);
   if (!e) control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
   else control.Reply(ftp::FileActionOkay, "RMD command successful."); 
 }

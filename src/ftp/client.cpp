@@ -36,7 +36,6 @@ std::atomic_bool Client::siteopOnly(false);
 
 Client::Client() :
   data(*this), 
-  workDir("/"), 
   user("root", 69, "password", "1"),
   state(ClientState::LoggedOut),
   passwordAttemps(0),
@@ -123,11 +122,6 @@ bool Client::PasswordAttemptsExceeded() const
   return passwordAttemps >= maxPasswordAttemps;
 }
 
-void Client::SetWorkDir(const fs::Path& workDir)
-{
-  this->workDir = workDir;
-}
-
 bool Client::Accept(util::net::TCPListener& server)
 {
   try
@@ -146,10 +140,10 @@ bool Client::Accept(util::net::TCPListener& server)
 void Client::DisplayBanner()
 {
   const cfg::Config& config = cfg::Get();
-  if (!config.Banner().Empty())
+  if (!config.Banner().IsEmpty())
   {
     std::string banner;
-    if (util::ReadFileToString(config.Banner(), banner))
+    if (util::ReadFileToString(config.Banner().ToString(), banner))
     {
       control.Reply(ftp::ServiceReady, banner);
       return;
@@ -217,7 +211,8 @@ void Client::Handle()
 
   while (State() != ClientState::Finished)
   {
-    if (profile.IdleTime() == 0) ExecuteCommand(control.NextCommand());
+    if (State() != ClientState::LoggedIn || profile.IdleTime() == 0) 
+      ExecuteCommand(control.NextCommand());
     else
     {
       pt::time_duration timeout = idleExpires - pt::second_clock::local_time();

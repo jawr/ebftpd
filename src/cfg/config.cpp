@@ -382,7 +382,7 @@ void Config::Parse(std::string line) {
   else if (opt == "nodupecheck")
   {
     ParameterCheck(opt, toks, 1);
-    nodupecheck = fs::Path(toks.at(0));
+    nodupecheck = toks.at(0);
   }
   else if (opt == "alias")
   {

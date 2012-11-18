@@ -50,7 +50,7 @@ void PASSCommand::Execute()
     return;
   }
   
-  fs::Path rootPath("/");
+  fs::VirtualPath rootPath("/");
   util::Error e = fs::ChangeDirectory(client, rootPath);
   if (!e) 
   {

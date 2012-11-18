@@ -13,8 +13,7 @@ Factory Factory::instance;
 
 util::Error Factory::Initalize()
 {
-  fs::Path datapath = cfg::Get().Datapath() + fs::Path("text");
-  
+  fs::Path datapath = cfg::Get().Datapath() / "text";
   
   try
   {
@@ -26,15 +25,11 @@ util::Error Factory::Initalize()
 
     for (; it != end; ++it)
     {
-      if ((*it)[0] == '.') continue;
-      fs::Path file(datapath + *it);
+      fs::Path file(datapath / *it);
 
       logs::debug << file.ToString() << logs::endl;
 
-      std::vector<std::string> args;
-      boost::split(args, *it, boost::is_any_of("."));
-      std::string& name = args[0]; 
-      boost::trim(name);
+      std::string name = it->NoExtension(); 
       boost::to_lower(name);
 
       try
@@ -46,7 +41,7 @@ util::Error Factory::Initalize()
       }
       catch (const text::TemplateError& e)
       {
-        logs::error << "Template Initalize error (" + *it + "): " + e.Message() << logs::endl;
+        logs::error << "Template Initalize error (" << *it << "): " << e.Message() << logs::endl;
         ++errors;
       }
     }

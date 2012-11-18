@@ -15,7 +15,7 @@ namespace acl
 namespace Message
 {
 
-std::string Evaluate(const std::vector<cfg::setting::Right>& rights, 
+fs::Path Evaluate(const std::vector<cfg::setting::Right>& rights, 
                      const User& user)
 {
   for (const auto& right : rights)
@@ -31,7 +31,7 @@ struct Traits;
 template <>
 struct Traits<Welcome>
 {
-  static std::string Choose(const User& user)
+  static fs::Path Choose(const User& user)
   {
     return Evaluate(cfg::Get().WelcomeMsg(), user);
   }
@@ -40,7 +40,7 @@ struct Traits<Welcome>
 template <>
 struct Traits<Goodbye>
 {
-  static std::string Choose(const User& user)
+  static fs::Path Choose(const User& user)
   {
     return Evaluate(cfg::Get().GoodbyeMsg(), user);
   }
@@ -49,14 +49,14 @@ struct Traits<Goodbye>
 template <>
 struct Traits<Newsfile>
 {
-  static std::string Choose(const User& user)
+  static fs::Path Choose(const User& user)
   {
     return Evaluate(cfg::Get().Newsfile(), user);
   }
 };
 
 template <Type type>
-std::string Chooose(const User& user)
+fs::Path Chooose(const User& user)
 {
   return Traits<type>::Choose(user);
 }
@@ -72,7 +72,7 @@ int main()
 {
   using namespace acl;
   User user("test", "test", "1");
-  std::string path("/hello/there");
+  fs::Path path("/hello/there");
 
   std::cout << (path + "/") << std::endl;
   

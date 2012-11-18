@@ -2,16 +2,18 @@
 #include <cerrno>
 #include <cassert>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/thread/tss.hpp>
 #include "fs/directory.hpp"
 #include "fs/status.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
 #include "fs/owner.hpp"
 #include "fs/direnumerator.hpp"
-#include "logs/logs.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
 #include "fs/dircontainer.hpp"
+#include "fs/path.hpp"
+#include "logs/logs.hpp"
 
 namespace PP = acl::path;
 
@@ -19,56 +21,29 @@ namespace fs
 {
 namespace 
 {
-
-util::Error RemoveDirectory(const Path& path)
-{
-  Path real = cfg::Get().Sitepath() + path;
-  
-  DirEnumerator dirEnum;
-  
-  try
-  {
-    dirEnum.Readdir(real);
-  }
-  catch (const util::SystemError& e)
-  {
-    return util::Error::Failure(e.Errno());
-  }
-  
-  for (const DirEntry& de : dirEnum)
-  {
-    if (de.Path().ToString()[0] != '.' ||
-        de.Status().IsDirectory() ||
-        !de.Status().IsWriteable())
-      return util::Error::Failure(ENOTEMPTY);
-  }
-  
-  for (const DirEntry& de : dirEnum)
-  {
-    fs::Path fullPath = real / de.Path();
-    if (unlink(fullPath.CString()) < 0)
-      return util::Error::Failure(errno);
-    OwnerCache::Delete(fullPath);
-  }
-    
-  if (rmdir(real.CString()) < 0) return util::Error::Failure(errno);
-  OwnerCache::Delete(real);
-  return util::Error::Success();
+boost::thread_specific_ptr<VirtualPath> workDir;
 }
 
+const VirtualPath& WorkDirectory()
+{
+  VirtualPath* wd = workDir.get();
+  assert(wd && "Work directory must be set before constructing AbsoltuePath and RealPath objectss");
+  return *wd;
 }
 
-util::Error ChangeDirectory(ftp::Client& client, const Path& path)
+void SetWorkDirectory(const VirtualPath& path)
 {
-  Path absolute = (client.WorkDir() / path).Expand();
+  workDir.reset(new VirtualPath(path));
+}
 
-  util::Error e(PP::DirAllowed<PP::View>(client.User(), absolute));
+util::Error ChangeDirectory(ftp::Client& client, const VirtualPath& path)
+{
+  util::Error e(PP::DirAllowed<PP::View>(client.User(), path));
   if (!e) return e;
 
-  Path real = cfg::Get().Sitepath() + absolute;
   try
   {
-    Status stat(real);
+    Status stat(MakeReal(path));
     if (!stat.IsDirectory()) return util::Error::Failure(ENOTDIR);
     if (!stat.IsExecutable()) return util::Error::Failure(EACCES);
   }
@@ -77,43 +52,41 @@ util::Error ChangeDirectory(ftp::Client& client, const Path& path)
     return util::Error::Failure(errno);
   }
   
-  client.SetWorkDir(absolute);
+  SetWorkDirectory(path);
   return util::Error::Success();
 }
 
-util::Error ChangeAlias(ftp::Client& client, fs::Path& path)
+util::Error ChangeAlias(ftp::Client& client, const Path& path, VirtualPath& match)
 {
+  if (path.Basename() != path) return util::Error::Failure(ENOENT);
+  
   std::string name = boost::to_lower_copy(path.ToString());
   for (auto& alias : cfg::Get().Alias())
   {
     if (alias.Name() == name)
     {
-      path = alias.Path();
-      return ChangeDirectory(client, alias.Path());
+      match = VirtualPath(alias.Path());
+      return ChangeDirectory(client, match);
     }
   }
   
   return util::Error::Failure(ENOENT);
 }
 
-util::Error ChangeMatch(ftp::Client& client, Path& path)
+util::Error ChangeMatch(ftp::Client& client, const VirtualPath& path, VirtualPath& match)
 {
-  Path orig(path);
-  Path absolute = (client.WorkDir() / path).Expand();
-  std::string lcBasename(boost::to_lower_copy(absolute.Basename().ToString()));
+  std::string lcBasename(boost::to_lower_copy(path.Basename().ToString()));
 
-  util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), absolute));
+  util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), path));
   if (!e) return e;
-    
-  Path real = cfg::Get().Sitepath() + absolute;
 
   try
   {
-    for (auto& entry : fs::DirContainer(real.Dirname()))
+    for (auto& entry : DirContainer(client, path.Dirname()))
     {
-      if (!boost::starts_with(boost::to_lower_copy(entry), lcBasename)) continue;
-      path = absolute.Dirname() / entry;
-      e = ChangeDirectory(client, path);
+      if (!boost::starts_with(boost::to_lower_copy(entry.ToString()), lcBasename)) continue;
+      match = path.Dirname() / entry;
+      e = ChangeDirectory(client, match);
       if (e || (e.Errno() != ENOENT && e.Errno() != ENOTDIR))
         return e;
     }
@@ -123,42 +96,104 @@ util::Error ChangeMatch(ftp::Client& client, Path& path)
     return util::Error::Failure(e.Errno());
   }
   
-  if (orig == orig.Basename())
-  {
-    for (auto& cdpath : cfg::Get().Cdpath())
-    {
-      path = cdpath / orig;
-      e = ChangeMatch(client, path);
-      if (e || e.Errno() != ENOENT) return e;
-    }
-  }
-
   return util::Error::Failure(ENOENT);
 }
 
-util::Error CreateDirectory(ftp::Client& client, const Path& path)
+util::Error ChangeCdpath(ftp::Client& client, const fs::Path& path, VirtualPath& match)
 {
-  Path absolute = (client.WorkDir() / path).Expand();
-
-  util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), absolute));
-  if (!e) return e;
+  if (path.Basename() != path)  return util::Error::Failure(ENOENT);
     
-  Path real = cfg::Get().Sitepath() + absolute;
-  if (mkdir(real.CString(), 0777) < 0) return util::Error::Failure(errno);
+  for (auto& cdpath : cfg::Get().Cdpath())
+  {
+    util::Error e(ChangeMatch(client, MakeVirtual(cdpath / path), match));
+    if (e || e.Errno() != ENOENT) return e;
+  }
   
-  OwnerCache::Chown(real, Owner(client.User().UID(), client.User().PrimaryGID()));
-  
+  return util::Error::Failure(ENOENT);
+}
+
+util::Error CreateDirectory(const RealPath& path)
+{
+  if (mkdir(MakeReal(path).CString(), 0777) < 0) return util::Error::Failure(errno);
   return util::Error::Success();
 }
 
-util::Error RemoveDirectory(ftp::Client& client, const Path& path)
+util::Error CreateDirectory(ftp::Client& client, const VirtualPath& path)
 {
-  Path absolute = (client.WorkDir() / path).Expand();
-  
-  util::Error e(PP::DirAllowed<PP::Delete>(client.User(), absolute));
+  util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), path));
+  if (!e) return e;
+
+  e = CreateDirectory(MakeReal(path));  
+  if (e) OwnerCache::Chown(MakeReal(path), Owner(client.User().UID(), 
+        client.User().PrimaryGID()));
+  return e;
+}
+
+util::Error RemoveDirectory(const RealPath& path)
+{
+  if (rmdir(MakeReal(path).CString()) < 0) return util::Error::Failure(errno);
+  OwnerCache::Delete(MakeReal(path));
+  return util::Error::Success();
+}
+
+util::Error RemoveDirectory(ftp::Client& client, const VirtualPath& path)
+{
+  util::Error e(PP::DirAllowed<PP::Delete>(client.User(), path));
   if (!e) return e;
   
-  return RemoveDirectory(absolute);
+  try
+  {
+    DirContainer dirCont(MakeReal(path));
+    for (auto& name : dirCont)
+    {
+      logs::debug << name << logs::endl;
+      if (name.ToString()[0] !=  '.') return
+        util::Error::Failure(ENOTEMPTY);
+        
+      Status status(MakeReal(path) / name);
+      if (status.IsDirectory() ||
+          !status.IsWriteable())
+        return util::Error::Failure(ENOTEMPTY);
+    }
+    
+    dirCont.Rewind();
+    
+    for (auto& name : dirCont)
+    {
+      RealPath entryPath(MakeReal(path) / name);
+      if (unlink(entryPath.CString()) < 0)
+        return util::Error::Failure(errno);
+      OwnerCache::Delete(entryPath);      
+    }
+  }
+  catch (const util::SystemError& e)
+  {
+    return util::Error::Failure(e.Errno());
+  }
+    
+  return RemoveDirectory(MakeReal(path));
+}
+
+util::Error RenameDirectory(const RealPath& oldPath, const RealPath& newPath)
+{
+  OwnerCache::Flush(oldPath);
+
+  if (rename(oldPath.CString(), newPath.CString()) < 0) 
+    return util::Error::Failure(errno);
+    
+  return util::Error::Success();
+}
+
+util::Error RenameDirectory(ftp::Client& client, const VirtualPath& oldPath,
+                 const VirtualPath& newPath)                 
+{
+  util::Error e = PP::DirAllowed<PP::Rename>(client.User(), oldPath);
+  if (!e) return e;
+
+  e = PP::DirAllowed<PP::Makedir>(client.User(), newPath);
+  if (!e) return e;
+  
+  return RenameDirectory(MakeReal(oldPath), MakeReal(newPath));
 }
 
 } /* fs namespace */

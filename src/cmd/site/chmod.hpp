@@ -11,15 +11,15 @@ namespace cmd { namespace site
 class CHMODCommand : public Command
 {
   boost::optional<fs::Mode> mode;
-  std::string pathmask;
+  std::string patharg;
   std::string modeStr;
   bool recursive;
   int dirs;
   int files;
   int failed;
   
-  void Process(const fs::Path& absmask);
-  bool ParseArgs();
+  void Process(fs::VirtualPath pathmask);
+  void ParseArgs();
   
 public:
   CHMODCommand(ftp::Client& client, const std::string& argStr, const Args& args) :

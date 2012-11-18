@@ -37,11 +37,13 @@ void RETRCommand::Execute()
   }
   
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopDownload(client.User().UID()); });  
+  
+  fs::VirtualPath path(fs::PathFromUser(argStr));
 
   fs::FileSourcePtr fin;
   try
   {
-    fin = fs::OpenFile(client, argStr);
+    fin = fs::OpenFile(client, path);
   }
   catch (const util::SystemError& e)
   {
@@ -70,7 +72,7 @@ void RETRCommand::Execute()
   }
   
   if (data.DataType() == ftp::DataType::ASCII &&
-      !cfg::Get().AsciiDownloads().Allowed(size, argStr))
+      !cfg::Get().AsciiDownloads().Allowed(size, path.Basename().ToString()))
   {
     control.Reply(ftp::ActionNotOkay, "File can't be downloaded in ASCII, change to BINARY.");
     return;
@@ -79,7 +81,7 @@ void RETRCommand::Execute()
   std::stringstream os;
   os << "Opening " << (data.DataType() == ftp::DataType::ASCII ? "ASCII" : "BINARY") 
      << " connection for download of " 
-     << fs::Path(argStr).Basename().ToString()
+     << fs::MakePretty(path).ToString()
      << " (" << size << " bytes)";
   if (data.Protection()) os << " using TLS/SSL";
   os << ".";
@@ -108,7 +110,7 @@ void RETRCommand::Execute()
       std::streamsize len = fin->read(buffer, sizeof(buffer));
       if (len < 0) 
       {
-        if (!dlIncomplete || !fs::IsIncomplete(client, argStr)) break;
+        if (!dlIncomplete || !fs::IsIncomplete(MakeReal(path))) break;
         boost::this_thread::sleep(boost::posix_time::microseconds(10000));
         continue;
       }

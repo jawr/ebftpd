@@ -22,13 +22,11 @@ class DirIterator :
   public std::iterator<std::forward_iterator_tag, std::string>
 {
   const ftp::Client* client;
-  fs::Path path;
-  fs::Path absolute;
-  fs::Path real;
+  RealPath path;
   struct dirent de;
   struct dirent *dep;
   std::shared_ptr<DIR> dp;
-  std::string current;
+  Path current;
   
   void Opendir();
   void NextEntry();
@@ -36,8 +34,8 @@ class DirIterator :
   
 public:
   explicit DirIterator() : client(nullptr), dep(nullptr) { }
-  explicit DirIterator(const fs::Path& path);
-  explicit DirIterator(const ftp::Client& client, const fs::Path& path);
+  explicit DirIterator(const Path& path);
+  explicit DirIterator(const ftp::Client& client, const VirtualPath& path);
   
   bool operator==(const DirIterator& rhs)
   { return dep == rhs.dep; }
@@ -46,8 +44,8 @@ public:
   { return !operator==(rhs); }
   
   DirIterator& operator++();
-  const std::string& operator*() const { return current; }
-  const std::string* operator->() const { return &current; }
+  const Path& operator*() const { return current; }
+  const Path* operator->() const { return &current; }
   
   friend class DirContainer;
 };

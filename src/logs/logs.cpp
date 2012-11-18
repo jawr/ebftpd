@@ -1,5 +1,6 @@
 #define __LOGGER_LOGGER_CPP
 #include "logs/logs.hpp"
+#include "fs/path.hpp"
 
 namespace logs
 {
@@ -11,14 +12,14 @@ util::logger::Logger error;
 util::logger::Logger debug;
 util::logger::Logger db;
 
-void Initialise(const std::string& dataPath)
+void Initialise(const fs::Path& dataPath)
 {
-  events.SetPath(dataPath + "/ftpd.log", true);
-  security.SetPath(dataPath + "/access.log", true);
-  sysop.SetPath(dataPath + "/siteop.log", true);
-  error.SetPath(dataPath + "/error.log", true);
-  debug.SetPath(dataPath + "/debug.log", true);
-  db.SetPath(dataPath + "/db.log", true);
+  events.SetPath((dataPath & "/ftpd.log").ToString(), true);
+  security.SetPath((dataPath & "/access.log").ToString(), true);
+  sysop.SetPath((dataPath & "/siteop.log").ToString(), true);
+  error.SetPath((dataPath & "/error.log").ToString(), true);
+  debug.SetPath((dataPath & "/debug.log").ToString(), true);
+  db.SetPath((dataPath & "/db.log").ToString(), true);
 }
 
 void NoStdout()

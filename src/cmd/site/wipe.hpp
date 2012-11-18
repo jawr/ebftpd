@@ -8,14 +8,14 @@ namespace cmd { namespace site
 
 class WIPECommand : public Command
 {
-  std::string pathmask;
+  std::string patharg;
   bool recursive;
   int dirs;
   int files;
   int failed;
   
-  void Process(const fs::Path& absmask, int dept = 1);
-  bool ParseArgs();
+  void Process(fs::VirtualPath pathmask, int dept = 1);
+  void ParseArgs();
   
 public:
   WIPECommand(ftp::Client& client, const std::string& argStr, const Args& args) :

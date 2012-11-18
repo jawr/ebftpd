@@ -6,7 +6,6 @@
 #include "cmd/site/chown.hpp"
 #include "fs/dircontainer.hpp"
 #include "util/string.hpp"
-#include "cfg/get.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include "cmd/error.hpp"
@@ -14,29 +13,27 @@
 namespace cmd { namespace site
 {
 
-void CHOWNCommand::Process(const fs::Path& pathmask)
+void CHOWNCommand::Process(fs::VirtualPath pathmask)
 {
   using util::string::WildcardMatch;
-  const cfg::Config& config = cfg::Get();
+
   try
   {
-    fs::DirContainer dir(client, pathmask.Dirname());
-    for (auto& entry : dir)
+    for (auto& entry : fs::DirContainer(client, pathmask.Dirname()))
     {
-      if (!WildcardMatch(pathmask.Basename(), entry))
+      if (!WildcardMatch(pathmask.Basename().ToString(), entry.ToString()))
         continue;
 
-      fs::Path fullPath = (pathmask.Dirname() / entry).Expand();
-      fs::Path real = config.Sitepath() + fullPath;
+      fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try
       {
-        fs::Status status(real);
-        fs::OwnerCache::Chown(real, owner);
+        fs::Status status(fs::MakeReal(entryPath));
+        fs::OwnerCache::Chown(fs::MakeReal(entryPath), owner);
         if (status.IsDirectory())
         {
           ++dirs;
           if (recursive && !status.IsSymLink()) 
-            Process((fullPath / "*").Expand());
+            Process(entryPath / "*");
         }
         else ++files;
       }
@@ -44,7 +41,7 @@ void CHOWNCommand::Process(const fs::Path& pathmask)
       {
         ++failed;
         control.PartReply(ftp::CommandOkay, "CHOWN " + 
-            fullPath.ToString() + ": " + e.Message());        
+            entryPath.ToString() + ": " + e.Message());        
       }
     }
   }
@@ -56,7 +53,7 @@ void CHOWNCommand::Process(const fs::Path& pathmask)
   }
 }
 
-bool CHOWNCommand::ParseArgs()
+void CHOWNCommand::ParseArgs()
 {
   int n = 1;
   if (boost::to_lower_copy(args[1]) == "-r") 
@@ -67,22 +64,21 @@ bool CHOWNCommand::ParseArgs()
   
   std::vector<std::string> owners;
   boost::split(owners, args[n], boost::is_any_of(":"));
-  if (owners.empty() || owners.size() > 2) return false;
+  if (owners.empty() || owners.size() > 2) throw cmd::SyntaxError();
   user = owners[0];
   if (owners.size() == 2) group = owners[1];
   
   std::string::size_type pos =
       util::string::FindNthNonConsecutiveChar(argStr, ' ', n);
-  if (pos == std::string::npos) return false;
+  if (pos == std::string::npos) throw cmd::SyntaxError();
   
-  pathmask = argStr.substr(pos);
-  boost::trim(pathmask);
-  return true;
+  patharg = argStr.substr(pos);
+  boost::trim(patharg);
 }
 
 void CHOWNCommand::Execute()
 {
-  if (!ParseArgs()) throw cmd::SyntaxError();
+  ParseArgs();
 
   if (recursive && !client.ConfirmCommand(argStr))
   {
@@ -116,7 +112,7 @@ void CHOWNCommand::Execute()
   
   owner = fs::Owner(uid, gid);
 
-  Process((client.WorkDir() / pathmask).Expand());
+  Process(fs::PathFromUser(patharg));
   
   std::ostringstream os;
   os << "CHOWN finished (okay on: "

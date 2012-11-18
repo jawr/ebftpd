@@ -170,6 +170,13 @@ public:
     entries.insert(std::make_pair(key, new Entry(*this, key, value)));
   }
   
+  void Flush(const KeyType& key)
+  {
+    typename EntriesMap::iterator it = entries.find(key);
+    if (it == entries.end()) throw std::out_of_range("Key not in cache");    
+    entries.erase(it);
+  }
+  
   iterator begin() { return iterator(first); }
   iterator end() { return iterator(nullptr); }
   const_iterator begin() const { return const_iterator(first); }

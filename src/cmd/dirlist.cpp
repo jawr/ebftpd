@@ -122,15 +122,27 @@ DirectoryList::DirectoryList(ftp::Client& client,
 
 void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
                               std::queue<std::string>& masks)
-{  
+{ 
+  try
+  {
+    if (fs::Status(fs::MakeReal(path)).IsRegularFile())
+    {
+      parent = path.Dirname();
+      masks.push(path.Basename().ToString());
+      return;
+    }
+  }
+  catch (const util::SystemError&)
+  { }
+
   typedef boost::tokenizer<boost::char_separator<char>>  tokenizer;
   static const char* wildcardChars = "*?[]";
 
-  if (path.Absolute()) parent = "/";
+  if (path.IsAbsolute()) parent = "/";
   bool foundWildcards = false;
 
   boost::char_separator<char> sep("/");
-  tokenizer toks(std::string(path), sep);
+  tokenizer toks(path.ToString(), sep);
   for (const auto& token : toks)
   {
     if (foundWildcards ||
@@ -146,7 +158,7 @@ void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
   }
 }
 
-void DirectoryList::Readdir(const fs::Path& path, fs::DirEnumerator& dirEnum) const
+void DirectoryList::Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirEnum) const
 {
 #ifdef CMD_DIRLIST_TEST
   dirEnum.Readdir(path);
@@ -193,7 +205,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
   fs::DirEnumerator dirEnum;
   try
   {
-    Readdir(path, dirEnum);
+    Readdir(MakeVirtual(path), dirEnum);
   }
   catch (const util::SystemError& e)
   {
@@ -204,7 +216,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
   if (depth > 1) Output("\r\n");
   
   std::ostringstream message;
-  if (!path.Empty() && (options.Recursive() || !masks.empty() || depth > 1))
+  if (!path.IsEmpty() && depth > 1 && (options.Recursive() || !masks.empty()))
   {
     message << path << ":\r\n";
     Output(message.str());
@@ -231,7 +243,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
   {
     for (const auto& de : dirEnum)
     {
-      const std::string& pathStr = de.Path();      
+      const std::string& pathStr = de.Path().ToString();
       if (pathStr[0] == '.' && !options.All()) continue;
       if (!mask.empty() && fnmatch(mask.c_str(), pathStr.c_str(), 0)) continue;
       
@@ -267,11 +279,11 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
       if (!de.Status().IsDirectory() ||
            de.Status().IsSymLink()) continue;
            
-      const std::string& pathStr = de.Path();      
+      const std::string& pathStr = de.Path().ToString();      
       if (pathStr[0] == '.' && !options.All()) continue;
       if (!mask.empty() && fnmatch(mask.c_str(), pathStr.c_str(), 0)) continue;
 
-      fs::Path fullPath(path);
+      fs::VirtualPath fullPath(path);
       fullPath /= de.Path();
    
       ListPath(fullPath, masks, depth + 1);

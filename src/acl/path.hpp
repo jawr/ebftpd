@@ -4,6 +4,12 @@
 #include <string>
 #include "util/error.hpp"
 
+namespace fs
+{
+class VirtualPath;
+class Path;
+}
+
 namespace acl
 { 
 
@@ -32,13 +38,13 @@ enum Type
 };
 
 template <Type type>
-util::Error FileAllowed(const User& user, const std::string& path);
+util::Error FileAllowed(const User& user, const fs::VirtualPath& path);
 
 template <Type type>
-util::Error DirAllowed(const User& user, std::string path);
+util::Error DirAllowed(const User& user, const fs::VirtualPath& path);
 
-util::Error Filter(const User& user, const std::string& basename, 
-    std::string& messagePath);
+util::Error Filter(const User& user, const fs::Path& basename, 
+    fs::Path& messagePath);
 
 } /* path namespace */
 } /* acl namespace */

@@ -4,6 +4,7 @@
 #include <string>
 #include <ostream>
 #include <unordered_map>
+#include <atomic>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/string.hpp>
@@ -70,7 +71,7 @@ public:
     if (this->owner.gid == -1) this->owner.gid = 0;
   }
     
-  const std::string& Name() const { return name; }
+  const std::string Name() const { return name; }
   const fs::Owner& Owner() const { return owner; }
   
   void Chown(const fs::Owner& owner)
@@ -82,14 +83,35 @@ public:
   friend class boost::serialization::access;
 };
 
+class Owners
+{
+  std::unordered_map<std::string, OwnerEntry> entries;
+  
+public:
+  explicit Owners() { }
+  explicit Owners(const std::unordered_map<std::string, OwnerEntry>& entries) : 
+    entries(entries) { }
+    
+  fs::Owner Owner(const Path& name)
+  {
+    try
+    {
+      return entries.at(name.ToString()).Owner();
+    }
+    catch (const std::out_of_range&)
+    { }
+    return fs::Owner(0, 0);    
+  }
+};
+
 struct OwnerFile
 {
-  std::string parent;
-  std::string ownerFile;
+  RealPath parent;
+  RealPath ownerFile;
   
   std::unordered_map<std::string, OwnerEntry> entries;
   
-  void Create(const std::string& name, const Owner& owner);
+  void Create(const Path& name, const Owner& owner);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version)
@@ -99,20 +121,22 @@ struct OwnerFile
     (void) version;
   }
   
-  
   bool InnerLoad(FileLockPtr& lock);
   bool InnerSave(FileLockPtr& lock);
   
 public:
   static const std::string ownerFilename;
 
-  OwnerFile(const Path& parent) :
+  OwnerFile(const RealPath& parent) :
     parent(parent), ownerFile(parent / ownerFilename) { }
   
-  void Chown(const std::string& name, const Owner& owner);
-  void Delete(const std::string& name);
-  bool Exists(const std::string& name) const;
-  fs::Owner Owner(const std::string& name) const;
+  void Chown(const Path& name, const Owner& owner);
+  void Delete(const Path& name);
+  bool Exists(const Path& name) const;
+  fs::Owner Owner(const Path& name) const;
+  
+  fs::Owners Owners() const
+  { return fs::Owners(entries); }
 
   bool Load(FileLockPtr& lock);
   bool Load();
@@ -127,7 +151,7 @@ class OwnerCache
   boost::thread thread;
   boost::shared_mutex cacheMutex;
   boost::condition_variable_any saveCond;
-  bool needSave;
+  std::atomic_bool needSave;
   
   typedef std::pair<OwnerFile*, bool> CacheEntry;
   util::LRUCache<std::string, CacheEntry> cache;
@@ -138,7 +162,7 @@ class OwnerCache
   
   OwnerCache() : needSave(false), cache(cacheSize) { }
 
-  static bool GetParentName(const fs::Path& path, fs::Path& parent, fs::Path& name);
+  static bool GetParentName(const RealPath& path, RealPath& parent, fs::Path& name);
   
   void Main();
   
@@ -146,9 +170,11 @@ public:
   static void Start();
   static void Stop();
   
-  static void Chown(const Path& path, const Owner& owner);
-  static void Delete(const Path& path);
-  static fs::Owner Owner(const Path& path);
+  static void Chown(const RealPath& path, const Owner& owner);
+  static void Delete(const RealPath& path);
+  static void Flush(const RealPath& path);
+  static fs::Owner Owner(const RealPath& path);
+  static fs::Owners Owners(const RealPath& parent);
 };
 
 std::ostream& operator<<(std::ostream& os, const Owner& owner);

@@ -14,9 +14,11 @@ namespace fs
 {
 
 class Mode;
-class Path;
+class VirtualPath;
+class RealPath;
 
-util::Error Chmod(ftp::Client& client, const Path& path, const Mode& mode);
+util::Error Chmod(const RealPath& path, const Mode& mode);
+util::Error Chmod(ftp::Client& client, const VirtualPath& path, const Mode& mode);
 
 } /* fs namespace */
 

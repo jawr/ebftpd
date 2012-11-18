@@ -35,13 +35,12 @@ void STATCommand::Execute()
     optOffset += args[1].length();
   }
   
-  std::string path(argStr, optOffset);
-  boost::trim(path);
+  fs::Path path(boost::trim_copy(std::string(argStr, optOffset)));
   
   const cfg::Config& config = cfg::Get();
   std::string forcedOptions = "l" + config.Lslong().Options();
     
-  control.PartReply(ftp::DirectoryStatus, "Status of " + path + ":");
+  control.PartReply(ftp::DirectoryStatus, "Status of " + fs::MakePretty(MakeVirtual(path)).ToString() + ":");
   DirectoryList dirList(client, control, path, ListOptions(options, forcedOptions),
                         config.Lslong().MaxRecursion());
   

@@ -12,30 +12,44 @@
 namespace fs
 {
 
-util::Error Chmod(ftp::Client& client, const Path& path, const Mode& mode)
+util::Error Chmod(const RealPath& path, const Mode& mode)
+{
+  try
+  {
+    mode_t newMode;
+    mode.Apply(Status(path).Native().st_mode, umask(0), newMode);
+  
+    if (chmod(MakeReal(path).CString(), newMode) < 0)
+      return util::Error::Failure(errno);
+  }
+  catch (const util::SystemError& e)
+  { return util::Error::Failure(e.Errno()); }
+  
+  return util::Error::Success();
+}
+
+util::Error Chmod(ftp::Client& client, const VirtualPath& path, const Mode& mode)
 {
   namespace PP = acl::path;
 
-  Path absolute = (client.WorkDir() / path).Expand();
-  util::Error e = PP::FileAllowed<PP::View>(client.User(), absolute);
+  util::Error e = PP::FileAllowed<PP::View>(client.User(), path);
   if (!e) return e;
   
-  Path real = cfg::Get().Sitepath() + absolute;
   mode_t userMask = umask(0);
   
   try
   {
-    Status status(real);
+    Status status(MakeReal(path));
     if (status.IsDirectory())
     {
-      util::Error e = PP::DirAllowed<PP::View>(client.User(), absolute);
+      util::Error e = PP::DirAllowed<PP::View>(client.User(), path);
       if (!e) return e;
     }
     
     mode_t newMode;
     mode.Apply(status.Native().st_mode, userMask, newMode);
     
-    if (chmod(real.CString(), newMode) < 0)
+    if (chmod(MakeReal(path).CString(), newMode) < 0)
       return util::Error::Failure(errno);
   }
   catch (const util::SystemError& e)

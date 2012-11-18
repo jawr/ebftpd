@@ -54,12 +54,12 @@ class DirectoryList
   ListOptions options;
   bool dataOutput;
   int maxRecursion;
-
+  
   mutable std::unordered_map<acl::UserID, std::string> userNameCache;
   mutable std::unordered_map<acl::GroupID, std::string> groupNameCache;
   
   void ListPath(const fs::Path& path, std::queue<std::string> masks, int depth = 1) const;
-  void Readdir(const fs::Path& path, fs::DirEnumerator& dirEnum) const;
+  void Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirEnum) const;
   inline void Output(const std::string& message) const;
   
   inline const std::string& UIDToName(acl::UserID uid) const;

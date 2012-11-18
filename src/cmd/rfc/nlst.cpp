@@ -25,7 +25,7 @@ void NLSTCommand::Execute()
   }
   
   std::string options;
-  std::string path;
+  fs::VirtualPath path;
   if (args.size() >= 2)
   {
     std::string::size_type optOffset = 0;
@@ -35,8 +35,7 @@ void NLSTCommand::Execute()
       optOffset += args[1].length();
     }
     
-    path = argStr.substr(optOffset);
-    boost::trim(path);
+    path = fs::PathFromUser(boost::trim_copy(argStr.substr(optOffset)));
   }
   
   DirectoryList dirList(client, data, path, ListOptions(options, ""),

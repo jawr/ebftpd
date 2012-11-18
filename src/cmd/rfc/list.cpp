@@ -1,6 +1,7 @@
 #include "cmd/rfc/list.hpp"
 #include "cfg/get.hpp"
 #include "stats/util.hpp"
+#include "fs/directory.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -25,7 +26,7 @@ void LISTCommand::Execute()
   }
   
   std::string options;
-  std::string path;
+  fs::Path path;
   if (args.size() >= 2)
   {
     std::string::size_type optOffset = 0;
@@ -35,10 +36,8 @@ void LISTCommand::Execute()
       optOffset += args[1].length();
     }
     
-    path = std::string(argStr, optOffset);
-    boost::trim(path);
+    path = boost::trim_copy(std::string(argStr, optOffset));
   }
-
   
   const cfg::Config& config = cfg::Get();
   std::string forcedOptions = "l" + config.Lslong().Options();

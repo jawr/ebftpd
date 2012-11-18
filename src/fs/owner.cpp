@@ -12,36 +12,38 @@
 #include "logs/logs.hpp"
 #include "fs/status.hpp"
 
+#include "acl/usercache.hpp"
+
 namespace fs
 {
 
 OwnerCache OwnerCache::instance;
 const std::string OwnerFile::ownerFilename = ".owner";
 
-void OwnerFile::Create(const std::string& name, const class Owner& owner)
+void OwnerFile::Create(const Path& name, const class Owner& owner)
 {
-  entries.insert(std::make_pair(name, OwnerEntry(name, owner)));
+  entries.insert(std::make_pair(name.ToString(), OwnerEntry(name.ToString(), owner)));
 }
 
-void OwnerFile::Chown(const std::string& name, const class Owner& owner)
+void OwnerFile::Chown(const Path& name, const class Owner& owner)
 {
   if (!Exists(name)) Create(name, owner);
-  else entries.at(name).Chown(owner);
+  else entries.at(name.ToString()).Chown(owner);
 }
 
-void OwnerFile::Delete(const std::string& name)
+void OwnerFile::Delete(const Path& name)
 {
-  entries.erase(name);
+  entries.erase(name.ToString());
 }
 
-bool OwnerFile::Exists(const std::string& name) const
+bool OwnerFile::Exists(const Path& name) const
 {
-  return entries.find(name) != entries.end();
+  return entries.find(name.ToString()) != entries.end();
 }
 
-class fs::Owner OwnerFile::Owner(const std::string& name) const
+class fs::Owner OwnerFile::Owner(const Path& name) const
 {
-  if (Exists(name)) return entries.at(name).Owner();
+  if (Exists(name)) return entries.at(name.ToString()).Owner();
   else return fs::Owner(0, 0);
 }
 
@@ -57,25 +59,33 @@ bool OwnerFile::InnerLoad(FileLockPtr& lock)
     return e.Errno() == ENOENT;
   }
   
-  std::ifstream fin(ownerFile.c_str());
+  std::ifstream fin(ownerFile.ToString().c_str());
   if (!fin) return false;
   
   try
   {
-    lock = FileLock::Create(ownerFile);
+    lock = FileLock::Create(ownerFile.ToString());
   }
   catch (const util::SystemError&)
   {
     return false;
   }
-  
+
+  try
+  {
 #if defined(TEXT_OWNER_FILES)
-  boost::archive::text_iarchive ia(fin);
+    boost::archive::text_iarchive ia(fin);
 #else
-  boost::archive::binary_iarchive ia(fin);
+    boost::archive::binary_iarchive ia(fin);
 #endif
-  ia >> *this;
-  return fin;
+    ia >> *this;
+  }
+  catch (const boost::archive::archive_exception&)
+  {
+    return false;
+  }
+  
+  return !fin.bad() && !fin.fail();
 }
 
 bool OwnerFile::Load(FileLockPtr& lock)
@@ -96,28 +106,35 @@ bool OwnerFile::Load()
 
 bool OwnerFile::InnerSave(FileLockPtr& lock)
 {
-  std::ofstream fout(ownerFile.c_str());
+  std::ofstream fout(ownerFile.ToString().c_str());
   if (!fout) return false;
   
   if (!lock.get())
   {
     try
     {
-      lock = FileLock::Create(ownerFile);
+      lock = FileLock::Create(ownerFile.ToString());
     }
     catch(const util::SystemError&)
     {
       return false;
     }
   }
-  
+  try
+  {
 #if defined(TEXT_OWNER_FILES)
-  boost::archive::text_oarchive oa(fout);
+    boost::archive::text_oarchive oa(fout);
 #else
-  boost::archive::binary_oarchive oa(fout);
+    boost::archive::binary_oarchive oa(fout);
 #endif
-  oa << *this;
-  return fout;
+    oa << *this;
+  }
+  catch (const boost::archive::archive_exception&)
+  {
+    return false;
+  }
+  
+  return !fout.bad() && !fout.fail();
 }
 
 bool OwnerFile::Save(FileLockPtr& lock)
@@ -136,16 +153,18 @@ bool OwnerFile::Save()
   return Save(lock);
 }
 
-void OwnerCache::Chown(const fs::Path& path, const fs::Owner& owner)
+void OwnerCache::Chown(const RealPath& path, const fs::Owner& owner)
 {
-  fs::Path parent;
-  fs::Path name;
+  RealPath parent;
+  Path name;
   if (!GetParentName(path, parent, name)) return;
 
-  boost::unique_lock<boost::shared_mutex> readLock(instance.cacheMutex);
+  boost::upgrade_lock<boost::shared_mutex> readLock(instance.cacheMutex);
   try
   {
-    CacheEntry& entry = instance.cache.Lookup(parent);
+    CacheEntry& entry = instance.cache.Lookup(parent.ToString());
+    
+    boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(readLock);
     entry.first->Chown(name, owner);
     entry.second = true; // save please!
   }
@@ -155,14 +174,16 @@ void OwnerCache::Chown(const fs::Path& path, const fs::Owner& owner)
     if (!ownerFile->Load()) return;
     ownerFile->Chown(name, owner);
     CacheEntry entry = std::make_pair(ownerFile.release(), true /* save please */);
-    instance.cache.Insert(parent, entry);
+    
+    boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(readLock);
+    instance.cache.Insert(parent.ToString(), entry);
   }
   
   instance.needSave = true;
   instance.saveCond.notify_one();
 }
 
-bool OwnerCache::GetParentName(const fs::Path& path, fs::Path& parent, fs::Path& name)
+bool OwnerCache::GetParentName(const RealPath& path, RealPath& parent, Path& name)
 {
   fs::Status status;
   try
@@ -188,16 +209,16 @@ bool OwnerCache::GetParentName(const fs::Path& path, fs::Path& parent, fs::Path&
   return true;
 }
 
-Owner OwnerCache::Owner(const fs::Path& path)
+Owner OwnerCache::Owner(const RealPath& path)
 {
-  fs::Path parent;
-  fs::Path name;
+  RealPath parent;
+  Path name;
   if (!GetParentName(path, parent, name)) return fs::Owner(0, 0);
 
-  boost::shared_lock<boost::shared_mutex> readLock(instance.cacheMutex);
+  boost::upgrade_lock<boost::shared_mutex> readLock(instance.cacheMutex);
   try
   {
-    CacheEntry& entry = instance.cache.Lookup(parent);
+    CacheEntry& entry = instance.cache.Lookup(parent.ToString());
     return entry.first->Owner(name);
   }
   catch (const std::out_of_range&)
@@ -208,22 +229,50 @@ Owner OwnerCache::Owner(const fs::Path& path)
     fs::Owner owner = ownerFile->Owner(name);
     CacheEntry entry = std::make_pair(ownerFile.release(), true);
 
-    boost::upgrade_lock<boost::shared_mutex> writeLock(instance.cacheMutex);
-    instance.cache.Insert(parent, entry);
+    {
+      boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(readLock);
+      instance.cache.Insert(parent.ToString(), entry);
+    }
+    
     return owner;
   }
 }
 
-void OwnerCache::Delete(const Path& path)
+Owners OwnerCache::Owners(const RealPath& parent)
 {
-  fs::Path parent;
-  fs::Path name;
-  if (!GetParentName(path, parent, name)) return;
-
-  boost::unique_lock<boost::shared_mutex> readLock(instance.cacheMutex);
+  boost::upgrade_lock<boost::shared_mutex> readLock(instance.cacheMutex);
   try
   {
-    CacheEntry& entry = instance.cache.Lookup(parent);
+    CacheEntry& entry = instance.cache.Lookup(parent.ToString());
+    return entry.first->Owners();
+  }
+  catch (const std::out_of_range&)
+  {
+    std::unique_ptr<OwnerFile> ownerFile(new OwnerFile(parent));
+    if (!ownerFile->Load()) return fs::Owners();
+    CacheEntry entry = std::make_pair(ownerFile.release(), true);
+
+    {
+      boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(readLock);
+      instance.cache.Insert(parent.ToString(), entry);
+    }
+
+    return entry.first->Owners();
+  }
+}
+
+void OwnerCache::Delete(const RealPath& path)
+{
+  RealPath parent;
+  Path name;
+  if (!GetParentName(path, parent, name)) return;
+
+  boost::upgrade_lock<boost::shared_mutex> readLock(instance.cacheMutex);
+  try
+  {
+    CacheEntry& entry = instance.cache.Lookup(parent.ToString());
+    
+    boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(readLock);
     entry.first->Delete(name);
     entry.second = true; // save please!
   }
@@ -233,23 +282,36 @@ void OwnerCache::Delete(const Path& path)
     if (!ownerFile->Load()) return;
     ownerFile->Delete(name);
     CacheEntry entry = std::make_pair(ownerFile.release(), true /* save please */);
-    instance.cache.Insert(parent, entry);
+    
+    boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(readLock);
+    instance.cache.Insert(parent.ToString(), entry);
   }
   
   instance.needSave = true;
   instance.saveCond.notify_one();
 }
 
+void OwnerCache::Flush(const RealPath& path)
+{
+  RealPath parent;
+  Path name;
+  if (!GetParentName(path, parent, name)) return;
+
+  boost::unique_lock<boost::shared_mutex> writeLock(instance.cacheMutex);
+  try
+  {
+    instance.cache.Flush(parent.ToString());
+  }
+  catch (const std::out_of_range&)
+  { }
+}
+
 void OwnerCache::Main()
 {
   while (true)
   {
-    boost::shared_lock<boost::shared_mutex> lock(cacheMutex);
-    if (!needSave)
-    {
-      boost::this_thread::interruption_point();
-      saveCond.wait(lock);
-    }
+    boost::upgrade_lock<boost::shared_mutex> readLock(cacheMutex);
+    if (!needSave) saveCond.wait(readLock);
     
     bool loopUsed = false;
     for (auto& kv : cache)
@@ -261,7 +323,12 @@ void OwnerCache::Main()
         // lock, then save it, i suspect copying the object
         // would take much less time than serializing it to disk
         kv.second.first->Save();
-        kv.second.second = false;
+        
+        {
+          boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(readLock);
+          kv.second.second = false;
+        }
+        
         loopUsed = true;
       }
     }

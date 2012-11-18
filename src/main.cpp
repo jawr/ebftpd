@@ -104,10 +104,10 @@ bool ParseOptions(int argc, char** argv, bool& foreground)
 
 bool Daemonise(bool foreground)
 {
-  const std::string& pidfile = cfg::Get().Pidfile();
-  if (!pidfile.empty())
+  const fs::Path& pidfile = cfg::Get().Pidfile();
+  if (!pidfile.IsEmpty())
   {
-    util::Error e = util::daemonise::NotRunning(pidfile);
+    util::Error e = util::daemonise::NotRunning(pidfile.ToString());
     if (!e)
     {
       if (e.ValidErrno())
@@ -132,9 +132,9 @@ bool Daemonise(bool foreground)
       logs::NoStdout();
   }
   
-  if (!pidfile.empty())
+  if (!pidfile.IsEmpty())
   {
-    util::Error e = util::daemonise::CreatePIDFile(pidfile);
+    util::Error e = util::daemonise::CreatePIDFile(pidfile.ToString());
     if (!e)
     {
       logs::error << "Failed to create pid file: " << e.Message() << logs::endl;
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  logs::Initialise(cfg::Get().Datapath() + "/logs");
+  logs::Initialise(cfg::Get().Datapath() / "logs");
   if (!Daemonise(foreground)) return 1;
   
   {

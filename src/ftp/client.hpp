@@ -41,11 +41,10 @@ class Client : public util::Thread
   ::ftp::Data data;
   util::ProcessReader child;
   
-  fs::Path workDir;
   acl::User user;
   ::ftp::ClientState state;
   int passwordAttemps;
-  fs::Path renameFrom;
+  fs::VirtualPath renameFrom;
   std::string ident;
   ::ftp::XDupeMode xdupeMode;
   std::string confirmCommand;
@@ -76,7 +75,6 @@ public:
   Client();
   ~Client();
      
-  const fs::Path& WorkDir() const { return workDir; }
   const acl::User& User() const { return user; }
   const acl::UserProfile& UserProfile() const { return profile; }
   
@@ -86,9 +84,8 @@ public:
   void SetWaitingPassword(const acl::User& user, bool kickLogin);
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
-  void SetWorkDir(const fs::Path& workDir);
-  void SetRenameFrom(const fs::Path& path) { this->renameFrom = path; }
-  const fs::Path& RenameFrom() const { return renameFrom; }
+  void SetRenameFrom(const fs::VirtualPath& path) { this->renameFrom = path; }
+  const fs::VirtualPath& RenameFrom() const { return renameFrom; }
   
   bool KickLogin() const { return kickLogin; }
   
