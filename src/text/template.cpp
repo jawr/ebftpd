@@ -25,6 +25,7 @@ void Template::Initalize()
   bool read = false;
   bool first = false;
   bool logic = false;
+  bool escape = false;
   int skip = 0;
 
   TemplateSection* templ = &head;
@@ -33,6 +34,19 @@ void Template::Initalize()
   {
     char c;
     io >> std::noskipws >> c;
+
+    // check if we need to skip
+    if (escape)
+    {
+      os << c;
+      escape = false;
+      continue;
+    }
+    else if (!escape && c == '\\')
+    {
+      escape = true;
+      continue;
+    }
 
 
     // check if we have to skip certainc haracters (when closing logic)
