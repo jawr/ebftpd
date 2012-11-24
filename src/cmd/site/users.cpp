@@ -45,6 +45,11 @@ void USERSCommand::Execute()
 
     text::TemplateSection& body = templ->Body();
 
+    long long totalUploaded = 0;
+    long long totalDownloaded = 0;
+    long long totalUploadedFiles = 0;
+    long long totalDownloadedFiles = 0;
+
     for (auto& user: users)
     {
       acl::UserProfile profile = db::userprofile::Get(user.UID());
@@ -58,15 +63,29 @@ void USERSCommand::Execute()
       {
       }
 
+      ::stats::Stat upStat = db::stats::GetAllDown(user);
+      ::stats::Stat dnStat = db::stats::GetAllDown(user);
+
       body.Reset();
       body.RegisterValue("user", user.Name());
       body.RegisterValue("group", group);
+      body.RegisterSize("upload", upStat.Bytes());
+      body.RegisterSize("download", dnStat.Bytes());
+
+      totalUploaded += upStat.Bytes();
+      totalDownloaded += dnStat.Bytes();
+      totalUploadedFiles += upStat.Files();
+      totalDownloadedFiles += dnStat.Files();
       
       os << body.Compile();
     }
 
     text::TemplateSection& foot = templ->Foot();
     foot.RegisterValue("total_users", users.size());
+    foot.RegisterSize("total_uploaded", totalUploaded);
+    foot.RegisterSize("total_downloaded", totalDownloaded);
+    foot.RegisterValue("total_uploaded_files", totalUploadedFiles);
+    foot.RegisterValue("total_downloaded_files", totalDownloadedFiles);
     
     os << foot.Compile();
     

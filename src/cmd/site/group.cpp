@@ -1,5 +1,5 @@
 #include <sstream>
-#include <map>
+#include <unordered_map>
 #include "cmd/site/group.hpp"
 #include "util/error.hpp"
 #include "acl/groupcache.hpp"
@@ -37,11 +37,11 @@ void GROUPCommand::Execute()
     return;
 }
 
-  std::map<acl::UserID, acl::UserProfile> profiles = 
+  std::unordered_map<acl::UserID, acl::UserProfile> profiles = 
     db::userprofile::GetSelection(users);
 
-  std::map<acl::UserID, ::stats::Stat> dnStats = db::stats::GetAllDown(users);
-  std::map<acl::UserID, ::stats::Stat> upStats = db::stats::GetAllUp(users);
+  std::unordered_map<acl::UserID, ::stats::Stat> dnStats = db::stats::GetAllDown(users);
+  std::unordered_map<acl::UserID, ::stats::Stat> upStats = db::stats::GetAllUp(users);
 
   std::ostringstream os;
   os << ",-----------+--------+-----------+--------+-----------+-------+---------.";
