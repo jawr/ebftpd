@@ -53,30 +53,40 @@ mongo::BSONObj GetFromCommand(const mongo::BSONObj& match)
   return db::bson::Stat::Unserialize(results.front());
 }
 
-std::map<acl::UserID, ::stats::Stat> GetAllUp(const std::vector<acl::User>& users)
+std::unordered_map<acl::UserID, ::stats::Stat> GetAllUp(const std::vector<acl::User>& users)
 {
-  std::map<acl::UserID, ::stats::Stat> stats;
+  std::unordered_map<acl::UserID, ::stats::Stat> stats;
   for (auto& user: users)
   {
-    mongo::BSONObj match = BSON("uid" << user.UID() << "direction" << "up");  
-    mongo::BSONObj ret = GetFromCommand(match);
-    stats.insert(std::make_pair(user.UID(), 
-      db::bson::Stat::UnserializeRaw(ret)));
+    stats.insert(std::make_pair(user.UID(), GetAllUp(user)));
   } 
   return stats; 
 }
 
-std::map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl::User>& users)
+std::unordered_map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl::User>& users)
 {
-  std::map<acl::UserID, ::stats::Stat> stats;
+  std::unordered_map<acl::UserID, ::stats::Stat> stats;
   for (auto& user: users)
   {
-    mongo::BSONObj match = BSON("uid" << user.UID() << "direction" << "dn");
-    mongo::BSONObj ret = GetFromCommand(match);
-    stats.insert(std::make_pair(user.UID(), 
-      db::bson::Stat::UnserializeRaw(ret)));
+    stats.insert(std::make_pair(user.UID(), GetAllDown(user)));
   } 
   return stats; 
+}
+
+::stats::Stat GetAllDown(const acl::User& user)
+{
+  mongo::BSONObj match = BSON("uid" << user.UID() << "direction" << "dn");
+  mongo::BSONObj ret = GetFromCommand(match);
+  return db::bson::Stat::UnserializeRaw(ret);
+
+}
+
+::stats::Stat GetAllUp(const acl::User& user)
+{
+  mongo::BSONObj match = BSON("uid" << user.UID() << "direction" << "up");
+  mongo::BSONObj ret = GetFromCommand(match);
+  return db::bson::Stat::UnserializeRaw(ret);
+
 }
 
 ::stats::Stat GetWeekUp(acl::UserID uid, int week, int year)

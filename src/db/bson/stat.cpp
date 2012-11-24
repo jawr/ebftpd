@@ -37,7 +37,8 @@ mongo::BSONObj Stat::Serialize(const ::stats::Stat& stat)
   }
   catch (const mongo::DBException& e)
   {
-    UnserializeFailure("stat raw", e, bo);
+    /* no need to throw an error; a user might have no stats */
+    //UnserializeFailure("stat raw", e, bo);
   }
 
   return stat;
