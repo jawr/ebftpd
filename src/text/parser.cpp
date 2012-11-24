@@ -42,15 +42,17 @@ void TemplateParser::Parse(std::stringstream& ss)
         buf.Append(c);
         continue;
 
+      case TemplateState::Skip:
+        if (c == '\n' || c == '\r' || c == '}' || c == ' ')
+          continue;
+        buf.State(TemplateState::None);
+        break;
+
       case TemplateState::Close:
         if (c != '}')
           throw TemplateMalform(buf.LinePos(), buf.CharPos());
         buf.State(TemplateState::None);
-        continue; // no need to add to buffer
-
-      case TemplateState::Skip: // needed anymore?
-        // skip chars
-        break;
+        continue; /* don't need this in the buffer */
 
       case TemplateState::Open:
       case TemplateState::None:
@@ -71,7 +73,6 @@ void TemplateBuffer::ParseChar(char& c)
   {
     charPos = 0;
     ++linePos;
-    logs::debug << logs::endl;
   }
 
   switch (c)
@@ -97,7 +98,7 @@ void TemplateBuffer::ParseChar(char& c)
       if (state == TemplateState::ReadLogic)
       {
         ParseLogic();
-        state = TemplateState::Close;
+        state = TemplateState::Skip;
         return; // we don't need to capture this %
       }
       else if (state == TemplateState::Open)
@@ -133,8 +134,23 @@ void TemplateBuffer::ParseChar(char& c)
 
 void TemplateBuffer::ParseBlock()
 {
+  if (block == TemplateBlock::Head)
+    templ.Head().RegisterBuffer(buffer.str());
   
+  else if (block == TemplateBlock::Body)
+    templ.Body().RegisterBuffer(buffer.str());
+
+  else if (block == TemplateBlock::Foot)
+    templ.Foot().RegisterBuffer(buffer.str());
   
+
+  /* reset */
+  state = TemplateState::None;
+  block = TemplateBlock::Head;
+  linePos = 1;
+  charPos = 1;
+  var.str(std::string());
+  buffer.str(std::string());
 }
 
 void TemplateBuffer::ParseLogic()
@@ -142,20 +158,25 @@ void TemplateBuffer::ParseLogic()
   std::string logic = var.str();
   boost::trim(logic);
   boost::to_lower(logic);
-  logs::debug << "ParseLogic: " << logic << logs::endl;
 
   if (logic == "endblock")
     ParseBlock();
 
   else if (logic == "head")
+  {
+    buffer.str(std::string()); /* clear buffer because the start of a new block */
     block = TemplateBlock::Head; 
-
+  }
   else if (logic == "body")
+  {
+    buffer.str(std::string());
     block = TemplateBlock::Body; 
-
+  }
   else if (logic == "foot")
+  {
+    buffer.str(std::string());
     block = TemplateBlock::Foot; 
-
+  }
   else
     throw TemplateMalform(linePos, charPos, "(" + logic + ")"
       + " incorrect syntax. Must be {% endblock|head|body|foot %}");
@@ -169,7 +190,6 @@ void TemplateBuffer::ParseFilter()
   std::string filter = var.str();
   boost::trim(filter);
   boost::to_lower(filter);
-  logs::debug << "ParseFilter: " << filter << logs::endl;
 
   buffer << "{{";
 
@@ -198,7 +218,6 @@ int main()
 {
   cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config("ftpd.conf"))); 
   text::Factory::Initalize();
-  logs::debug << "Templates loaded: " << text::Factory::Size() << logs::endl;
 
   try
   {

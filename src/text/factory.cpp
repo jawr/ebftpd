@@ -40,9 +40,8 @@ util::Error Factory::Initalize()
       try
       {
         TemplateParser templ(file.ToString());
-        // emplace our template
-        instance.templates.insert(std::make_pair(name, templ.Create()));
-        break;
+        instance.templates.emplace(std::make_pair(name, templ.Create()));
+        logs::debug << "name: " << name << " " << instance.templates.size() << logs::endl;
       }
       catch (const text::TemplateError& e)
       {
