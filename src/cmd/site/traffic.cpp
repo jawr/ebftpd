@@ -53,7 +53,7 @@ void TRAFFICCommand::Execute()
   for (auto tf : timeframes)
   {
     db::stats::Protocol t(db::stats::CalculateTotal(tf));
-    os << Format(util::string::TitleCaseCopy(
+    os << Format(util::string::TitleSimpleCopy(
             ::util::EnumToString(tf)), 
             t.SendBytes(), t.ReceiveBytes()) << "\n";
     combined[tf].first += t.SendBytes();
@@ -66,7 +66,7 @@ void TRAFFICCommand::Execute()
 
    for (auto tf : timeframes)
   {
-    os << Format(util::string::TitleCaseCopy(
+    os << Format(util::string::TitleSimpleCopy(
             ::util::EnumToString(tf)), combined[tf].first, 
         combined[tf].second) << "\n";
   }

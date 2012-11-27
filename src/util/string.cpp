@@ -87,7 +87,7 @@ std::string WordWrap(std::string& source, std::string::size_type length)
   return part.substr(0, pos);
 }
 
-void TitleCase(std::string& s)
+void TitleSimple(std::string& s)
 {
   bool newWord = true;
   for (char& ch : s)
@@ -105,10 +105,10 @@ void TitleCase(std::string& s)
   }
 }
 
-std::string TitleCaseCopy(const std::string& s)
+std::string TitleSimpleCopy(const std::string& s)
 {
   std::string result(s);
-  TitleCase(result);
+  TitleSimple(result);
   return result;
 }
 

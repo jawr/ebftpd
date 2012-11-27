@@ -35,7 +35,7 @@ Config::Config(const std::string& configFile) :
   oneliners(10),
   emptyNuke(102400),
   maxSitecmdLines(-1),
-  weekStart(::cfg::WeekStart::Sunday)  // unlimited
+  weekStart(::cfg::WeekStart::Sunday)
 {
   std::string line;
   std::ifstream io(configFile.c_str());
