@@ -35,23 +35,22 @@ void ADDIPCommand::Execute()
     return;
   }
 
-  //boost::optional<text::Template> templ;
-  //try
-  //{
-  //  templ.reset(text::Factory::GetTemplate("addip"));
-  //}
-  //catch (const text::TemplateError& e)
-  //{
-  //  control.Reply(ftp::ActionNotOkay, e.Message());
-  //  return;
-  //}
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("addip"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
+  }
 
   std::ostringstream os;
 
-  //text::TemplateSection& head = templ->Head();
-  //os << head.Compile();
-
-  //text::TemplateSection& body = templ->Body();
+  text::TemplateSection& head = templ->Head();
+  text::TemplateSection& body = templ->Body();
+  text::TemplateSection& foot = templ->Foot();
 
   acl::IPStrength strength;
   std::vector<std::string> deleted;
@@ -79,6 +78,12 @@ void ADDIPCommand::Execute()
       }
     }
   }
+
+  body.RegisterValue("msg", os.str());
+  
+  os.str(std::string());
+
+  os << head.Compile() << body.Compile() << foot.Compile();
 
   control.Reply(ftp::CommandOkay, os.str());
   return;
