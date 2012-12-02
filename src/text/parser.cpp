@@ -22,48 +22,71 @@ Template TemplateParser::Create()
   {
     char c;
     io >> std::noskipws >> c;
-    ss << c;
+    buf.Stream() << c;
   }
 
-  Parse(ss);
+  buf.Parse();
 
   return buf.GetTemplate();
 }
 
-void TemplateParser::Parse(std::stringstream& ss)
+void TemplateBuffer::ParseInclude(const std::string& file)
+{
+  std::ifstream io(file.c_str());
+  if (!io) throw TemplateError("Unable to open include file (" + file 
+    + ")");
+
+  state = TemplateState::None;
+
+  while (io.good())
+  {
+    char c;
+    io >> std::noskipws >> c;
+    ParseState(c);
+  }
+
+  state = TemplateState::None;
+}
+
+
+void TemplateBuffer::Parse()
 { 
   while (ss.good())
   {
     char c = ss.get();
-
-    switch (buf.State())
-    {
-      case TemplateState::Escape:
-        buf.Append(c);
-        continue;
-
-      case TemplateState::Skip:
-        if (c == '\n' || c == '\r' || c == '}' || c == ' ')
-          continue;
-        buf.State(TemplateState::None);
-        break;
-
-      case TemplateState::Close:
-        if (c != '}')
-          throw TemplateMalform(buf.LinePos(), buf.CharPos());
-        buf.State(TemplateState::None);
-        continue; /* don't need this in the buffer */
-
-      case TemplateState::Open:
-      case TemplateState::None:
-      case TemplateState::ReadLogic:
-      case TemplateState::ReadFilter:
-      default:
-        break;
-    }
-
-    buf.ParseChar(c);
+    ParseState(c);
   }
+}
+
+void TemplateBuffer::ParseState(char& c)
+{
+  switch (state)
+  {
+    case TemplateState::Escape:
+      buffer << c; 
+      return;
+
+    case TemplateState::Skip:
+      if (c == '\n' || c == '\r' || c == '}' || c == ' ')
+        return;
+      state = TemplateState::None;
+      break;
+
+    case TemplateState::Close:
+      if (c != '}')
+        throw TemplateMalform(linePos, charPos);
+      state = TemplateState::None;
+      return; /* don't need this in the buffer */
+
+    case TemplateState::Open:
+    case TemplateState::None:
+    case TemplateState::ReadLogic:
+    case TemplateState::ReadFilter:
+    default:
+      break;
+  }
+
+  ParseChar(c);
 }
         
 void TemplateBuffer::ParseChar(char& c)
@@ -143,7 +166,6 @@ void TemplateBuffer::ParseBlock()
   else if (block == TemplateBlock::Foot)
     templ.Foot().RegisterBuffer(buffer.str());
   
-
   /* reset */
   state = TemplateState::None;
   block = TemplateBlock::Head;
@@ -156,8 +178,17 @@ void TemplateBuffer::ParseBlock()
 void TemplateBuffer::ParseLogic()
 {
   std::string logic = var.str();
+
+  /* cleanup */
+  var.str(std::string());
+
   boost::trim(logic);
   boost::to_lower(logic);
+ 
+  std::vector<std::string> args; 
+  boost::split(args, logic, boost::is_any_of(" "));
+  logic = args[0];
+  
 
   if (logic == "endblock")
     ParseBlock();
@@ -177,17 +208,27 @@ void TemplateBuffer::ParseLogic()
     buffer.str(std::string());
     block = TemplateBlock::Foot; 
   }
+  else if (logic == "include")
+  {
+    if (args.size() != 2)
+      throw TemplateMalform(linePos, charPos, "(include requires file to import!)");
+    std::string file = args[1];
+    boost::trim_left_if(file, boost::is_any_of("\""));
+    boost::trim_right_if(file, boost::is_any_of("\""));
+    ParseInclude(file);
+  }
   else
     throw TemplateMalform(linePos, charPos, "(" + logic + ")"
       + " incorrect syntax. Must be {% endblock|head|body|foot %}");
-
-  /* cleanup */
-  var.str(std::string());
 }
 
 void TemplateBuffer::ParseFilter()
 {
   std::string filter = var.str();
+
+  /* cleanup */
+  var.str(std::string());
+
   boost::trim(filter);
   boost::to_lower(filter);
 
@@ -204,8 +245,6 @@ void TemplateBuffer::ParseFilter()
 
    buffer << "}}";
 
-  /* cleanup */
-  var.str(std::string());
 }
 
 }
@@ -221,7 +260,7 @@ int main()
 
   try
   {
-    text::Template groups = text::Factory::GetTemplate("groups");
+    text::Template groups = text::Factory::GetTemplate("groups_test");
     std::ostringstream os;
     text::TemplateSection& head = groups.Head();
     os << head.Compile();

@@ -1,4 +1,3 @@
-#include <boost/algorithm/string.hpp>
 #include "text/factory.hpp"
 #include "text/error.hpp"
 #include "cfg/config.hpp"
@@ -29,8 +28,6 @@ util::Error Factory::Initalize()
       if ((*it)[0] == '.') continue;
       fs::Path file(datapath + *it);
 
-      logs::debug << file.ToString() << logs::endl;
-
       std::vector<std::string> args;
       boost::split(args, *it, boost::is_any_of("."));
       std::string& name = args[0]; 
@@ -41,7 +38,6 @@ util::Error Factory::Initalize()
       {
         TemplateParser templ(file.ToString());
         instance.templates.emplace(std::make_pair(name, templ.Create()));
-        logs::debug << "name: " << name << " " << instance.templates.size() << logs::endl;
       }
       catch (const text::TemplateError& e)
       {

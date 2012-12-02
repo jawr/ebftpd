@@ -1,0 +1,14 @@
+{% head %}
+#users  Group Abbr.      Group Description
+----------------------------------------------------------------------
+{% endblock %}
+
+{% body %}
+{% include "data/text/hello.tmpl" %}
+({{ users|3 }})   {{ group|left|17 }} {{ description }}
+{% endblock %}
+
+{% foot %}
+----------------------------------------------------------------------
+{{ total_groups }} user groups.
+{% endblock %}

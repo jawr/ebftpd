@@ -31,6 +31,7 @@ class TemplateBuffer
 {
   std::ostringstream buffer;
   std::ostringstream var;
+  std::stringstream ss;
 
   TemplateState state;
   TemplateBlock block;
@@ -40,16 +41,22 @@ class TemplateBuffer
   int linePos;
 public:
   TemplateBuffer() : 
+    ss(),
     state(TemplateState::None), 
     block(TemplateBlock::Head),
     charPos(1),
-    linePos(1) 
+    linePos(1)
   {}
 
+  void Parse();
+  void ParseState(char& c); 
   void ParseChar(char& c); 
   void ParseFilter();
   void ParseLogic();
   void ParseBlock();
+  void ParseInclude(const std::string& file);
+
+  std::stringstream& Stream() { return ss; }
 
   void Append(const char& c) { buffer << c; }
 
@@ -72,7 +79,6 @@ public:
   {}
 
   Template Create();
-  void Parse(std::stringstream& ss);
 
 };
 
