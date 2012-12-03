@@ -21,8 +21,8 @@ Template TemplateParser::Create()
   while (io.good())
   {
     char c;
-    io >> std::noskipws >> c;
-    buf.Stream() << c;
+    if(io >> std::noskipws >> c)
+      buf.Stream() << c;
   }
 
   buf.Parse();
@@ -41,8 +41,8 @@ void TemplateBuffer::ParseInclude(const std::string& file)
   while (io.good())
   {
     char c;
-    io >> std::noskipws >> c;
-    ParseState(c);
+    if (io >> std::noskipws >> c)
+      ParseState(c);
   }
 
   state = TemplateState::None;
