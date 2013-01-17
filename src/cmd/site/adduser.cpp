@@ -24,7 +24,7 @@ void ADDUSERCommand::Execute()
       << strength.Others() << " others, "
       << strength.Length() << " length.";
     control.Reply(ftp::ActionNotOkay, os.str());
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   const cfg::Config& cfg = cfg::Get();
@@ -35,7 +35,7 @@ void ADDUSERCommand::Execute()
   if (!ok)
   {
     control.Reply(ftp::ActionNotOkay, ok.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   std::ostringstream os;

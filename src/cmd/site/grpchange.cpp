@@ -79,7 +79,7 @@ void GRPCHANGECommand::Execute()
     else
     {
       control.Reply(ftp::ActionNotOkay, "Error: " + setting + " field not found.");
-      return;
+      throw cmd::NoPostScriptError();
     }
 
     if (!ok)

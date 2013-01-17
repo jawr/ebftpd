@@ -15,8 +15,8 @@ namespace exec
 
 typedef cfg::setting::Cscript::Type CscriptType;
 
-bool Cscript(ftp::Client& client, const std::string& command, 
-    const std::string& fullCommand, CscriptType type);
+bool Cscripts(ftp::Client& client, const std::string& command, 
+    const std::string& fullCommand, CscriptType type, ftp::ReplyCode failCode);
 
 } /* exec namespace */
 

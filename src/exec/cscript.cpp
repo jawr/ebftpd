@@ -19,16 +19,11 @@ LookupCscript(const std::string& command, CscriptType type)
   return boost::optional<const cfg::setting::Cscript&>();
 }
 
-bool Cscript(ftp::Client& client, const std::string& command, 
-      const std::string& fullCommand, CscriptType type)
+bool Cscript(ftp::Client& client, const cfg::setting::Cscript& cscript,
+      const std::string& fullCommand, CscriptType type, ftp::ReplyCode failCode)
 {
-  auto cscript = LookupCscript(command, type);
-  if (!cscript) return true;
-
   util::ProcessReader::ArgvType argv =
-  { cscript->Path().ToString(), fullCommand, client.User().Name(), "GROUP" };
-
-  std::cout << (type == CscriptType::PRE ? "PRE" : "POST") << std::endl;
+  { cscript.Path().ToString(), fullCommand, client.User().Name(), "GROUP" };
   
   try
   {
@@ -46,7 +41,7 @@ bool Cscript(ftp::Client& client, const std::string& command,
     catch (const util::SystemError& e)
     {
       if (type == CscriptType::PRE)
-        client.Control().Reply(ftp::ActionNotOkay, 
+        client.Control().Reply(failCode, 
               "Error while reading from pipe: " + e.Message());
       logs::error << "Error while reading from child process pipe: "
                   << boost::join(argv, " ") 
@@ -60,7 +55,7 @@ bool Cscript(ftp::Client& client, const std::string& command,
     {
       if (!messages.empty())
       {
-        logs::error << "Post cscript for command " << command 
+        logs::error << "Post cscript for command " << cscript.Command()
                     << " produced output which is being discarded." << logs::endl;
       }
       
@@ -70,9 +65,9 @@ bool Cscript(ftp::Client& client, const std::string& command,
     if (reader.ExitStatus() != 0)
     {
       if (messages.empty())
-        client.Control().Reply(ftp::ActionNotOkay, "Command denied by pre cscript.");
+        client.Control().Reply(failCode, "Command denied by pre cscript.");
       else
-        client.Control().Reply(ftp::ActionNotOkay, messages);
+        client.Control().Reply(failCode, messages);
       return false;
     }
 
@@ -82,7 +77,7 @@ bool Cscript(ftp::Client& client, const std::string& command,
   catch (const util::SystemError& e)
   {
     if (type == CscriptType::PRE)
-      client.Control().PartReply(ftp::ActionNotOkay, "Unable to execute cscript: " + e.Message());
+      client.Control().Reply(failCode, "Unable to execute cscript: " + e.Message());
     logs::error << "Failed to execute cscript: " 
                 << boost::join(argv, " ") 
                 << ": " << e.Message() << logs::endl;
@@ -90,6 +85,25 @@ bool Cscript(ftp::Client& client, const std::string& command,
   }
   
   return true;
+}
+
+bool Cscripts(ftp::Client& client, const std::string& command, 
+      const std::string& fullCommand, CscriptType type, ftp::ReplyCode failCode)
+{
+  for (const auto& cscript : cfg::Get().Cscript())
+  {
+    if (cscript.GetType() == type && cscript.Command() == command)
+    {
+      if (!Cscript(client, cscript, fullCommand, type, failCode))
+      {
+        if (type == CscriptType::PRE) return false;
+      }
+    }
+  }
+  
+  return true;
+  auto cscript = LookupCscript(command, type);
+  if (!cscript) return true;
 }
 
 } /* exec namespace */

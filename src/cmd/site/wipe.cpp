@@ -95,7 +95,7 @@ void WIPECommand::Execute()
     control.Reply(ftp::CommandOkay, 
         "Repeat the command to confirm you "
         "want to do recursive wipe!");
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   Process(fs::PathFromUser(patharg));

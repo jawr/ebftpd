@@ -23,7 +23,7 @@ void DELUSERCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   util::Error e = acl::UserCache::Delete(user.Name());

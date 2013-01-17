@@ -21,13 +21,13 @@ void KICKCommand::Execute()
   catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   if (user.CheckFlag(acl::Flag::Siteop) && user.UID() != client.User().UID())
   {
     control.Reply(ftp::ActionNotOkay, "Cannot kick a siteop.");
-    return;
+    throw cmd::NoPostScriptError();
   } 
 
   boost::unique_future<unsigned> future;
@@ -35,10 +35,12 @@ void KICKCommand::Execute()
   ftp::Listener::PushTask(task);
 
   future.wait();
+  unsigned kicked = future.get();
   
   std::ostringstream os;
   os << "Kicked " << future.get() << " of " << args[1] << "'s login(s).";
   control.Reply(ftp::CommandOkay, os.str());
+  if (kicked == 0) throw cmd::NoPostScriptError();
 }
 
 // end

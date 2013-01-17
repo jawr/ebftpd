@@ -37,17 +37,20 @@ class CommandDef
   int minimumArgs;
   int maximumArgs;
   ftp::ClientState requiredState;
+  ftp::ReplyCode failCode;
   CreatorBasePtr creator;
   std::string syntax;
   
 public:
   CommandDef(int minimumArgs, int maximumArgs, 
              ftp::ClientState requiredState,
+             ftp::ReplyCode failCode,
              const CreatorBasePtr& creator,
              const std::string& syntax) :
     minimumArgs(minimumArgs),
     maximumArgs(maximumArgs),
     requiredState(requiredState),
+    failCode(failCode),
     creator(creator),
     syntax(syntax)
   {
@@ -60,6 +63,7 @@ public:
             (maximumArgs == -1 || argsSize <= maximumArgs));
   }
 
+  ftp::ReplyCode FailCode() const { return failCode; }
   ftp::ClientState RequiredState() const { return requiredState; }
   const std::string& Syntax() const { return syntax; }
   

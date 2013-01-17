@@ -67,7 +67,7 @@ void CHANGECommand::Execute()
   else
   {
     control.Reply(ftp::ActionNotOkay, "Error: No users found.");
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   // shouldn't change permission be checked first and override all these? i.e.
@@ -95,7 +95,7 @@ void CHANGECommand::Execute()
     {
       control.Reply(ftp::ActionNotOkay, "Value contains one or more invalid flags.\n"
                                         "See SITE FLAGS for a list.");
-      return;
+      throw cmd::NoPostScriptError();
     }
   }
   else
@@ -158,7 +158,7 @@ void CHANGECommand::Execute()
     else
     {
       control.Reply(ftp::ActionNotOkay, "Invalid setting: " + setting);
-      return;
+      throw cmd::NoPostScriptError();
     }
 
     if (!ok)

@@ -6,6 +6,7 @@
 #include "acl/allowsitecmd.hpp"
 #include "cmd/splitargs.hpp"
 #include "cmd/error.hpp"
+#include "exec/cscript.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -14,6 +15,8 @@ void SITECommand::Execute()
 {
   cmd::SplitArgs(argStr, args);
   boost::to_upper(args[0]);
+  std::string shortCommand = "SITE " + args[0];
+  std::string fullCommand = "SITE " + argStr;
   argStr = argStr.substr(args[0].length());
   boost::trim(argStr);
 
@@ -30,7 +33,8 @@ void SITECommand::Execute()
   {
     control.Reply(ftp::SyntaxError, def->Syntax());
   }
-  else
+  else if (exec::Cscripts(client, shortCommand, fullCommand, exec::CscriptType::PRE,
+              ftp::ActionNotOkay))
   {
     cmd::CommandPtr command(def->Create(client, argStr, args));
     if (!command)
@@ -42,6 +46,8 @@ void SITECommand::Execute()
       try
       {
         command->Execute();
+        exec::Cscripts(client, shortCommand, fullCommand, exec::CscriptType::POST, 
+                ftp::ActionNotOkay);
       }
       catch (const cmd::SyntaxError&)
       {

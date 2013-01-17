@@ -184,7 +184,8 @@ void Client::ExecuteCommand(const std::string& commandLine)
     control.Reply(ftp::SyntaxError, "Syntax: " + def->Syntax());
   }
   else if (CheckState(def->RequiredState()) &&
-           exec::Cscript(*this, args[0], currentCommand, exec::CscriptType::PRE))
+           exec::Cscripts(*this, args[0], currentCommand, exec::CscriptType::PRE, 
+                def->FailCode()))
   {
     cmd::CommandPtr command(def->Create(*this, argStr, args));
     if (!command)
@@ -196,7 +197,8 @@ void Client::ExecuteCommand(const std::string& commandLine)
       try
       {
         command->Execute();
-        exec::Cscript(*this, args[0], currentCommand, exec::CscriptType::POST);
+        exec::Cscripts(*this, args[0], currentCommand, exec::CscriptType::POST, 
+                ftp::ActionNotOkay);
       }
       catch (const cmd::SyntaxError&)
       {
