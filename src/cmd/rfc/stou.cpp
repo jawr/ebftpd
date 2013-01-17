@@ -17,7 +17,7 @@ void STOUCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay,
                  "Unable to generate a unique filename.");
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   args.clear();
@@ -26,7 +26,7 @@ void STOUCommand::Execute()
 
   CommandPtr command(cmd::rfc::Factory::Lookup("STOR")->Create(client, uniquePath.ToString(), args));
   assert(command.get());
-  return command->Execute();
+  command->Execute();
 }
 
 } /* rfc namespace */

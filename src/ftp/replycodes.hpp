@@ -6,6 +6,7 @@ namespace ftp
 
 enum ReplyCode
 {
+  CodeDeferred = -2,
   CodeNotSet = -1,
   NoCode = 0,
   CommandOkay = 200,

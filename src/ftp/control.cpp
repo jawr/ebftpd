@@ -19,12 +19,15 @@ void Control::Accept(util::net::TCPListener& listener)
 void Control::SendReply(ReplyCode code, bool part, const std::string& message)
 {
   if (singleLineReplies && part) return;
+  
   std::ostringstream reply;
   if (code != NoCode) reply << std::setw(3) << code << (part ? "-" : " ");
   reply << message << "\r\n";
+  
   const std::string& str = reply.str();
   Write(str.c_str(), str.length());
   logs::debug << str << logs::endl;
+  
   if (lastCode != code && lastCode != CodeNotSet && code != ftp::NoCode)
     throw ProtocolError("Invalid reply code sequence.");
   if (code != ftp::NoCode) lastCode = code;
@@ -32,13 +35,40 @@ void Control::SendReply(ReplyCode code, bool part, const std::string& message)
 
 void Control::PartReply(ReplyCode code, const std::string& messages)
 {
-  MultiReply(code, false, messages);
+  assert(code != CodeNotSet);
+  
+  if (code == ftp::CodeDeferred)
+  {
+    std::vector<std::string> splitMessages;
+    boost::split(splitMessages, messages, boost::is_any_of("\n"));
+    deferred.insert(deferred.end(), splitMessages.begin(), splitMessages.end());
+  }
+  else
+    MultiReply(code, false, messages);
 }
 
 void Control::Reply(ReplyCode code, const std::string& messages)
 {
+  assert(code != CodeNotSet && code != CodeDeferred);
+  if (!deferred.empty())
+  {
+    MultiReply(code, false, deferred);
+    deferred.clear();
+  }
+  
   MultiReply(code, true, messages);
   lastCode = CodeNotSet;
+}
+
+void Control::MultiReply(ReplyCode code, bool final, const std::vector<std::string>& messages)
+{
+  assert(!messages.empty());
+  std::vector<std::string>::const_iterator end = messages.end() - 1;
+  for (auto it = messages.begin(); it != end; ++it)
+  {
+    SendReply(code, true, *it);
+  }
+  SendReply(code, !final, messages.back());
 }
 
 void Control::MultiReply(ReplyCode code, bool final, const std::string& messages)
@@ -46,13 +76,7 @@ void Control::MultiReply(ReplyCode code, bool final, const std::string& messages
   std::vector<std::string> splitMessages;
   boost::split(splitMessages, messages, boost::is_any_of("\n"));
   assert(!splitMessages.empty());
-  std::vector<std::string>::const_iterator end = splitMessages.end() - 1;
-  for (std::vector<std::string>::const_iterator it =
-       splitMessages.begin(); it != end; ++it)
-  {
-    SendReply(code, true, *it);
-  }
-  SendReply(code, !final, splitMessages.back());
+  MultiReply(code, final, splitMessages);
 }
 
 void Control::NegotiateTLS()

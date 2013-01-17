@@ -15,7 +15,7 @@ void PASVCommand::Execute()
   {
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to listen for data connection: " + e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   std::string portString;
@@ -23,11 +23,10 @@ void PASVCommand::Execute()
   if (!e)
   {
     control.Reply(ftp::SyntaxError, e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   control.Reply(ftp::PassiveMode, "Entering passive mode (" + portString + ")");
-  return;
 }
 
 } /* rfc namespace */

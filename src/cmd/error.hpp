@@ -16,6 +16,11 @@ struct PermissionError : public util::RuntimeError
   PermissionError() : std::runtime_error("Permission error.") { }
 };
 
+struct NoPostScriptError : public util::RuntimeError
+{
+  NoPostScriptError() : std::runtime_error("Don't run post cscript.") { }
+};
+
 } /* cmd namespace */
 
 #endif

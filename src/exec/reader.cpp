@@ -34,6 +34,11 @@ bool Reader::Getline(std::string& line)
   return client.Child().Getline(line);
 }
 
+bool Reader::Read(std::string& buffer)
+{
+  return client.Child().Read(buffer);
+}
+
 void Reader::Close()
 {
   if (open)
@@ -61,6 +66,11 @@ void Reader::Close()
     }
     open = false;
   }
+}
+
+int Reader::ExitStatus()
+{
+  return client.Child().ExitStatus();
 }
 
 } /* exec namespace */

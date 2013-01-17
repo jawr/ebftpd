@@ -50,14 +50,14 @@ void STORCommand::Execute()
   {
     // should display above messagepath, we'll just reply for now
     control.Reply(ftp::ActionNotOkay, "File name contains one or more invalid characters.");
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   off_t offset = data.RestartOffset();
   if (offset > 0 && data.DataType() == ftp::DataType::ASCII)
   {
     control.Reply(ftp::BadCommandSequence, "Resume not supported on ASCII data type.");
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   if (!ftp::Counter::StartUpload(client.User().UID(), client.Profile().MaxSimUl()))
@@ -66,7 +66,7 @@ void STORCommand::Execute()
     os << "You have reached your maximum of " << client.Profile().MaxSimUl() 
        << " simultaenous upload(s).";
     control.Reply(ftp::ActionNotOkay, os.str());
-    return;    
+    throw cmd::NoPostScriptError();
   }
   
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopUpload(client.User().UID()); });  
@@ -75,7 +75,7 @@ void STORCommand::Execute()
      !cfg::Get().AsciiUploads().Allowed(path.ToString()))
   {
     control.Reply(ftp::ActionNotOkay, "File can't be uploaded in ASCII, change to BINARY.");
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   fs::FileSinkPtr fout;
@@ -92,7 +92,7 @@ void STORCommand::Execute()
     os << "Unable to " << (data.RestartOffset() > 0 ? "append" : "create")
        << " file: " << e.Message();
     control.Reply(ftp::ActionNotOkay, os.str());
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   std::stringstream os;
@@ -112,7 +112,7 @@ void STORCommand::Execute()
     if (!data.RestartOffset()) fs::DeleteFile(fs::MakeReal(path));
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " + e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   bool calcCrc = CalcCRC(path);
@@ -153,7 +153,7 @@ void STORCommand::Execute()
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from data connection: " +
                  e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
   catch (const std::ios_base::failure& e)
   {
@@ -182,8 +182,6 @@ void STORCommand::Execute()
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
       stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
-
-  return;
   
   (void) countGuard;
 }

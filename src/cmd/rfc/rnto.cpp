@@ -18,7 +18,7 @@ void RNTOCommand::Execute()
   {
     // should display above messagepath, we'll just reply for now
     control.Reply(ftp::ActionNotOkay, "Path name contains one or more invalid characters.");
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   try
@@ -28,14 +28,19 @@ void RNTOCommand::Execute()
     else
       e = fs::RenameFile(client, client.RenameFrom(), path);    
       
-    if (!e) control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    else control.Reply(ftp::FileActionOkay, "RNTO command successful.");
+    if (!e)
+    {
+      control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
+      throw cmd::NoPostScriptError();
+    }
   }
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
+  
+  control.Reply(ftp::FileActionOkay, "RNTO command successful.");
 }
 
 } /* rfc namespace */

@@ -25,7 +25,7 @@ void DELECommand::Execute()
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   if (loseCredits)
@@ -37,9 +37,10 @@ void DELECommand::Execute()
     os << "DELE command successful. (" << std::fixed << std::setprecision(2) 
        << creditLoss / 1024.0 << "MB credits lost)";
     control.Reply(ftp::FileActionOkay, os.str()); 
+    throw cmd::NoPostScriptError();
   }
-  else
-    control.Reply(ftp::FileActionOkay, "DELE command successful."); 
+
+  control.Reply(ftp::FileActionOkay, "DELE command successful."); 
 }
 
 } /* rfc namespace */

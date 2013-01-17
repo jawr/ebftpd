@@ -28,6 +28,7 @@
 #include "db/stats/protocol.hpp"
 #include "ftp/error.hpp"
 #include "cmd/error.hpp"
+#include "exec/cscript.hpp"
 
 namespace ftp
 {
@@ -182,7 +183,8 @@ void Client::ExecuteCommand(const std::string& commandLine)
   {
     control.Reply(ftp::SyntaxError, "Syntax: " + def->Syntax());
   }
-  else if (CheckState(def->RequiredState()))
+  else if (CheckState(def->RequiredState()) &&
+           exec::Cscript(*this, args[0], currentCommand, exec::CscriptType::PRE))
   {
     cmd::CommandPtr command(def->Create(*this, argStr, args));
     if (!command)
@@ -194,14 +196,21 @@ void Client::ExecuteCommand(const std::string& commandLine)
       try
       {
         command->Execute();
+        exec::Cscript(*this, args[0], currentCommand, exec::CscriptType::POST);
       }
       catch (const cmd::SyntaxError&)
       {
         control.Reply(ftp::SyntaxError, "Syntax: " + def->Syntax());
       }
+      catch (const cmd::NoPostScriptError&)
+      {
+        // do nothing - skip post cscript
+      }
+
       IdleReset(commandLine);
     }
   }
+  
   currentCommand = "";
 }
 

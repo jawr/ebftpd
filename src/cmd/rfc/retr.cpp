@@ -24,7 +24,7 @@ void RETRCommand::Execute()
   if (offset > 0 && data.DataType() == ftp::DataType::ASCII)
   {
     control.Reply(ftp::BadCommandSequence, "Resume not supported on ASCII data type.");
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   if (!ftp::Counter::StartDownload(client.User().UID(), client.Profile().MaxSimDl()))
@@ -33,7 +33,7 @@ void RETRCommand::Execute()
     os << "You have reached your maximum of " << client.Profile().MaxSimDl() 
        << " simultaenous download(s).";
     control.Reply(ftp::ActionNotOkay, os.str());
-    return;    
+    throw cmd::NoPostScriptError();
   }
   
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopDownload(client.User().UID()); });  
@@ -49,7 +49,7 @@ void RETRCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay,
                  "Unable to open file: " + e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   off_t size;
@@ -59,7 +59,7 @@ void RETRCommand::Execute()
     if (offset > size)
     {
       control.Reply(ftp::InvalidRESTParameter, "Restart offset larger than file size.");
-      return;
+      throw cmd::NoPostScriptError();
     }
 
     fin->seek(offset, std::ios_base::beg);
@@ -75,7 +75,7 @@ void RETRCommand::Execute()
       !cfg::Get().AsciiDownloads().Allowed(size, path.Basename().ToString()))
   {
     control.Reply(ftp::ActionNotOkay, "File can't be downloaded in ASCII, change to BINARY.");
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   std::stringstream os;
@@ -96,7 +96,7 @@ void RETRCommand::Execute()
     control.Reply(ftp::CantOpenDataConnection,
                  "Unable to open data connection: " +
                  e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   std::streamsize bytes = 0;
@@ -137,7 +137,7 @@ void RETRCommand::Execute()
     data.Close();
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from disk: " + std::string(e.what()));
-    return;
+    throw cmd::NoPostScriptError();
   }
   catch (const util::net::NetworkError& e)
   {
@@ -146,7 +146,7 @@ void RETRCommand::Execute()
     control.Reply(ftp::DataCloseAborted,
                  "Error while writing to data connection: " +
                  e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   fin->close();
@@ -157,7 +157,6 @@ void RETRCommand::Execute()
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
       stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
-  return;
   
   (void) countGuard;
 }

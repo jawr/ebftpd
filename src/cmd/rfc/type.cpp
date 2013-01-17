@@ -9,13 +9,12 @@ void TYPECommand::Execute()
   {
     control.Reply(ftp::ParameterNotImplemented,
                  "TYPE " + args[1] + " not supported.");
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   data.SetDataType(args[1] == "I" ? ftp::DataType::Binary : ftp::DataType::ASCII);
   
   control.Reply(ftp::CommandOkay, "TYPE command successful."); 
-  return;
 }
 
 } /* rfc namespace */

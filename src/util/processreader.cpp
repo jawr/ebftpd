@@ -55,13 +55,12 @@ void ProcessReader::Open()
 
     execvpe(file.c_str(), PrepareArgv(argv), PrepareArgv(env));
     pipe.CloseWrite();
-    _exit(0);
-
+//    _exit(1);
 
     int error = errno;
     while (write(errorPipe.WriteFd(), &error, sizeof(error)) < 0)
       if (errno != EINTR && errno != EAGAIN) break;
-    _exit(0);
+    _exit(1);
   }
 }
 
@@ -145,6 +144,15 @@ bool ProcessReader::Getline(std::string& buffer, const util::TimePair* timeout)
     }
   }
   while (ch != '\n');
+  return true;
+}
+
+bool ProcessReader::Read(std::string& buffer, const util::TimePair* timeout)
+{
+  buffer.reserve(defaultBufferSize);
+  ssize_t len = Read(&buffer[0], defaultBufferSize, timeout);
+  if (len <= 0) return false;
+  buffer.resize(len);
   return true;
 }
 
@@ -268,12 +276,20 @@ void ThreadMain()
   util::ProcessReader::ArgvType argv = { "/bin/sleep", "10" };
   util::ProcessReader::ArgvType env;
   
-  pr.Open("/bin/sleep", argv, env);
+  try
+  {
+    pr.Open("/bin/slee1p", argv, env);
+  }
+  catch (const util::SystemError& e)
+  {
+    std::cout << e.Message() << std::endl;
+    return;
+  }
   
   std::string line;
   try
   {
-    while (pr.Getline(line, util::TimePair(20))) std::cout << line << std::endl;
+    while (pr.Getline(line, util::TimePair(5))) std::cout << line << std::endl;
     std::cout << "Close: " << pr.Close() << std::endl;
     std::cout << "Kill: SIGTERM " << pr.Kill(SIGKILL, util::TimePair(2, 0)) << std::endl;
   }
@@ -286,6 +302,16 @@ void ThreadMain()
 
 int main()
 {
+  try
+  {
+    throw util::RuntimeError("1");
+  }
+  catch (const std::exception& e)
+  {
+    
+  }
+
+
   boost::thread t(&ThreadMain);
   //sleep(1);
   //t.interrupt();

@@ -14,7 +14,7 @@ void RNFRCommand::Execute()
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   try
@@ -24,12 +24,11 @@ void RNFRCommand::Execute()
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   client.SetRenameFrom(path);
   control.Reply(ftp::PendingMoreInfo, "File exists, ready for destination name."); 
-  return;
 }
 
 } /* rfc namespace */

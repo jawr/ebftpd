@@ -413,16 +413,21 @@ public:
 
 class Cscript : public Setting
 {
-  std::string command;
-  enum Type { PRE, POST };
-  Type type;
-  fs::Path script;
 public:
+  enum class Type { PRE, POST };
+
+private:
+  std::string command;
+  Type type;
+  fs::Path path;
+  
+public:
+
   Cscript() {}
   Cscript(const std::vector<std::string>& toks);
   const std::string& Command() const { return command; }                       
-  const fs::Path& Script() const { return script; }
-  Type GetType() const { return type; } // anonymous enum?
+  const fs::Path& Path() const { return path; }
+  Type GetType() const { return type; }
 };
 
 class IdleTimeout : public Setting

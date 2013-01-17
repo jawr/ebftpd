@@ -38,7 +38,7 @@ void CWDCommand::Execute()
   }
 
   control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-  return;
+  throw cmd::NoPostScriptError();
 }
 
 } /* rfc namespace */

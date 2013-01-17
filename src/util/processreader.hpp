@@ -41,6 +41,7 @@ private:
   size_t Read(char* buffer, size_t size, const util::TimePair* timeout);
   int GetcharBuffered(const util::TimePair* timeout);
   bool Getline(std::string& buffer, const util::TimePair* timeout);
+  bool Read(std::string& buffer, const util::TimePair* timeout);
   static char** PrepareArgv(const ArgvType& argv);
 
 public:
@@ -57,6 +58,12 @@ public:
   bool Getline(std::string& buffer)
   { return Getline(buffer, nullptr); }
  
+  bool Read(std::string& buffer, const util::TimePair& timeout)
+  { return Read(buffer, &timeout); }
+  
+  bool Read(std::string& buffer)
+  { return Read(buffer, nullptr); }
+
   bool Close(bool nohang = true);  
   bool Close(const util::TimePair& timeout);
   int ExitStatus() const { return exitStatus; }

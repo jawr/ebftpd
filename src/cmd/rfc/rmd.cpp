@@ -8,8 +8,13 @@ void RMDCommand::Execute()
 {
   fs::VirtualPath path(fs::Resolve(fs::VirtualPath(argStr)));
   util::Error e = fs::RemoveDirectory(client,  path);
-  if (!e) control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-  else control.Reply(ftp::FileActionOkay, "RMD command successful."); 
+  if (!e)
+  {
+    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
+    throw cmd::NoPostScriptError();
+  }
+  
+  control.Reply(ftp::FileActionOkay, "RMD command successful."); 
 }
 
 } /* rfc namespace */

@@ -24,11 +24,13 @@ class Control : public ReadWriteable
   ReplyCode lastCode;
   std::string commandLine;
   bool singleLineReplies;
+  std::vector<std::string> deferred;
   
   long bytesRead;
   long bytesWrite;
   
   void SendReply(ReplyCode code, bool part, const std::string& message);
+  void MultiReply(ReplyCode, bool final, const std::vector<std::string>& messages);
   void MultiReply(ReplyCode code, bool final, const std::string& messages);
 
   size_t Read(char* buffer, size_t size)

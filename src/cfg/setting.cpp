@@ -327,12 +327,12 @@ SiteCmd::SiteCmd(const std::vector<std::string>& toks)
 
 Cscript::Cscript(const std::vector<std::string>& toks)   
 {
-  command = toks.at(0);
-  std::string when = toks.at(1);
-  if (when == "pre") type = PRE;
-  else if (when == "post") type = POST;
+  command = boost::to_upper_copy(toks.at(0));
+  std::string when = boost::to_lower_copy(toks.at(1));
+  if (when == "pre") type = Type::PRE;
+  else if (when == "post") type = Type::POST;
   else throw cfg::ConfigError("Invalid cscript parameter");
-  script = fs::Path(toks.at(2));
+  path = fs::Path(toks.at(2));
 }
 
 IdleTimeout::IdleTimeout(const std::vector<std::string>& toks) :
