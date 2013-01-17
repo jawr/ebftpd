@@ -30,10 +30,25 @@ void DELIPCommand::Execute()
 
   std::ostringstream os;
   util::Error ipDeleted;
+
+  // check if we are deleting all (*)
+  if (args.size() == 3 && args.at(2) == "*")
+  {
+    args.erase(args.begin()+2);
+    std::vector<std::string> masks;
+    ipDeleted = acl::IpMaskCache::List(user, masks);
+    if (ipDeleted)
+      for (auto& i : masks)
+        args.push_back(i);
+    else
+      os << "Error: " << ipDeleted.Message() << "\n";
+  }
+
   for (Args::iterator it = args.begin()+2; it != args.end(); ++it)
   {
     if (it != args.begin()+2) os << "\n";
     std::string mask = *it;
+
     try
     {
       int idx = boost::lexical_cast<int>(*it);
