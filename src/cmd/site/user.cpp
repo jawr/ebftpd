@@ -1,4 +1,7 @@
 #include <sstream>
+#include <boost/optional.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include "cmd/site/user.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
@@ -11,6 +14,11 @@
 #include "util/error.hpp"
 #include "acl/allowsitecmd.hpp"
 #include "cmd/error.hpp"
+#include "text/error.hpp"
+#include "text/factory.hpp"
+#include "text/template.hpp"
+#include "text/templatesection.hpp"
+#include "text/tag.hpp"
 
 namespace cmd { namespace site
 {
@@ -21,6 +29,17 @@ void USERCommand::Execute()
       !acl::AllowSiteCmd(client.User(), "user"))
   {
     throw cmd::PermissionError();
+  }
+
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("user"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
   }
 
   std::string userName = args.size() == 2 ? args[1] : client.User().Name();
@@ -57,55 +76,78 @@ void USERCommand::Execute()
     if (profile.Creator() != 0) creator = "<deleted>";
   }
 
-  std::ostringstream os;
-  os.imbue(std::locale(""));
+  text::TemplateSection& head = templ->Head();
+  text::TemplateSection& body = templ->Body();
+  text::TemplateSection& foot = templ->Foot();
 
-  os << "+=======================================================================+";
-  os << "\n| Username: " << user.Name() << "\tLogged in " 
-     << profile.LoggedIn() << " times.";
-  os << "\n| Created: " << profile.Created();
-  os << "\n| Last login: " << profile.LastLogin(); 
-  
-  os << "\n| Expires : ";
-  if (profile.Expires()) os << *profile.Expires();
-  else os << "Never";
-  os << "\n| Created by: " << creator;
-  os << "\n| Flags: " << user.Flags();
-  os << "\n| Ratio: " << profile.Ratio();
-  os << "\n| Credits: ";
+  body.RegisterValue("user", user.Name());
+  body.RegisterValue("logged_in", profile.LoggedIn());
+  body.RegisterValue("created", boost::gregorian::to_simple_string(profile.Created()));
 
-  long long credits = user.Credits() / 1024;
-  os << credits << " MiB";
- 
-  std::string group = (user.PrimaryGID() == -1) ? "NoGroup" : acl::GroupCache::Group(user.PrimaryGID()).Name();
-  os << "\n| Primary Group: " << group;
+  if (profile.LastLogin())
+  {
+    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
+    boost::posix_time::time_duration diff = now - *profile.LastLogin();
+    body.RegisterValue("last_login", boost::posix_time::to_simple_string(diff));
+  }
+  else
+    body.RegisterValue("last_login", "Never");
 
+  if (profile.Expires())
+    body.RegisterValue("expires", boost::gregorian::to_simple_string(*profile.Expires()));
+  else
+    body.RegisterValue("expires", "Never");
+  body.RegisterValue("creator", creator);
+  body.RegisterValue("flags", user.Flags());
+  body.RegisterValue("ratio", profile.Ratio());
+  body.RegisterSize("credits", user.Credits());
+  if (user.PrimaryGID() == -1)
+    body.RegisterValue("primary_group", "NoGroup");
+  else
+    body.RegisterValue("primary_group",
+      acl::GroupCache::Group(user.PrimaryGID()).Name());
+
+  std::ostringstream secondaryGroups;
   auto secondary = user.SecondaryGIDs();
   if (secondary.size() > 0)
   {
-    os << "\n| Secondary Groups: ";
     acl::Group group;
     for (auto& gid: user.SecondaryGIDs())
     {
       try
       {
         group = acl::GroupCache::Group(gid);
-        os << "\n|\t" << group.Name();
+        secondaryGroups << group.Name() << " ";
       }
       catch (const util::RuntimeError& e)
       {
-        os << "\n| " << e.Message();
+        secondaryGroups << "Error: " << e.Message() << " ";
       }
     }
   }
+  body.RegisterValue("secondary_groups", secondaryGroups.str());
 
-  os << "\n| Tagline: " << profile.Tagline();
-  os << "\n| Comment: " << profile.Comment();
+  body.RegisterValue("tagline", profile.Tagline());
+  body.RegisterValue("comment", profile.Comment());
   if (profile.WeeklyAllotment() == 0)
-    os << "\n| Weekly Allotment: <unlimited>";
+    body.RegisterValue("weekly_allot", -1);
   else
-    os << "\n| Weekly Allotment: " << profile.WeeklyAllotment() / 1024 << "MB";
-  os << "\n+=======================================================================+";
+    body.RegisterSize("weekly_allot", profile.WeeklyAllotment());
+
+  std::vector<std::string> masks;
+  auto ok = acl::IpMaskCache::List(user, masks);
+  int idx = 0;
+  for (auto i : masks)
+  {
+    std::ostringstream maskIdx;
+    maskIdx << "ip" << idx++;
+    body.RegisterValue(maskIdx.str(), i);
+  }
+
+  std::ostringstream os;
+  os << head.Compile();
+  os << body.Compile();
+  os << foot.Compile();
 
   control.Reply(ftp::CommandOkay, os.str());
 }

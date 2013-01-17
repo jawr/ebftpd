@@ -1,0 +1,32 @@
+{% head %}
+,-------------------------------------------------------------
+{% endblock %}
+{% body %}
+| User: {{ user|left|15 }} Logged in: {{ logged_in }} times.
+| Created: {{ created }}
+| Last login: {{ last_login|8 }}
+| Expires: {{ expires }}
+| Created by: {{ creator }}
+| Flags: {{ flags }}
+| Ratio: {{ ratio }}
+| Credits: {{ credits|gb }}
+| Primary group: {{ primary_group }}
+| Secondary groups: {{ secondary_groups }}
+| Tagline: {{ tagline }}
+| Comment: {{ comment }}
+| Weekly allotment: {{ weekly_allot }}
+`-------------------------------------------------------------
+| IP0: {{ ip0 }}
+| IP1: {{ ip1 }}
+| IP2: {{ ip2 }}
+| IP3: {{ ip3 }}
+| IP4: {{ ip4 }}
+| IP5: {{ ip5 }}
+| IP6: {{ ip6 }}
+| IP7: {{ ip7 }}
+| IP8: {{ ip8 }}
+| IP9: {{ ip9 }}
+{% endblock %}
+{% foot %}
+`-------------------------------------------------------------
+{% endblock %}
