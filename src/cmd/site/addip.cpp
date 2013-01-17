@@ -1,4 +1,3 @@
-#include <boost/optional/optional.hpp>
 #include <sstream>
 #include "cmd/site/addip.hpp"
 #include "util/error.hpp"
@@ -8,10 +7,6 @@
 #include "acl/ipstrength.hpp"
 #include "acl/allowsitecmd.hpp"
 #include "cmd/error.hpp"
-#include "text/factory.hpp"
-#include "text/template.hpp"
-#include "text/templatesection.hpp"
-#include "text/error.hpp"
 
 namespace cmd { namespace site
 {
@@ -35,23 +30,7 @@ void ADDIPCommand::Execute()
     return;
   }
 
-  boost::optional<text::Template> templ;
-  try
-  {
-    templ.reset(text::Factory::GetTemplate("addip"));
-  }
-  catch (const text::TemplateError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
-    return;
-  }
-
   std::ostringstream os;
-
-  text::TemplateSection& head = templ->Head();
-  text::TemplateSection& body = templ->Body();
-  text::TemplateSection& foot = templ->Foot();
-
   acl::IPStrength strength;
   std::vector<std::string> deleted;
   for (Args::iterator it = args.begin()+2; it != args.end(); ++it)
@@ -78,12 +57,6 @@ void ADDIPCommand::Execute()
       }
     }
   }
-
-  body.RegisterValue("msg", os.str());
-  
-  os.str(std::string());
-
-  os << head.Compile() << body.Compile() << foot.Compile();
 
   control.Reply(ftp::CommandOkay, os.str());
   return;
