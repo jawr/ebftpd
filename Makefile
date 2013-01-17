@@ -1,7 +1,8 @@
 CXX := g++
-CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic -Winit-self -Winline
+CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic
+CXXFLAGS += -Winit-self -Winline -pthread
 LIBS := -lmongoclient -lcrypto -lboost_thread -lboost_regex -lboost_serialization
-LIBS += -lboost_iostreams -lboost_system -lpthread -lssl -lboost_filesystem
+LIBS += -lboost_iostreams -lboost_system -lssl -lboost_filesystem
 LIBS += -lboost_date_time -lboost_program_options
 INCLUDE := -Isrc -include src/pch.hpp
 
