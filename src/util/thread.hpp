@@ -10,7 +10,17 @@ namespace util
 
 class Thread
 {
-  void Main();
+  inline void Main()
+  {
+    try
+    {
+      Run();
+    }
+    catch (boost::thread_interrupted& interruption)
+    {
+      // interrupted, expected
+    }
+  }
 
 protected:
   boost::thread thread;

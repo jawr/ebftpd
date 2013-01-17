@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic
+CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic -rdynamic
 CXXFLAGS += -Winit-self -Winline -pthread
 LIBS := -lmongoclient -lcrypto -lboost_thread -lboost_regex -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lssl -lboost_filesystem

@@ -4,6 +4,7 @@
 #include "ftp/listener.hpp"
 #include "signals/signal.hpp"
 #include "logs/logs.hpp"
+#include "util/debug.hpp"
 
 namespace signals
 {
@@ -59,10 +60,35 @@ void Handler::Run()
   }
 }
 
+void CrashHandler(int signo)
+{
+  std::stringstream ss;
+  ss << "Critical error signal " << signo << " received, dumping backtrace: " << std::endl;
+  
+  util::debug::DumpBacktrace(ss, 2);
+  
+  std::string line; 
+  while (std::getline(ss, line))
+  {
+    logs::error << line << logs::endl;
+  }
+  
+  _exit(-1);
+}
+
 util::Error Initialise()
 {
   sigset_t set;
   sigfillset(&set);
+  sigdelset(&set, SIGSEGV);
+  sigdelset(&set, SIGABRT);
+  
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_flags = 0;
+  sa.sa_handler = CrashHandler;
+  if (sigaction(SIGSEGV, &sa, nullptr) < 0)
+    return util::Error::Failure(errno);
   
   // allow interruption inside gdb
   if (ptrace(PTRACE_TRACEME, 0, NULL, 0) < 0 && errno == EPERM)

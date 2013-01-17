@@ -48,17 +48,5 @@ bool Thread::TryJoin()
   return false;
 }
 
-void Thread::Main()
-{
-  try
-  {
-    Run();
-  }
-  catch (boost::thread_interrupted& interruption)
-  {
-    // interrupted, expected
-  }
-}
-
 // end util namespace
 }
