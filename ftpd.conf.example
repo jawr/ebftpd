@@ -1,7 +1,7 @@
 port            1234
 valid_ip        ::
 tls_certificate ebftpd.pem
-sitepath        site
+sitepath        /ebftpd/site
 
 makedir         *       *
 upload          *       *
@@ -70,7 +70,7 @@ renameown       *       *
 -securitylog    *
 -eventlog       *
 -dblog          *
--sysoplog       *
+-siteoplog      *
 -laston         *
 -onel           *
 -oneladd        *
