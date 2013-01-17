@@ -77,7 +77,7 @@ void USERCommand::Execute()
   long long credits = user.Credits() / 1024;
   os << credits << " MiB";
  
-  std::string group = (user.PrimaryGID() == -1) ? "NoGroup" : acl::GroupCache::Group(user.PrimaryGID()).Name();
+  std::string group = user.PrimaryGID() == -1 ? "NoGroup" : acl::GroupCache::Group(user.PrimaryGID()).Name();
   os << "\n| Primary Group: " << group;
 
   auto secondary = user.SecondaryGIDs();

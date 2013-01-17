@@ -15,10 +15,12 @@ void SITECommand::Execute()
 {
   cmd::SplitArgs(argStr, args);
   boost::to_upper(args[0]);
-  std::string shortCommand = "SITE " + args[0];
-  std::string fullCommand = "SITE " + argStr;
   argStr = argStr.substr(args[0].length());
   boost::trim(argStr);
+
+  std::string shortCommand = "SITE " + args[0];
+  std::string fullCommand = shortCommand;
+  if (!argStr.empty()) fullCommand += " " + argStr;
 
   cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(args[0]));
   if (!def)

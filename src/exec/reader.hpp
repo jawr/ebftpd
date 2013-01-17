@@ -25,7 +25,6 @@ public:
   ~Reader();
       
   bool Getline(std::string& line);
-  bool Read(std::string& buffer);
   void Close();
   int ExitStatus();
 };

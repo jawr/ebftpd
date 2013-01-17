@@ -136,23 +136,13 @@ bool ProcessReader::Getline(std::string& buffer, const util::TimePair* timeout)
       if (buffer.empty()) return false;
       break;
     }
+
     if (ch != '\r' && ch != '\n')
     {
       buffer += ch;
-      if (buffer.length() == buffer.capacity())
-        buffer.reserve((buffer.capacity() / defaultBufferSize) + 1);
     }
   }
   while (ch != '\n');
-  return true;
-}
-
-bool ProcessReader::Read(std::string& buffer, const util::TimePair* timeout)
-{
-  buffer.reserve(defaultBufferSize);
-  ssize_t len = Read(&buffer[0], defaultBufferSize, timeout);
-  if (len <= 0) return false;
-  buffer.resize(len);
   return true;
 }
 

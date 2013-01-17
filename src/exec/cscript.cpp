@@ -22,8 +22,12 @@ LookupCscript(const std::string& command, CscriptType type)
 bool Cscript(ftp::Client& client, const cfg::setting::Cscript& cscript,
       const std::string& fullCommand, CscriptType type, ftp::ReplyCode failCode)
 {
+  std::string group = client.User().PrimaryGID() != -1 ? 
+                      acl::GroupCache::Group(client.User().PrimaryGID()).Name() :
+                      "NoGroup";
+                      
   util::ProcessReader::ArgvType argv =
-  { cscript.Path().ToString(), fullCommand, client.User().Name(), "GROUP" };
+  { cscript.Path().ToString(), fullCommand, client.User().Name(), group };
   
   try
   {
@@ -32,10 +36,11 @@ bool Cscript(ftp::Client& client, const cfg::setting::Cscript& cscript,
     
     try
     {
-      std::string buffer;
-      while (reader.Read(buffer))
+      std::string line;
+      while (reader.Getline(line))
       {
-        messages += buffer;
+        if (!messages.empty()) messages += '\n';
+        messages += line;
       }
     }
     catch (const util::SystemError& e)

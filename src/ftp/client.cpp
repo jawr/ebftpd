@@ -173,7 +173,10 @@ void Client::ExecuteCommand(const std::string& commandLine)
   std::string argStr(commandLine.substr(args[0].length()));
   boost::trim(argStr);
   boost::to_upper(args[0]);
-  currentCommand = args[0] + " " + argStr;
+  
+  currentCommand = args[0];
+  if (!argStr.empty()) currentCommand += " " + argStr;
+  
   cmd::rfc::CommandDefOptRef def(cmd::rfc::Factory::Lookup(args[0]));
   if (!def)
   {

@@ -34,11 +34,6 @@ bool Reader::Getline(std::string& line)
   return client.Child().Getline(line);
 }
 
-bool Reader::Read(std::string& buffer)
-{
-  return client.Child().Read(buffer);
-}
-
 void Reader::Close()
 {
   if (open)
