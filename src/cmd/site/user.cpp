@@ -137,7 +137,7 @@ void USERCommand::Execute()
   std::vector<std::string> masks;
   auto ok = acl::IpMaskCache::List(user, masks);
   int idx = 0;
-  for (auto i : masks)
+  for (auto& i : masks)
   {
     std::ostringstream maskIdx;
     maskIdx << "ip" << idx++;
