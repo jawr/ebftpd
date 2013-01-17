@@ -1,4 +1,5 @@
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 #include "cmd/site/delip.hpp"
 #include "acl/usercache.hpp"
 #include "acl/ipmaskcache.hpp"
@@ -32,9 +33,19 @@ void DELIPCommand::Execute()
   for (Args::iterator it = args.begin()+2; it != args.end(); ++it)
   {
     if (it != args.begin()+2) os << "\n";
-    ipDeleted = acl::IpMaskCache::Delete(user, *it);
+    std::string mask = *it;
+    try
+    {
+      int idx = boost::lexical_cast<int>(*it);
+      ipDeleted = acl::IpMaskCache::Delete(user, idx);
+      mask = "IP" + mask;
+    }
+    catch (const boost::bad_lexical_cast&)
+    {
+      ipDeleted = acl::IpMaskCache::Delete(user, *it);
+    }
     if (ipDeleted)
-      os << "IP (" << *it << ") removed from " << args[1];
+      os << "IP (" << mask << ") removed from " << args[1];
     else
       os << ipDeleted.Message();
   }

@@ -1,3 +1,4 @@
+#include <ostream>
 #include "acl/ipmaskcache.hpp"
 #include "db/user/user.hpp"
 #include "db/user/ipmask.hpp"
@@ -62,6 +63,10 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
     ++it;
   }   
 
+  // check only a maximum of 10 masks per user
+  if (instance.userIPMaskMap[user.UID()].size() > 9)
+    return util::Error::Failure("10 IP masks already added.");
+
   {
     boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
     instance.userIPMaskMap[user.UID()].push_back(mask);
@@ -88,6 +93,27 @@ util::Error IpMaskCache::Delete(const acl::User& user, const std::string& mask)
       return util::Error::Success();                                                                      }
   }
   return util::Error::Failure("IP mask doesn't exist.");
+}
+
+util::Error IpMaskCache::Delete(const acl::User& user, int idx)
+{
+  boost::upgrade_lock<boost::shared_mutex> lock(instance.mtx);
+  UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(user.UID());
+  if (masks == instance.userIPMaskMap.end())
+    return util::Error::Failure("User " + user.Name() + " has no IP masks.");
+
+  if (static_cast<unsigned int>(idx + 1) > masks->second.size())
+  {
+    std::ostringstream output;
+    output << "Index out of range, select an IP between 0 and ";
+    output << masks->second.size() - 1 << ".";
+    return util::Error::Failure(output.str());
+  }
+
+  db::ipmask::Delete(user, masks->second[idx]);
+  masks->second.erase(masks->second.begin() + idx);
+
+  return util::Error::Success();
 }
 
 util::Error IpMaskCache::List(const acl::User& user,

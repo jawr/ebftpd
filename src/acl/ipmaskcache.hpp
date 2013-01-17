@@ -29,6 +29,7 @@ public:
   static util::Error Add(const acl::User& user, const std::string& mask,
     std::vector<std::string>& deleted);
   static util::Error Delete(const acl::User& user, const std::string& mask);
+  static util::Error Delete(const acl::User& user, int idx);
 
   static util::Error List(const acl::User& user, 
     std::vector<std::string>& masks);
