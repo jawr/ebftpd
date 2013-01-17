@@ -10,7 +10,7 @@ namespace util
 
 std::string ErrnoToMessage(int errno_);
 
-class RuntimeError : private virtual std::runtime_error
+class RuntimeError : public virtual std::runtime_error
 {
 public:
   RuntimeError() : std::runtime_error("Runtime error") { }
