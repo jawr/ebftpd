@@ -452,6 +452,21 @@ public:
   boost::posix_time::seconds Timeout() const { return timeout; }
 };
 
+class CheckScript : public Setting
+{
+  fs::Path path;
+  fs::Path mask;
+  bool disabled;
+
+public:
+  CheckScript() { }
+  CheckScript(const std::vector<std::string>& toks);
+
+  const fs::Path Path() const { return path; }
+  const fs::Path Mask() const { return mask; }
+  bool Disabled() const { return disabled; }
+};
+
 // end namespace
 }
 }

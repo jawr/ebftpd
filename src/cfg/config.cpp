@@ -577,6 +577,21 @@ void Config::Parse(std::string line) {
     else if (toks[0] == "monday") weekStart = ::cfg::WeekStart::Monday;
     else throw ConfigError("week_start must be either sunday or monday.");
   }
+  else if (opt == "pre_check")
+  {
+    ParameterCheck(opt, toks, 1, 2);
+    preCheck.emplace_back(toks);
+  }
+  else if (opt == "pre_dir_check")
+  {
+    ParameterCheck(opt, toks, 1, 2);
+    preDirCheck.emplace_back(toks);
+  }
+  else if (opt == "post_check")
+  {
+    ParameterCheck(opt, toks, 1, 2);
+    postCheck.emplace_back(toks);
+  }
   else
   {
     throw ConfigError("Invalid config option: " + opt);

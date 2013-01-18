@@ -16,6 +16,7 @@
 #include "fs/chmod.hpp"
 #include "fs/mode.hpp"
 #include "util/string.hpp"
+#include "exec/check.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -23,6 +24,14 @@ namespace cmd { namespace rfc
 namespace 
 {
 const fs::Mode completeMode(fs::Mode("0666"));
+
+std::string CRCToString(boost::crc_32_type& crc)
+{
+  std::ostringstream os;
+  os << std::hex << std::uppercase << crc.checksum();
+  return os.str();
+}
+
 }
 
 bool STORCommand::CalcCRC(const fs::VirtualPath& path)
@@ -59,6 +68,8 @@ void STORCommand::Execute()
     control.Reply(ftp::BadCommandSequence, "Resume not supported on ASCII data type.");
     throw cmd::NoPostScriptError();
   }
+  
+  if (!exec::PreCheck(client, path)) throw cmd::NoPostScriptError();
 
   if (!ftp::Counter::StartUpload(client.User().UID(), client.Profile().MaxSimUl()))
   {
@@ -167,21 +178,25 @@ void STORCommand::Execute()
   fout->close();
   data.Close();
   
-  logs::debug << "CRC Calculated: " << std::hex 
-             << std::uppercase << crc.checksum() << logs::endl;
-  
   e = fs::Chmod(client, path, completeMode);
-  if (!e) control.PartReply(ftp::DataClosedOkay, 
-      "Failed to chmod upload: " + e.Message());
+  if (!e) control.PartReply(ftp::DataClosedOkay, "Failed to chmod upload: " + e.Message());
 
+  std::string crcStr = calcCrc ? CRCToString(crc) : "000000";
+  
   boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
-  db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds());
-
-  long long credits = data.State().Bytes() * client.UserProfile().Ratio();
-  acl::UserCache::IncrCredits(client.User().Name(), credits);
+  double speed = stats::util::CalculateSpeed(data.State().Bytes(), duration);
+  
+  if (!exec::PostCheck(client, path, crcStr, speed, "UNKNOWN"))
+    fs::DeleteFile(fs::MakeReal(path));
+  else
+  {
+    db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds());
+    long long credits = data.State().Bytes() * client.UserProfile().Ratio();
+    acl::UserCache::IncrCredits(client.User().Name(), credits);
+  }
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
-      stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
+      stats::util::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
 }

@@ -139,6 +139,7 @@ GroupID GroupCache::NameToGID(const std::string& name)
 
 std::string GroupCache::GIDToName(GroupID gid)
 {
+  if (gid == -1) return "NoGroup";
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByGIDMap::iterator it = instance.byGID.find(gid);
   if (it == instance.byGID.end()) return "UNKNOWN";

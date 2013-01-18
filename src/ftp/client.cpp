@@ -322,9 +322,9 @@ void Client::InnerRun()
 
 void Client::Run()
 {
+    InnerRun();
   try
   {
-    InnerRun();
   }
   catch (const std::exception& e)
   {

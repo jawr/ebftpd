@@ -354,6 +354,11 @@ IdleTimeout::IdleTimeout(const std::vector<std::string>& toks) :
                       "and smaller than or equal to maximum in idle_timeout");
 }
 
+CheckScript::CheckScript(const std::vector<std::string>& toks) :
+  path(toks[0]), mask(toks.size() == 2 ? toks[1] : "*"), disabled(toks[0] == "none")
+{
+}
+
 // end namespace
 }
 }

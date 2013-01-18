@@ -119,6 +119,9 @@ class Config
   setting::IdleTimeout idleTimeout;
   setting::Database database;
   ::cfg::WeekStart weekStart;
+  std::vector<setting::CheckScript> preCheck;
+  std::vector<setting::CheckScript> preDirCheck;
+  std::vector<setting::CheckScript> postCheck;
   
   std::unordered_map<std::string, acl::ACL> commandACLs;  
   
@@ -232,10 +235,12 @@ public:
   int MaxSitecmdLines() const { return maxSitecmdLines; }
   const setting::IdleTimeout& IdleTimeout() const { return idleTimeout; }
   ::cfg::WeekStart WeekStart() const { return weekStart; }
+  const std::vector<setting::CheckScript>& PreCheck() const { return preCheck; }
+  const std::vector<setting::CheckScript>& PreDirCheck() const { return preDirCheck; }
+  const std::vector<setting::CheckScript>& PostCheck() const { return postCheck; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }
-  
   
   static void PopulateACLKeywords(const std::unordered_set<std::string>& keywords)
   { aclKeywords.insert(keywords.begin(), keywords.end()); }

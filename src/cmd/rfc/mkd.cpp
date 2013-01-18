@@ -1,6 +1,7 @@
 #include "cmd/rfc/mkd.hpp"
 #include "fs/directory.hpp"
 #include "acl/path.hpp"
+#include "exec/check.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -17,6 +18,8 @@ void MKDCommand::Execute()
     control.Reply(ftp::ActionNotOkay, "Directory name contains one or more invalid characters.");
     throw cmd::NoPostScriptError();
   }
+  
+  if (!exec::PreDirCheck(client, path)) throw cmd::NoPostScriptError();
 
   e = fs::CreateDirectory(client,  path);
   if (!e)
