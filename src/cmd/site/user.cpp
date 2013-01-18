@@ -7,6 +7,7 @@
 #include "acl/types.hpp"
 #include "acl/user.hpp"
 #include "acl/usercache.hpp"
+#include "acl/ipmaskcache.hpp"
 #include "db/user/userprofile.hpp"
 #include "acl/userprofile.hpp"
 #include "acl/groupcache.hpp"
@@ -128,7 +129,7 @@ void USERCommand::Execute()
   }
   body.RegisterValue("secondary_groups", secondaryGroups.str());
 
-  body.RegisterValue("tagline", profile.Tagline());
+  body.RegisterValue("tagline", user.Tagline());
   body.RegisterValue("comment", profile.Comment());
 
   if (profile.WeeklyAllotment() == 0)

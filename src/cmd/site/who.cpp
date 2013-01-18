@@ -55,6 +55,8 @@ void WHOCommand::Execute()
   head.RegisterValue("sitename_short", cfg.SitenameShort());
   os << head.Compile();
 
+  acl::Group groupObj;
+  std::string group;
   for (auto& user: users)
   {
     body.Reset();
@@ -71,7 +73,7 @@ void WHOCommand::Execute()
     std::string tagline;
     try
     {
-      tagline = db::userprofile::Get(user.user.UID()).Tagline();
+      tagline = user.user.Tagline();
     }
     catch (const util::RuntimeError& e)
     {
