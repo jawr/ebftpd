@@ -318,7 +318,14 @@ Factory::Factory()
                       "Display goodbye message" }, },
     { "MSG",        { 1,  -1, "msg|msg*|msg=|msg{",
                       CreatorBasePtr(new Creator<site::MSGCommand>()),
-                      "Syntax: SITE MSG <command> [<arguments> ..]",
+                      "Syntax: SITE MSG <command> [<arguments> ..]\n"
+                      "Commands: READ [<index>]                     - Read message(s)\n"
+                      "          SEND <user>|=<group> <message>     - Send message to user or group\n"
+                      "          SEND { <user> =<group> } <message> - Send message to multiple users or groups\n"
+                      "          SEND * <message>                   - Send message to all users\n"
+                      "          LIST                               - List messages\n"
+                      "          SAVE [<index>]                     - Mark message(s) as saved\n"
+                      "          PURGE [<index>]                    - Purge a message(s)",
                       "Messaging system" }, },
     { "REQUEST",    { 1,  1,  "request",
                       nullptr,

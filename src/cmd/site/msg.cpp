@@ -96,7 +96,8 @@ void MSGCommand::Read()
     else
     {
       Read(mail);
-      control.Reply(ftp::CommandOkay, "Messages moved to the trash ready for purge.");
+      control.Reply(ftp::CommandOkay, "Messages moved to the trash.\n"
+              "Trash will be purged at disconnect if not saved.");
     }
   }
 }
