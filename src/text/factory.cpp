@@ -1,4 +1,3 @@
-#include <boost/algorithm/string.hpp>
 #include "text/factory.hpp"
 #include "text/error.hpp"
 #include "cfg/config.hpp"
@@ -27,17 +26,13 @@ util::Error Factory::Initalize()
     {
       fs::Path file(datapath / *it);
 
-      logs::debug << file.ToString() << logs::endl;
-
       std::string name = it->NoExtension(); 
       boost::to_lower(name);
 
       try
       {
-        Template templ(file.ToString());
-        templ.Initalize();
-        // emplace our template
-        instance.templates.insert(std::make_pair(name, templ));
+        TemplateParser templ(file.ToString());
+        instance.templates.emplace(std::make_pair(name, templ.Create()));
       }
       catch (const text::TemplateError& e)
       {

@@ -15,6 +15,11 @@
 #include "cfg/get.hpp"
 #include "logs/logs.hpp"
 #include "stats/util.hpp"
+#include "text/error.hpp"
+#include "text/factory.hpp"
+#include "text/template.hpp"
+#include "text/templatesection.hpp"
+#include "text/tag.hpp"
 
 namespace cmd { namespace site
 {
@@ -31,34 +36,59 @@ void WHOCommand::Execute()
 
   future.wait();
 
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("who"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
+  }
+
   std::ostringstream os;
-  os << "Users logged on to " << cfg.SitenameShort();
-  os << "\n.-----------.----------.----------------------.--------------------------------.";
-  os << "\n| User      | Group    | Tagline              | Activity                       |";
-  os << "\n|-----------+----------+----------------------+--------------------------------|";
+  text::TemplateSection& head = templ->Head();
+  text::TemplateSection& body = templ->Body();
+  text::TemplateSection& foot = templ->Foot();
+  
+  head.RegisterValue("sitename_short", cfg.SitenameShort());
+  os << head.Compile();
 
   for (auto& user: users)
   {
-    std::string group = acl::GroupCache::GIDToName(user.user.PrimaryGID());
-    
-    os << "\n| " << std::left << std::setw(9) << user.user.Name().substr(0, 9) 
-       << " | " << std::left << std::setw(8) << group.substr(0, 8) 
-       << " | " << std::left << std::setw(20) 
-       << user.user.Tagline().substr(0, 20) << " | ";
-    
-    os << std::left << std::setw(30) << user.Action().substr(0, 30) << " |";
+    body.Reset();
+    try
+    {
+      groupObj = acl::GroupCache::Group(user.user.PrimaryGID());
+      group = groupObj.Name();
+    }
+    catch (const util::RuntimeError& e)
+    {
+      group = "NoGroup";
+    }
 
+    std::string tagline;
+    try
+    {
+      tagline = db::userprofile::Get(user.user.UID()).Tagline();
+    }
+    catch (const util::RuntimeError& e)
+    {
+      tagline = "Profile missing";
+    }
+    
+    body.RegisterValue("user", user.user.Name());
+    body.RegisterValue("group", group);
+    body.RegisterValue("tagline", tagline);
+    body.RegisterValue("action", user.Action());
+    os << body.Compile();
   }
 
-  os << "\n|-----------+----------+----------------------+--------------------------------|";
+  foot.RegisterValue("users", users.size());
+  foot.RegisterValue("total_users", cfg.TotalUsers());
+  os << foot.Compile();
 
-  {
-    std::ostringstream format;
-    format << users.size() << " of " << cfg.TotalUsers() << " users(s) currently online.";
-    os << "\n| " << std::left << std::setw(76) << format.str().substr(0, 76) << " |";
-  }
-
-  os << "\n`------------------------------------------------------------------------------'";
   control.Reply(ftp::CommandOkay, os.str());
   return; 
 }

@@ -29,10 +29,10 @@ acl::UserProfile Get(acl::UserID uid)
   return bson::UserProfile::Unserialize(*results.begin());
 }
 
-std::map<acl::UserID, acl::UserProfile> GetSelection(
+std::unordered_map<acl::UserID, acl::UserProfile> GetSelection(
   const std::vector<acl::User>& users)
 {
-  std::map<acl::UserID, acl::UserProfile> profiles;
+  std::unordered_map<acl::UserID, acl::UserProfile> profiles;
 
   QueryResults results;
   mongo::BSONArrayBuilder b;

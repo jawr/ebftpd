@@ -1,7 +1,7 @@
 #ifndef __DB_STATS_STAT_HPP
 #define __DB_STATS_STAT_HPP
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "acl/user.hpp"
@@ -17,8 +17,11 @@ namespace db { namespace stats
   ::stats::Stat GetWeekDown(acl::UserID uid, int week, int year);
   ::stats::Stat GetWeekUp(acl::UserID uid, int week, int year);
 
-  std::map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl::User>& users);
-  std::map<acl::UserID, ::stats::Stat> GetAllUp(const std::vector<acl::User>& users);
+  ::stats::Stat GetAllDown(const acl::User& user);
+  ::stats::Stat GetAllUp(const acl::User& user);
+
+  std::unordered_map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl::User>& users);
+  std::unordered_map<acl::UserID, ::stats::Stat> GetAllUp(const std::vector<acl::User>& users);
 
   void Upload(const acl::User& user, long long bytes, long long xfertime);
   void Download(const acl::User& user, long long bytes, long long xfertime);

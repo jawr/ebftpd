@@ -158,7 +158,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<site::TAGLINECommand>()),
                       "Syntax: SITE TAGLINE <tagline>",
                       "Change your tagline" }, },
-    { "SETPGRP",    { 2,  2,  "chgrp",
+    { "SETPGRP",    { 2,  2,  "setpgrp",
                       CreatorBasePtr(new Creator<site::SETPGRPCommand>()),
                       "Syntax: SITE SETPGRP <user> <group>",
                       "Set's a user's primary group" }, },

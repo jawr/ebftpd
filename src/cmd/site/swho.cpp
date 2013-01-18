@@ -1,5 +1,6 @@
 #include <vector>
 #include <boost/thread/future.hpp>
+#include <boost/optional.hpp>
 #include "cmd/site/swho.hpp"
 #include "acl/user.hpp"
 #include "acl/userprofile.hpp"
@@ -11,6 +12,12 @@
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "db/user/userprofile.hpp"
+#include "stats/util.hpp"
+#include "text/error.hpp"
+#include "text/factory.hpp"
+#include "text/template.hpp"
+#include "text/templatesection.hpp"
+#include "text/tag.hpp"
 
 namespace cmd { namespace site
 {
@@ -27,36 +34,38 @@ void SWHOCommand::Execute()
 
   future.wait();
 
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("swho"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
+  }
 
   std::ostringstream os;
-  os << "Users logged on to " << cfg.SitenameShort();
-  os << "\n.------------.--------------------------------.--------------------------------.";
-  os << "\n| User       | Ident@Address                  | Action                         |";
-  os << "\n|------------+--------------------------------+--------------------------------|";
+  text::TemplateSection& head = templ->Head();
+  text::TemplateSection& body = templ->Body();
+  text::TemplateSection& foot = templ->Foot();
+
+  head.RegisterValue("sitename_short", cfg.SitenameShort());
+  os << head.Compile();
 
   for (auto& user: users)
   {
-    os << "\n| " << std::left << std::setw(10) << user.user.Name().substr(0, 10) << " | ";
-    
-    {
-      std::ostringstream format;
-      format << user.ident << "@" << user.address;
-      
-      os << std::left << std::left << std::setw(30) << format.str().substr(0, 30) << " | ";
-    }
-    
-    os << std::left << std::setw(30) << user.Action().substr(0, 30) << " |";
+    body.Reset();
+    body.RegisterValue("user", user.user.Name());
+    body.RegisterValue("ident_address", user.ident + "@" + user.address);
+    body.RegisterValue("action", user.Action());
+    os << body.Compile();
   }
 
-  os << "\n|------------+--------------------------------+--------------------------------|";
+  foot.RegisterValue("users", users.size());
+  foot.RegisterValue("total_users", cfg.TotalUsers());
+  os << foot.Compile();
 
-  {
-    std::ostringstream format;
-    format << users.size() << " of " << cfg.TotalUsers() << " users(s) currently online.";
-    os << "\n| " << std::left << std::setw(76) << format.str().substr(0, 76) << " |";
-  }
-
-  os << "\n`------------------------------------------------------------------------------'";
   control.Reply(ftp::CommandOkay, os.str());
   return; 
 }

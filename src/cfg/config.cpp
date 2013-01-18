@@ -29,6 +29,7 @@ Config::Config(const std::string& configFile) :
   timezone(0),
   sitenameLong("SITE NAME"),
   sitenameShort("SN"),
+  datapath("data"),
   dlIncomplete(true),
   totalUsers(20),
   multiplierMax(10),

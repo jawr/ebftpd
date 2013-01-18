@@ -2,7 +2,7 @@
 #define __DB_USER_USERPROFILE_HPP
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <mongo/client/dbclient.h>
 #include "acl/userprofile.hpp"
@@ -18,7 +18,7 @@ void Save(const acl::UserProfile& profile);
 std::vector<acl::UserProfile> GetAll();
 acl::UserProfile Get(acl::UserID uid);
 
-std::map<acl::UserID, acl::UserProfile> GetSelection(
+std::unordered_map<acl::UserID, acl::UserProfile> GetSelection(
   const std::vector<acl::User>& users);
 
 // setters

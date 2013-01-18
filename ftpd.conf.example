@@ -27,6 +27,7 @@ renameown       *       *
 -flagsown       *
 -delip          *
 -delownip       *
+-setpgrp        *
 -change         *
 -changeallot    *
 -changeflags    *
@@ -41,10 +42,9 @@ renameown       *       *
 -take           *
 -stats          *
 -statsown       *
--user           *
+#-user           *
 -userown        *
 -tagline        *
--chgrp          *
 -chgrp          *
 -ranks          *
 -grpranks       *

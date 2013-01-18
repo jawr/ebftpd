@@ -6,7 +6,7 @@
 namespace text
 {
 
-void TemplateSection::RegisterTag(std::string var)
+std::string TemplateSection::RegisterTag(std::string var)
 {
   boost::trim(var);
   boost::to_lower(var);
@@ -29,6 +29,8 @@ void TemplateSection::RegisterTag(std::string var)
   tag.Compile();
 
   tags.emplace_back(tag);
+
+  return name;
 }
 
 void TemplateSection::CheckValueExists(const std::string& key)
@@ -115,6 +117,11 @@ std::string TemplateSection::Compile()
   for (auto& tag: tags)
   {
     boost::replace_first(ret, "{{" + tag.Name() + "}}", tag.Value());
+  }
+  // replace tags that haven't been registered with blank values
+  for (auto& tag: tags)
+  {
+    boost::replace_first(ret, "{{" + tag.Name() + "}}", "");
   }
   return ret;
 }

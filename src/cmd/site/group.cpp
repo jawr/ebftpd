@@ -1,5 +1,5 @@
 #include <sstream>
-#include <map>
+#include <unordered_map>
 #include "cmd/site/group.hpp"
 #include "util/error.hpp"
 #include "acl/groupcache.hpp"
@@ -12,6 +12,11 @@
 #include "stats/stat.hpp"
 #include "db/stats/stat.hpp"
 #include "stats/conversions.hpp"
+#include "text/error.hpp"
+#include "text/factory.hpp"
+#include "text/template.hpp"
+#include "text/templatesection.hpp"
+#include "text/tag.hpp"
 
 namespace cmd { namespace site
 {
@@ -35,40 +40,49 @@ void GROUPCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay, "SITE GROUP: No users.");
     return;
-}
+  }
 
-  std::map<acl::UserID, acl::UserProfile> profiles = 
-    db::userprofile::GetSelection(users);
-
-  std::map<acl::UserID, ::stats::Stat> dnStats = db::stats::GetAllDown(users);
-  std::map<acl::UserID, ::stats::Stat> upStats = db::stats::GetAllUp(users);
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("group"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
+  }
 
   std::ostringstream os;
-  os << ",-----------+--------+-----------+--------+-----------+-------+---------.";
-  os << "\n|  Username |     Up |      Megs |     Dn |      Megs | Ratio |    Wkly |";
-  os << "\n|-----------+--------+-----------+--------+-----------+-------+---------|";
+  text::TemplateSection& head = templ->Head();
+  text::TemplateSection& body = templ->Body();
+  text::TemplateSection& foot = templ->Foot();
+  
+  os << head.Compile();
+
+  std::unordered_map<acl::UserID, acl::UserProfile> profiles = 
+    db::userprofile::GetSelection(users);
+
+  std::unordered_map<acl::UserID, ::stats::Stat> dnStats = db::stats::GetAllDown(users);
+  std::unordered_map<acl::UserID, ::stats::Stat> upStats = db::stats::GetAllUp(users);
 
   for (auto& user: users)
   {
-    os << "\n| ";
+    body.Reset();
     std::string flag = (user.CheckFlag(acl::Flag::Gadmin)) ? "+" : " ";
     flag = (user.CheckFlag(acl::Flag::Siteop)) ? "*" : flag;
-    os << flag << std::left << std::setw(8) << user.Name().substr(0, 8) << " | ";
-    os << std::right << std::setw(6) << upStats[user.UID()].Files() << " | ";
-    os << std::right << std::setw(9) 
-      << ::stats::tostring::Mbyte(upStats[user.UID()]) << " | ";
-    os << std::right << std::setw(6) << dnStats[user.UID()].Files() << " | ";
-    os << std::right << std::setw(9) 
-      << ::stats::tostring::Mbyte(dnStats[user.UID()]) << " | ";
-    os << std::right << std::setw(5) << profiles[user.UID()].Ratio() << " | "; 
-    os << std::right << std::setw(7) << profiles[user.UID()].WeeklyAllotment() << " | ";
+    body.RegisterValue("flag", flag);
+    body.RegisterValue("user", user.Name());
+    body.RegisterValue("files_up", upStats[user.UID()].Files());
+    body.RegisterSize("amount_up", upStats[user.UID()].Bytes());
+    body.RegisterValue("files_dn", dnStats[user.UID()].Files());
+    body.RegisterSize("amount_dn", dnStats[user.UID()].Bytes());
+    body.RegisterValue("ratio", profiles[user.UID()].Ratio());
+    body.RegisterValue("weekly_allot", profiles[user.UID()].WeeklyAllotment());
+    os << body.Compile();
   }
-
-  os << "\n|-----------+--------+-----------+--------+-----------+-------+---------|";
-  os << "\n|   * denotes a siteop (flag 1)     + denotes a group admin (flag 2)    |";
-  os << "\n|----------+------+--------+------+--------+-------+--------------------|";
-  os << "\n|   Free Ratio Slots: Unlimited   Free Leech Slots: 0                   |";
-  os << "\n`-----------------------------------------------------------------------'";
+  
+  os << foot.Compile();
 
   control.Reply(ftp::CommandOkay, os.str()); 
 }
