@@ -221,7 +221,7 @@ void MSGCommand::List()
   }
   
   control.PartReply(ftp::CommandOkay, ".----.------------.--------.----------------------.----------------------.");
-  control.PartReply(ftp::CommandOkay, "| ## | Sender     | Status | When:                | Message Start        |");
+  control.PartReply(ftp::CommandOkay, "| ## | Sender     | Status | When                 | Message Start        |");
   control.PartReply(ftp::CommandOkay, "|----+------------+--------+----------------------+----------------------|");
   
   unsigned index = 0;

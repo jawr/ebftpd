@@ -5,6 +5,7 @@
 #include "util/string.hpp"
 #include "acl/user.hpp"
 #include "logs/logs.hpp"
+#include "acl/groupcache.hpp"
 
 namespace acl { namespace path
 {
@@ -34,10 +35,33 @@ bool HiddenFile(const fs::VirtualPath& path)
 bool Evaluate(const std::vector<cfg::setting::Right>& rights, 
               const User& user, const fs::VirtualPath& path)
 {
+  std::string group;
+  bool firstSpecial = true;
+  
   for (const auto& right : rights)
   {
-    if (util::string::WildcardMatch(right.Path().ToString(), path.ToString()))
-      return right.ACL().Evaluate(user);
+    if (right.SpecialVar())
+    {
+      std::string specialPath(right.Path().ToString());
+      boost::replace_all(specialPath, "[:username:]", user.Name());
+      if (firstSpecial)
+      {
+        if (user.PrimaryGID() != -1)
+        {
+          group = acl::GroupCache::GIDToName(user.PrimaryGID());
+        }
+        firstSpecial = false;
+      }
+      
+      if (!group.empty())
+        boost::replace_all(specialPath, "[:groupname:]", group);
+        
+      if (util::string::WildcardMatch(specialPath, path.ToString()))
+        return right.ACL().Evaluate(user);
+    }
+    else
+      if (util::string::WildcardMatch(right.Path().ToString(), path.ToString()))
+        return right.ACL().Evaluate(user);
   }
   return false;
 }
