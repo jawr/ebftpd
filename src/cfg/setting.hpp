@@ -50,11 +50,14 @@ class Right : public Setting
   fs::Path path;
   // includes wildcards and possibley regex so can't be fs::Path path;
   acl::ACL acl;
+  bool specialVar;
+  
 public:
   Right() {}
   Right(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
   const fs::Path& Path() const { return path; }
+  bool SpecialVar() const { return specialVar; }
 };
 
 class ACLInt : public Setting
