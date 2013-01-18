@@ -2,7 +2,7 @@
 #define __ACL_USER_HPP
 
 #include <string>
-#include <unordered_set>
+#include <vector>
 #include <sys/types.h>
 #include "acl/flags.hpp"
 #include "acl/types.hpp"
@@ -24,7 +24,7 @@ class User
 
   UserID uid;
   GroupID primaryGid;
-  std::unordered_set<GroupID> secondaryGids;
+  std::vector<GroupID> secondaryGids;
   
   long long credits;
    
@@ -58,10 +58,11 @@ public:
   GroupID PrimaryGID() const { return primaryGid; }
   void SetPrimaryGID(GroupID primaryGid);
   
-  const std::unordered_set<GroupID> SecondaryGIDs() const { return secondaryGids; }
+  const std::vector<GroupID> SecondaryGIDs() const { return secondaryGids; }
   void AddSecondaryGID(GroupID gid);
   void DelSecondaryGID(GroupID gid);
   void ResetSecondaryGIDs();
+  bool HasSecondaryGID(GroupID gid);
   
   bool CheckGID(GroupID gid);
   

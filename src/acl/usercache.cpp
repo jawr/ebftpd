@@ -261,38 +261,57 @@ util::Error UserCache::SetPrimaryGID(const std::string& name, GroupID gid, Group
   return util::Error::Success();
 }
 
-util::Error UserCache::AddSecondaryGID(const std::string& name, GroupID gid)
+util::Error UserCache::AddGID(const std::string& name, GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   
-  it->second->AddSecondaryGID(gid);
+  acl::User& user = *it->second;
+
+  if (!user.CheckGID(gid))
+  {
+    if (user.PrimaryGID() == -1) user.SetPrimaryGID(gid);
+    else user.AddSecondaryGID(gid);
+    
+    db::user::Save(*it->second, "secondary gids");
+  }
+
+  return util::Error::Success();
+}
+
+util::Error UserCache::DelGID(const std::string& name, GroupID gid)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
+  
+  acl::User& user = *it->second;
+  if (user.PrimaryGID() == gid)
+  {
+    if (!user.SecondaryGIDs().empty())
+    {
+      user.SetPrimaryGID(user.SecondaryGIDs().front());
+      user.DelSecondaryGID(user.PrimaryGID());
+    }
+    else
+      user.SetPrimaryGID(-1);
+  }
+  else
+    user.DelSecondaryGID(gid);
   
   db::user::Save(*it->second, "secondary gids");
 
   return util::Error::Success();
 }
 
-util::Error UserCache::DelSecondaryGID(const std::string& name, GroupID gid)
-{
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
-  ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
-  
-  it->second->DelSecondaryGID(gid);
-  
-  db::user::Save(*it->second, "secondary gids");
-
-  return util::Error::Success();
-}
-
-util::Error UserCache::ResetSecondaryGIDs(const std::string& name)
+util::Error UserCache::ResetGIDs(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
 
+  it->second->SetPrimaryGID(-1);
   it->second->ResetSecondaryGIDs();
 
   db::user::Save(*it->second, "secondary gids");

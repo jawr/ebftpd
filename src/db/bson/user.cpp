@@ -38,7 +38,7 @@ std::unique_ptr<acl::User> User::UnserializePtr(const mongo::BSONObj& bo)
     user->primaryGid = bo["primary gid"].Int();
     std::vector<mongo::BSONElement> secondaryGids = bo["secondary gids"].Array();
     for (const auto& el: secondaryGids)
-      user->secondaryGids.insert(el.Int());
+      user->secondaryGids.push_back(el.Int());
   }
   catch (const mongo::DBException& e)
   {
@@ -60,7 +60,7 @@ acl::User User::Unserialize(const mongo::BSONObj& bo)
   user.primaryGid = bo["primary gid"].Int();
   std::vector<mongo::BSONElement> secondaryGids = bo["secondary gids"].Array();
   for (const auto& el: secondaryGids)
-    user.secondaryGids.insert(el.Int());
+    user.secondaryGids.push_back(el.Int());
 
   return user;
 }

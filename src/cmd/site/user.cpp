@@ -1,4 +1,5 @@
 #include <sstream>
+#include <boost/algorithm/string/join.hpp>
 #include "cmd/site/user.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
@@ -77,27 +78,14 @@ void USERCommand::Execute()
   long long credits = user.Credits() / 1024;
   os << credits << " MiB";
  
-  std::string group = user.PrimaryGID() == -1 ? "NoGroup" : acl::GroupCache::Group(user.PrimaryGID()).Name();
-  os << "\n| Primary Group: " << group;
+  os << "\n| Primary Group: " << acl::GroupCache::GIDToName(user.PrimaryGID());
 
-  auto secondary = user.SecondaryGIDs();
-  if (secondary.size() > 0)
+  std::vector<std::string> secondaryGroups;
+  for (auto gid : user.SecondaryGIDs())
   {
-    os << "\n| Secondary Groups: ";
-    acl::Group group;
-    for (auto& gid: user.SecondaryGIDs())
-    {
-      try
-      {
-        group = acl::GroupCache::Group(gid);
-        os << "\n|\t" << group.Name();
-      }
-      catch (const util::RuntimeError& e)
-      {
-        os << "\n| " << e.Message();
-      }
-    }
+    secondaryGroups.push_back(acl::GroupCache::GIDToName(gid));
   }
+  os << "\n| Secondary Groups: " << boost::join(secondaryGroups, " ");
 
   os << "\n| Tagline: " << profile.Tagline();
   os << "\n| Comment: " << profile.Comment();

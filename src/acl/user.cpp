@@ -90,18 +90,19 @@ bool User::CheckFlag(Flag flag) const
 
 void User::SetPrimaryGID(GroupID primaryGid)
 {
+  assert(primaryGid >= -1);
   this->primaryGid = primaryGid;
 }
 
-
 void User::AddSecondaryGID(GroupID gid)
 {
-  secondaryGids.insert(gid);
+  secondaryGids.push_back(gid);
 }
 
 void User::DelSecondaryGID(GroupID gid)
 {
-  secondaryGids.erase(gid);
+  secondaryGids.erase(std::remove(secondaryGids.begin(), secondaryGids.end(), gid), 
+      secondaryGids.end());
 }
 
 void User::ResetSecondaryGIDs()
@@ -109,9 +110,14 @@ void User::ResetSecondaryGIDs()
   secondaryGids.clear();
 }
 
+bool User::HasSecondaryGID(GroupID gid)
+{
+  return std::find(secondaryGids.begin(), secondaryGids.end(), gid) != secondaryGids.end();
+}
+
 bool User::CheckGID(GroupID gid)
 {
-  return primaryGid == gid || secondaryGids.find(gid) != secondaryGids.end();
+  return primaryGid == gid || HasSecondaryGID(gid);
 }
 
 } /* acl namespace */

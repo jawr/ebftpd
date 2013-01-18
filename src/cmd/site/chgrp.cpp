@@ -9,34 +9,25 @@ namespace cmd { namespace site
 
 void CHGRPCommand::Execute()
 {
-  acl::User user;
-  try
-  {
-    user = acl::UserCache::User(args[1]);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
-    return;
-  }
-  int8_t iterPoint = 2;
+  std::vector<std::string>::size_type iterPoint = 2;
   Method method = Method::Default;
   std::ostringstream os;
   util::Error ok;
 
-  if (args[2] == "+") 
+  if (args[2] == "+")
   {
     method = Method::Add;
     os << "Adding group(s) to " << args[1] << ":";
   }
-  else if (args[2] == "-")
+  else
+  if (args[2] == "-")
   {
     method = Method::Delete;
     os << "Deleting group(s) from " << args[1] << ":";
   }
   else if (args[2] == "=") 
   {
-    ok = acl::UserCache::ResetSecondaryGIDs(args[1]);
+    ok = acl::UserCache::ResetGIDs(args[1]);
     if (!ok)
     {
       control.Reply(ftp::ActionNotOkay, ok.Message());
@@ -48,29 +39,30 @@ void CHGRPCommand::Execute()
 
   if (method != Method::Default) ++iterPoint;
 
-  std::vector<std::string>::iterator it = args.begin()+iterPoint;
+  std::vector<std::string>::iterator it = args.begin() + iterPoint;
+  if (it == args.end()) throw cmd::SyntaxError();
+  
   for (; it != args.end(); ++it)
   {
-    acl::Group group;
-    try
+    auto gid = acl::GroupCache::NameToGID(*it);
+    if (gid == -1)
     {
-      group = acl::GroupCache::Group(*it);
+      control.Reply(ftp::ActionNotOkay, "Group " + *it + " doesn't exist.");
+      return;
     }
-    catch (const util::RuntimeError& e)
-    {
-      os << "\n" << e.Message();
-      continue;
-    }
-    if (method == Method::Add)
-      ok = acl::UserCache::AddSecondaryGID(args[1], group.GID());
+    
+    if (method == Method::Add || method == Method::Default)
+      ok = acl::UserCache::AddGID(args[1], gid);
     else if (method == Method::Delete)
-      ok = acl::UserCache::DelSecondaryGID(args[1], group.GID());
+      ok = acl::UserCache::DelGID(args[1], gid);
     if (!ok)
       os << "\n" << ok.Message();
     else
       os << "\n" << *it << " okay.";
   }
+  
   os << "\nCommand finished.";
+  
   control.Reply(ftp::CommandOkay, os.str());
 }
 

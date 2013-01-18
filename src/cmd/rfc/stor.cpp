@@ -181,12 +181,10 @@ void STORCommand::Execute()
   e = fs::Chmod(client, path, completeMode);
   if (!e) control.PartReply(ftp::DataClosedOkay, "Failed to chmod upload: " + e.Message());
 
-  std::string crcStr = calcCrc ? CRCToString(crc) : "000000";
-  
   boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
   double speed = stats::util::CalculateSpeed(data.State().Bytes(), duration);
   
-  if (!exec::PostCheck(client, path, crcStr, speed, "UNKNOWN"))
+  if (!exec::PostCheck(client, path, calcCrc ? CRCToString(crc) : "000000", speed, "UNKNOWN"))
     fs::DeleteFile(fs::MakeReal(path));
   else
   {
