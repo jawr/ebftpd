@@ -2,6 +2,8 @@
 #define __EXEC_CSCRIPT_HPP
 
 #include <string>
+#include "cfg/get.hpp"
+#include "ftp/replycodes.hpp"
 
 namespace ftp
 {

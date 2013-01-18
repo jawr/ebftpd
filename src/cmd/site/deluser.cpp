@@ -5,6 +5,7 @@
 #include "ftp/listener.hpp"
 #include "ftp/task/task.hpp"
 #include "ftp/task/types.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {

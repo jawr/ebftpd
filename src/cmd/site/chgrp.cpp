@@ -3,6 +3,7 @@
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include "util/error.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site 
 {

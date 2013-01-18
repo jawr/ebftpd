@@ -10,6 +10,7 @@
 #include "ftp/util.hpp"
 #include "logs/logs.hpp"
 #include "cfg/get.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {

@@ -1,5 +1,6 @@
 #include "cmd/rfc/cwd.hpp"
 #include "fs/directory.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -7,7 +8,7 @@ namespace cmd { namespace rfc
 void CWDCommand::Execute()
 {
   fs::VirtualPath path(fs::PathFromUser(argStr));
-  
+
   util::Error e = fs::ChangeDirectory(client,  path);
   if (e)
   {

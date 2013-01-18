@@ -6,6 +6,8 @@
 #include "fs/directory.hpp"
 #include "util/string.hpp"
 #include "cfg/get.hpp"
+#include "logs/logs.hpp"
+#include "acl/groupcache.hpp"
 
 namespace exec
 {

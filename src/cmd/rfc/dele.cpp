@@ -8,6 +8,7 @@
 #include "cfg/get.hpp"
 #include "fs/owner.hpp"
 #include "logs/logs.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {

@@ -3,6 +3,7 @@
 #include "cmd/rfc/factory.hpp"
 #include "fs/directory.hpp"
 #include "logs/logs.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {

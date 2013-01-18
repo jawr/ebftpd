@@ -49,7 +49,7 @@ util::Error ChangeDirectory(ftp::Client& client, const VirtualPath& path)
   }
   catch (const util::SystemError& e)
   {
-    return util::Error::Failure(errno);
+    return util::Error::Failure(e.Errno());
   }
   
   SetWorkDirectory(path);
@@ -77,7 +77,7 @@ util::Error ChangeMatch(ftp::Client& client, const VirtualPath& path, VirtualPat
 {
   std::string lcBasename(boost::to_lower_copy(path.Basename().ToString()));
 
-  util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), path));
+  util::Error e(PP::DirAllowed<PP::View>(client.User(), path));
   if (!e) return e;
 
   try
@@ -88,14 +88,16 @@ util::Error ChangeMatch(ftp::Client& client, const VirtualPath& path, VirtualPat
       match = path.Dirname() / entry;
       e = ChangeDirectory(client, match);
       if (e || (e.Errno() != ENOENT && e.Errno() != ENOTDIR))
+      {
         return e;
+      }
     }
   }
   catch (const util::SystemError& e)
   {
     return util::Error::Failure(e.Errno());
   }
-  
+
   return util::Error::Failure(ENOENT);
 }
 

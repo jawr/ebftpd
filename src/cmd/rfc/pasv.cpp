@@ -1,5 +1,6 @@
 #include "cmd/rfc/pasv.hpp"
 #include "util/net/ftp.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {

@@ -1,4 +1,5 @@
 #include "cmd/rfc/type.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {

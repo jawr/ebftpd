@@ -2,6 +2,7 @@
 #define __EXEC_SCRIPT_HPP
 
 #include "reader.hpp"
+#include "util/processreader.hpp"
 
 namespace fs
 {

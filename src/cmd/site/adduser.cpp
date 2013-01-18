@@ -7,6 +7,7 @@
 #include "acl/securepass.hpp"
 #include "acl/passwdstrength.hpp"
 #include "acl/ipmaskcache.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {

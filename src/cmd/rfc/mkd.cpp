@@ -2,6 +2,7 @@
 #include "fs/directory.hpp"
 #include "acl/path.hpp"
 #include "exec/check.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {

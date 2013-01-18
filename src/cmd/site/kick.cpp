@@ -7,6 +7,7 @@
 #include "ftp/task/task.hpp"
 #include "ftp/task/types.hpp"
 #include "util/error.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {

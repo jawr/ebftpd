@@ -17,6 +17,7 @@
 #include "fs/mode.hpp"
 #include "util/string.hpp"
 #include "exec/check.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace rfc
 {
