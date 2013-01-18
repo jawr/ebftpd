@@ -60,16 +60,6 @@ void WHOCommand::Execute()
   for (auto& user: users)
   {
     body.Reset();
-    try
-    {
-      groupObj = acl::GroupCache::Group(user.user.PrimaryGID());
-      group = groupObj.Name();
-    }
-    catch (const util::RuntimeError& e)
-    {
-      group = "NoGroup";
-    }
-
     std::string tagline;
     try
     {
@@ -81,7 +71,8 @@ void WHOCommand::Execute()
     }
     
     body.RegisterValue("user", user.user.Name());
-    body.RegisterValue("group", group);
+    body.RegisterValue("group", 
+      acl::GroupCache::GIDToName(user.user.PrimaryGID()));
     body.RegisterValue("tagline", tagline);
     body.RegisterValue("action", user.Action());
     os << body.Compile();

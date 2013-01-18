@@ -54,23 +54,12 @@ void USERSCommand::Execute()
 
     for (auto& user: users)
     {
-      acl::UserProfile profile = db::userprofile::Get(user.UID());
-      std::string group = "NoGroup";
-      try
-      {
-        acl::Group group_ = acl::GroupCache::Group(user.PrimaryGID());
-        group = group_.Name();
-      }
-      catch (const util::RuntimeError& e)
-      {
-      }
-
       ::stats::Stat upStat = db::stats::GetAllDown(user);
       ::stats::Stat dnStat = db::stats::GetAllDown(user);
 
       body.Reset();
       body.RegisterValue("user", user.Name());
-      body.RegisterValue("group", group);
+      body.RegisterValue("group", acl::GroupCache::GIDToName(user.PrimaryGID()));
       body.RegisterSize("upload", upStat.Bytes());
       body.RegisterSize("download", dnStat.Bytes());
 

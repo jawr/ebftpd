@@ -103,11 +103,8 @@ void USERCommand::Execute()
   body.RegisterValue("flags", user.Flags());
   body.RegisterValue("ratio", profile.Ratio());
   body.RegisterSize("credits", user.Credits());
-  if (user.PrimaryGID() == -1)
-    body.RegisterValue("primary_group", "NoGroup");
-  else
-    body.RegisterValue("primary_group",
-      acl::GroupCache::Group(user.PrimaryGID()).Name());
+  body.RegisterValue("primary_group", 
+    acl::GroupCache::GIDToName(user.PrimaryGID()));
 
   std::ostringstream secondaryGroups;
   auto secondary = user.SecondaryGIDs();
