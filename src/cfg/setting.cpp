@@ -150,6 +150,8 @@ Right::Right(std::vector<std::string> toks)
   path = toks.at(0);
   toks.erase(toks.begin());
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  specialVar = path.ToString().find("[:username:]") != std::string::npos ||
+               path.ToString().find("[:groupname:]") != std::string::npos;
 }
 
 StatSection::StatSection(const std::vector<std::string>& toks)   

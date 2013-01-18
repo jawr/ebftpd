@@ -145,7 +145,7 @@ void Config::Parse(std::string line) {
     ParameterCheck(opt, toks, 1);
     tlsCiphers = fs::Path(toks[0]);
   }
-  else if (opt == "reload_3")
+  else if (opt == "reload_config")
   {
     NotImplemented(opt);
   }
