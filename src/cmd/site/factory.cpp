@@ -154,7 +154,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<site::USERCommand>()),
                       "Syntax: SITE USER [<user>]",
                       "Display user's info" }, },
-    { "TAGLINE",    { 0, -1,  "tagline",
+    { "TAGLINE",    { 1, -1,  "tagline",
                       CreatorBasePtr(new Creator<site::TAGLINECommand>()),
                       "Syntax: SITE TAGLINE <tagline>",
                       "Change your tagline" }, },

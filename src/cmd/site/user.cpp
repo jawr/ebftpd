@@ -87,7 +87,7 @@ void USERCommand::Execute()
   }
   os << "\n| Secondary Groups: " << boost::join(secondaryGroups, " ");
 
-  os << "\n| Tagline: " << profile.Tagline();
+  os << "\n| Tagline: " << user.Tagline();
   os << "\n| Comment: " << profile.Comment();
   if (profile.WeeklyAllotment() == 0)
     os << "\n| Weekly Allotment: <unlimited>";

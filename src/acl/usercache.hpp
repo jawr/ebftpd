@@ -46,6 +46,8 @@ public:
 
   static util::Error IncrCredits(const std::string& name, long long kbytes);
   static util::Error DecrCredits(const std::string& name, long long kbytes);
+
+  static util::Error SetTagline(const std::string& name, const std::string& tagline);
   
   static unsigned Count(bool includeDeleted = false);
 

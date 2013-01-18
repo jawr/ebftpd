@@ -198,12 +198,6 @@ util::Error SetNumLogins(acl::UserID uid, const std::string& value)
   return util::Error::Success();
 }
 
-util::Error SetTagline(acl::UserID uid, const std::string& value)
-{
-  Set(uid, BSON("tagline" << value));
-  return util::Error::Success();
-}
-
 util::Error SetComment(acl::UserID uid, const std::string& value)
 {
   

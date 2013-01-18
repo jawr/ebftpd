@@ -28,7 +28,7 @@ void TAGLINECommand::Execute()
     return;
   }
 
-  util::Error ok = db::userprofile::SetTagline(client.User().UID(), argStr);
+  util::Error ok = acl::UserCache::SetTagline(client.User().Name(), argStr);
   if (!ok)
     control.Reply(ftp::ActionNotOkay, ok.Message());
   else

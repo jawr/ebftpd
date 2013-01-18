@@ -31,7 +31,6 @@ util::Error SetStartupDir(acl::UserID uid, const std::string& value);
 util::Error SetIdleTime(acl::UserID uid, const std::string& value);
 util::Error SetExpires(acl::UserID uid, std::string& value);
 util::Error SetNumLogins(acl::UserID uid, const std::string& value);
-util::Error SetTagline(acl::UserID uid, const std::string& value);
 util::Error SetComment(acl::UserID uid, const std::string& value);
 util::Error SetMaxDlSpeed(acl::UserID uid, const std::string& value);
 util::Error SetMaxUlSpeed(acl::UserID uid, const std::string& value);

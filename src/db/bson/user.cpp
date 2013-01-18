@@ -20,48 +20,43 @@ mongo::BSONObj User::Serialize(const acl::User& user)
   bob.append("credits", user.credits);
   bob.append("primary gid", user.primaryGid);
   bob.append("secondary gids", SerializeContainer(user.secondaryGids));
+  bob.append("tagline", user.tagline);
   return bob.obj();
 }
 
-std::unique_ptr<acl::User> User::UnserializePtr(const mongo::BSONObj& bo)
+void User::Unserialize(const mongo::BSONObj& bo, acl::User& user)
 {
-  std::unique_ptr<acl::User> user(new acl::User());
-
   try
   {
-    user->name = bo["name"].String();
-    user->salt = bo["salt"].String();
-    user->credits = bo["credits"].Long();
-    user->password = bo["password"].String();
-    user->flags = bo["flags"].String();
-    user->uid = bo["uid"].Int();
-    user->primaryGid = bo["primary gid"].Int();
+    user.name = bo["name"].String();
+    user.salt = bo["salt"].String();
+    user.credits = bo["credits"].Long();
+    user.password = bo["password"].String();
+    user.flags = bo["flags"].String();
+    user.uid = bo["uid"].Int();
+    user.primaryGid = bo["primary gid"].Int();
     std::vector<mongo::BSONElement> secondaryGids = bo["secondary gids"].Array();
     for (const auto& el: secondaryGids)
-      user->secondaryGids.push_back(el.Int());
+      user.secondaryGids.push_back(el.Int());
   }
   catch (const mongo::DBException& e)
   {
     UnserializeFailure("user", e, bo);
   }
+}
 
+
+std::unique_ptr<acl::User> User::UnserializePtr(const mongo::BSONObj& bo)
+{
+  std::unique_ptr<acl::User> user(new acl::User());
+  Unserialize(bo, *user);
   return user;
 }
 
 acl::User User::Unserialize(const mongo::BSONObj& bo)
 {
   acl::User user;
-  user.name = bo["name"].String();
-  user.salt = bo["salt"].String();
-  user.credits = bo["credits"].Long();
-  user.password = bo["password"].String();
-  user.flags = bo["flags"].String();
-  user.uid = bo["uid"].Int();
-  user.primaryGid = bo["primary gid"].Int();
-  std::vector<mongo::BSONElement> secondaryGids = bo["secondary gids"].Array();
-  for (const auto& el: secondaryGids)
-    user.secondaryGids.push_back(el.Int());
-
+  Unserialize(bo, user);
   return user;
 }
   

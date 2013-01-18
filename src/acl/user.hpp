@@ -27,6 +27,7 @@ class User
   std::vector<GroupID> secondaryGids;
   
   long long credits;
+  std::string tagline;
    
 public:
   User() : uid(-1), primaryGid(-1) { }
@@ -65,6 +66,9 @@ public:
   bool HasSecondaryGID(GroupID gid);
   
   bool CheckGID(GroupID gid);
+  
+  const std::string& Tagline() const { return tagline; }
+  void SetTagline(const std::string& tagline) { this->tagline = tagline; }
   
   friend struct db::bson::User;
 };

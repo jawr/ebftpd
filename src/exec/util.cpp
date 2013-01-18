@@ -13,7 +13,7 @@ std::vector<std::string> BuildEnv(ftp::Client& client)
   std::ostringstream os;
   os << "USER=" << client.User().Name() << "\n"
      << "FLAGS=" << client.User().Flags() << "\n"
-     << "TAGLINE=" << client.UserProfile().Tagline() << "\n"
+     << "TAGLINE=" << client.User().Tagline() << "\n"
      << "GROUP=" << acl::GroupCache::GIDToName(client.User().PrimaryGID()) << "\n"
      << "RATIO=" << client.UserProfile().Ratio() << "\n"
      << "HOST=" << client.Ident() << "@" << client.Address();

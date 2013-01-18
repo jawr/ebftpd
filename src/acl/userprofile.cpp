@@ -15,7 +15,6 @@ UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
   startupDir("/"),
   idleTime(-1),
   numLogins(3),
-  tagline("Elite tagline."),
   maxDlSpeed(0),
   maxUlSpeed(0),
   maxSimDl(2),

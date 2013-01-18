@@ -128,7 +128,7 @@ bool PostCheck(ftp::Client& client, const fs::VirtualPath& path,
     crc,
     client.User().Name(),
     acl::GroupCache::GIDToName(client.User().PrimaryGID()),
-    "TAGLINE", // client.User().Tagline() - needs to be moved from profile to user
+    client.User().Tagline(),
     boost::lexical_cast<std::string>(static_cast<unsigned>(speed / 1024)),
     section
   };

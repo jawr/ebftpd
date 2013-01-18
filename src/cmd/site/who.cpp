@@ -37,34 +37,14 @@ void WHOCommand::Execute()
   os << "\n| User      | Group    | Tagline              | Activity                       |";
   os << "\n|-----------+----------+----------------------+--------------------------------|";
 
-  acl::Group groupObj;
-  std::string group;
   for (auto& user: users)
   {
-    try
-    {
-      groupObj = acl::GroupCache::Group(user.user.PrimaryGID());
-      group = groupObj.Name();
-    }
-    catch (const util::RuntimeError& e)
-    {
-      group = "NoGroup";
-    }
-
-    std::string tagline;
-    try
-    {
-      tagline = db::userprofile::Get(user.user.UID()).Tagline();
-    }
-    catch (const util::RuntimeError& e)
-    {
-      tagline = "Profile missing";
-    }
+    std::string group = acl::GroupCache::GIDToName(user.user.PrimaryGID());
     
     os << "\n| " << std::left << std::setw(9) << user.user.Name().substr(0, 9) 
        << " | " << std::left << std::setw(8) << group.substr(0, 8) 
        << " | " << std::left << std::setw(20) 
-       << tagline.substr(0, 20) << " | ";
+       << user.user.Tagline().substr(0, 20) << " | ";
     
     os << std::left << std::setw(30) << user.Action().substr(0, 30) << " |";
 

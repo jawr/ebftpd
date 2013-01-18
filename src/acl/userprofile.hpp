@@ -29,10 +29,8 @@ class UserProfile
   std::string startupDir;
   int idleTime;
   boost::optional<boost::gregorian::date> expires;
-  int numLogins; // used to be # #, with the second int being logins
-  // from the same ip.
+  int numLogins;
 
-  std::string tagline;
   std::string comment;
   
   int maxDlSpeed;
@@ -57,7 +55,6 @@ public:
   const std::string& StartupDir() const { return startupDir; }
   int IdleTime() const { return idleTime; }
   int NumLogins() const { return numLogins; }
-  const std::string& Tagline() const { return tagline; }
   const std::string& Comment() const { return comment; }
   int MaxDlSpeed() const { return maxDlSpeed; }
   int MaxUlSpeed() const { return maxUlSpeed; }
