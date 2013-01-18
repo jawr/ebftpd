@@ -242,7 +242,7 @@ util::Error UserCache::DelFlags(const std::string& name, const std::string& flag
   return util::Error::Success();
 }
 
-util::Error UserCache::SetPrimaryGID(const std::string& name, GroupID gid, GroupID& oldPrimaryGID)
+util::Error UserCache::SetPrimaryGID(const std::string& name, GroupID gid, GroupID oldPrimaryGID)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);

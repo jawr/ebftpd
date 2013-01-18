@@ -11,6 +11,7 @@
 #include "cmd/site/purge.hpp"
 #include "cmd/site/renuser.hpp"
 #include "cmd/site/adduser.hpp"
+#include "cmd/site/gadduser.hpp"
 #include "cmd/site/addip.hpp"
 #include "cmd/site/flags.hpp"
 #include "cmd/site/delip.hpp"
@@ -259,7 +260,7 @@ Factory::Factory()
                       "Syntax: SITE CHGADMIN <user> <group",
                       "Toggle gadmin status for a user on the specified group" }, },
     { "GADDUSER",   { 3,  -1, "gadduser",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GADDUSERCommand>()),
                       "Syntax: SITE GADDUSER <group> <user> <password> [<ident@ip> ..]",
                       "Add a user directly to a group" }, },
     { "GROUPS",     { 0,  0,  "groups",
