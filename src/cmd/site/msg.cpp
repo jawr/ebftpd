@@ -1,6 +1,7 @@
 #include <cctype>
 #include <vector>
 #include <algorithm>
+#include <map>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -240,6 +241,8 @@ void MSGCommand::List()
   std::ostringstream os;
   os << head.Compile();
   
+  std::map<db::mail::Status, unsigned> totals;
+  
   unsigned index = 0;
   for (auto& message : mail)
   {
@@ -250,7 +253,14 @@ void MSGCommand::List()
     body.RegisterValue("body", message.Body());
     
     os << body.Compile();
+    
+    ++totals[message.Status()];
   }
+  
+  foot.RegisterValue("total", mail.size());
+  foot.RegisterValue("total_unread", totals[db::mail::Status::Unread]);
+  foot.RegisterValue("total_trash", totals[db::mail::Status::Trash]);
+  foot.RegisterValue("total_saved", totals[db::mail::Status::Saved]);
   
   os << foot.Compile();
 

@@ -92,7 +92,7 @@ void HELPCommand::List()
   for (const auto& command : sorted)
   {
     body.RegisterValue("command", command);
-    body.RegisterValue("description", commands.at(command).Description());
+    body.RegisterValue("descr", commands.at(command).Description());
     os << body.Compile();
     body.Reset();
   }
