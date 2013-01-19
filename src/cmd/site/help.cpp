@@ -21,8 +21,6 @@ void HELPCommand::Syntax()
     os << "Description: " << def->Description();
     control.Reply(ftp::CommandOkay, os.str());
   }
-
-  return;
 }
 
 void HELPCommand::ListNoTemplate()

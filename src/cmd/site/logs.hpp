@@ -15,7 +15,7 @@ class LOGSCommand : public Command
   static const int defaultNumberLines = 100;
   
   bool ParseArgs();
-  bool CheckStrings(const std::string& line);
+  bool CheckStrings(std::string line);
   void Show(const std::string& path);
   
 public:

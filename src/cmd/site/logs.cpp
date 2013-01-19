@@ -1,5 +1,6 @@
 #include <stack>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/logs.hpp"
 #include "logs/logs.hpp"
 #include "util/reverselogreader.hpp"
@@ -28,14 +29,18 @@ bool LOGSCommand::ParseArgs()
   
   log = args[n];
   strings.assign(args.begin() + n + 1, args.end());
+  for (std::string& s : strings) boost::to_lower(s);
   return true;
 }
 
-bool LOGSCommand::CheckStrings(const std::string& line)
+bool LOGSCommand::CheckStrings(std::string line)
 {
+  boost::to_lower(line);
   for (auto& s : strings)
-    if (line.find_first_of(s) == std::string::npos)
+  {
+    if (line.find(s) == std::string::npos)
       return false;
+  }
   return true;
 }
 
@@ -49,7 +54,7 @@ void LOGSCommand::Show(const std::string& path)
     int count = 0;
     while (in.Getline(line) && count < number)
     {
-      if (CheckStrings(line))
+      if (CheckStrings(line) && !line.empty())
       {
         lines.push(line);
         ++count;
@@ -66,7 +71,7 @@ void LOGSCommand::Show(const std::string& path)
   }
   catch (const util::SystemError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "Unable to opne log: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, "Unable to open log: " + e.Message());
     return;
   }
 }
@@ -80,7 +85,7 @@ void LOGSCommand::Execute()
   else if (log == "sysop") Show(logs::sysop.Path());
   else if (log == "events") Show(logs::events.Path());
   else if (log == "db") Show(logs::db.Path());
-  else if (log == "debug") Show(logs::db.Path());
+  else if (log == "debug") Show(logs::debug.Path());
   else throw cmd::SyntaxError();
   
   return;

@@ -2,6 +2,7 @@
 #define __UTIL_REVERSE_LOG_READER_HPP
 
 #include <string>
+#include <cassert>
 #include <cstdlib>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -28,6 +29,12 @@ class ReverseLogReader
     data = reinterpret_cast<char*>(mmap(0, st.st_size, PROT_READ, MAP_SHARED, fd, 0));
     if (!data) throw util::SystemError(errno);
     pos = st.st_size;
+    
+    while (pos > -1 && (data[pos] == '\r'  || 
+           data[pos] == '\n' || data[pos] == '\0'))
+    {
+      --pos;
+    }
   }
   
 public:
@@ -45,14 +52,13 @@ public:
   bool Getline(std::string& line)
   {
     if (pos == -1) return false;
-    
+
     off_t lastPos = pos;
     for (--pos; pos > -1; --pos)
       if (data[pos] == '\n') break;
       
     line = std::string(data + pos + 1, lastPos - pos);
     if (pos != -1 && data[--pos] == '\r') --pos;
-    
     return true;
   }
 };
