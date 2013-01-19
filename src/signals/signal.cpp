@@ -5,6 +5,8 @@
 #include "signals/signal.hpp"
 #include "logs/logs.hpp"
 #include "util/debug.hpp"
+#include "text/error.hpp"
+#include "text/factory.hpp"
 
 namespace signals
 {
@@ -45,6 +47,14 @@ void Handler::Run()
         catch (const cfg::ConfigError& e)
         {
           logs::error << "Failed to load config: " + e.Message() << logs::endl;
+        }
+        try
+        {
+          text::Factory::Initalize();
+        }
+        catch (const text::TemplateError& e)
+        {
+          logs::error << "Templates failed to initalise: " << e.Message() << logs::endl;
         }
         break;
       }

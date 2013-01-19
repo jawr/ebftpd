@@ -212,7 +212,7 @@ int main(int argc, char** argv)
     logs::error << "Templates failed to initalise: " << e.Message() << logs::endl;
     return 1;
   }
-    
+  
   try
   {
     db::Initialize();

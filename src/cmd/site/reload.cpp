@@ -10,26 +10,43 @@ void RELOADCommand::Execute()
 {
   using namespace ftp::task;
 
-  boost::unique_future<ReloadConfig::Result> future;
+  boost::unique_future<std::pair<ReloadConfig::Result, ReloadConfig::Result>> future;
   ftp::TaskPtr task(new ReloadConfig(future));
   ftp::Listener::PushTask(task);
   future.wait();
   
   std::stringstream os;
   
-  ReloadConfig::Result result = future.get();
-  if (result == ReloadConfig::Result::Fail)
+  const auto result = future.get();
+  auto& configResult = result.first;
+  auto& templatesResult = result.second;
+
+  bool furtherDetails = false;
+  if (configResult == ReloadConfig::Result::Fail)
   {
-    os << "Config failed to reload.\n";
-    os << "See SITE LOGS ERROR for further details.";
+    os << "Config failed to reload.";
+    furtherDetails = true;
   }
-
-  os << "Config reloaded.";
-
-  if (result == ReloadConfig::Result::StopStart)
+  else
+    os << "Config reloaded.";
+  
+  if (configResult == ReloadConfig::Result::StopStart)
   {
-    os << "\nSome of the options changed require a full stop start.\n";
-    os << "See SITE LOGS ERROR for details.";
+    os << "\nSome of the options changed require a full stop start.";
+    furtherDetails = true;
+  }
+    
+  if (templatesResult == ReloadConfig::Result::Fail)
+  {
+    os << "\nTemplates failed to reload.";
+    furtherDetails = true;
+  }
+  else
+    os << "\nTemplates reloaded.";
+
+  if (furtherDetails)
+  {
+    os << "\nSee SITE LOGS ERROR for further details.";    
   }
   
   control.Reply(ftp::CommandOkay, os.str());

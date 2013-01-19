@@ -4,6 +4,8 @@
 #include "logs/logs.hpp"
 #include "cfg/get.hpp"
 #include "main.hpp"
+#include "text/factory.hpp"
+#include "text/error.hpp"
 
 namespace ftp { namespace task
 {
@@ -58,6 +60,7 @@ void GetOnlineUsers::Execute(Listener& listener)
 
 void ReloadConfig::Execute(Listener&)
 {
+  Result configResult = Result::Okay;
   try
   {
     LoadConfig();
@@ -65,12 +68,23 @@ void ReloadConfig::Execute(Listener&)
   catch (const cfg::ConfigError& e)
   {
     logs::error << "Failed to load config: " + e.Message() << logs::endl;
-    promise.set_value(Result::Fail);
-    return;
+    configResult = Result::Fail;
   }
   
-  if (cfg::RequireStopStart()) promise.set_value(Result::StopStart);
-  else promise.set_value(Result::Okay);
+  Result templatesResult = Result::Okay;
+  
+  try
+  {
+    text::Factory::Initalize();
+  }
+  catch (const text::TemplateError& e)
+  {
+    logs::error << "Templates failed to initalise: " << e.Message() << logs::endl;
+    templatesResult = Result::Fail;
+  }
+
+  if (cfg::RequireStopStart()) configResult = Result::StopStart;
+  promise.set_value(std::make_pair(configResult, templatesResult));
 }
 
 void Exit::Execute(Listener&)

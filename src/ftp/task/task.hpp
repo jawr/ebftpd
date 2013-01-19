@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <utility>
 #include <boost/thread/future.hpp>
 #include "ftp/task/types.hpp"
 #include "acl/types.hpp"
@@ -75,11 +76,11 @@ public:
   enum class Result { Okay, Fail, StopStart };
 
 private:
-  boost::unique_future<Result>& future;
-  boost::promise<Result> promise;
+  boost::unique_future<std::pair<Result, Result>>& future;
+  boost::promise<std::pair<Result, Result>> promise;
   
 public:
-  ReloadConfig(boost::unique_future<Result>& future) : future(future)
+  ReloadConfig(boost::unique_future<std::pair<Result, Result>>& future) : future(future)
   { future = promise.get_future(); }
   
   void Execute(Listener& listener);
