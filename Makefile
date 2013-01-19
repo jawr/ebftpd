@@ -69,7 +69,7 @@ $(error Unable to find crypto++ header files in /usr/include or /usr/local/inclu
 endif
 endif
 
-$(shell ./scripts/version.sh >/dev/null)
+VERSION := $(shell ./scripts/version.sh)
 
 OBJECTS := $(SOURCE:.cpp=.o)
 
@@ -79,7 +79,7 @@ all: ebftpd
 
 unity: ebftpd
 
-test:  ebftpd
+test:	ebftpd
 
 unitytest: ebftpd
 
@@ -106,3 +106,46 @@ clean:
 	@rm -f .state
 	@rm -f unity/*
 
+package:
+	if [ ! -z `ls unity/unity* 2>/dev/null` ]; then \
+	echo "Do make clean and a non-unity build before creating a package!"; \
+	exit 0; \
+	fi; \
+	if [ ! -f ebftpd ]; then \
+	echo "You must build ebftpd before creating a package!"; \
+	exit 0; \
+	fi; \
+	echo "Separating debug symbols .."; \
+	objcopy --only-keep-debug ebftpd ebftpd.dbg; \
+	strip --strip-debug --strip-unneeded ebftpd; \
+	objcopy --add-gnu-debuglink ebftpd.dbg ebftpd; \
+	echo "Preparing package .."; \
+	ARCH=$$(uname -m); \
+	PACKAGE=ebftpd-$(VERSION)-$$ARCH; \
+	ARCHIVE=$$PACKAGE.tar.bz2; \
+	mkdir -p $$PACKAGE/bin/lib $$PACKAGE/bin/libexec; \
+	mkdir -p $$PACKAGE/etc; \
+	mkdir -p $$PACKAGE/site; \
+	mkdir -p $$PACKAGE/data/logs; \
+	mkdir -p $$PACKAGE/data/text; \
+	cp INSTALL COPYING $$PACKAGE; \
+	cp README.md $$PACKAGE/README; \
+	cp ebftpd.conf.example $$PACKAGE/etc; \
+	cp ebftpd ebftpd.dbg $$PACKAGE/bin/libexec; \
+	cp scripts/ebftpd.sh $$PACKAGE/bin/ebftpd; \
+	echo "Copying dependencies .."; \
+	cp -p $$(ldd ebftpd | awk '/^\tlib/ {print $$3}') $$PACKAGE/bin/lib; \
+	LD_LINUX=$$(ldd ebftpd | awk '/ld-linux/ {print	$$1}'); \
+	cp -p $$LD_LINUX $$PACKAGE/bin/lib; \
+	ln -s $$(basename $$LD_LINUX) $$PACKAGE/bin/lib/ld-linux.so; \
+	echo "Setting permissions .."; \
+	find $$PACKAGE/ -type d -exec chmod 755 '{}' ';'; \
+	find $$PACKAGE/ -type f -exec chmod 644 '{}' ';'; \
+	chmod 755 $$PACKAGE/bin/lib/*; \
+	chmod 755 $$PACKAGE/bin/ebftpd; \
+	chmod 755 $$PACKAGE/bin/libexec/ebftpd; \
+	echo "Creating archive .."; \
+	tar cf - $$PACKAGE | bzip2 --best > $$ARCHIVE; \
+	rm -rf $$PACKAGE; \
+	echo "Package $$ARCHIVE created.";
+	

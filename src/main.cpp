@@ -3,6 +3,7 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
+#include <unistd.h>
 #include "ftp/listener.hpp"
 #include "util/net/tlscontext.hpp"
 #include "util/net/error.hpp"
@@ -33,13 +34,24 @@ extern const std::string programFullname = programName + " " + std::string(versi
 
 namespace
 {
-std::string configFile = "ftpd.conf";
+std::string configFile = "ebftpd.conf";
+std::vector<std::string> configSearch = { "../etc", "etc" };
 }
 
 void LoadConfig()
 {
+  std::string configPath;
+  for (const std::string& search : configSearch)
+  {
+    configPath = search + "/" + configFile;
+    if (!access(configPath.c_str(), F_OK)) break;
+    configPath.clear();
+  }
+  
+  if (configPath.empty()) configPath = configFile;
+
   logs::debug << "Loading config file.." << logs::endl;
-  cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config(configFile)));
+  cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config(configPath)));
   
   ftp::AddrAllocator<ftp::AddrType::Active>::SetAddrs(cfg::Get().ActiveAddr());
   ftp::AddrAllocator<ftp::AddrType::Passive>::SetAddrs(cfg::Get().PasvAddr());

@@ -6,3 +6,6 @@ VERSION=`git log --decorate --all | grep "^commit " | grep -n "tag: " | \
 if [ ! -f src/version.hpp ] || ! grep -q "\"$VERSION\"" src/version.hpp; then \
 echo "const char* version = \"$VERSION\";" > src/version.hpp; \
 fi
+
+echo $VERSION
+

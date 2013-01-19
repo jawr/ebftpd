@@ -39,4 +39,5 @@ ebftpd.exe
 *.a
 
 core
+*.dbg
 
