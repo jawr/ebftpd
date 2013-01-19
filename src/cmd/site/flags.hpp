@@ -12,8 +12,9 @@ class FLAGSCommand : public Command
 {
   std::string CheckFlag(const acl::User& user, const acl::Flag& flag)
   {
-    return (user.CheckFlag(flag)) ? "[*]" : "[ ]";
+    return user.CheckFlag(flag) ? "*" : " ";
   }
+  
 public:
   FLAGSCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
     Command(client, client.Control(), client.Data(), argStr, args) {}

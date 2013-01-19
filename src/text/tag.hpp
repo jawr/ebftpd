@@ -43,15 +43,8 @@ class Tag
   bool pretty;
 public:
   // oportuinity to set defaults from cofig here
-  Tag(const std::string& name) : 
-    name(name),
-    value("{{" + name + "}}"),
-    alignment(Alignment::Right), 
-    measurement(Measurement::None), 
-    type(TagType::String),
-    pretty(false)
-   {}
-  ~Tag() {}
+  Tag(const std::string& name);
+
   template <typename T> std::string Format(T value);
   void Register(const std::string& filter);
   void Compile();

@@ -42,10 +42,10 @@ void TemplateSection::CheckValueExists(const std::string& key)
     throw TemplateDuplicateValue("Already registered " + key);
 }
   
-void TemplateSection::RegisterValue(const std::string& key, const std::string& value)
+void TemplateSection::RegisterValue(std::string key, const std::string& value)
 {
+  boost::to_lower(key);
   CheckValueExists(key);
-  
   
   bool ok = false;
   for (auto& tag: tags)
@@ -55,12 +55,13 @@ void TemplateSection::RegisterValue(const std::string& key, const std::string& v
     tag.Parse(value);
   }
 
-  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
-  values.emplace_back(key);
+  if (ok) //throw TemplateNoTag("No template tag with key: " + key);
+    values.emplace_back(key);
 }
 
-void TemplateSection::RegisterValue(const std::string& key, int value)
+void TemplateSection::RegisterValue(std::string key, int value)
 {
+  boost::to_lower(key);
   CheckValueExists(key);
 
   std::ostringstream os;
@@ -73,13 +74,15 @@ void TemplateSection::RegisterValue(const std::string& key, int value)
     ok = true;
     tag.Parse(os.str());
   }
-  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
-  values.emplace_back(key);
+  
+  if (ok) //throw TemplateNoTag("No template tag with key: " + key);
+    values.emplace_back(key);
 }
 
 
-void TemplateSection::RegisterSize(const std::string& key, long long bytes)
+void TemplateSection::RegisterSize(std::string key, long long bytes)
 {
+  boost::to_lower(key);
   CheckValueExists(key);
 
   bool ok = false;
@@ -90,13 +93,14 @@ void TemplateSection::RegisterSize(const std::string& key, long long bytes)
     tag.ParseSize(bytes);
   }
 
-  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
-  values.emplace_back(key);
+  if (ok) //throw TemplateNoTag("No template tag with key: " + key);
+    values.emplace_back(key);
 }
 
-void TemplateSection::RegisterSpeed(const std::string& key, long long bytes, 
+void TemplateSection::RegisterSpeed(std::string key, long long bytes, 
   long long xfertime)
 {
+  boost::to_lower(key);
   CheckValueExists(key);
 
   bool ok = false;
@@ -107,8 +111,8 @@ void TemplateSection::RegisterSpeed(const std::string& key, long long bytes,
     tag.ParseSpeed(bytes, xfertime);
   }
 
-  if (!ok) throw TemplateNoTag("No template tag with key: " + key);
-  values.emplace_back(key);
+  if (ok) //throw TemplateNoTag("No template tag with key: " + key);
+    values.emplace_back(key);
 }
 
 std::string TemplateSection::Compile()

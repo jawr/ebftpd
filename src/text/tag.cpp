@@ -9,7 +9,16 @@
 namespace text
 {
 
-void Tag::Register(const std::string& filter)
+Tag::Tag(const std::string& name) : 
+  name(boost::to_lower_copy(name)),
+  value("{{" + this->name + "}}"),
+  alignment(Alignment::Right), 
+  measurement(Measurement::None), 
+  type(TagType::String),
+  pretty(false)
+{}
+
+ void Tag::Register(const std::string& filter)
 {
   if (filter == "left")
     alignment = Alignment::Left;

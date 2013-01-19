@@ -24,8 +24,9 @@ util::Error Factory::Initalize()
 
     for (; it != end; ++it)
     {
+      if (it->Extension() != "tmpl") continue;
+      
       fs::Path file(datapath / *it);
-
       std::string name = it->NoExtension(); 
       boost::to_lower(name);
 

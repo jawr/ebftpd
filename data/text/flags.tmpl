@@ -1,0 +1,22 @@
+{% body %}
+.--------------------------------------.
+| Flags for {{ user|left|26 }} |
+|--------------------------------------|
+| [{{ flag1 }}] Siteop    -1-  [{{ flaga }}] Nuke      -A- |
+| [{{ flag2 }}] Gadmin    -2-  [{{ flagb }}] Unnuke    -B- |
+| [{{ flag3 }}] Glock     -3-  [{{ flagc }}] Undupe    -C- |
+| [{{ flag4 }}] Exempt    -4-  [{{ flagd }}] Kick      -D- |
+| [{{ flag5 }}] Color     -5-  [{{ flage }}] Kill      -E- |
+| [{{ flag6 }}] Deleted   -6-  [{{ flagf }}] Take      -F- |
+| [{{ flag7 }}] Useredit  -7-  [{{ flagg }}] Give      -G- |
+| [{{ flag8 }}] Anonymous -8-  [{{ flagh }}] Users     -H- |
+| [{{ flagj }}] Custom 1  -J-  [{{ flagi }}] Idler     -I- |
+| [{{ flagk }}] Custom 2  -K-  [{{ flagm }}] Custom 4  -M- |
+| [{{ flagl }}] Custom 3  -L-  [{{ flagn }}] Custom 5  -N- |
+`--------------------------------------'
+{% endblock %}
+{% foot %}
+
+A '*' denotes an enabled flag.  Only siteops can change flags.
+Use SITE CHANGE <USER> FLAGS +/-VALUE to change.
+{% endblock %}

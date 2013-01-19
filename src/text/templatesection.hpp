@@ -23,11 +23,11 @@ public:
   void RegisterBuffer(const std::string& buffer) { this->buffer = buffer; }
   std::string RegisterTag(std::string var);
 
-  void RegisterValue(const std::string& key, const std::string& value);
-  void RegisterValue(const std::string& key, int value);
+  void RegisterValue(std::string key, const std::string& value);
+  void RegisterValue(std::string key, int value);
 
-  void RegisterSize(const std::string& key, long long bytes);
-  void RegisterSpeed(const std::string& key, long long bytes, long long xfertime);
+  void RegisterSize(std::string key, long long bytes);
+  void RegisterSpeed(std::string key, long long bytes, long long xfertime);
 
   void Reset() { values.clear(); }
 

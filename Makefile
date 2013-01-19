@@ -133,6 +133,7 @@ package:
 	cp ebftpd.conf.example $$PACKAGE/etc; \
 	cp ebftpd ebftpd.dbg $$PACKAGE/bin/libexec; \
 	cp scripts/ebftpd.sh $$PACKAGE/bin/ebftpd; \
+	cp data/text/* $$PACKAGE/data/text; \
 	echo "Copying dependencies .."; \
 	cp -p $$(ldd ebftpd | awk '/^\tlib/ {print $$3}') $$PACKAGE/bin/lib; \
 	LD_LINUX=$$(ldd ebftpd | awk '/ld-linux/ {print	$$1}'); \

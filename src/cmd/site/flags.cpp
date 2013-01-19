@@ -1,4 +1,5 @@
 #include <sstream>
+#include <boost/optional.hpp>
 #include "cmd/site/flags.hpp"
 #include "acl/user.hpp"
 #include "acl/usercache.hpp"
@@ -6,6 +7,11 @@
 #include "util/error.hpp"
 #include "acl/allowsitecmd.hpp"
 #include "cmd/error.hpp"
+#include "text/error.hpp"
+#include "text/factory.hpp"
+#include "text/template.hpp"
+#include "text/templatesection.hpp"
+#include "text/tag.hpp"
 
 namespace cmd { namespace site
 {
@@ -32,33 +38,50 @@ void FLAGSCommand::Execute()
     }
   }
   
-  std::ostringstream os;
-  os << "Flags for " << user.Name() << "\n\n";
-  os << CheckFlag(user, acl::Flag::Siteop)      << " Siteop    -1-\n";
-  os << CheckFlag(user, acl::Flag::Gadmin)      << " Gadmin    -2-\n";
-  os << CheckFlag(user, acl::Flag::Glock)       << " Glock     -3-\n";
-  os << CheckFlag(user, acl::Flag::Exempt)      << " Exempt    -4-\n";
-  os << CheckFlag(user, acl::Flag::Color)       << " Color     -5-\n";
-  os << CheckFlag(user, acl::Flag::Deleted)     << " Deleted   -6-\n";
-  os << CheckFlag(user, acl::Flag::Useredit)    << " User Edit -7-\n";
-  os << CheckFlag(user, acl::Flag::Anonymous)   << " Anonymous -8-\n";
-  os << CheckFlag(user, acl::Flag::Nuke)        << " Nuke      -A-\n";
-  os << CheckFlag(user, acl::Flag::Unnuke)      << " Unnuke    -B-\n";
-  os << CheckFlag(user, acl::Flag::Undupe)      << " Undupe    -C-\n";
-  os << CheckFlag(user, acl::Flag::Kick)        << " Kick      -D-\n";
-  os << CheckFlag(user, acl::Flag::Kill)        << " Kill      -E-\n";
-  os << CheckFlag(user, acl::Flag::Take)        << " Take      -F-\n";
-  os << CheckFlag(user, acl::Flag::Give)        << " Give      -G-\n";
-  os << CheckFlag(user, acl::Flag::Users)       << " Users     -H-\n";
-  os << CheckFlag(user, acl::Flag::Idler)       << " Idler     -I-\n";
-  os << CheckFlag(user, acl::Flag::Custom1)     << " Custom 1  -J-\n";
-  os << CheckFlag(user, acl::Flag::Custom2)     << " Custom 2  -K-\n";
-  os << CheckFlag(user, acl::Flag::Custom3)     << " Custom 3  -L-\n";
-  os << CheckFlag(user, acl::Flag::Custom4)     << " Custom 4  -M-\n";
-  os << CheckFlag(user, acl::Flag::Custom5)     << " Custom 5  -N-\n\n";
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("flags"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
+  }
+  
+  text::TemplateSection& head = templ->Head();
+  text::TemplateSection& body = templ->Body();
+  text::TemplateSection& foot = templ->Foot();
+  
+  body.RegisterValue("user", user.Name());
+  body.RegisterValue("flag1", CheckFlag(user, acl::Flag::Siteop));
+  body.RegisterValue("flag2", CheckFlag(user, acl::Flag::Gadmin));
+  body.RegisterValue("flag3", CheckFlag(user, acl::Flag::Glock));
+  body.RegisterValue("flag4", CheckFlag(user, acl::Flag::Exempt));
+  body.RegisterValue("flag5", CheckFlag(user, acl::Flag::Color));
+  body.RegisterValue("flag6", CheckFlag(user, acl::Flag::Deleted));
+  body.RegisterValue("flag7", CheckFlag(user, acl::Flag::Useredit));
+  body.RegisterValue("flag8", CheckFlag(user, acl::Flag::Anonymous));
 
-  os << "A '*' denotes an enabled flag.  Only sysop users may change flags.\n";
-  os << "Use SITE CHANGE <USER> FLAGS +/-VALUE to change.";
+  body.RegisterValue("flaga", CheckFlag(user, acl::Flag::Nuke));
+  body.RegisterValue("flagb", CheckFlag(user, acl::Flag::Unnuke));
+  body.RegisterValue("flagc", CheckFlag(user, acl::Flag::Undupe));
+  body.RegisterValue("flagd", CheckFlag(user, acl::Flag::Kick));
+  body.RegisterValue("flage", CheckFlag(user, acl::Flag::Kill));
+  body.RegisterValue("flagf", CheckFlag(user, acl::Flag::Take));
+  body.RegisterValue("flagg", CheckFlag(user, acl::Flag::Give));
+  body.RegisterValue("flagh", CheckFlag(user, acl::Flag::Users));
+  body.RegisterValue("flagi", CheckFlag(user, acl::Flag::Idler));
+  body.RegisterValue("flagj", CheckFlag(user, acl::Flag::Custom1));
+  body.RegisterValue("flagk", CheckFlag(user, acl::Flag::Custom2));
+  body.RegisterValue("flagl", CheckFlag(user, acl::Flag::Custom3));
+  body.RegisterValue("flagm", CheckFlag(user, acl::Flag::Custom4));
+  body.RegisterValue("flagn", CheckFlag(user, acl::Flag::Custom5));
+
+  std::ostringstream os;
+  os << head.Compile();
+  os << body.Compile();
+  os << foot.Compile();
 
   control.Reply(ftp::CommandOkay, os.str());
 }
