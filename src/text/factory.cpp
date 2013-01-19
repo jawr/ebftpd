@@ -32,7 +32,7 @@ util::Error Factory::Initalize()
       try
       {
         TemplateParser templ(file.ToString());
-        instance.templates.emplace(std::make_pair(name, templ.Create()));
+        instance.templates.insert(std::make_pair(name, templ.Create()));
       }
       catch (const text::TemplateError& e)
       {

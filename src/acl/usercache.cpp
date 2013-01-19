@@ -271,10 +271,16 @@ util::Error UserCache::AddGID(const std::string& name, GroupID gid)
 
   if (!user.CheckGID(gid))
   {
-    if (user.PrimaryGID() == -1) user.SetPrimaryGID(gid);
-    else user.AddSecondaryGID(gid);
-    
-    db::user::Save(*it->second, "secondary gids");
+    if (user.PrimaryGID() == -1)
+    {
+      user.SetPrimaryGID(gid);
+      db::user::Save(*it->second, "primary gid");
+    }
+    else
+    {
+      user.AddSecondaryGID(gid);
+      db::user::Save(*it->second, "secondary gids");
+    }
   }
 
   return util::Error::Success();
@@ -293,14 +299,18 @@ util::Error UserCache::DelGID(const std::string& name, GroupID gid)
     {
       user.SetPrimaryGID(user.SecondaryGIDs().front());
       user.DelSecondaryGID(user.PrimaryGID());
+      db::user::Save(*it->second, "secondary gids");
     }
     else
       user.SetPrimaryGID(-1);
+    db::user::Save(*it->second, "primary gid");
   }
   else
+  {
     user.DelSecondaryGID(gid);
+    db::user::Save(*it->second, "secondary gids");
+  }
   
-  db::user::Save(*it->second, "secondary gids");
 
   return util::Error::Success();
 }
