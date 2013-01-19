@@ -6,6 +6,7 @@
 #include "fs/file.hpp"
 #include "db/stats/stat.hpp"
 #include "acl/usercache.hpp"
+#include "acl/groupcache.hpp"
 #include "stats/util.hpp"
 #include "ftp/counter.hpp"
 #include "util/scopeguard.hpp"
@@ -18,6 +19,8 @@
 #include "util/string.hpp"
 #include "exec/check.hpp"
 #include "cmd/error.hpp"
+#include "acl/path.hpp"
+#include "fs/owner.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -33,13 +36,52 @@ std::string CRCToString(boost::crc_32_type& crc)
   return os.str();
 }
 
+std::string FileAge(const fs::RealPath& path)
+{
+  try
+  {
+    time_t age = time(NULL) - fs::Status(path).Native().st_mtime;
+    return util::FormatDuration(util::TimePair(age, 0));
+  }
+  catch (const util::SystemError&)
+  {
+  }
+  
+  return std::string("");
+}
+
 }
 
 void STORCommand::DupeMessage(const fs::VirtualPath& path)
 {
   std::ostringstream os;
   os << ftp::xdupe::Message(client, path);
-  os << "Unable to create file: " << util::SystemError(EEXIST).Message();
+  
+  fs::RealPath realPath(fs::MakeReal(path));
+  bool incomplete = fs::IsIncomplete(realPath);
+  bool hideOwner = acl::path::FileAllowed<acl::path::Hideowner>(client.User(), path);
+  
+  if (!hideOwner)
+  {
+    fs::Owner owner = fs::OwnerCache::Owner(realPath);
+    std::string user = acl::UserCache::UIDToName(owner.UID());
+    if (incomplete)
+      os << "File is being uploaded by " << user << ".";
+    else
+    {
+      os << "File was uploaded by " << user << " (" << FileAge(realPath) << " ago).";
+    }
+  }
+  else
+  {
+    if (incomplete)
+      os << "File is already being uploaded.";
+    else
+    {
+      os << "File already uploaded (" << FileAge(realPath) << " ago).";
+    }
+  }
+
   control.Reply(ftp::BadFilename, os.str());
 }
 

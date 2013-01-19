@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <ctime>
 #include <cmath>
+#include <string>
 
 namespace util
 {
@@ -38,6 +39,8 @@ public:
   static TimePair Microseconds(suseconds_t microseconds)
   { return TimePair(0, microseconds); }
 };
+
+std::string FormatDuration(const TimePair& timePair);
 
 } /* util namespace */
 
