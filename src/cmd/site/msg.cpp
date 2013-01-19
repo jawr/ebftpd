@@ -14,6 +14,8 @@
 #include "util/string.hpp"
 #include "util/enum.hpp"
 #include "cmd/error.hpp"
+#include "text/error.hpp"
+#include "text/factory.hpp"
 
 namespace cmd { namespace site
 {
@@ -219,28 +221,40 @@ void MSGCommand::List()
     control.Reply(ftp::CommandOkay, "Your mail box is empty.");
     return;
   }
+
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("msg.list"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
+  }
+
+  text::TemplateSection& head = templ->Head();
+  text::TemplateSection& body = templ->Body();
+  text::TemplateSection& foot = templ->Foot();
   
-  control.PartReply(ftp::CommandOkay, ".----.------------.--------.----------------------.----------------------.");
-  control.PartReply(ftp::CommandOkay, "| ## | Sender     | Status | When                 | Message Start        |");
-  control.PartReply(ftp::CommandOkay, "|----+------------+--------+----------------------+----------------------|");
+  std::ostringstream os;
+  os << head.Compile();
   
   unsigned index = 0;
   for (auto& message : mail)
   {
-    std::string status(util::EnumToString(message.Status()));
-    status[0] = std::toupper(status[0]);
+    body.RegisterValue("index", ++index);
+    body.RegisterValue("sender", message.Sender());
+    body.RegisterValue("status", boost::to_upper_copy(util::EnumToString(message.Status())));
+    body.RegisterValue("when", boost::lexical_cast<std::string>(message.TimeSent()));
+    body.RegisterValue("body", message.Body());
     
-    std::ostringstream os;
-    os << "| " << std::setfill('0') << std::setw(2) << ++index << " | " << std::setfill(' ')
-       << std::left << std::setw(10) << message.Sender().substr(0, 10) << " | "
-       << std::left << std::setw(6) << status << " | "
-       << std::left << message.TimeSent() << " | "
-       << std::setw(20) << message.Body().substr(0, 20)  << " |";
-    control.PartReply(ftp::CommandOkay, os.str());
+    os << body.Compile();
   }
   
-  control.PartReply(ftp::CommandOkay, "`----'------------'--------'----------------------'----------------------'");
-  control.Reply(ftp::CommandOkay, "End of mail box list.");
+  os << foot.Compile();
+
+  control.Reply(ftp::CommandOkay, os.str());
 }
 
 void MSGCommand::Execute()

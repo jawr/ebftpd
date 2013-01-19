@@ -100,7 +100,6 @@ void Tag::Compile()
   else if (type == TagType::Decimal) os << "d";
   else assert(false); // should never get here
 
-
   format = os.str();
 }
 
