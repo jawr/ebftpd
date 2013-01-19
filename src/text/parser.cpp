@@ -21,7 +21,7 @@ Template TemplateParser::Create()
   while (io.good())
   {
     char c;
-    if(io >> std::noskipws >> c)
+    if (io >> std::noskipws >> c)
       buf.Stream() << c;
   }
 
@@ -33,8 +33,7 @@ Template TemplateParser::Create()
 void TemplateBuffer::ParseInclude(const std::string& file)
 {
   std::ifstream io(file.c_str());
-  if (!io) throw TemplateError("Unable to open include file (" + file 
-    + ")");
+  if (!io) throw TemplateError("Unable to open include file (" + file + ")");
 
   state = TemplateState::None;
 
@@ -58,18 +57,19 @@ void TemplateBuffer::Parse()
   }
 }
 
-void TemplateBuffer::ParseState(char& c)
-{
+void TemplateBuffer::ParseState(char c)
+{  
   switch (state)
   {
     case TemplateState::Escape:
       buffer << c; 
+      state = TemplateState::None;
       return;
 
     case TemplateState::Skip:
-      if (c == '\n' || c == '\r' || c == '}' || c == ' ')
-        return;
+      if (c == '\r' || c == '}' || c == ' ') return;
       state = TemplateState::None;
+      if (c == '\n') return;
       break;
 
     case TemplateState::Close:
@@ -89,20 +89,27 @@ void TemplateBuffer::ParseState(char& c)
   ParseChar(c);
 }
         
-void TemplateBuffer::ParseChar(char& c)
+void TemplateBuffer::ParseChar(char c)
 {
   ++charPos;
-  if (c == '\n' || c == '\r')
-  {
-    charPos = 0;
-    ++linePos;
-  }
 
   switch (c)
   {
-    case '\\':
-      state = TemplateState::Escape;
+    case '\r':
+      // ignore carriage return
       return;
+      
+    case '\n':
+      charPos = 0;
+      ++linePos;
+      break;
+
+    case '\\':
+      if (state == TemplateState::None)
+      {
+        state = TemplateState::Escape;
+        return;
+      }
 
     case '{':
       if (state == TemplateState::Open)
@@ -159,10 +166,8 @@ void TemplateBuffer::ParseBlock()
 {
   if (block == TemplateBlock::Head)
     templ.Head().RegisterBuffer(buffer.str());
-  
   else if (block == TemplateBlock::Body)
     templ.Body().RegisterBuffer(buffer.str());
-
   else if (block == TemplateBlock::Foot)
     templ.Foot().RegisterBuffer(buffer.str());
   

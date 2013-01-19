@@ -49,8 +49,8 @@ public:
   {}
 
   void Parse();
-  void ParseState(char& c); 
-  void ParseChar(char& c); 
+  void ParseState(char c); 
+  void ParseChar(char c); 
   void ParseFilter();
   void ParseLogic();
   void ParseBlock();
@@ -58,7 +58,7 @@ public:
 
   std::stringstream& Stream() { return ss; }
 
-  void Append(const char& c) { buffer << c; }
+  void Append(char c) { buffer << c; }
 
   int LinePos() const { return linePos; }
   int CharPos() const { return charPos; }

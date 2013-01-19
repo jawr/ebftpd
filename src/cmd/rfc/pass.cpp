@@ -7,6 +7,7 @@
 #include "ftp/listener.hpp"
 #include "logs/logs.hpp"
 #include "cmd/error.hpp"
+#include "text/util.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -102,15 +103,21 @@ void PASSCommand::Execute()
   }
   
   std::ostringstream os;
-  os << "User " << client.User().Name() << " logged in.";
   if (client.KickLogin() && !control.SingleLineReplies())
   {
-    os << "\nKicked " << kickResult.kicked << " (idle " 
-       << kickResult.idleTime << ") of " << kickResult.logins << " login(s).";
+    os << "Kicked " << kickResult.kicked << " (idle " 
+       << kickResult.idleTime << ") of " << kickResult.logins << " login(s).\n";
   }
   
   db::userprofile::Login(client.User().UID());
-      
+
+  std::string welcome;
+  e = text::GenericTemplate("welcome", welcome);
+  if (!e) logs::error << "Failed to display welcome message : " << e.Message() << logs::endl;
+  else os << welcome;
+  
+  os << "User " << client.User().Name() << " logged in.";
+
   control.Reply(ftp::UserLoggedIn, os.str());
   return;
 }

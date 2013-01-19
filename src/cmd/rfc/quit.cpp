@@ -1,13 +1,17 @@
 #include "cmd/rfc/quit.hpp"
+#include "text/util.hpp"
 
 namespace cmd { namespace rfc
 {
 
 void QUITCommand::Execute()
 {
-  control.Reply(ftp::ClosingControl, "Bye bye"); 
+  std::string goodbye;
+  if (text::GenericTemplate("goodbye", goodbye))
+    control.Reply(ftp::ClosingControl, goodbye);
+  else control.Reply(ftp::ClosingControl, "Bye bye");
+
   client.SetState(ftp::ClientState::Finished);
-  return;
 }
 
 } /* rfc namespace */
