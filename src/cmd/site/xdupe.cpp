@@ -10,7 +10,7 @@ void XDUPECommand::Execute()
 {
   if (args.size() == 1)
   {
-    if (client.XDupeMode() == ftp::XDupeMode::Disabled)
+    if (client.XDupeMode() == ftp::xdupe::Mode::Disabled)
       control.Reply(ftp::CommandOkay, "Extended dupe mode is disabled.");
     else
     {
@@ -37,7 +37,7 @@ void XDUPECommand::Execute()
     throw cmd::SyntaxError();
   }
   
-  client.SetXDupeMode(static_cast<ftp::XDupeMode>(mode));
+  client.SetXDupeMode(static_cast<ftp::xdupe::Mode>(mode));
   std::ostringstream os;
   os << "Activated extended dupe mode " << mode << ".";
   control.Reply(ftp::CommandOkay, os.str());

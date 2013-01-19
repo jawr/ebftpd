@@ -1,12 +1,22 @@
 #ifndef __FTP_XDUPE_HPP
 #define __FTP_XDUPE_HPP
 
-#include <cstdint>
+#include <string>
+
+namespace fs
+{
+class VirtualPath;
+}
 
 namespace ftp
 {
 
-enum class XDupeMode
+class Client;
+
+namespace xdupe
+{
+
+enum class Mode : unsigned
 {
   Disabled = 0,
   One = 1,
@@ -15,6 +25,9 @@ enum class XDupeMode
   Four = 4
 };
 
+std::string Message(ftp::Client& client, const fs::VirtualPath& path);
+
+} /* xdupe namespace */
 } /* ftp namespace */
 
 #endif

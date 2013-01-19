@@ -74,7 +74,7 @@ Factory::Factory()
                       "Display server version" }, },
     { "XDUPE",      { 0,  1,  "xdupe",
                       CreatorBasePtr(new Creator<site::XDUPECommand>()),
-                      "Syntax: SITE XDUPE [<mode>]",
+                      "Syntax: SITE XDUPE 0|1|2|3|4",
                       "Display / change extended dupe mode" }, },
     { "PASSWD",     { 1,  1,  "passwd",
                       CreatorBasePtr(new Creator<site::PASSWDCommand>()),

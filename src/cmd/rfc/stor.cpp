@@ -35,6 +35,14 @@ std::string CRCToString(boost::crc_32_type& crc)
 
 }
 
+void STORCommand::DupeMessage(const fs::VirtualPath& path)
+{
+  std::ostringstream os;
+  os << ftp::xdupe::Message(client, path);
+  os << "Unable to create file: " << util::SystemError(EEXIST).Message();
+  control.Reply(ftp::BadFilename, os.str());
+}
+
 bool STORCommand::CalcCRC(const fs::VirtualPath& path)
 {
   for (auto& mask : cfg::Get().CalcCrc())
@@ -100,10 +108,17 @@ void STORCommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    std::ostringstream os;
-    os << "Unable to " << (data.RestartOffset() > 0 ? "append" : "create")
-       << " file: " << e.Message();
-    control.Reply(ftp::ActionNotOkay, os.str());
+    if (data.RestartOffset() == 0 && e.Errno() == EEXIST)
+    {
+      DupeMessage(path);
+    }
+    else
+    {
+      std::ostringstream os;
+      os << "Unable to " << (data.RestartOffset() > 0 ? "append" : "create")
+         << " file: " << e.Message();
+      control.Reply(ftp::ActionNotOkay, os.str());
+    }
     throw cmd::NoPostScriptError();
   }
 

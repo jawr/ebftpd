@@ -1,6 +1,6 @@
 CXX := g++
 CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic -rdynamic
-CXXFLAGS += -Winit-self -Winline -pthread
+CXXFLAGS += -Winit-self -pthread
 LIBS := -lmongoclient -lcrypto -lboost_thread -lboost_regex -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lssl -lboost_filesystem
 LIBS += -lboost_date_time -lboost_program_options
@@ -105,6 +105,7 @@ clean:
 	@rm -f ebftpd
 	@rm -f .state
 	@rm -f unity/*
+	@rm -f ebftpd.dbg
 
 package:
 	if [ ! -z `ls unity/unity* 2>/dev/null` ]; then \

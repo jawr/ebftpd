@@ -14,7 +14,7 @@ namespace cmd { namespace rfc
 class STORCommand : public Command
 {
   bool CalcCRC(const fs::VirtualPath& path);
-
+  void DupeMessage(const fs::VirtualPath& path);
   
 public:
   STORCommand(ftp::Client& client, const std::string& argStr, const Args& args) :

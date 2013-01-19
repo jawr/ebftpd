@@ -216,6 +216,7 @@ void MSGCommand::Purge()
 void MSGCommand::List()
 {
   if (args.size() != 2) throw cmd::SyntaxError();
+  
   std::vector<db::mail::Message> mail(db::mail::Get(client.User().UID()));
   if (mail.empty())
   {

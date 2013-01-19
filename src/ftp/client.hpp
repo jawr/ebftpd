@@ -46,7 +46,7 @@ class Client : public util::Thread
   int passwordAttemps;
   fs::VirtualPath renameFrom;
   std::string ident;
-  ::ftp::XDupeMode xdupeMode;
+  xdupe::Mode xdupeMode;
   std::string confirmCommand;
   std::string currentCommand;
   bool kickLogin;
@@ -101,9 +101,9 @@ public:
   const boost::posix_time::ptime LoggedInAt() const
   { return loggedInAt; }
   
-  void SetXDupeMode(XDupeMode xdupeMode)
+  void SetXDupeMode(xdupe::Mode xdupeMode)
   { this->xdupeMode = xdupeMode; }
-  ::ftp::XDupeMode XDupeMode() const { return xdupeMode; }
+  xdupe::Mode XDupeMode() const { return xdupeMode; }
   
   bool IsFxp(const util::net::Endpoint& ep) const;
   
