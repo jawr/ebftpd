@@ -30,6 +30,14 @@ enum class Measurement
   None
 };
 
+enum class CaseConversion
+{
+  None,
+  Upper,
+  Lower,
+  Title
+};
+
 class Tag
 {
   std::string name;
@@ -38,6 +46,7 @@ class Tag
   std::string precision;
   Alignment alignment;
   Measurement measurement;
+  CaseConversion caseConv;
   std::string format;
   TagType type;
   bool pretty;
@@ -49,7 +58,7 @@ public:
   void Register(const std::string& filter);
   void Compile();
   
-  void Parse(const std::string& value);
+  void Parse(std::string value);
   void ParseSize(long long bytes);
   void ParseSpeed(long long bytes, long long xfertime);
 

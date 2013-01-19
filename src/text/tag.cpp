@@ -5,6 +5,7 @@
 #include "text/tag.hpp"
 #include "text/error.hpp"
 #include "logs/logs.hpp"
+#include "util/titlecase.hpp"
 
 namespace text
 {
@@ -14,6 +15,7 @@ Tag::Tag(const std::string& name) :
   value("{{" + this->name + "}}"),
   alignment(Alignment::Right), 
   measurement(Measurement::None), 
+  caseConv(CaseConversion::None),
   type(TagType::String),
   pretty(false)
 {}
@@ -48,8 +50,16 @@ Tag::Tag(const std::string& name) :
     measurement = Measurement::Gbyte;
   }
   else if (filter == "auto")
+  {
+    SetType(TagType::Decimal);
     measurement = Measurement::Auto;
-
+  }
+  else if (filter == "upper")
+    caseConv = CaseConversion::Upper;
+  else if (filter == "lower")
+    caseConv = CaseConversion::Lower;
+  else if (filter == "title")
+    caseConv = CaseConversion::Title;
   else
   {
     std::vector<std::string> args;
@@ -94,8 +104,23 @@ void Tag::Compile()
   format = os.str();
 }
 
-void Tag::Parse(const std::string& value)
+void Tag::Parse(std::string value)
 {
+  switch (caseConv)
+  {
+    case CaseConversion::Upper  :
+      boost::to_upper(value);
+      break;
+    case CaseConversion::Lower  :
+      boost::to_lower(value);
+      break;
+    case CaseConversion::Title  :
+      value = util::string::TitleCase(value);
+      break;
+    case CaseConversion::None   :
+      break;
+  }
+  
   std::ostringstream os;
   os << boost::format(format) % value;
   this->value = os.str();

@@ -199,7 +199,7 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE PREDUPE <filemask>",
                       "Forcefully dupe all future uploads matching a file mask" }, },
-    { "UPATE",      { 1,  1,  "update",
+    { "UPDATE",     { 1,  1,  "update",
                       nullptr,
                       "Syntax: SITE UPDATE <pathmask>",
                       "Add all directories matching a path mask to the site search index" }, },

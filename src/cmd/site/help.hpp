@@ -10,6 +10,7 @@ namespace cmd { namespace site
 class HELPCommand : public Command
 {
   void Syntax();
+  void ListNoTemplate();
   void List();
 
 public:

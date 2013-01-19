@@ -1,0 +1,11 @@
+{% head %}
+{{ server }} SITE command listing - 
+
+{% endblock %}
+{% body %}
+{{ command|right|10 }} : {{ description }}
+{% endblock %}
+{% foot %}
+ 
+End of list.
+{% endblock %}
