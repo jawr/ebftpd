@@ -12,6 +12,7 @@
 #include <crypto++/secblock.h>
 #endif
 
+#include <sstream>
 #include <openssl/rand.h>
 #include <openssl/evp.h>
 #include <openssl/x509v3.h>
@@ -50,57 +51,31 @@ std::string HashPassword(const std::string& password, const std::string& salt)
   return std::string(std::begin(key), std::end(key));
 }
 
-std::string HexEncode(const std::string& data)
+std::string HexEncode(const std::string& s)
 {
-  //std::vector<unsigned char> udata(data.begin(), data.end());
-  
-  std::ostringstream encoded;
-  for (unsigned char ch : data)
+  std::ostringstream os;
+  os << std::hex << std::setfill('0');
+  for (unsigned ch : s) 
   {
-    encoded << std::hex << std::setfill('0') << std::setw(2) << ch;
+    os << std::setw(2) << ch;
   }
-  
-  std::cout << encoded.str() << std::endl;
-  
-  return encoded.str();
-/*  long len = data.length();
-  std::shared_ptr<unsigned char> encoded(string_to_hex(data.c_str(), &len), &free);
-  if (!encoded.get())
-  {
-    ERR_print_errors_fp(stdout);
-    abort();
-  }
-  std::cout << std::string(&data[0], &data[len]) << std::endl;
-  return std::string(&data[0], &data[len]);*/
-/*  
-  try
-  {
-  }
-  catch (...)
-  {
-    free(encoded);
-    throw;
-  }
-  CryptoPP::HexEncoder encoder;
-  std::string result;
-  encoder.Attach(new CryptoPP::StringSink(result));
-  encoder.Put(reinterpret_cast<const byte*>(data.c_str()), data.length());
-  encoder.MessageEnd();
-  return result;*/
+  return os.str();
 }
 
-std::string HexDecode(const std::string& data)
+std::string HexDecode(const std::string& s)
 {
-  std::vector<unsigned char> udata(data.begin(), data.end());
-  std::shared_ptr<char> decoded(hex_to_string(udata.data(), udata.size()));
-  verify(decoded.get());
-  return std::string(decoded.get());
-/*  CryptoPP::HexDecoder decoder;
-  std::string result;
-  decoder.Attach(new CryptoPP::StringSink(result));
-  decoder.Put(reinterpret_cast<const byte*>(data.c_str()), data.length());
-  decoder.MessageEnd();
-  return result;*/
+  std::ostringstream os;
+  std::istringstream is1(s);
+  std::string part;
+  part.resize(2);
+  while (is1.read(&part.front(), 2))
+  {
+    unsigned ch;
+    std::istringstream is2(part);
+    is2 >> std::hex >> ch;
+    os << char(ch);
+  }
+  return os.str();
 }
 
 } /* crypto namespace */
