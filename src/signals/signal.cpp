@@ -1,5 +1,7 @@
 #include <csignal>
 #include <cerrno>
+#include <stdexcept>
+#include <exception>
 #include <sys/ptrace.h>
 #include "ftp/listener.hpp"
 #include "signals/signal.hpp"
@@ -75,7 +77,43 @@ void CrashHandler(int signo)
 {
   std::stringstream ss;
   ss << "Critical error signal " << signo << " received, dumping backtrace: " << std::endl;
+
+  util::debug::DumpBacktrace(ss, 2);
   
+  std::string line; 
+  while (std::getline(ss, line))
+  {
+    logs::error << line << logs::endl;
+  }
+  
+  _exit(-1);
+}
+
+void TerminateHandler()
+{
+  static bool rethrown = false;
+  std::stringstream ss;
+  try
+  {
+    if (!rethrown++) throw;
+  }
+  catch (const std::exception& e)
+  {
+    ss << "Unhandled ";
+    char exceptionType[1024];
+    if (util::debug::Demangle(typeid(e).name(), exceptionType, sizeof(exceptionType)))
+      ss << exceptionType;
+    else
+      ss << typeid(e).name();
+    ss << " (" << e.what() << ") exception, dumping backtrace: " << std::endl;
+  }
+  catch (...)
+  {
+    ss << "Unhandled exception, dumping backtrace: " << std::endl;
+  }
+  
+  
+
   util::debug::DumpBacktrace(ss, 2);
   
   std::string line; 
@@ -89,6 +127,8 @@ void CrashHandler(int signo)
 
 util::Error Initialise()
 {
+  std::set_terminate(TerminateHandler);
+
   sigset_t set;
   sigfillset(&set);
   sigdelset(&set, SIGSEGV);

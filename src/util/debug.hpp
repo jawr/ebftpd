@@ -41,6 +41,12 @@ inline std::string StackFunctionName()
 
 void DumpBacktrace(std::ostream& out, unsigned skip = 0);
 
+inline bool Demangle(const char* mangled, char* demangled, size_t size)
+{
+  int status;
+  return abi::__cxa_demangle(mangled, demangled, &size, &status) != nullptr;
+}
+
 } /* debug namespace */
 } /* util namespace */
 
