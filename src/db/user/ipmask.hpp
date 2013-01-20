@@ -8,8 +8,8 @@
 namespace db { namespace ipmask
 {
 
-  void Add(const acl::User& user, const std::string& mask);
-  void Delete(const acl::User& user, const std::string& mask);
+  void Add(acl::UserID uid, const std::string& mask);
+  void Delete(acl::UserID uid, const std::string& mask);
   void GetAll(acl::UserIPMaskMap& userIPMaskMap);
 
 // end

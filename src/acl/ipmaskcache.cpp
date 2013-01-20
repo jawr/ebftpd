@@ -4,6 +4,7 @@
 #include "db/user/ipmask.hpp"
 #include "util/string.hpp"
 #include "logs/logs.hpp"
+#include "acl/usercache.hpp"
 
 namespace acl
 {
@@ -29,16 +30,16 @@ bool IpMaskCache::Check(const std::string& addr)
 }
 
 
-util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
+util::Error IpMaskCache::Add(acl::UserID uid, const std::string& mask,
   std::vector<std::string>& deleted)
 {
   deleted.clear();
   boost::upgrade_lock<boost::shared_mutex> lock(instance.mtx);
-  UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(user.UID());
+  UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(uid);
   if (masks == instance.userIPMaskMap.end())
   {
     boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
-    instance.userIPMaskMap.insert({user.UID(), std::vector<std::string>({mask})});
+    instance.userIPMaskMap.insert({uid, std::vector<std::string>({mask})});
     return util::Error::Success();
   }
 
@@ -53,7 +54,7 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
     else if (util::string::WildcardMatch(mask, *it, false))
     {
       deleted.push_back(*it);
-      db::ipmask::Delete(user, *it);
+      db::ipmask::Delete(uid, *it);
       {
         boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
         it = masks->second.erase(it);
@@ -64,21 +65,21 @@ util::Error IpMaskCache::Add(const acl::User& user, const std::string& mask,
   }   
 
   // check only a maximum of 10 masks per user
-  if (instance.userIPMaskMap[user.UID()].size() > 9)
+  if (instance.userIPMaskMap[uid].size() > 9)
     return util::Error::Failure("10 IP masks already added.");
 
   {
     boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
-    instance.userIPMaskMap[user.UID()].push_back(mask);
+    instance.userIPMaskMap[uid].push_back(mask);
   }
-  db::ipmask::Add(user, mask);
+  db::ipmask::Add(uid, mask);
   return util::Error::Success();
 }
 
-util::Error IpMaskCache::Delete(const acl::User& user, int idx, std::string& deleted)
+util::Error IpMaskCache::Delete(acl::UserID uid, int idx, std::string& deleted)
 {
   boost::upgrade_lock<boost::shared_mutex> lock(instance.mtx);
-  UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(user.UID());
+  UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(uid);
 
   if (masks == instance.userIPMaskMap.end() ||
       static_cast<unsigned int>(idx) >= masks->second.size())
@@ -90,37 +91,37 @@ util::Error IpMaskCache::Delete(const acl::User& user, int idx, std::string& del
   }
 
   deleted = masks->second[idx];
-  db::ipmask::Delete(user, masks->second[idx]);
+  db::ipmask::Delete(uid, masks->second[idx]);
   masks->second.erase(masks->second.begin() + idx);
 
   return util::Error::Success();
 }
 
-util::Error IpMaskCache::DeleteAll(const acl::User& user, std::vector<std::string>& deleted)
+util::Error IpMaskCache::DeleteAll(acl::UserID uid, std::vector<std::string>& deleted)
 {
   boost::upgrade_lock<boost::shared_mutex> lock(instance.mtx);
-  UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(user.UID());
+  UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(uid);
   if (masks == instance.userIPMaskMap.end() || masks->second.empty())
-    return util::Error::Failure("User " + user.Name() + " has no IP masks.");
+    return util::Error::Failure("User " + acl::UserCache::UIDToName(uid) + " has no IP masks.");
 
   while (!masks->second.empty())
   {
     deleted.push_back(masks->second.front());
-    db::ipmask::Delete(user, masks->second.front());
+    db::ipmask::Delete(uid, masks->second.front());
     masks->second.erase(masks->second.begin());
   }
 
   return util::Error::Success();  
 }
 
-util::Error IpMaskCache::List(const acl::User& user,
+util::Error IpMaskCache::List(acl::UserID uid,
   std::vector<std::string>& masks)
 {
   masks.clear();
   boost::upgrade_lock<boost::shared_mutex> lock(instance.mtx);
-  UserIPMaskMap::iterator it = instance.userIPMaskMap.find(user.UID());
+  UserIPMaskMap::iterator it = instance.userIPMaskMap.find(uid);
   if (it == instance.userIPMaskMap.end())
-    return util::Error::Failure("User "+ user.Name() + " has no IP masks.");            
+    return util::Error::Failure("User "+ acl::UserCache::UIDToName(uid) + " has no IP masks.");            
   masks = it->second;
   return util::Error::Success();
 }

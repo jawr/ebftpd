@@ -26,12 +26,17 @@ public:
   
   static void Initialize();
   static bool Check(const std::string& addr);
-  static util::Error Add(const acl::User& user, const std::string& mask,
+  static util::Error Add(acl::UserID uid, const std::string& mask,
       std::vector<std::string>& deleted);
-  static util::Error Delete(const acl::User& user, int idx, std::string& deleted);
-  static util::Error DeleteAll(const acl::User& user, std::vector<std::string>& deleted);
+  static util::Error Add(acl::UserID uid, const std::string& mask)
+  {
+    std::vector<std::string> deleted;
+    return Add(uid, mask, deleted);
+  }
+  static util::Error Delete(acl::UserID uid, int idx, std::string& deleted);
+  static util::Error DeleteAll(acl::UserID uid, std::vector<std::string>& deleted);
   
-  static util::Error List(const acl::User& user, 
+  static util::Error List(acl::UserID uid, 
       std::vector<std::string>& masks);  
 };
 

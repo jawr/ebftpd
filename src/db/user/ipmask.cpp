@@ -6,16 +6,16 @@
 namespace db { namespace ipmask
 {
 
-void Add(const acl::User& user, const std::string& mask)
+void Add(acl::UserID uid, const std::string& mask)
 {
-  mongo::BSONObj obj = BSON("uid" << user.UID() << "mask" << mask);
+  mongo::BSONObj obj = BSON("uid" << uid << "mask" << mask);
   TaskPtr task(new db::Insert("ipmasks", obj));
   Pool::Queue(task);
 }
 
-void Delete(const acl::User& user, const std::string& mask)
+void Delete(acl::UserID uid, const std::string& mask)
 {
-  mongo::Query query = QUERY("uid" << user.UID() << "mask" << mask);
+  mongo::Query query = QUERY("uid" << uid << "mask" << mask);
   TaskPtr task(new db::Delete("ipmasks", query));
   Pool::Queue(task);  
 }

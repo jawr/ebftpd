@@ -54,16 +54,17 @@ void DELIPCommand::Execute()
   if (all)
   {
     std::vector<std::string> deleted;
-    util::Error ok = acl::IpMaskCache::DeleteAll(user, deleted);
+    util::Error ok = acl::IpMaskCache::DeleteAll(user.UID(), deleted);
     if (!ok)
-      os << ok.Message();
-    else
     {
-      os << "Deleting IPs from " << user.Name();
-      for (const std::string& mask : deleted)
-      {
-        os << "\nIP '" << mask << "' deleted successfully.";
-      }
+      control.Reply(ftp::ActionNotOkay, ok.Message());
+      return;
+    }
+
+    os << "Deleting IPs from " << user.Name();
+    for (const std::string& mask : deleted)
+    {
+      os << "\nIP " << mask << " deleted successfully.";
     }
   }
   else
@@ -75,14 +76,16 @@ void DELIPCommand::Execute()
     std::string mask;
     for (int index : indexes)
     {
-      util::Error ok = acl::IpMaskCache::Delete(user, index, mask);
+      util::Error ok = acl::IpMaskCache::Delete(user.UID(), index, mask);
       if (!ok)
         os << "\nIP not deleted: " << ok.Message();
       else
-        os << "\nIP '" << mask << "' deleted successfully.";
+        os << "\nIP " << mask << " deleted successfully.";
     }
   }
 
+  os << "\nCommand finished.";
+  
   control.Reply(ftp::CommandOkay, os.str());
 }
 

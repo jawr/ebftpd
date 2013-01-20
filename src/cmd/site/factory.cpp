@@ -257,7 +257,7 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE ONEL [-MAX <number>|<message> [message> ..]]",
                       "Display or add  to the onliners" }, },
-    { "CHAGMIN",    { 2,  2,  "chgadmin",
+    { "CHGADMIN",   { 2,  2,  "chgadmin",
                       nullptr,
                       "Syntax: SITE CHGADMIN <user> <group",
                       "Toggle gadmin status for a user on the specified group" }, },

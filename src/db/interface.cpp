@@ -49,9 +49,11 @@ void Initialize()
   }
 
   if (acl::UserCache::Create("ebftpd", "ebftpd", "1", 0))
+  {
     assert(acl::UserCache::NameToUID("ebftpd") == 0);
-    
-  acl::UserCache::SetPrimaryGID("ebftpd", 0);
+    acl::UserCache::SetPrimaryGID("ebftpd", 0);
+    acl::IpMaskCache::Add(0, "*@127.0.0.1");
+  }
   
   if (!acl::UserCache::Exists(0))
   {

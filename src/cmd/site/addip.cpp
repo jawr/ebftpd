@@ -33,7 +33,6 @@ void ADDIPCommand::Execute()
   std::ostringstream os;
   os << "Adding IPs to " << user.Name() << ":";
   
-  
   acl::IPStrength strength;
   std::vector<std::string> deleted;
   for (auto it = args.begin() + 2; it != args.end(); ++it)
@@ -50,20 +49,22 @@ void ADDIPCommand::Execute()
       ok = util::Error::Failure(errmsg.str());
     }
     else
-      ok = acl::IpMaskCache::Add(user, *it, deleted);
+      ok = acl::IpMaskCache::Add(user.UID(), *it, deleted);
       
     if (ok)
     {
-      os << "\nIP '" << *it << "' added successfully.";
+      os << "\nIP " << *it << " added successfully.";
       for (const std::string& del : deleted)
       {
-        os << '\n' << "Auto-removed unncessary IP '" << del << "'.";
+        os << "\nAuto-removed unncessary IP " << del << "!";
       }
     }
     else
-      os << "\nIP '" << *it << "' not added: " << ok.Message();
+      os << "\nIP " << *it << " not added: " << ok.Message();
   }
 
+  os << "\nCommand finished.";
+  
   control.Reply(ftp::CommandOkay, os.str());
 } 
 

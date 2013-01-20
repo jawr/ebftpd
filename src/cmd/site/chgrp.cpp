@@ -43,13 +43,15 @@ void CHGRPCommand::Execute()
   std::vector<std::string>::iterator it = args.begin() + iterPoint;
   if (it == args.end()) throw cmd::SyntaxError();
   
+  std::string action(method == Method::Add ? "added" : "deleted");
+  
   for (; it != args.end(); ++it)
   {
-    auto gid = acl::GroupCache::NameToGID(*it);
+    acl::GroupID gid = acl::GroupCache::NameToGID(*it);
     if (gid == -1)
     {
-      control.Reply(ftp::ActionNotOkay, "Group " + *it + " doesn't exist.");
-      return;
+      os << "\nGroup " << *it << " doesn't exist.";
+      continue;
     }
     
     if (method == Method::Add || method == Method::Default)
@@ -57,9 +59,9 @@ void CHGRPCommand::Execute()
     else if (method == Method::Delete)
       ok = acl::UserCache::DelGID(args[1], gid);
     if (!ok)
-      os << "\n" << ok.Message();
+      os << "\nGroup " << *it << " not " << action << ": " << ok.Message();
     else
-      os << "\n" << *it << " okay.";
+      os << "\nGroup " << *it << " " << action << " successfully.";
   }
   
   os << "\nCommand finished.";

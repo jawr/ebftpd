@@ -135,7 +135,7 @@ void USERCommand::Execute()
     body.RegisterSize("weekly_allot", profile.WeeklyAllotment());
 
   std::vector<std::string> masks;
-  auto ok = acl::IpMaskCache::List(user, masks);
+  auto ok = acl::IpMaskCache::List(user.UID(), masks);
   int idx = 0;
   for (auto& i : masks)
   {

@@ -270,18 +270,20 @@ util::Error UserCache::AddGID(const std::string& name, GroupID gid)
   
   acl::User& user = *it->second;
 
-  if (!user.CheckGID(gid))
+  if (user.CheckGID(gid))
   {
-    if (user.PrimaryGID() == -1)
-    {
-      user.SetPrimaryGID(gid);
-      db::user::Save(*it->second, "primary gid");
-    }
-    else
-    {
-      user.AddSecondaryGID(gid);
-      db::user::Save(*it->second, "secondary gids");
-    }
+    return util::Error::Failure("Already a member.");
+  }
+
+  if (user.PrimaryGID() == -1)
+  {
+    user.SetPrimaryGID(gid);
+    db::user::Save(*it->second, "primary gid");
+  }
+  else
+  {
+    user.AddSecondaryGID(gid);
+    db::user::Save(*it->second, "secondary gids");
   }
 
   return util::Error::Success();

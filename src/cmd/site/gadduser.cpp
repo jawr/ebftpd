@@ -71,7 +71,7 @@ void GADDUSERCommand::Execute()
     util::Error ipOkay;
     for (Args::iterator it = args.begin()+4; it != args.end(); ++it)
     {
-      ipOkay = acl::IpMaskCache::Add(user, *it, deleted);
+      ipOkay = acl::IpMaskCache::Add(user.UID(), *it, deleted);
       if (!ipOkay)
       {
         os << "\n\tError adding " << *it << ": " << ipOkay.Message();
