@@ -50,6 +50,8 @@
 #include "cfg/get.hpp"
 #include "util/verify.hpp"
 #include "cmd/site/grpchange.hpp"
+#include "cmd/site/welcome.hpp"
+#include "cmd/site/goodbye.hpp"
 
 namespace cmd { namespace site
 {
@@ -310,11 +312,11 @@ Factory::Factory()
                       "Syntax: SITE SEARCH [-MAX <number>] [-SECTION <section>] <string> [<string> ..]",
                       "Search the site index" }, },
     { "WELCOME",    { 0,  0,  "welcome",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::WELCOMECommand>()),
                       "Syntax: SITE WELCOME",
                       "Display welcome message" }, },
     { "GOODBYE",    { 0,  0,  "goodbye",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::GOODBYECommand>()),
                       "Syntax: SITE GOODBYE",
                       "Display goodbye message" }, },
     { "MSG",        { 1,  -1, "msg|msg*|msg=|msg{",
