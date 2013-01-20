@@ -30,7 +30,12 @@ class User
   std::string tagline;
    
 public:
-  User() : uid(-1), primaryGid(-1) { }
+  User() :
+    uid(-1),
+    primaryGid(-1),
+    credits(0)
+  { }
+  
   User(const std::string& name, UserID uid, const std::string& password,
        const std::string& flags);
        

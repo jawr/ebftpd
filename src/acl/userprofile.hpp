@@ -40,10 +40,40 @@ class UserProfile
 
   int loggedIn;
   boost::optional<boost::posix_time::ptime> lastLogin;
-
+  
 public:
-  UserProfile() : uid(-1), creator(-1) {};
-  UserProfile(acl::UserID uid, acl::UserID creator = 0);
+  UserProfile() :
+    uid(-1),
+    creator(0),
+    ratio(3),
+    weeklyAllotment(0),
+    homeDir("/"),
+    startupDir("/"),
+    idleTime(-1),
+    numLogins(1),
+    maxDlSpeed(-1),
+    maxUlSpeed(-1),
+    maxSimDl(-1),
+    maxSimUl(-1),
+    loggedIn(-1)
+  { }
+  
+  UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
+    uid(uid),
+    creator(creator),
+    ratio(3),
+    weeklyAllotment(0),
+    homeDir("/"),
+    startupDir("/"),
+    idleTime(-1),
+    numLogins(3),
+    maxDlSpeed(0),
+    maxUlSpeed(0),
+    maxSimDl(2),
+    maxSimUl(2),
+    loggedIn(0)
+  {
+  }
 
   const boost::optional<boost::gregorian::date>& Expires() const
   { return expires; }

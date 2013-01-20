@@ -7,6 +7,19 @@
 namespace db { namespace groupprofile
 {
 
+void Delete(acl::GroupID gid)
+{
+  Pool::Queue(std::make_shared<db::Delete>("groupprofiles", QUERY("gid" << gid)));
+}
+
+void Save(const acl::GroupProfile& profile)
+{
+  mongo::BSONObj obj = db::bson::GroupProfile::Serialize(profile);
+  mongo::Query query = QUERY("gid" << profile.GID());
+  TaskPtr task(new db::Update("groupprofiles", query, obj, true));
+  Pool::Queue(task);
+}
+
 acl::GroupProfile Get(acl::GroupID gid)
 {
   QueryResults results;
@@ -21,6 +34,24 @@ acl::GroupProfile Get(acl::GroupID gid)
     throw util::RuntimeError("Unable to get GroupProfile");
 
   return bson::GroupProfile::Unserialize(*results.begin());
+}
+
+std::vector<acl::GroupProfile> GetAll()
+{
+  std::vector<acl::GroupProfile> profiles;
+
+  QueryResults results;
+  mongo::Query query;
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("groupprofiles", query, results, future));
+  Pool::Queue(task);
+
+  future.wait();
+
+  for (auto& obj: results)
+    profiles.push_back(bson::GroupProfile::Unserialize(obj));
+
+  return profiles;
 }
 
 void Set(acl::GroupID gid, mongo::BSONObj obj)

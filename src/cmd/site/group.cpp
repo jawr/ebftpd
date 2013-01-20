@@ -57,7 +57,7 @@ void GROUPCommand::Execute()
   }
 
   acl::GroupProfile profile;
-/*  try
+  try
   {
     profile = db::groupprofile::Get(group.GID());
   }
@@ -65,7 +65,7 @@ void GROUPCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay, "Unable to load group profile for " + group.Name() + ".");
     return;
-  }*/
+  }
 
   boost::optional<text::Template> templ;
   try

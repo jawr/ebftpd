@@ -22,25 +22,25 @@ mongo::BSONObj GroupProfile::Serialize(const acl::GroupProfile& profile)
 
 acl::GroupProfile GroupProfile::Unserialize(const mongo::BSONObj& bo)
 {
-  boost::optional<acl::GroupProfile> profile;
+  acl::GroupProfile profile;
   try
   {
-    profile->gid = bo["gid"].Int();
-    profile->description = bo["description"].String();
-    profile->comment = bo["comment"].String();
-    profile->slots = bo["slots"].Int();
-    profile->leechSlots = bo["leech slots"].Int();
-    profile->allotSlots = bo["allotment slots"].Int();
-    profile->allotSize = bo["allotment size"].Int();
-    profile->slots = bo["loginss"].Int();
-    profile->slots = bo["max logins"].Int();
+    profile.gid = bo["gid"].Int();
+    profile.description = bo["description"].String();
+    profile.comment = bo["comment"].String();
+    profile.slots = bo["slots"].Int();
+    profile.leechSlots = bo["leech slots"].Int();
+    profile.allotSlots = bo["allotment slots"].Int();
+    profile.allotSize = bo["allotment size"].Int();
+    profile.slots = bo["slots"].Int();
+    profile.maxLogins = bo["max logins"].Int();
   }
   catch (const mongo::DBException& e)
   {
     UnserializeFailure("group profile", e, bo);
   }
   
-  return *profile;
+  return profile;
 }
 
 } /* bson namespace */

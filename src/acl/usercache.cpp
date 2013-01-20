@@ -125,6 +125,7 @@ util::Error UserCache::Purge(const std::string& name)
   instance.byName.erase(it);
   
   db::user::Delete(uid);
+  db::userprofile::Delete(uid);
   
   return util::Error::Success();
 }
@@ -294,8 +295,10 @@ util::Error UserCache::DelGID(const std::string& name, GroupID gid)
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
-  
+
   acl::User& user = *it->second;
+  if (!user.CheckGID(gid)) return util::Error::Failure("Not a member.");
+  
   if (user.PrimaryGID() == gid)
   {
     if (!user.SecondaryGIDs().empty())

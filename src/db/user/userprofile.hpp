@@ -15,6 +15,7 @@ namespace db { namespace userprofile
 {
 
 void Save(const acl::UserProfile& profile);
+void Delete(acl::UserID uid);
 std::vector<acl::UserProfile> GetAll();
 acl::UserProfile Get(acl::UserID uid);
 

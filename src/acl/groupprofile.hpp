@@ -29,11 +29,20 @@ class GroupProfile
 public:
   GroupProfile() : 
     gid(-1),
-    description("ebftpd group profile")
-  {}
-  GroupProfile(acl::GroupID gid) : gid(gid),
-    description("ebftpd group profile") {}
+    slots(0),
+    leechSlots(0),
+    allotSlots(0),
+    allotSize(0),
+    maxLogins(-1)
+  { }
   
+  GroupProfile(acl::GroupID gid) : gid(gid),
+    slots(0),
+    leechSlots(0),
+    allotSlots(0),
+    allotSize(0),
+    maxLogins(-1)
+  { }
 
   util::Error SetDescription(const std::string& description);
   util::Error SetSlots(int slots);
@@ -43,6 +52,7 @@ public:
   util::Error SetMaxLogins(int maxLogins);
   util::Error SetComment(const std::string& comment);
 
+  GroupID GID() const { return gid; }
   const std::string& Description() const { return description; }
   int Slots() const { return slots; }
   int LeechSlots() const { return leechSlots; }

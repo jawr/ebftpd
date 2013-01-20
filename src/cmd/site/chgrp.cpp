@@ -10,17 +10,11 @@ namespace cmd { namespace site
 
 void CHGRPCommand::Execute()
 {
-  std::vector<std::string>::size_type iterPoint = 2;
-  Method method = Method::Default;
+  std::vector<std::string>::size_type iterPoint = 3;
+  Method method = Method::Add;
   std::ostringstream os;
   util::Error ok;
 
-  if (args[2] == "+")
-  {
-    method = Method::Add;
-    os << "Adding group(s) to " << args[1] << ":";
-  }
-  else
   if (args[2] == "-")
   {
     method = Method::Delete;
@@ -37,8 +31,11 @@ void CHGRPCommand::Execute()
     method = Method::Add;
     os << "Setting group(s) for " << args[1] << ":";
   }
-
-  if (method != Method::Default) ++iterPoint;
+  else
+  {
+    --iterPoint;
+    os << "Adding group(s) to " << args[1] << ":";    
+  }
 
   std::vector<std::string>::iterator it = args.begin() + iterPoint;
   if (it == args.end()) throw cmd::SyntaxError();
@@ -54,7 +51,7 @@ void CHGRPCommand::Execute()
       continue;
     }
     
-    if (method == Method::Add || method == Method::Default)
+    if (method == Method::Add)
       ok = acl::UserCache::AddGID(args[1], gid);
     else if (method == Method::Delete)
       ok = acl::UserCache::DelGID(args[1], gid);

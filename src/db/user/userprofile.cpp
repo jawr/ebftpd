@@ -13,6 +13,11 @@
 namespace db { namespace userprofile
 {
 
+void Delete(acl::UserID uid)
+{
+  Pool::Queue(std::make_shared<db::Delete>("userprofiles", QUERY("uid" << uid)));
+}
+
 acl::UserProfile Get(acl::UserID uid)
 {
   QueryResults results;

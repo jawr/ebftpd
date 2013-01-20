@@ -9,6 +9,9 @@
 namespace db { namespace groupprofile
 {
 
+void Delete(acl::GroupID gid);
+void Save(const acl::GroupProfile& profile);
+std::vector<acl::GroupProfile> GetAll();
 acl::GroupProfile Get(acl::GroupID gid);
 void Set(acl::GroupID gid, mongo::BSONObj obj); 
 

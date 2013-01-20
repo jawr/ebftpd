@@ -68,8 +68,7 @@ util::Error GroupCache::Create(const std::string& name)
   instance.byGID.insert(std::make_pair(gid, group.get()));
   
   Save(*group.release());
-  //GroupProfile profile(gid);
-  //db::groupprofile::Save(profile);
+  db::groupprofile::Save(GroupProfile(gid));
   
   return util::Error::Success();
 }
@@ -83,9 +82,11 @@ util::Error GroupCache::Delete(const std::string& name)
   
   if (it->second->GID() == 0) return util::Error::Failure("Cannot delete root group with GID 0.");
     
-  db::group::Delete(it->second->GID());
-
-  instance.byGID.erase(instance.byGID.find(it->second->GID()));
+  acl::GroupID gid = it->second->GID();
+  db::group::Delete(gid);
+  db::groupprofile::Delete(gid);
+  
+  instance.byGID.erase(instance.byGID.find(gid));
   delete it->second;
   instance.byName.erase(it);
     

@@ -6,23 +6,6 @@
 namespace acl
 {
 
-UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
-  uid(uid),
-  creator(creator),
-  ratio(3),
-  weeklyAllotment(0),
-  homeDir("/"),
-  startupDir("/"),
-  idleTime(-1),
-  numLogins(3),
-  maxDlSpeed(0),
-  maxUlSpeed(0),
-  maxSimDl(2),
-  maxSimUl(2),
-  loggedIn(0)
-{
-}
-
 bool UserProfile::Expired() const
 {
   if (!expires) return false;
