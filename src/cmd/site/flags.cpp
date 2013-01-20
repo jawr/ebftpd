@@ -56,7 +56,7 @@ void FLAGSCommand::Execute()
   body.RegisterValue("user", user.Name());
   body.RegisterValue("flag1", CheckFlag(user, acl::Flag::Siteop));
   body.RegisterValue("flag2", CheckFlag(user, acl::Flag::Gadmin));
-  body.RegisterValue("flag3", CheckFlag(user, acl::Flag::Glock));
+  body.RegisterValue("flag3", CheckFlag(user, acl::Flag::Template));
   body.RegisterValue("flag4", CheckFlag(user, acl::Flag::Exempt));
   body.RegisterValue("flag5", CheckFlag(user, acl::Flag::Color));
   body.RegisterValue("flag6", CheckFlag(user, acl::Flag::Deleted));

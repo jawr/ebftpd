@@ -10,7 +10,7 @@ enum class Flag : char
 {
   Siteop = '1',
   Gadmin = '2',
-  Glock = '3',
+  Template = '3',
   Exempt = '4',
   Color = '5',
   Deleted = '6',
