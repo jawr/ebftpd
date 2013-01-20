@@ -73,6 +73,19 @@ void Handler::Run()
   }
 }
 
+void PropogateSignal(int signo)
+{
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_flags = 0;
+  sa.sa_handler = SIG_DFL;
+  if (sigaction(SIGSEGV, &sa, nullptr) < 0 ||
+      kill(getpid(), signo) < 0)
+  {
+    _exit(1);
+  }
+}
+
 void CrashHandler(int signo)
 {
   std::stringstream ss;
@@ -86,7 +99,7 @@ void CrashHandler(int signo)
     logs::error << line << logs::endl;
   }
   
-  _exit(-1);
+  PropogateSignal(signo);
 }
 
 void TerminateHandler()
@@ -112,8 +125,6 @@ void TerminateHandler()
     ss << "Unhandled exception, dumping backtrace: " << std::endl;
   }
   
-  
-
   util::debug::DumpBacktrace(ss, 2);
   
   std::string line; 
@@ -122,7 +133,7 @@ void TerminateHandler()
     logs::error << line << logs::endl;
   }
   
-  _exit(-1);
+  PropogateSignal(SIGABRT);
 }
 
 util::Error Initialise()
