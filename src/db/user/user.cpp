@@ -6,7 +6,7 @@
 #include "db/types.hpp"
 #include "acl/groupcache.hpp"
 #include "acl/group.hpp"
-#include "db/exception.hpp"
+#include "db/error.hpp"
 
 namespace db { namespace user
 {

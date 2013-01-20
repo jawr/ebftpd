@@ -1,4 +1,4 @@
-#include "db/exception.hpp"
+#include "db/error.hpp"
 #include "logs/logs.hpp"
 
 namespace db

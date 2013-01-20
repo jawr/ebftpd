@@ -3,7 +3,7 @@
 
 #include <string>
 #include <mongo/client/dbclient.h>
-#include "db/exception.hpp"
+#include "db/error.hpp"
 
 namespace db { namespace bson {
 

@@ -2,7 +2,7 @@
 #include "cmd/rfc/pass.hpp"
 #include "fs/directory.hpp"
 #include "db/user/userprofile.hpp"
-#include "db/exception.hpp"
+#include "db/error.hpp"
 #include "ftp/task/task.hpp"
 #include "ftp/listener.hpp"
 #include "logs/logs.hpp"

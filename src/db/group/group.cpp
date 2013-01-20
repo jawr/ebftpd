@@ -5,7 +5,7 @@
 #include "db/bson/group.hpp"
 #include "acl/group.hpp"
 #include "acl/types.hpp"
-#include "db/exception.hpp"
+#include "db/error.hpp"
 
 namespace db { namespace group
 {

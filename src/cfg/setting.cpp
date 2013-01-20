@@ -3,7 +3,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include "cfg/setting.hpp"
-#include "cfg/exception.hpp"
+#include "cfg/error.hpp"
 #include "util/string.hpp"
 
 namespace cfg { namespace setting

@@ -18,6 +18,7 @@
 #include "acl/ipmaskcache.hpp"
 #include "acl/types.hpp"
 #include "logs/logs.hpp"
+#include "db/error.hpp"
 
 namespace db
 {
@@ -39,12 +40,23 @@ void Initialize()
   Pool::Queue(TaskPtr(new db::EnsureIndex("ipmasks",
     BSON("uid" << 1 << "mask" << 1))));
 
-  acl::GroupCache::Create("ebftpd");
-  assert(acl::GroupCache::NameToGID("ebftpd") == 0);
+  if (acl::GroupCache::Create("ebftpd"))
+    assert(acl::GroupCache::NameToGID("ebftpd") == 0);
+  
+  if (!acl::GroupCache::Exists(0))
+  {
+    throw db::DBError("Root group (GID 0) doesn't exist.");
+  }
 
-  acl::UserCache::Create("ebftpd", "ebftpd", "1");
-  assert(acl::UserCache::NameToUID("ebftpd") == 0);
+  if (acl::UserCache::Create("ebftpd", "ebftpd", "1"))
+    assert(acl::UserCache::NameToUID("ebftpd") == 0);
+    
   acl::UserCache::SetPrimaryGID("ebftpd", 0);
+  
+  if (!acl::UserCache::Exists(0))
+  {
+    throw db::DBError("Root user (UID 0) doesn't exist.");
+  }
   
   acl::UserCache::Create("biohazard", "password", "1");
   acl::UserCache::Create("io", "password", "1");

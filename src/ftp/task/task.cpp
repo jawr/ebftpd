@@ -6,6 +6,7 @@
 #include "main.hpp"
 #include "text/factory.hpp"
 #include "text/error.hpp"
+#include "cfg/error.hpp"
 
 namespace ftp { namespace task
 {

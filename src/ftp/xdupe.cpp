@@ -10,7 +10,7 @@
 namespace ftp { namespace xdupe
 {
 
-std::string MessageOne(const fs::VirtualPath& path, const std::vector<std::string>& dupes)
+std::string MessageOne(const std::vector<std::string>& dupes)
 {
   static const unsigned maxLength = 67;
 
@@ -53,7 +53,7 @@ std::string MessageOne(const fs::VirtualPath& path, const std::vector<std::strin
   return reply.str();
 }
 
-std::string MessageTwo(const fs::VirtualPath& path, const std::vector<std::string>& dupes)
+std::string MessageTwo(const std::vector<std::string>& dupes)
 {
   static const unsigned maxLength = 75;
   
@@ -66,7 +66,7 @@ std::string MessageTwo(const fs::VirtualPath& path, const std::vector<std::strin
   return reply.str();
 }
 
-std::string MessageThree(const fs::VirtualPath& path, const std::vector<std::string>& dupes)
+std::string MessageThree(const std::vector<std::string>& dupes)
 {
   std::ostringstream reply;
   for (const std::string& dupe : dupes)
@@ -77,7 +77,7 @@ std::string MessageThree(const fs::VirtualPath& path, const std::vector<std::str
   return reply.str();
 }
 
-std::string MessageFour(const fs::VirtualPath& path, const std::vector<std::string>& dupes)
+std::string MessageFour(const std::vector<std::string>& dupes)
 {
   static const unsigned maxLength = 1016;
   
@@ -129,8 +129,8 @@ std::vector<std::string> BuildDupeList(ftp::Client& client, const fs::VirtualPat
   return std::move(dupes);
 }
 
-std::vector<std::function<std::string(const fs::VirtualPath& path, 
-    const std::vector<std::string>& dupes)>> modeFunctions =
+std::vector<std::function<std::string(const 
+      std::vector<std::string>& dupes)>> modeFunctions =
 {
   nullptr,
   &MessageOne,
@@ -144,7 +144,7 @@ std::string Message(ftp::Client& client, const fs::VirtualPath& path)
   const auto& function = modeFunctions[static_cast<unsigned>(client.XDupeMode())];
   if (!function) return "";
   
-  return function(path, BuildDupeList(client, path));
+  return function(BuildDupeList(client, path));
 }
 
 } /* xdupe namespace */

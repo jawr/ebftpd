@@ -1,6 +1,6 @@
 #include <memory>
 #include "db/pool.hpp"
-#include "db/exception.hpp"
+#include "db/error.hpp"
 #include "logs/logs.hpp"
 #include "cfg/get.hpp"
 #include "db/task.hpp"

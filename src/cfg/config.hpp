@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <memory>
 #include <unordered_set>
-#include "cfg/exception.hpp"
 #include "cfg/setting.hpp"
 #include "fs/path.hpp"
 

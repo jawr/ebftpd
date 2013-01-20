@@ -1,6 +1,6 @@
 #include "db/worker.hpp"
 #include "db/task.hpp"
-#include "db/exception.hpp"
+#include "db/error.hpp"
 #include "db/taskqueue.hpp"
 #include "logs/logs.hpp"
 

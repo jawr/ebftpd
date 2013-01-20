@@ -7,7 +7,7 @@
 #include "db/types.hpp"
 #include "db/pool.hpp"
 #include "db/bson/userprofile.hpp"
-#include "db/exception.hpp"
+#include "db/error.hpp"
 #include "db/bson/bson.hpp"
 
 namespace db { namespace userprofile

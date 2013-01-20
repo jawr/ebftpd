@@ -7,6 +7,7 @@
 #include "util/debug.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
+#include "cfg/error.hpp"
 
 namespace signals
 {

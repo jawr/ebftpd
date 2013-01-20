@@ -8,7 +8,7 @@
 #include <boost/function.hpp>                                   
 #include <boost/numeric/conversion/cast.hpp>
 #include "cfg/config.hpp"
-#include "cfg/exception.hpp"
+#include "cfg/error.hpp"
 #include "cfg/setting.hpp"
 #include "util/string.hpp"
 #include "logs/logs.hpp"
