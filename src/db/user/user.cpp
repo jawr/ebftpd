@@ -30,7 +30,7 @@ acl::UserID GetNewUserID()
 
   future.wait();
 
-  if (results.size() == 0) return acl::UserID(1);
+  if (results.size() == 0) return 0;
 
   acl::UserID uid;
   try

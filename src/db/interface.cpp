@@ -39,6 +39,13 @@ void Initialize()
   Pool::Queue(TaskPtr(new db::EnsureIndex("ipmasks",
     BSON("uid" << 1 << "mask" << 1))));
 
+  acl::GroupCache::Create("ebftpd");
+  assert(acl::GroupCache::NameToGID("ebftpd") == 0);
+
+  acl::UserCache::Create("ebftpd", "ebftpd", "1");
+  assert(acl::UserCache::NameToUID("ebftpd") == 0);
+  acl::UserCache::SetPrimaryGID("ebftpd", 0);
+  
   acl::UserCache::Create("biohazard", "password", "1");
   acl::UserCache::Create("io", "password", "1");
 }

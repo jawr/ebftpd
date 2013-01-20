@@ -28,7 +28,7 @@ acl::GroupID GetNewGroupID()
 
   future.wait();
 
-  if (results.size() == 0) return acl::GroupID(1);
+  if (results.size() == 0) return 0;
 
   acl::GroupID gid;
   try
