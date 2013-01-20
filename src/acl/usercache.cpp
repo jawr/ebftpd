@@ -115,7 +115,8 @@ util::Error UserCache::Purge(const std::string& name)
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
   if (!it->second->Deleted()) return util::Error::Failure("User " + name + " must be deleted first.");
-
+  if (it->second->UID() == 0) return util::Error::Failure("Cannot purge root user with UID 0.");
+  
   instance.byUID.erase(instance.byUID.find(it->second->UID()));
 
   acl::UserID uid = it->second->UID();
@@ -134,7 +135,7 @@ util::Error UserCache::Delete(const std::string& name)
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) 
     return util::Error::Failure("User " + name + " doesn't exist.");
-  
+
   if (it->second->Deleted()) 
     return util::Error::Failure("User " + name + " already deleted.");
   it->second->AddFlag(Flag::Deleted);

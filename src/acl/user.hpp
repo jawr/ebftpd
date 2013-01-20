@@ -53,6 +53,7 @@ public:
   bool CheckFlags(const std::string& flags) const;
   bool CheckFlag(Flag flag) const;
   bool Deleted() const { return CheckFlag(Flag::Deleted); }
+  bool Template() const { return CheckFlag(Flag::Template); }
   
   UserID UID() const { return uid; }
   

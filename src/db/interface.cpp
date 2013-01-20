@@ -48,7 +48,7 @@ void Initialize()
     throw db::DBError("Root group (GID 0) doesn't exist.");
   }
 
-  if (acl::UserCache::Create("ebftpd", "ebftpd", "1"))
+  if (acl::UserCache::Create("ebftpd", "ebftpd", "1", 0))
     assert(acl::UserCache::NameToUID("ebftpd") == 0);
     
   acl::UserCache::SetPrimaryGID("ebftpd", 0);
@@ -58,8 +58,8 @@ void Initialize()
     throw db::DBError("Root user (UID 0) doesn't exist.");
   }
   
-  acl::UserCache::Create("biohazard", "password", "1");
-  acl::UserCache::Create("io", "password", "1");
+  acl::UserCache::Create("biohazard", "password", "1", 0);
+  acl::UserCache::Create("io", "password", "1", 0);
 }
 
 void Cleanup()

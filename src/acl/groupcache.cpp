@@ -77,7 +77,9 @@ util::Error GroupCache::Delete(const std::string& name)
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end())
     return util::Error::Failure("Group " + name + " doesn't exist.");
-
+  
+  if (it->second->GID() == 0) return util::Error::Failure("Cannot delete root group with GID 0.");
+    
   db::group::Delete(it->second->GID());
 
   instance.byGID.erase(instance.byGID.find(it->second->GID()));

@@ -11,51 +11,96 @@
 #include <crypto++/pwdbased.h>
 #include <crypto++/secblock.h>
 #endif
+
+#include <openssl/rand.h>
+#include <openssl/evp.h>
+#include <openssl/x509v3.h>
 #include "util/passwd.hpp"
+#include "util/verify.hpp"
+
+#include <cstdio>
 
 namespace util { namespace passwd
 {
 
 std::string GenerateSalt(const unsigned int length)
 {
-  CryptoPP::AutoSeededRandomPool prng;
+/*  CryptoPP::AutoSeededRandomPool prng;
   CryptoPP::SecByteBlock salt(length);
   prng.GenerateBlock(salt, length);
-  return std::string(std::begin(salt), std::end(salt));
+  return std::string(std::begin(salt), std::end(salt));*/
+  
+  std::vector<unsigned char> salt;
+  salt.reserve(length);
+  verify(RAND_bytes(salt.data(), length));
+  return std::string(salt.begin(), salt.end());
 }
 
 std::string HashPassword(const std::string& password, const std::string& salt)
 {
-  static const unsigned iterations = 1000;
+  static const int iterations = 1000;
   
-  CryptoPP::PKCS5_PBKDF2_HMAC<CryptoPP::SHA256> pbkdf2;
+  std::vector<unsigned char> usalt(salt.begin(), salt.end());
+  unsigned char key[32];
   
-  byte key[CryptoPP::SHA256::DIGESTSIZE];
-  pbkdf2.DeriveKey(key, sizeof(key), 0, 
-                   reinterpret_cast<const byte*>(password.c_str()), password.length(),
-                   reinterpret_cast<const byte*>(salt.c_str()), salt.length(), iterations);
-                   
-  return std::string(reinterpret_cast<char*>(key), sizeof(key));
+  verify(PKCS5_PBKDF2_HMAC(password.c_str(), password.length(), 
+                           usalt.data(), usalt.size(), iterations, 
+                           EVP_sha256(), sizeof(key), key));
+        
+  return std::string(std::begin(key), std::end(key));
 }
 
 std::string HexEncode(const std::string& data)
 {
+  //std::vector<unsigned char> udata(data.begin(), data.end());
+  
+  std::ostringstream encoded;
+  for (unsigned char ch : data)
+  {
+    encoded << std::hex << std::setfill('0') << std::setw(2) << ch;
+  }
+  
+  std::cout << encoded.str() << std::endl;
+  
+  return encoded.str();
+/*  long len = data.length();
+  std::shared_ptr<unsigned char> encoded(string_to_hex(data.c_str(), &len), &free);
+  if (!encoded.get())
+  {
+    ERR_print_errors_fp(stdout);
+    abort();
+  }
+  std::cout << std::string(&data[0], &data[len]) << std::endl;
+  return std::string(&data[0], &data[len]);*/
+/*  
+  try
+  {
+  }
+  catch (...)
+  {
+    free(encoded);
+    throw;
+  }
   CryptoPP::HexEncoder encoder;
   std::string result;
   encoder.Attach(new CryptoPP::StringSink(result));
   encoder.Put(reinterpret_cast<const byte*>(data.c_str()), data.length());
   encoder.MessageEnd();
-  return result;
+  return result;*/
 }
 
 std::string HexDecode(const std::string& data)
 {
-  CryptoPP::HexDecoder decoder;
+  std::vector<unsigned char> udata(data.begin(), data.end());
+  std::shared_ptr<char> decoded(hex_to_string(udata.data(), udata.size()));
+  verify(decoded.get());
+  return std::string(decoded.get());
+/*  CryptoPP::HexDecoder decoder;
   std::string result;
   decoder.Attach(new CryptoPP::StringSink(result));
   decoder.Put(reinterpret_cast<const byte*>(data.c_str()), data.length());
   decoder.MessageEnd();
-  return result;
+  return result;*/
 }
 
 } /* crypto namespace */
