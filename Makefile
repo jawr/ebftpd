@@ -57,18 +57,6 @@ endif
 endif
 endif
 
-CRYPTOPP_NAME := $(shell scripts/cryptopp.sh 2>/dev/null)
-ifeq ($(CRYPTOPP_NAME),cryptopp)
-CXXFLAGS += -DCRYPTOPP
-LIBS += -lcryptopp
-else
-ifeq ($(CRYPTOPP_NAME),crypto++)
-LIBS += -lcrypto++
-else
-$(error Unable to find crypto++ header files in /usr/include or /usr/local/include)
-endif
-endif
-
 VERSION := $(shell ./scripts/version.sh)
 
 OBJECTS := $(SOURCE:.cpp=.o)

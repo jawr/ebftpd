@@ -28,19 +28,6 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <cmath>
-#if defined(CRYPTOPP)
-#include <cryptopp/osrng.h>
-#include <cryptopp/sha.h>
-#include <cryptopp/hex.h>
-#include <cryptopp/pwdbased.h>
-#include <cryptopp/secblock.h>
-#else
-#include <crypto++/osrng.h>
-#include <crypto++/sha.h>
-#include <crypto++/hex.h>
-#include <crypto++/pwdbased.h>
-#include <crypto++/secblock.h>
-#endif
 #include <cstdlib>
 #include <exception>
 #include <fnmatch.h>
