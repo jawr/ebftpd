@@ -1,0 +1,6 @@
+1. Section blocks
+2. Stats
+3. Gadmins
+   * Only allow gadmins to delete own users
+4. Template users
+5. User input validation (including filtering out unicode -- non ascii characters)

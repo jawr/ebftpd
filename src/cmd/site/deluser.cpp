@@ -15,7 +15,7 @@ void DELUSERCommand::Execute()
   // needs further flag checking to ensure users with more
   // seniority can't be deleted by those below them
   // and master in config has ultimate seniority
-  // lso make so gadmins can only delete their owner users
+  // also make so gadmins can only delete their owner users
   acl::User user;
   try
   {

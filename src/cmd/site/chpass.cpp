@@ -11,8 +11,7 @@ void CHPASSCommand::Execute()
   // checking to ensure gadmins can't change users not in their
   // group, also exclude self from all checking
   
-  acl::PasswdStrength strength;
-  
+  acl::PasswdStrength strength;  
   if (!acl::SecurePass(client.User(), args[2], strength))
   {
     std::ostringstream os;
@@ -31,7 +30,6 @@ void CHPASSCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
   else
     control.Reply(ftp::CommandOkay, "Password changed.");
-  return;
 }
 
 } /* site namespace */

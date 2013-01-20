@@ -8,12 +8,44 @@
 #include "acl/passwdstrength.hpp"
 #include "acl/ipmaskcache.hpp"
 #include "cmd/error.hpp"
+#include "acl/groupcache.hpp"
+#include "cmd/site/addip.hpp"
 
 namespace cmd { namespace site
 {
 
+void ADDUSERCommand::Addips(const std::string& user, 
+    const std::vector<std::string>& ips)
+{
+  std::string cpArgStr("ADDIP ");
+  cpArgStr += user;
+  for (const std::string& ip : ips) cpArgStr += " " + ip;
+
+  std::vector<std::string> cpArgs;
+  boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
+
+  ADDIPCommand(client, cpArgStr, cpArgs).Execute();
+}
+
+void ADDUSERCommand::Execute(const std::string& group)
+{
+  this->group = group;
+  Execute();
+}
+
 void ADDUSERCommand::Execute()
 {
+  acl::GroupID gid = -1;
+  if (!group.empty())
+  {
+    gid = acl::GroupCache::NameToGID(group);
+    if (gid == -1)
+    {
+      control.Reply(ftp::ActionNotOkay, "Group " + group + " doesn't exist.");
+      return;
+    }
+  }
+
   acl::PasswdStrength strength;
   if (!acl::SecurePass(client.User(), args[2], strength))
   {
@@ -39,28 +71,19 @@ void ADDUSERCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
-  std::ostringstream os;
-  os << "Added user " << args[1] << ".";
-
+  std::string reply = "Added user " + args[1];
+  if (gid != -1) reply += " to group " + group;
+  reply += ".";
+  
   if (args.size() > 3)
   {
-    const acl::User user = acl::UserCache::User(args[1]);
-    std::vector<std::string> deleted;
-    util::Error ipOkay;
-    for (Args::iterator it = args.begin()+3; it != args.end(); ++it)
-    {
-      ipOkay = acl::IpMaskCache::Add(user.UID(), *it, deleted);
-      if (!ipOkay)
-      {
-        os << "\n\tError adding " << *it << ": " << ipOkay.Message();
-        continue;
-      }
-
-      os << "\nIP '" << *it << "' successfully added to " << args[1] << ".";
-    }
+    control.PartReply(ftp::CommandOkay, reply);
+    Addips(args[1], std::vector<std::string>(args.begin() + 3, args.end()));
   }
-
-  control.Reply(ftp::CommandOkay, os.str());
+  else
+  {
+    control.Reply(ftp::CommandOkay, reply);
+  }
 }
 
 // end

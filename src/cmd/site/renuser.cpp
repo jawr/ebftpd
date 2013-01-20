@@ -11,7 +11,6 @@ void RENUSERCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
   else
     control.Reply(ftp::CommandOkay, "User " + args[1] + " renamed to " + args[2] + ".");
-  return;
 }
 
 } /* site namespace */

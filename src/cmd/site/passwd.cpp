@@ -3,7 +3,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include "cmd/site/passwd.hpp"
-#include "cmd/site/factory.hpp"
+#include "cmd/site/chpass.hpp"
 
 namespace cmd { namespace site
 {
@@ -18,11 +18,7 @@ void PASSWDCommand::Execute()
   std::vector<std::string> cpArgs;
   boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
   
-  CommandPtr command(cmd::site::Factory::
-      Lookup(cpArgs[0])->Create(client, cpArgStr, cpArgs));
-  assert(command.get());
-  command->Execute();
-  return;
+  CHPASSCommand(client, cpArgStr, cpArgs).Execute();
 }
 
 } /* site namespace */

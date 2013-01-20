@@ -50,7 +50,7 @@ void CHGRPCommand::Execute()
     acl::GroupID gid = acl::GroupCache::NameToGID(*it);
     if (gid == -1)
     {
-      os << "\nGroup " << *it << " doesn't exist.";
+      os << "\nGroup " << *it << " not " << action << ": Doesn't exist.";
       continue;
     }
     
