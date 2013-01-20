@@ -29,37 +29,42 @@ void ADDIPCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
     return;
   }
-
+  
   std::ostringstream os;
+  os << "Adding IPs to " << user.Name() << ":";
+  
+  
   acl::IPStrength strength;
   std::vector<std::string> deleted;
-  for (Args::iterator it = args.begin()+2; it != args.end(); ++it)
+  for (auto it = args.begin() + 2; it != args.end(); ++it)
   {
-    if (it != args.begin()+2) os << "\n";
+    //if (it != args.begin()+2) os << "\n";
+    util::Error ok;
     if (!acl::SecureIP(client.User(), *it, strength))
     {
-      os << "Error adding " << *it << ": Must contain " 
-         << strength.NumOctets() << " octets, ";
-      if (strength.HasIdent()) os << "have an ident, ";
-      if (!strength.IsHostname()) os << "not be a hostname.";
+      std::ostringstream errmsg;
+      errmsg << "Must contain " << strength.NumOctets() << " octets";
+      if (strength.HasIdent()) errmsg << ", have an ident";
+      if (!strength.IsHostname()) errmsg << ", not be a hostname";
+      errmsg << ".";
+      ok = util::Error::Failure(errmsg.str());
     }
     else
+      ok = acl::IpMaskCache::Add(user, *it, deleted);
+      
+    if (ok)
     {
-      util::Error ok = acl::IpMaskCache::Add(user, *it, deleted);
-      if (!ok)
-        os << "Error adding " << *it << ": " << ok.Message();
-      else
+      os << "\nIP '" << *it << "' added successfully.";
+      for (const std::string& del : deleted)
       {
-        os << "IP '" << *it << "' successfully added to " << args[1] << ".";
-
-        for (auto& del: deleted)
-          os << "Auto-removing unnecessary IP '" << del << "'...";
+        os << '\n' << "Auto-removed unncessary IP '" << del << "'.";
       }
     }
+    else
+      os << "\nIP '" << *it << "' not added: " << ok.Message();
   }
 
   control.Reply(ftp::CommandOkay, os.str());
-  return;
 } 
 
 // end 
