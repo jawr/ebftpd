@@ -31,7 +31,6 @@ void GROUPSCommand::Execute()
   }
 
   std::ostringstream os;
-
   if (groups.size() > 0)
   {
     text::TemplateSection& head = templ->Head();

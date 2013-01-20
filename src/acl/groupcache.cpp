@@ -2,6 +2,7 @@
 #include "acl/groupcache.hpp"
 #include "db/group/group.hpp"
 #include "logs/logs.hpp"
+#include "db/group/groupprofile.hpp"
 
 namespace acl
 {
@@ -67,6 +68,8 @@ util::Error GroupCache::Create(const std::string& name)
   instance.byGID.insert(std::make_pair(gid, group.get()));
   
   Save(*group.release());
+  //GroupProfile profile(gid);
+  //db::groupprofile::Save(profile);
   
   return util::Error::Success();
 }

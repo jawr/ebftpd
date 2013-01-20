@@ -8,6 +8,7 @@
 #include "acl/flags.hpp"
 #include "db/user/user.hpp"
 #include "db/user/userprofile.hpp"
+#include "db/group/groupprofile.hpp"
 #include "util/time.hpp"
 #include "stats/stat.hpp"
 #include "db/stats/stat.hpp"
@@ -17,9 +18,30 @@
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
+#include "acl/groupprofile.hpp"
 
 namespace cmd { namespace site
 {
+
+void GROUPCommand::PopulateHeadOrFoot(const acl::Group& group, 
+      const acl::GroupProfile& profile, text::TemplateSection& tmpl)
+{
+  tmpl.RegisterValue("group", group.Name());
+  tmpl.RegisterValue("descr", profile.Description());
+  tmpl.RegisterValue("slots", profile.Slots() != -1 ? 
+                              boost::lexical_cast<std::string>(profile.Slots()) : 
+                              "Unlimited");
+  tmpl.RegisterValue("leechslots", profile.LeechSlots() != -1 ? 
+                                   boost::lexical_cast<std::string>(profile.LeechSlots()) : 
+                                   "Unlimited");
+  tmpl.RegisterValue("allotslots", profile.AllotSlots() != -1 ? 
+                                   boost::lexical_cast<std::string>(profile.AllotSlots()) : 
+                                   "Unlimited");
+  tmpl.RegisterValue("allotsize", profile.AllotSize());
+  tmpl.RegisterValue("maxlogins", profile.MaxLogins() != -1 ?
+                                   boost::lexical_cast<std::string>(profile.MaxLogins()) : 
+                                   "Unlimited");
+}
 
 void GROUPCommand::Execute()
 {
@@ -34,13 +56,16 @@ void GROUPCommand::Execute()
     return;
   }
 
-  std::vector<acl::User> users = db::user::GetByACL("=" + args[1]);
-
-  if (users.empty())
+  acl::GroupProfile profile;
+/*  try
   {
-    control.Reply(ftp::ActionNotOkay, "SITE GROUP: No users.");
-    return;
+    profile = db::groupprofile::Get(group.GID());
   }
+  catch (const util::RuntimeError&)
+  {
+    control.Reply(ftp::ActionNotOkay, "Unable to load group profile for " + group.Name() + ".");
+    return;
+  }*/
 
   boost::optional<text::Template> templ;
   try
@@ -53,11 +78,16 @@ void GROUPCommand::Execute()
     return;
   }
 
-  std::ostringstream os;
   text::TemplateSection& head = templ->Head();
   text::TemplateSection& body = templ->Body();
   text::TemplateSection& foot = templ->Foot();
-  
+
+  PopulateHeadOrFoot(group, profile, head);
+  PopulateHeadOrFoot(group, profile, foot);
+    
+  std::vector<acl::User> users = db::user::GetByACL("=" + args[1]);
+
+  std::ostringstream os;
   os << head.Compile();
 
   std::unordered_map<acl::UserID, acl::UserProfile> profiles = 
@@ -68,9 +98,11 @@ void GROUPCommand::Execute()
 
   for (auto& user: users)
   {
-    body.Reset();
-    std::string flag = (user.CheckFlag(acl::Flag::Gadmin)) ? "+" : " ";
-    flag = (user.CheckFlag(acl::Flag::Siteop)) ? "*" : flag;
+    std::string flag = " ";
+    if (user.CheckFlag(acl::Flag::Siteop)) flag = "*";
+    else if (user.CheckFlag(acl::Flag::Gadmin)) flag = "+";
+    else if (user.CheckFlag(acl::Flag::Useredit)) flag = "%";
+
     body.RegisterValue("flag", flag);
     body.RegisterValue("user", user.Name());
     body.RegisterValue("files_up", upStats[user.UID()].Files());
@@ -80,6 +112,7 @@ void GROUPCommand::Execute()
     body.RegisterValue("ratio", profiles[user.UID()].Ratio());
     body.RegisterValue("weekly_allot", profiles[user.UID()].WeeklyAllotment());
     os << body.Compile();
+    body.Reset();
   }
   
   os << foot.Compile();
