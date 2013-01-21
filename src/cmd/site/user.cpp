@@ -88,9 +88,10 @@ void USERCommand::Execute()
 
   if (profile.LastLogin())
   {
-    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
+    boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
     boost::posix_time::time_duration diff = now - *profile.LastLogin();
-    body.RegisterValue("last_login", boost::posix_time::to_simple_string(diff));
+    body.RegisterValue("last_login", boost::posix_time::to_simple_string(*profile.LastLogin()));
+    body.RegisterValue("since_login", boost::posix_time::to_simple_string(diff));
   }
   else
     body.RegisterValue("last_login", "Never");
@@ -124,15 +125,11 @@ void USERCommand::Execute()
       }
     }
   }
+  
   body.RegisterValue("secondary_groups", secondaryGroups.str());
-
   body.RegisterValue("tagline", user.Tagline());
   body.RegisterValue("comment", profile.Comment());
-
-  if (profile.WeeklyAllotment() == 0)
-    body.RegisterValue("weekly_allot", -1);
-  else
-    body.RegisterSize("weekly_allot", profile.WeeklyAllotment());
+  body.RegisterSize("weekly_allot", profile.WeeklyAllotment());
 
   std::vector<std::string> masks;
   auto ok = acl::IpMaskCache::List(user.UID(), masks);
