@@ -6,9 +6,31 @@
 #include "acl/allowfxp.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
+#include "cfg/get.hpp"
 
 namespace ftp
 {
+
+template <> const char* util::EnumStrings<EPSVMode>::values[]
+{
+  "EXTENDED",
+  "NORMAL"
+};
+
+Data::Data(Client& client) :
+  client(client),
+  protection(false),
+  pasvType(PassiveType::None),
+  epsvMode(cfg::Get().EPSVFxp() == ::cfg::EPSVFxp::Force ? 
+           ::ftp::EPSVMode::Extended : 
+           ::ftp::EPSVMode::Normal),
+  dataType(::ftp::DataType::Binary),
+  sscnMode(::ftp::SSCNMode::Server),
+  restartOffset(0),
+  bytesRead(0),
+  bytesWrite(0)
+{
+}
 
 void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
 {
@@ -21,7 +43,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
   // unable to use alternative pasv_addr if espv mode isn't Full
   // should we fail -- or substitute the ip 
   // from the client.Control.LocalEndpoint like now?
-  if (pasvType != PassiveType::EPSV || epsvMode == ::ftp::EPSVMode::Full)
+  if (pasvType != PassiveType::EPSV || epsvMode == ::ftp::EPSVMode::Extended)
   {
     std::string firstAddr;
     while (true)

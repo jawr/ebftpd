@@ -1,6 +1,5 @@
 #include <boost/algorithm/string.hpp>
 #include "cmd/site/factory.hpp"
-#include "cmd/site/epsv.hpp"
 #include "cmd/site/idle.hpp"
 #include "cmd/site/vers.hpp"
 #include "cmd/site/xdupe.hpp"
@@ -62,10 +61,6 @@ Factory::Factory()
 {
   defs =
   {
-    { "EPSV",       { 0,  1,  "epsv",
-                      CreatorBasePtr(new Creator<site::EPSVCommand>()),  
-                      "Syntax: SITE EPSV normal|full",
-                      "Change EPSV command mode between normal and full (fxp support)"  }, },
     { "IDLE",       { 0,  1,  "idle",
                       CreatorBasePtr(new Creator<site::IDLECommand>()),
                       "Syntax: SITE IDLE [<seconds>]",

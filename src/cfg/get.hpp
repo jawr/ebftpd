@@ -1,8 +1,8 @@
 #ifndef __CFG_GET_HPP
 #define __CFG_GET_HPP
 
-#include "cfg/config.hpp"
 #include <memory>
+#include "cfg/config.hpp"
 
 namespace cfg
 {

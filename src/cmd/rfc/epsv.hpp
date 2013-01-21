@@ -8,6 +8,8 @@ namespace cmd { namespace rfc
 
 class EPSVCommand : public Command
 {
+  void ChangeMode();
+  
 public:
   EPSVCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
     Command(client, client.Control(), client.Data(), argStr, args) { }

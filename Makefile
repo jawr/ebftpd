@@ -87,6 +87,9 @@ DEPS := $(OBJECTS:.o=.d)
 strip:
 	@strip -s ebftpd
 
+cleandeps:
+	@find src/ -iname "*.[d]" -exec rm '{}' ';'
+  
 clean:
 	@find src/ -iname "*.[od]" -exec rm '{}' ';'
 	@find src/ -iname "*.gch" -exec rm '{}' ';'

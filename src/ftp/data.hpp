@@ -7,6 +7,7 @@
 #include "util/net/endpoint.hpp"
 #include "ftp/readwriteable.hpp"
 #include "ftp/transferstate.hpp"
+#include "util/enum.hpp"
 
 namespace acl
 {
@@ -20,9 +21,12 @@ class Client;
 
 enum class EPSVMode
 {
-  Normal,
-  Full
+  Extended,
+  Normal
 };
+
+template <> const char* util::EnumStrings<EPSVMode>::values[];
+
 
 enum class DataType
 {
@@ -64,19 +68,7 @@ class Data : public ReadWriteable
   TransferState state;
 
 public:
-  explicit Data(Client& client) :
-    client(client),
-    protection(false),
-    pasvType(PassiveType::None),
-    epsvMode(::ftp::EPSVMode::Normal),
-    dataType(::ftp::DataType::Binary),
-    sscnMode(::ftp::SSCNMode::Server),
-    restartOffset(0),
-    bytesRead(0),
-    bytesWrite(0)
-  {
-  }
-
+  explicit Data(Client& client);
   void SetProtection(bool protection) { this->protection = protection; }
   bool Protection() const { return protection; }
 

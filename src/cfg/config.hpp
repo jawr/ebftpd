@@ -11,11 +11,16 @@
 #include "cfg/setting.hpp"
 #include "fs/path.hpp"
 #include "cfg/section.hpp"
+#include "util/enum.hpp"
+
 
 namespace cfg
 {
 
 enum class WeekStart { Sunday, Monday };
+
+enum class EPSVFxp { Allow, Deny, Force };
+template <> const char* util::EnumStrings<cfg::EPSVFxp>::values[];
 
 class Config
 { 
@@ -128,10 +133,9 @@ class Config
   std::vector<setting::CheckScript> preCheck;
   std::vector<setting::CheckScript> preDirCheck;
   std::vector<setting::CheckScript> postCheck;
-  
   std::unordered_map<std::string, acl::ACL> commandACLs;  
-  
   std::map<std::string, Section> sections;
+  ::cfg::EPSVFxp epsvFxp;
   
   static std::unordered_set<std::string> aclKeywords;
   static int latestVersion;
@@ -247,10 +251,10 @@ public:
   ::cfg::WeekStart WeekStart() const { return weekStart; }
   const std::vector<setting::CheckScript>& PreCheck() const { return preCheck; }
   const std::vector<setting::CheckScript>& PreDirCheck() const { return preDirCheck; }
-  const std::vector<setting::CheckScript>& PostCheck() const { return postCheck; }
-  
+  const std::vector<setting::CheckScript>& PostCheck() const { return postCheck; }  
   const std::map<std::string, Section>& Sections() const { return sections; }
   boost::optional<const Section&> SectionMatch(const fs::Path& path) const;
+  ::cfg::EPSVFxp EPSVFxp() const { return epsvFxp; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

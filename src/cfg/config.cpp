@@ -17,6 +17,14 @@
 namespace cfg
 {
 
+template <> const char* util::EnumStrings<cfg::EPSVFxp>::values[] = 
+{
+  "Allow",
+  "Deny",
+  "Force",
+  ""
+};
+
 int Config::latestVersion = 0;
 std::unordered_set<std::string> Config::aclKeywords;
 
@@ -37,7 +45,8 @@ Config::Config(const std::string& configFile) :
   oneliners(10),
   emptyNuke(102400),
   maxSitecmdLines(-1),
-  weekStart(::cfg::WeekStart::Sunday)
+  weekStart(::cfg::WeekStart::Sunday),
+  epsvFxp(::cfg::EPSVFxp::Allow)
 {
   std::string line;
   std::ifstream io(configFile.c_str());
@@ -590,6 +599,15 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     auto result = sections.insert(std::make_pair(toks[0], Section(toks[0])));
     if (!result.second) throw ConfigError("Section " + toks[0] + " already exists.");
     currentSection = &result.first->second;
+  }
+  else if (opt == "epsv_fxp")
+  {
+    ParameterCheck(opt, toks, 1);
+    boost::to_lower(toks[0]);
+    if (toks[0] == "allow") epsvFxp = ::cfg::EPSVFxp::Allow;
+    else if (toks[0] == "deny") epsvFxp = ::cfg::EPSVFxp::Deny;
+    else if (toks[0] == "force") epsvFxp = ::cfg::EPSVFxp::Force;
+    else throw ConfigError("epsv_fxp must be allow, deny or force");
   }
   else
   {
