@@ -100,10 +100,10 @@ std::string Control::NextCommand(const boost::posix_time::time_duration* timeout
     tv.tv_sec = std::max(0, timeout->total_seconds());
     tv.tv_usec = 0;
 
-    n = select(max + 1, &readSet, NULL, NULL, &tv);
+    n = select(max + 1, &readSet, nullptr, nullptr, &tv);
   }
   else
-    n = select(max + 1, &readSet, NULL, NULL, NULL);
+    n = select(max + 1, &readSet, nullptr, nullptr, nullptr);
 
   boost::this_thread::interruption_point();
     

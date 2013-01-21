@@ -20,7 +20,7 @@ namespace
 
 RSA* GenerateRSA(int keyLength)
 {
-  return RSA_generate_key(keyLength, RSA_F4, NULL, NULL);
+  return RSA_generate_key(keyLength, RSA_F4, nullptr, nullptr);
 }
 
 RSA* TempRSACallback(SSL* session, int isExport, int keyLength)
@@ -43,13 +43,13 @@ DH *GenerateDH512()
   };
   
   DH *dh =DH_new();
-  if (!dh) return NULL;
-  dh->p = BN_bin2bn(dh512p, sizeof(dh512p), NULL);
-  dh->g = BN_bin2bn(dh512g, sizeof(dh512g), NULL);
+  if (!dh) return nullptr;
+  dh->p = BN_bin2bn(dh512p, sizeof(dh512p), nullptr);
+  dh->g = BN_bin2bn(dh512g, sizeof(dh512g), nullptr);
   if (!dh->p || !dh->g)
   {
     DH_free(dh);
-    return NULL;
+    return nullptr;
   }
   return dh;
 }
@@ -74,13 +74,13 @@ DH *GenerateDH1024()
 
   DH *dh;
   dh = DH_new();
-  if (!dh) return NULL;
-  dh->p = BN_bin2bn(dh1024p, sizeof(dh1024p), NULL);
-  dh->g = BN_bin2bn(dh1024g, sizeof(dh1024g), NULL);
+  if (!dh) return nullptr;
+  dh->p = BN_bin2bn(dh1024p, sizeof(dh1024p), nullptr);
+  dh->g = BN_bin2bn(dh1024g, sizeof(dh1024g), nullptr);
   if (!dh->p || !dh->g)
   {
     DH_free(dh);
-    return NULL;
+    return nullptr;
   }
   
   return dh;
@@ -263,9 +263,9 @@ void TLSServerContext::InitialiseDHKeyExchange()
   }
 
 #if OPENSSL_VERSION_NUMBER >= 0x00904000L
-  dh = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);
+  dh = PEM_read_bio_DHparams(bio, nullptr, nullptr, nullptr);
 #else
-  dh = PEM_read_bio_DHparams(bio, NULL, NULL);
+  dh = PEM_read_bio_DHparams(bio, nullptr, nullptr);
 #endif
 
   if (!dh)

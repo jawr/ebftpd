@@ -103,7 +103,7 @@ bool TCPListener::WaitPendingTimeout(const TimePair* duration) const
   }
   
   int result;
-  while ((result = select(max + 1, &readSet, NULL, NULL, tvPtr)) < 0)
+  while ((result = select(max + 1, &readSet, nullptr, nullptr, tvPtr)) < 0)
   {
     if (errno != EINTR) throw NetworkSystemError(errno);
     boost::this_thread::interruption_point();

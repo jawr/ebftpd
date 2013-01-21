@@ -134,7 +134,7 @@ void Listener::AcceptClients()
   tv.tv_sec = 0;
   tv.tv_usec = 100000;
   
-  int n = select(max + 1, &readSet, NULL, NULL, &tv);
+  int n = select(max + 1, &readSet, nullptr, nullptr, &tv);
   if (n < 0)
   {
     logs::error << "Listener select failed: " << util::Error::Failure(errno).Message() << logs::endl;

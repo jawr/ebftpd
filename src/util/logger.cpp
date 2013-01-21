@@ -39,7 +39,7 @@ Logger& Logger::operator<<(Logger& (*pf)(Logger&))
 
 std::string Logger::Timestamp()
 {
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   char buf[26];
   strftime(buf,sizeof(buf),"%a %b %d %T %Y", localtime(&now));
   return buf;

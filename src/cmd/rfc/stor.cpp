@@ -40,7 +40,7 @@ std::string FileAge(const fs::RealPath& path)
 {
   try
   {
-    time_t age = time(NULL) - fs::Status(path).Native().st_mtime;
+    time_t age = time(nullptr) - fs::Status(path).Native().st_mtime;
     return util::FormatDuration(util::TimePair(age, 0));
   }
   catch (const util::SystemError&)

@@ -153,7 +153,7 @@ util::Error Initialise()
     return util::Error::Failure(errno);
   
   // allow interruption inside gdb
-  if (ptrace(PTRACE_TRACEME, 0, NULL, 0) < 0 && errno == EPERM)
+  if (ptrace(PTRACE_TRACEME, 0, nullptr, 0) < 0 && errno == EPERM)
     sigdelset(&set, SIGINT);
 
   if (pthread_sigmask(SIG_BLOCK, &set, nullptr) < 0)

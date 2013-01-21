@@ -181,7 +181,7 @@ bool IsIncomplete(const RealPath& path)
   {
     Status status(path);
     if (status.IsExecutable() && 
-        time(NULL) - status.Native().st_mtime < maxInactivity)
+        time(nullptr) - status.Native().st_mtime < maxInactivity)
       return true;
   }
   catch (const util::SystemError&)

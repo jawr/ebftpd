@@ -328,7 +328,7 @@ void TCPSocket::Shutdown()
   }
   
   int result;
-  while ((result = select(socket + 1, &readSet, &writeSet, NULL, tvPtr)) < 0)
+  while ((result = select(socket + 1, &readSet, &writeSet, nullptr, tvPtr)) < 0)
   {
     boost::this_thread::interruption_point();
     if (errno != EINTR) throw NetworkSystemError(errno);
