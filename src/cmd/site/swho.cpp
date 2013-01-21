@@ -27,11 +27,7 @@ void SWHOCommand::Execute()
   boost::unique_future<bool> future;
   std::vector<ftp::task::WhoUser> users;
 
-  ftp::TaskPtr task(new ftp::task::GetOnlineUsers(users, future));
-  ftp::Listener::PushTask(task);
-
-  const cfg::Config& cfg = cfg::Get();
-
+  std::make_shared<ftp::task::GetOnlineUsers>(users, future)->Push();
   future.wait();
 
   boost::optional<text::Template> templ;
@@ -50,6 +46,7 @@ void SWHOCommand::Execute()
   text::TemplateSection& body = templ->Body();
   text::TemplateSection& foot = templ->Foot();
 
+  const cfg::Config& cfg = cfg::Get();
   head.RegisterValue("sitename_short", cfg.SitenameShort());
   os << head.Compile();
 

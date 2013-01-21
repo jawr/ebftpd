@@ -50,15 +50,10 @@ class Listener : public util::Thread
     isShutdown = true;
     instance.interruptPipe.Interrupt();
   }
- 
-  static Listener instance;
-  
-public:
+
   Listener() : port(-1), isShutdown(false) { }
-  
-  static bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
-  
-  static void PushTask( const TaskPtr& task)
+
+  static void PushTask(const TaskPtr& task)
   {
     { 
       boost::lock_guard<boost::mutex> lock(instance.taskMtx); 
@@ -66,7 +61,13 @@ public:
     }
     instance.interruptPipe.Interrupt();
   }
-
+  
+  static Listener instance;
+  
+public:
+  
+  static bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
+  
   static void StartThread();
   static void JoinThread();
   static void SetShutdown();
@@ -75,6 +76,9 @@ public:
   friend class task::KickUser;
   friend class task::GetOnlineUsers;
   friend class task::LoginKickUser;
+  friend class task::UserUpdate;
+  friend class task::Task;
+  
   friend void SignalHandler(int);
 };
 

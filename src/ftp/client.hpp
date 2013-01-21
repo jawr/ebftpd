@@ -41,6 +41,7 @@ class Client : public util::Thread
   ::ftp::Data data;
   util::ProcessReader child;
   
+  std::atomic<bool> userUpdated;
   acl::User user;
   ::ftp::ClientState state;
   int passwordAttemps;
@@ -162,6 +163,7 @@ public:
     boost::lock_guard<boost::mutex> lock(mutex);
     return ip;
   }
+  
   std::string Ident() const
   {
     boost::lock_guard<boost::mutex> lock(mutex);
@@ -178,6 +180,9 @@ public:
   bool IdntUpdate(const std::string& ident, std::string ip,
                   const std::string& hostname);
   bool IdntParse(const std::string& command);
+  
+  void SetUserUpdated() { userUpdated = true; }
+  void ReloadUser();
 };
 
 } /* ftp namespace */

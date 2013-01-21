@@ -32,8 +32,7 @@ void KICKCommand::Execute()
   } 
 
   boost::unique_future<unsigned> future;
-  ftp::TaskPtr task(new ftp::task::KickUser(user.UID(), future));
-  ftp::Listener::PushTask(task);
+  std::make_shared<ftp::task::KickUser>(user.UID(), future)->Push();
 
   future.wait();
   unsigned kicked = future.get();

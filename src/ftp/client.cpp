@@ -31,6 +31,7 @@
 #include "exec/cscript.hpp"
 #include "acl/ipmaskcache.hpp"
 #include "util/net/resolver.hpp"
+#include "acl/usercache.hpp"
 
 namespace ftp
 {
@@ -224,19 +225,41 @@ void Client::ExecuteCommand(const std::string& commandLine)
   currentCommand = "";
 }
 
+void Client::ReloadUser()
+{
+  userUpdated = false;
+
+  try
+  {
+    boost::lock_guard<boost::mutex>  lock(mutex);
+    user = acl::UserCache::User(user.Name());
+  }
+  catch (const util::RuntimeError& e)
+  {
+    logs::error << "Failed to reload user from cache for: " << e.Message() << logs::endl;
+  }  
+}
+
 void Client::Handle()
 {
   namespace pt = boost::posix_time;
 
+  pt::time_duration timeout;
+  pt::time_duration* timeoutPtr = nullptr;
+  
   while (State() != ClientState::Finished)
   {
     if (State() != ClientState::LoggedIn || profile.IdleTime() == 0) 
-      ExecuteCommand(control.NextCommand());
+      timeoutPtr = nullptr;
     else
-    {
-      pt::time_duration timeout = idleExpires - pt::second_clock::local_time();
-      ExecuteCommand(control.NextCommand(&timeout));
+    {     
+      timeout = idleExpires - pt::second_clock::local_time();
+      timeoutPtr = &timeout;
     }
+    
+    std::string command = control.NextCommand(timeoutPtr);
+    if (userUpdated) ReloadUser();
+    ExecuteCommand(command);
     cfg::UpdateLocal();
   }
 }
@@ -460,7 +483,8 @@ void Client::Run()
   }
   catch (...)
   {
-    logs::error << "Uhandled error on client thread: Not descended from std::exception" << logs::endl;
+    throw;
+    logs::error << "Unhandled error on client thread: Not descended from std::exception" << logs::endl;
   }
   
   (void) finishedGuard; /* silence unused variable warning */

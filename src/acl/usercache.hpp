@@ -25,6 +25,7 @@ class UserCache
   ~UserCache();
   
   static void Save(const acl::User& user);
+  static void Save(const acl::User& user, const std::string& field);
   
 public:
   static bool Exists(const std::string& name);

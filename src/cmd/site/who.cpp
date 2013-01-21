@@ -29,8 +29,7 @@ void WHOCommand::Execute()
   boost::unique_future<bool> future;
   std::vector<ftp::task::WhoUser> users;
 
-  ftp::TaskPtr task(new ftp::task::GetOnlineUsers(users, future));
-  ftp::Listener::PushTask(task);
+  std::make_shared<ftp::task::GetOnlineUsers>(users, future)->Push();
 
   const cfg::Config& cfg = cfg::Get();
 

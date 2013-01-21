@@ -11,6 +11,11 @@
 namespace ftp { namespace task
 {
 
+void Task::Push()
+{
+  ftp::Listener::PushTask(shared_from_this());
+}
+
 void KickUser::Execute(Listener& listener)
 {
   unsigned kicked = 0;
@@ -93,6 +98,13 @@ void Exit::Execute(Listener&)
   ftp::Listener::SetShutdown();
 }
 
+void UserUpdate::Execute(Listener& listener)
+{
+  for (auto& client: listener.clients)
+  {
+    if (client.User().UID() == uid) client.SetUserUpdated();
+  }
+}
 
 }
 }

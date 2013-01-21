@@ -8,6 +8,7 @@
 #include "db/user/user.hpp"
 #include "logs/logs.hpp"
 #include "cfg/get.hpp"
+#include "ftp/task/task.hpp"
 
 namespace acl
 {
@@ -61,6 +62,13 @@ void UserCache::Initialize()
 void UserCache::Save(const acl::User& user)
 {
   db::user::Save(user);
+  std::make_shared<ftp::task::UserUpdate>(user.UID())->Push();
+}
+
+void UserCache::Save(const acl::User& user, const std::string& field)
+{
+  db::user::Save(user, field);
+  std::make_shared<ftp::task::UserUpdate>(user.UID())->Push();
 }
 
 bool UserCache::Exists(const std::string& name)
@@ -141,7 +149,7 @@ util::Error UserCache::Delete(const std::string& name)
     return util::Error::Failure("User " + name + " already deleted.");
   it->second->AddFlag(Flag::Deleted);
 
-  db::user::Save(*it->second, "flags");
+  Save(*it->second, "flags");
 
   return util::Error::Success();
 }
@@ -165,7 +173,7 @@ util::Error UserCache::Readd(const std::string& name)
     return util::Error::Failure("User " + name + " is not deleted.");
   it->second->DelFlag(Flag::Deleted);
   
-  db::user::Save(*it->second, "flags");
+  Save(*it->second, "flags");
 
   return util::Error::Success();
 }
@@ -186,7 +194,7 @@ util::Error UserCache::Rename(const std::string& oldName, const std::string& new
   instance.byName.insert(std::make_pair(newName, it->second));
   instance.byName.erase(it);
   
-  db::user::Save(*it->second, "name");
+  Save(*it->second, "name");
 
   return util::Error::Success();
 }
@@ -199,8 +207,8 @@ util::Error UserCache::SetPassword(const std::string& name, const std::string& p
   
   it->second->SetPassword(password);
   
-  db::user::Save(*it->second, "password");
-  db::user::Save(*it->second, "salt");
+  Save(*it->second, "password");
+  Save(*it->second, "salt");
 
   return util::Error::Success();
 }
@@ -213,7 +221,7 @@ util::Error UserCache::SetFlags(const std::string& name, const std::string& flag
   
   it->second->SetFlags(flags);
 
-  db::user::Save(*it->second, "flags");
+  Save(*it->second, "flags");
   
   return util::Error::Success();
 }
@@ -226,7 +234,7 @@ util::Error UserCache::AddFlags(const std::string& name, const std::string& flag
   
   it->second->AddFlags(flags);
   
-  db::user::Save(*it->second, "flags");
+  Save(*it->second, "flags");
 
   return util::Error::Success();
 }
@@ -239,7 +247,7 @@ util::Error UserCache::DelFlags(const std::string& name, const std::string& flag
   
   it->second->DelFlags(flags);
   
-  db::user::Save(*it->second, "flags");
+  Save(*it->second, "flags");
 
   return util::Error::Success();
 }
@@ -254,11 +262,11 @@ util::Error UserCache::SetPrimaryGID(const std::string& name, GroupID gid, Group
   if (oldPrimaryGID != -1)
   {
     it->second->AddSecondaryGID(oldPrimaryGID);
-    db::user::Save(*it->second, "secondary gids");
+    Save(*it->second, "secondary gids");
   }
   
   it->second->SetPrimaryGID(gid);
-  db::user::Save(*it->second, "primary gid");
+  Save(*it->second, "primary gid");
 
   return util::Error::Success();
 }
@@ -279,12 +287,12 @@ util::Error UserCache::AddGID(const std::string& name, GroupID gid)
   if (user.PrimaryGID() == -1)
   {
     user.SetPrimaryGID(gid);
-    db::user::Save(*it->second, "primary gid");
+    Save(*it->second, "primary gid");
   }
   else
   {
     user.AddSecondaryGID(gid);
-    db::user::Save(*it->second, "secondary gids");
+    Save(*it->second, "secondary gids");
   }
 
   return util::Error::Success();
@@ -305,16 +313,16 @@ util::Error UserCache::DelGID(const std::string& name, GroupID gid)
     {
       user.SetPrimaryGID(user.SecondaryGIDs().front());
       user.DelSecondaryGID(user.PrimaryGID());
-      db::user::Save(*it->second, "secondary gids");
+      Save(*it->second, "secondary gids");
     }
     else
       user.SetPrimaryGID(-1);
-    db::user::Save(*it->second, "primary gid");
+    Save(*it->second, "primary gid");
   }
   else
   {
     user.DelSecondaryGID(gid);
-    db::user::Save(*it->second, "secondary gids");
+    Save(*it->second, "secondary gids");
   }
   
 
@@ -330,7 +338,7 @@ util::Error UserCache::ResetGIDs(const std::string& name)
   it->second->SetPrimaryGID(-1);
   it->second->ResetSecondaryGIDs();
 
-  db::user::Save(*it->second, "secondary gids");
+  Save(*it->second, "secondary gids");
 
   return util::Error::Success();
 }
@@ -373,7 +381,7 @@ util::Error UserCache::SetTagline(const std::string& name, const std::string& ta
   
   it->second->SetTagline(tagline);
   
-  db::user::Save(*it->second, "tagline");
+  Save(*it->second, "tagline");
   return util::Error::Success();
 }
 
@@ -382,7 +390,7 @@ acl::User UserCache::User(const std::string& name)
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end())
-    throw util::RuntimeError("User (" + name + ") doesn't exist");
+    throw util::RuntimeError("User " + name + " doesn't exist");
   return *it->second;
 }
 

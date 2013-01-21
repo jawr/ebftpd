@@ -36,8 +36,7 @@ void SHUTDOWNCommand::Execute()
   {
     control.Reply(ftp::ServiceUnavailable, "Full server shutdown/exit in progress..");
     logs::sysop << client.User().Name() << " initiated a full server shutdown/exit the server." << logs::endl;
-    ftp::TaskPtr task(new ftp::task::Exit());
-    ftp::Listener::PushTask(task);
+    std::make_shared<ftp::task::Exit>()->Push();
   }
   else
     throw cmd::SyntaxError();

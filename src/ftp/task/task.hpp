@@ -18,11 +18,12 @@ class Listener;
 namespace task
 {
 
-class Task
+class Task : public std::enable_shared_from_this<Task>
 {
 public:
   virtual ~Task() {}
   virtual void Execute(Listener& listener) = 0;
+  void Push();
 };
 
 class KickUser : public Task
@@ -89,6 +90,15 @@ public:
 class Exit : public Task
 {
 public:
+  void Execute(Listener& listener);
+};
+
+class UserUpdate : public Task
+{
+  acl::UserID uid;
+  
+public:
+  UserUpdate(acl::UserID uid) : uid(uid) { }
   void Execute(Listener& listener);
 };
 
