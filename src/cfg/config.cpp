@@ -70,23 +70,8 @@ Config::Config(const std::string& configFile) :
   SanityCheck();
 }
 
-void Config::Parse(std::string line) {
-  std::vector<std::string> toks;
-  boost::trim(line);
-  boost::split(toks, line, boost::is_any_of("\t "), boost::token_compress_on);
-  for (auto& token : toks) boost::replace_all(token, "[:space:]", " ");
-
-  if (toks.size() == 0) return;
-  std::string opt = toks.at(0);
-  if (opt.size() == 0) return;
-  
-  // remove setting from args
-  toks.erase(toks.begin());    
-  boost::algorithm::to_lower(opt);
-
-  // update cache for sanity check
-  settingsCache[opt]++; 
-
+void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
+{
   if (opt[0] == '-')
   {
     ParameterCheck(opt, toks, 1, -1);
@@ -599,10 +584,62 @@ void Config::Parse(std::string line) {
     ParameterCheck(opt, toks, 1, 2);
     postCheck.emplace_back(toks);
   }
+  else if (opt == "section")
+  {
+    ParameterCheck(opt, toks, 1);
+    auto result = sections.insert(std::make_pair(toks[0], Section(toks[0])));
+    if (!result.second) throw ConfigError("Section " + toks[0] + " already exists.");
+    currentSection = &result.first->second;
+  }
   else
   {
-    throw ConfigError("Invalid config option: " + opt);
+    throw ConfigError("Invalid global config option: " + opt);
   }
+}
+
+void Config::ParseSection(const std::string& opt, std::vector<std::string>& toks)
+{
+  if (opt == "path")
+  {
+    ParameterCheck(opt, toks, 1);
+    currentSection->paths.push_back(toks[0]);
+  }
+  else if (opt == "separate_credits")
+  {
+    ParameterCheck(opt, toks, 1);
+    currentSection->separateCredits = util::string::BoolLexicalCast(toks[0]);
+  }
+  else if (opt == "endsection")
+  {
+    currentSection = nullptr;
+  }
+  else
+  {
+    throw ConfigError("Invalid section config option: " + opt);
+  }
+}
+
+void Config::Parse(std::string line)
+{
+  std::vector<std::string> toks;
+  
+  boost::trim(line);
+  boost::split(toks, line, boost::is_any_of("\t "), boost::token_compress_on);
+  for (auto& token : toks) boost::replace_all(token, "[:space:]", " ");
+
+  if (toks.size() == 0) return;
+  std::string opt = toks.at(0);
+  if (opt.size() == 0) return;
+  
+  // remove setting from args
+  toks.erase(toks.begin());    
+  boost::algorithm::to_lower(opt);
+
+  // update cache for sanity check
+  settingsCache[opt]++; 
+
+  if (currentSection) ParseSection(opt, toks);
+  else ParseGlobal(opt, toks);  
 }
 
 void Config::NotImplemented(const std::string& opt)
@@ -643,6 +680,17 @@ bool Config::IsBouncer(const std::string& ip) const
     if (ip == bip) return true;
   return false;
 
+}
+
+boost::optional<const Section&> Config::SectionMatch(const fs::Path& path) const
+{
+  for (const auto& kv : sections)
+  {
+    if (kv.second.IsMatch(path)) 
+      return boost::optional<const Section&>(kv.second);
+  }
+      
+  return boost::optional<const Section&>();
 }
 
 // end namespace
