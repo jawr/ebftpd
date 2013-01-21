@@ -210,19 +210,6 @@ public:
   const fs::Path& Path() const { return path; }
 };
 
-class StatSection : public Setting
-{
-  std::string keyword;
-  std::string path;
-  bool seperateCredits;
-public:
-  StatSection() {}
-  StatSection(const std::vector<std::string>& toks);
-  const std::string& Keyword() const { return keyword; }
-  const std::string& Path() const { return path; }
-  bool SeperateCredits() const { return seperateCredits; }
-};
-
 class PathFilter : public Setting
 {
   std::string messagePath;

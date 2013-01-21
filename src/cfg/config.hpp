@@ -94,7 +94,6 @@ class Config
   std::vector<setting::Right> nostats;
   std::vector<setting::Right> hideowner;
   // end rights
-  std::vector<setting::StatSection> statSection;
   std::vector<setting::PathFilter> pathFilter;
   setting::MaxUsers maxUsers;
   setting::ACLInt maxUstats;
@@ -215,7 +214,6 @@ public:
   const std::vector<setting::Right>& Nostats() const { return nostats; } 
   const std::vector<setting::Right>& Hideowner() const { return hideowner; } 
 
-  const std::vector<setting::StatSection>& StatSection() const { return statSection; }
   const std::vector<setting::PathFilter>& PathFilter() const { return pathFilter; }
   const setting::MaxUsers& MaxUsers() const { return maxUsers; }
   const setting::ACLInt MaxUstats() const { return maxUstats; }

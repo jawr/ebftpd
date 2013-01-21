@@ -154,13 +154,6 @@ Right::Right(std::vector<std::string> toks)
                path.ToString().find("[:groupname:]") != std::string::npos;
 }
 
-StatSection::StatSection(const std::vector<std::string>& toks)   
-{
-  keyword = toks.at(0);
-  path = toks.at(1);
-  seperateCredits = util::string::BoolLexicalCast(toks.at(2));
-}
-
 PathFilter::PathFilter(std::vector<std::string> toks)   
 {
   messagePath = toks[0];
