@@ -3,7 +3,6 @@
 #include "acl/user.hpp"
 #include "acl/usercache.hpp"
 #include "acl/types.hpp"
-#include "ftp/listener.hpp"
 #include "ftp/task/task.hpp"
 #include "ftp/task/types.hpp"
 #include "util/error.hpp"

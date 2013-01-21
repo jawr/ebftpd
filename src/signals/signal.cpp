@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <exception>
 #include <sys/ptrace.h>
-#include "ftp/listener.hpp"
+#include "ftp/task/task.hpp"
 #include "signals/signal.hpp"
 #include "logs/logs.hpp"
 #include "util/debug.hpp"
@@ -66,7 +66,7 @@ void Handler::Run()
       case SIGINT   :
       {
         logs::debug << "Server interrupted!" << logs::endl;
-        ftp::Listener::SetShutdown();
+        std::make_shared<ftp::task::Exit>()->Push();
         return;
       }
     }

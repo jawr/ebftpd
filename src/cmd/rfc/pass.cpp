@@ -4,7 +4,6 @@
 #include "db/user/userprofile.hpp"
 #include "db/error.hpp"
 #include "ftp/task/task.hpp"
-#include "ftp/listener.hpp"
 #include "logs/logs.hpp"
 #include "cmd/error.hpp"
 #include "text/util.hpp"

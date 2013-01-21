@@ -6,7 +6,6 @@
 #include "acl/userprofile.hpp"
 #include "acl/group.hpp"
 #include "acl/groupcache.hpp"
-#include "ftp/listener.hpp"
 #include "ftp/task/types.hpp"
 #include "ftp/task/task.hpp"
 #include "cfg/config.hpp"
