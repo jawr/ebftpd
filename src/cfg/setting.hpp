@@ -319,7 +319,7 @@ public:
 
 class Creditloss : public Setting
 {
-  int multiplier;
+  int ratio;
   bool allowLeechers;
   fs::Path path;
   acl::ACL acl;
@@ -327,7 +327,7 @@ public:
   Creditloss() {}
   Creditloss(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
-  int Multiplier() const { return multiplier; }
+  int Ratio() const { return ratio; }
   bool AllowLeechers() const { return allowLeechers; }
   const fs::Path& Path() const { return path; }
 };

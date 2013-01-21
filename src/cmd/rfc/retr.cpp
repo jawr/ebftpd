@@ -11,9 +11,22 @@
 #include "logs/logs.hpp"
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
+#include "acl/path.hpp"
+#include "acl/credits.hpp"
 
 namespace cmd { namespace rfc
 {
+
+int RETRCommand::Ratio(const fs::VirtualPath& path, 
+      const boost::optional<const cfg::Section&>& section)
+{
+  // insert sratio here
+  auto cl = acl::CreditLoss(client.User(), path);
+  if (cl && cl->Ratio() >= 0) return cl->Ratio();
+  if (section && section->Ratio() >= 0) return section->Ratio();
+  assert(client.UserProfile().Ratio() >= 0);
+  return client.UserProfile().Ratio();
+}
 
 void RETRCommand::Execute()
 {
@@ -100,7 +113,6 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
-  std::streamsize bytes = 0;
   try
   {
     bool dlIncomplete = cfg::Get().DlIncomplete();
@@ -152,12 +164,18 @@ void RETRCommand::Execute()
   
   fin->close();
   data.Close();
+
   pt::time_duration duration = data.State().EndTime() - data.State().StartTime();
-  db::stats::Download(client.User(), bytes / 1024, duration.total_milliseconds());
-  acl::UserCache::DecrCredits(client.User().Name(), bytes / 1024);
+  double speed = stats::util::CalculateSpeed(data.State().Bytes(), duration);
+  auto section = cfg::Get().SectionMatch(path);
+  bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
+  db::stats::Download(client.User(), data.State().Bytes(), duration.total_milliseconds(),
+                      nostats ? "" : section->Name());
+  
+  acl::UserCache::DecrCredits(client.User().Name(), data.State().Bytes() * Ratio(path, section));
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
-      stats::util::AutoUnitSpeedString(stats::util::CalculateSpeed(data.State().Bytes(), duration))); 
+      stats::util::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
 }

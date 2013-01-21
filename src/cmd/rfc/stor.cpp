@@ -21,6 +21,7 @@
 #include "cmd/error.hpp"
 #include "acl/path.hpp"
 #include "fs/owner.hpp"
+#include "acl/credits.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -83,6 +84,17 @@ void STORCommand::DupeMessage(const fs::VirtualPath& path)
   }
 
   control.Reply(ftp::BadFilename, os.str());
+}
+
+int STORCommand::Ratio(const fs::VirtualPath& path, 
+    const boost::optional<const cfg::Section&>& section)
+{
+  // insert sratio here
+  auto cc = acl::CreditCheck(client.User(), path);
+  if (cc && cc->Ratio() >= 0) return cc->Ratio();
+  if (section &&  section->Ratio() >= 0) return section->Ratio();
+  assert(client.UserProfile().Ratio() >= 0);
+  return client.UserProfile().Ratio();
 }
 
 bool STORCommand::CalcCRC(const fs::VirtualPath& path)
@@ -241,14 +253,19 @@ void STORCommand::Execute()
 
   boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
   double speed = stats::util::CalculateSpeed(data.State().Bytes(), duration);
-  
-  if (!exec::PostCheck(client, path, calcCrc ? CRCToString(crc) : "000000", speed, "UNKNOWN"))
+
+  auto section = cfg::Get().SectionMatch(path);
+
+  if (!exec::PostCheck(client, path, 
+                       calcCrc ? CRCToString(crc) : "000000", speed, 
+                       section ? section->Name() : "-"))
     fs::DeleteFile(fs::MakeReal(path));
   else
   {
-    db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds());
-    long long credits = data.State().Bytes() * client.UserProfile().Ratio();
-    acl::UserCache::IncrCredits(client.User().Name(), credits);
+    bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
+    db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds(),
+                      nostats ? "" : section->Name());    
+    acl::UserCache::IncrCredits(client.User().Name(), data.State().Bytes() * Ratio(path, section));
   }
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 

@@ -23,8 +23,8 @@ namespace db { namespace stats
   std::unordered_map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl::User>& users);
   std::unordered_map<acl::UserID, ::stats::Stat> GetAllUp(const std::vector<acl::User>& users);
 
-  void Upload(const acl::User& user, long long bytes, long long xfertime);
-  void Download(const acl::User& user, long long bytes, long long xfertime);
+  void Upload(const acl::User& user, long long bytes, long long xfertime, const std::string& section);
+  void Download(const acl::User& user, long long bytes, long long xfertime, const std::string& section);
 
   // we need to pass the creation date of the file to this in order to effect
   // the correct stats segment.

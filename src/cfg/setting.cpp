@@ -248,13 +248,15 @@ Creditcheck::Creditcheck(std::vector<std::string> toks)
 {
   path = fs::Path(toks.at(0));
   ratio = boost::lexical_cast<int>(toks.at(1));
+  if (ratio < 0) throw ConfigError("creditloss ratio must be 0 or larger");
   toks.erase(toks.begin(), toks.begin()+2);
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
 Creditloss::Creditloss(std::vector<std::string> toks)   
 {
-  multiplier = boost::lexical_cast<int>(toks.at(0));
+  ratio = boost::lexical_cast<int>(toks.at(0));
+  if (ratio < 0) throw ConfigError("creditloss ratio must be 0 or larger");
   allowLeechers = util::string::BoolLexicalCast(toks.at(1));
   path = fs::Path(toks.at(2));
   toks.erase(toks.begin(), toks.begin()+3);

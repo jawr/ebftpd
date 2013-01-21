@@ -113,13 +113,14 @@ void UploadDecr(const acl::User& user, long long bytes)
   Pool::Queue(task);
 }
 
-void Upload(const acl::User& user, long long bytes, long long xfertime)
+void Upload(const acl::User& user, long long bytes, long long xfertime, const std::string& section)
 {
   util::Time time;
   mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
     << "week" << time.Week() << "month" 
     << time.Month() << "year" << time.Year()
-    << "direction" << "up");
+    << "direction" << "up"
+    << "section" << section);
   mongo::BSONObj obj = BSON(
     "$inc" << BSON("files" << 1) <<
     "$inc" << BSON("bytes" << bytes) <<
@@ -128,14 +129,15 @@ void Upload(const acl::User& user, long long bytes, long long xfertime)
   Pool::Queue(task);
 }
 
-void Download(const acl::User& user, long long bytes, long long xfertime)
+void Download(const acl::User& user, long long bytes, long long xfertime, const std::string& section)
 {
   logs::debug << "DOWNLOAD: " << bytes << logs::endl;
   util::Time time;
   mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
     << "week" << time.Week() << "month" 
     << time.Month() << "year" << time.Year()
-    << "direction" << "dn");
+    << "direction" << "dn"
+    << "section" << section);
   mongo::BSONObj obj = BSON(
     "$inc" << BSON("files" << 1) <<
     "$inc" << BSON("bytes" << bytes) <<
