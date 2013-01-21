@@ -30,6 +30,7 @@ Config::Config(const std::string& configFile) :
   sitenameLong("SITE NAME"),
   sitenameShort("SN"),
   datapath("data"),
+  bouncerOnly(false),
   dlIncomplete(true),
   totalUsers(20),
   multiplierMax(10),
@@ -270,6 +271,11 @@ void Config::Parse(std::string line) {
   {
     ParameterCheck(opt, toks, 1, -1);
     bouncerIp.insert(bouncerIp.end(), toks.begin(), toks.end());
+  }
+  else if (opt == "bouncer_only")
+  {
+    ParameterCheck(opt, toks, 1);
+    bouncerOnly = util::string::BoolLexicalCast(toks.at(0));
   }
   else if (opt == "calc_crc")
   {
@@ -629,6 +635,14 @@ void Config::SanityCheck()
   
   if (loginPrompt.empty())
     loginPrompt = sitenameLong + ": " + programFullname + " connected.";
+}
+
+bool Config::IsBouncer(const std::string& ip) const
+{
+  for (const std::string& bip : bouncerIp)
+    if (ip == bip) return true;
+  return false;
+
 }
 
 // end namespace

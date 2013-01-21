@@ -30,6 +30,7 @@
 #include "cmd/error.hpp"
 #include "exec/cscript.hpp"
 #include "acl/ipmaskcache.hpp"
+#include "util/net/resolver.hpp"
 
 namespace ftp
 {
@@ -41,9 +42,9 @@ Client::Client() :
   user("root", 69, "password", "1"),
   state(ClientState::LoggedOut),
   passwordAttemps(0),
-  ident("*"),
   kickLogin(false),
-  idleTimeout(boost::posix_time::seconds(cfg::Get().IdleTimeout().Timeout()))
+  idleTimeout(boost::posix_time::seconds(cfg::Get().IdleTimeout().Timeout())),
+  ident("*")
 {
 }
 
@@ -108,7 +109,7 @@ bool Client::CheckState(ClientState reqdState)
       return true;
   }
   else if (state == ClientState::LoggedOut)
-    control.Reply(ftp::NotLoggedIn, "Not logged in.");
+      control.Reply(ftp::NotLoggedIn, "Not logged in.");
   assert(state != ClientState::Finished);
   return false;
 }
@@ -129,6 +130,9 @@ bool Client::Accept(util::net::TCPListener& server)
   try
   {
     control.Accept(server);
+    ip = control.RemoteEndpoint().IP().IsMappedv4() ?
+         control.RemoteEndpoint().IP().ToUnmappedv4().ToString() :
+         control.RemoteEndpoint().IP().ToString();
     return true;
   }
   catch(const util::net::NetworkError& e)
@@ -248,6 +252,8 @@ void Client::Interrupt()
 
 void Client::LookupIdent()
 {
+  if (ident != "*") return;
+  
   try
   {
     util::net::IdentClient identClient(control.LocalEndpoint(), 
@@ -282,19 +288,142 @@ void Client::LogTraffic() const
 
 bool Client::PostCheckAddress()
 {
-  return acl::IpMaskCache::Check(user.UID(), ident + "@" + control.IP()) ||
-        (control.IP() != control.Hostname() &&
-         acl::IpMaskCache::Check(user.UID(), ident + "@" + control.Hostname()));
+  return acl::IpMaskCache::Check(user.UID(), ident + "@" + IP()) ||
+        (IP() != Hostname() && acl::IpMaskCache::Check(user.UID(), ident + "@" + Hostname()));
 }
 
 bool Client::PreCheckAddress()
 {
-  return acl::IpMaskCache::Check("*@" + control.IP()) ||
-        (control.IP() != control.Hostname() &&
-         acl::IpMaskCache::Check("*@" + control.Hostname()));
+  if (!acl::IpMaskCache::Check("*@" + IP()) ||
+        (IP() != Hostname() && acl::IpMaskCache::Check("*@" + Hostname())))
+  {
+    logs::security << "Refused connection from unknown address: " 
+                   << HostnameAndIP() << logs::endl;
+    return false;
+  }
+  
+  return true;
+}
+
+void Client::HostnameLookup()
+{
+  if (!hostname.empty()) return;
+  
+  try
+  {
+  
+    std::string hostname = util::net::ReverseResolve(util::net::IPAddress(ip));
+    
+    {
+      boost::lock_guard<boost::mutex> lock(mutex);
+      this->hostname = hostname;
+    }
+  }
+  catch (const util::net::NetworkError&)
+  {
+    {
+      boost::lock_guard<boost::mutex> lock(mutex);
+      this->hostname = ip;
+    }
+  }
+}
+
+std::string Client::HostnameAndIP() const
+{
+  boost::lock_guard<boost::mutex> lock(mutex);
+  std::ostringstream os;
+  os << hostname;
+  if (ip != hostname)
+  os << "(" << ip << ")";
+  return os.str();
+}
+
+bool Client::IdntUpdate(const std::string& ident, std::string ip,
+                        const std::string& hostname)
+{
+  try
+  {
+    util::net::IPAddress ipa(ip);
+    if (ipa.IsMappedv4()) ip = ipa.ToUnmappedv4().ToString();
+  }
+  catch (const util::net::InvalidIPAddressError&)
+  {
+    return false;
+  }
+  
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    this->ident = ident;
+    this->ip = ip;
+    if (ip != hostname) this->hostname = hostname;
+  }
+  
+  return true;
+}
+
+bool Client::IdntParse(const std::string& command)
+{
+  std::vector<std::string> args;
+  boost::split(args, command, boost::is_any_of(" "));
+  if (args.size() != 2) return false;
+  
+  auto pos1 = args[1].find_first_of('@');
+  if (pos1 == std::string::npos) return false;
+  
+  auto pos2 = args[1].find_last_of(':');
+  if (pos2 == std::string::npos || pos2 <= pos1) return false;
+  
+  std::string ident(args[1], 0, pos1);
+  std::string ip(args[1], pos1 + 1, pos2 - pos1 - 1);
+  std::string hostname(args[1], pos2 + 1);
+  
+  if (ident.empty() || hostname.empty() || ip.empty()) return false;
+
+  return IdntUpdate(ident, ip, hostname);
 }
 
 void Client::InnerRun()
+{
+  if (!cfg::Get().IsBouncer(ip))
+  {
+    if (cfg::Get().BouncerOnly() && !control.RemoteEndpoint().IP().IsLoopback())
+    {
+      logs::security << "Refused connection not from a bouncer ip: " 
+                     << HostnameAndIP() << logs::endl;
+      return;
+    }
+  }
+  else
+  {
+    std::string command = control.WaitForIdnt();
+    if (command.empty() && cfg::Get().BouncerOnly())
+    {
+      logs::security << "Timeout while waiting for IDNT command from bouncer: "
+                     << HostnameAndIP() << logs::endl;
+      return;
+    }
+    
+    if (!IdntParse(command))
+    {
+      logs::security << "Malformed IDNT Command from bouncer: "
+                     << HostnameAndIP() << logs::endl;
+      return;
+    }
+  }
+
+  if (!PreCheckAddress()) return;
+  
+  HostnameLookup();
+  LookupIdent();
+  
+  logs::debug << "Servicing client connected from "
+              << ident << "@" << HostnameAndIP() << logs::endl;
+    
+  DisplayBanner();
+  Handle();
+}
+
+void Client::Run()
 {
   using util::scope_guard;
   using util::make_guard;
@@ -302,28 +431,13 @@ void Client::InnerRun()
   scope_guard finishedGuard = make_guard([&]
   {
     SetState(ClientState::Finished);
-    db::mail::LogOffPurgeTrash(user.UID());
+    if (user.UID() != -1) db::mail::LogOffPurgeTrash(user.UID());
     LogTraffic();
   });
-  
-  control.HostnameLookup();
-  
-  if (!PreCheckAddress())
-  {
-    logs::security << "Refused connection from unknown address: " 
-                   << control.HostnameAndIP() << logs::endl;
-    return;
-  }
 
-  LookupIdent();
-  
-  logs::debug << "Servicing client connected from "
-              << ident << "@" << control.HostnameAndIP() << logs::endl;
-    
   try
   {
-    DisplayBanner();
-    Handle();
+    InnerRun();
   }
   catch (const util::net::TimeoutError& e)
   {
@@ -340,20 +454,16 @@ void Client::InnerRun()
     logs::debug << "Client from " << control.RemoteEndpoint()
                 << " lost connection: " << e.Message() << logs::endl;
   }
-  
-  (void) finishedGuard; /* silence unused variable warning */
-}
-
-void Client::Run()
-{
-  try
-  {
-    InnerRun();
-  }
   catch (const std::exception& e)
   {
     logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
   }
+  catch (...)
+  {
+    logs::error << "Uhandled error on client thread: Not descended from std::exception" << logs::endl;
+  }
+  
+  (void) finishedGuard; /* silence unused variable warning */
 }
 
 } /* ftp namespace */

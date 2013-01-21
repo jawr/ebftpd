@@ -88,6 +88,23 @@ const std::string& IPAddress::ToString() const
   return asString;
 }
 
+bool IPAddress::IsLoopback() const
+{
+  if (family == IPFamily::IPv4)
+  {
+    return *reinterpret_cast<const in_addr_t*>(data) == htonl(INADDR_LOOPBACK);
+  }
+  else
+  if (IsMappedv4())
+  {
+    return ToUnmappedv4().IsLoopback();
+  }
+  else
+  {
+    return IN6_IS_ADDR_LOOPBACK(data);
+  }
+}
+
 bool IPAddress::IsMappedv4() const
 {
   if (family != IPFamily::IPv6) return false;

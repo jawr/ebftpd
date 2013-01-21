@@ -41,7 +41,7 @@ void PASSCommand::Execute()
   if (!client.PostCheckAddress())
   {
     std::ostringstream identAtAddress;
-    identAtAddress << client.Ident() << "@" << control.HostnameAndIP();
+    identAtAddress << client.Ident() << "@" << client.HostnameAndIP();
     logs::security << "Refusing login from unknown ident@ip: " 
                    << identAtAddress.str() << logs::endl;
     control.Reply(ftp::ServiceUnavailable, "Login not allowed from " + 

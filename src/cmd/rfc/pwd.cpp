@@ -8,7 +8,6 @@ void PWDCommand::Execute()
 {
   control.Reply(ftp::PathCreated, "\"" + fs::WorkDirectory().ToString() +
                "\" is your working directory.");
-  return;
 }
 
 } /* rfc namespace */

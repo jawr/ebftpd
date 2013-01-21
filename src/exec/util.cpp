@@ -16,7 +16,7 @@ std::vector<std::string> BuildEnv(ftp::Client& client)
      << "TAGLINE=" << client.User().Tagline() << "\n"
      << "GROUP=" << acl::GroupCache::GIDToName(client.User().PrimaryGID()) << "\n"
      << "RATIO=" << client.UserProfile().Ratio() << "\n"
-     << "HOST=" << client.Ident() << "@" << client.Address();
+     << "HOST=" << client.Ident() << "@" << client.IP();
   
   std::string envStr(os.str());
   std::vector<std::string> env;

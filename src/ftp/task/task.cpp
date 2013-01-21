@@ -53,7 +53,7 @@ void GetOnlineUsers::Execute(Listener& listener)
   {
     if (client.State() != ClientState::LoggedIn) continue;
     users.emplace_back(WhoUser(client.User(), client.Data().State(), client.IdleTime(), 
-                       client.CurrentCommand(), client.Ident(), client.Address()));
+                       client.CurrentCommand(), client.Ident(), client.Hostname()));
   }
   
   promise.set_value(true);

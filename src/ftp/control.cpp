@@ -7,7 +7,6 @@
 #include "util/net/tcplistener.hpp"
 #include "logs/logs.hpp"
 #include "ftp/error.hpp"
-#include "util/net/resolver.hpp"
 
 namespace ftp
 {
@@ -15,9 +14,6 @@ namespace ftp
 void Control::Accept(util::net::TCPListener& listener)
 {
   listener.Accept(socket);
-  ip = socket.RemoteEndpoint().IP().IsMappedv4() ?
-       socket.RemoteEndpoint().IP().ToUnmappedv4().ToString() :
-       socket.RemoteEndpoint().IP().ToString();
 }
 
 void Control::SendReply(ReplyCode code, bool part, const std::string& message)
@@ -96,7 +92,7 @@ std::string Control::NextCommand(const boost::posix_time::time_duration* timeout
   FD_SET(interruptPipe.ReadFd(), &readSet);
     
   int max = std::max(socket.Socket(), interruptPipe.ReadFd());
-  
+
   int n;
   if (timeout)
   {
@@ -108,6 +104,8 @@ std::string Control::NextCommand(const boost::posix_time::time_duration* timeout
   }
   else
     n = select(max + 1, &readSet, NULL, NULL, NULL);
+
+  boost::this_thread::interruption_point();
     
   if (!n) throw util::net::TimeoutError();
   if (n < 0) throw util::net::NetworkSystemError(errno);
@@ -123,23 +121,21 @@ std::string Control::NextCommand(const boost::posix_time::time_duration* timeout
     return commandLine;
   }
 
-  boost::this_thread::interruption_point();
   verify(false); // should never get here!!
   return "";
 }
 
-void Control::HostnameLookup()
+std::string Control::WaitForIdnt()
 {
-  hostname = util::net::ReverseResolve(socket.RemoteEndpoint());
-}
-
-std::string Control::HostnameAndIP() const
-{
-  std::ostringstream os;
-  os << hostname;
-  if (ip != hostname)
-  os << "(" << ip << ")";
-  return os.str();
+  try
+  {
+    boost::posix_time::seconds timeout(1);
+    return NextCommand(&timeout);
+  }
+  catch (const util::net::TimeoutError&)
+  {
+    return std::string("");
+  }
 }
 
 } /* ftp namespace */

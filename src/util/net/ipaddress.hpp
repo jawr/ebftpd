@@ -55,6 +55,8 @@ public:
   
   const std::string& ToString() const;
   /* Throws util::NetworkSystemError */
+  
+  bool IsLoopback() const;
 
   bool IsMappedv4() const;
   

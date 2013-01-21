@@ -45,7 +45,6 @@ class Client : public util::Thread
   ::ftp::ClientState state;
   int passwordAttemps;
   fs::VirtualPath renameFrom;
-  std::string ident;
   xdupe::Mode xdupeMode;
   std::string confirmCommand;
   std::string currentCommand;
@@ -58,6 +57,10 @@ class Client : public util::Thread
   boost::posix_time::seconds idleTimeout;
   boost::posix_time::ptime idleTime;
 
+  std::string ident;
+  std::string ip;
+  std::string hostname;
+  
   static std::atomic_bool siteopOnly;
   
   static const int maxPasswordAttemps = 3;
@@ -68,7 +71,6 @@ class Client : public util::Thread
   bool CheckState(ClientState reqdState);
   void InnerRun();
   void Run();
-  bool PreCheckAddress();
   void LookupIdent();
   void IdleReset(std::string commandLine)  ;
   
@@ -123,15 +125,6 @@ public:
     return currentCommand; 
   }
   
-  const std::string& Ident() const
-  {
-    boost::lock_guard<boost::mutex> lock(mutex);
-    return ident;
-  }
-  
-  const std::string& Address() const
-  { return control.RemoteEndpoint().IP().ToString(); }
-  
   ClientState State() const
   {
     boost::lock_guard<boost::mutex> lock(mutex);
@@ -162,6 +155,29 @@ public:
   { return siteopOnly; }
   
   bool PostCheckAddress();
+  bool PreCheckAddress();
+  
+  std::string IP() const
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    return ip;
+  }
+  std::string Ident() const
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    return ident;
+  }
+  
+  std::string Hostname() const
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    return hostname;
+  }
+  void HostnameLookup();
+  std::string HostnameAndIP() const;
+  bool IdntUpdate(const std::string& ident, std::string ip,
+                  const std::string& hostname);
+  bool IdntParse(const std::string& command);
 };
 
 } /* ftp namespace */
