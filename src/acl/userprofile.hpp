@@ -58,7 +58,7 @@ public:
     loggedIn(-1)
   { }
   
-  UserProfile::UserProfile(acl::UserID uid, acl::UserID creator) :
+  UserProfile(acl::UserID uid, acl::UserID creator) :
     uid(uid),
     creator(creator),
     ratio(3),

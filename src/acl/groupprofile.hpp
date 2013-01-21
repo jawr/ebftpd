@@ -36,7 +36,8 @@ public:
     maxLogins(-1)
   { }
   
-  GroupProfile(acl::GroupID gid) : gid(gid),
+  GroupProfile(acl::GroupID gid) : 
+    gid(gid),
     slots(0),
     leechSlots(0),
     allotSlots(0),

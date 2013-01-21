@@ -19,6 +19,7 @@
 #include "acl/types.hpp"
 #include "logs/logs.hpp"
 #include "db/error.hpp"
+#include "util/verify.hpp"
 
 namespace db
 {
@@ -60,8 +61,15 @@ void Initialize()
     throw db::DBError("Root user (UID 0) doesn't exist.");
   }
   
-  acl::UserCache::Create("biohazard", "password", "1", 0);
-  acl::UserCache::Create("io", "password", "1", 0);
+  if (acl::UserCache::Create("biohazard", "password", "1", 0))
+  {
+    verify(acl::IpMaskCache::Add(acl::UserCache::NameToUID("biohazard"), "*@127.0.0.1"));
+  }
+  
+  if (acl::UserCache::Create("io", "password", "1", 0))
+  {
+    verify(acl::IpMaskCache::Add(acl::UserCache::NameToUID("io"), "*@127.0.0.1"));
+  }
 }
 
 void Cleanup()

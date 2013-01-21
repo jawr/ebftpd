@@ -20,15 +20,29 @@ void IpMaskCache::Initialize()
 bool IpMaskCache::Check(const std::string& addr)
 {
   boost::shared_lock<boost::shared_mutex> lock(instance.mtx);
-  for (auto uid: instance.userIPMaskMap)
-    for (auto& mask: uid.second)
+  for (auto uid : instance.userIPMaskMap)
+    for (auto& mask : uid.second)
     {
-      if (util::string::WildcardMatch(mask, addr, false))
+      if (util::string::WildcardMatch(mask, addr))
         return true; 
     }
   return false;
 }
 
+bool IpMaskCache::Check(acl::UserID uid, const std::string& addr)
+{
+  boost::shared_lock<boost::shared_mutex> lock(instance.mtx);
+  auto it = instance.userIPMaskMap.find(uid);
+  if (it != instance.userIPMaskMap.end())
+  {
+    for (const auto& mask : it->second)
+    {
+      if (util::string::WildcardMatch(mask, addr))
+        return true;     
+    }
+  }
+  return false;
+}
 
 util::Error IpMaskCache::Add(acl::UserID uid, const std::string& mask,
   std::vector<std::string>& deleted)
@@ -38,8 +52,13 @@ util::Error IpMaskCache::Add(acl::UserID uid, const std::string& mask,
   UserIPMaskMap::iterator masks = instance.userIPMaskMap.find(uid);
   if (masks == instance.userIPMaskMap.end())
   {
-    boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
-    instance.userIPMaskMap.insert({uid, std::vector<std::string>({mask})});
+    {
+      boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
+      instance.userIPMaskMap.insert({uid, std::vector<std::string>({mask})});
+    }
+    
+    db::ipmask::Add(uid, mask);
+
     return util::Error::Success();
   }
 
@@ -53,26 +72,30 @@ util::Error IpMaskCache::Add(acl::UserID uid, const std::string& mask,
     // check if mask we are adding is broader
     else if (util::string::WildcardMatch(mask, *it, false))
     {
-      deleted.push_back(*it);
-      db::ipmask::Delete(uid, *it);
       {
         boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
         it = masks->second.erase(it);
       }
+      
+      deleted.push_back(*it);
+      db::ipmask::Delete(uid, *it);
+  
       continue;
     }
     ++it;
   }   
 
   // check only a maximum of 10 masks per user
-  if (instance.userIPMaskMap[uid].size() > 9)
+  if (instance.userIPMaskMap.at(uid).size() > 9)
     return util::Error::Failure("10 IP masks already added.");
 
   {
     boost::upgrade_to_unique_lock<boost::shared_mutex> writeLock(lock);
-    instance.userIPMaskMap[uid].push_back(mask);
+    instance.userIPMaskMap.at(uid).push_back(mask);
   }
+  
   db::ipmask::Add(uid, mask);
+  
   return util::Error::Success();
 }
 
@@ -117,7 +140,6 @@ util::Error IpMaskCache::DeleteAll(acl::UserID uid, std::vector<std::string>& de
 util::Error IpMaskCache::List(acl::UserID uid,
   std::vector<std::string>& masks)
 {
-  masks.clear();
   boost::upgrade_lock<boost::shared_mutex> lock(instance.mtx);
   UserIPMaskMap::iterator it = instance.userIPMaskMap.find(uid);
   if (it == instance.userIPMaskMap.end())

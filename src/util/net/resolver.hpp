@@ -9,17 +9,12 @@
 #include <sys/socket.h>
 #include "util/net/endpoint.hpp"
 #include "util/net/error.hpp"
+#include "util/net/types.hpp"
 
 struct addrinfo;
 
 namespace util { namespace net
 {
-
-enum class SocketType : int
-{
-  Stream = SOCK_STREAM,
-  Datagram = SOCK_DGRAM
-};
 
 class ResolverError : public NetworkError
 {
@@ -87,6 +82,9 @@ public:
     Resolver(SocketType::Datagram, hostname, port) { }
   /* Throws ResolverError, NetworkSystemError, InvalidIPAddressError */
 };
+
+std::string ReverseResolve(const Endpoint& ep);
+std::string ReverseResolve(const IPAddress& ip);
 
 } /* net namespace */
 } /* util namespace */

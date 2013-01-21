@@ -26,6 +26,9 @@ class Control : public ReadWriteable
   bool singleLineReplies;
   std::vector<std::string> deferred;
   
+  std::string ip;
+  std::string hostname;
+  
   long bytesRead;
   long bytesWrite;
   
@@ -72,6 +75,12 @@ public:
   bool IsTLS() const { return socket.IsTLS(); }
   
   void Interrupt(){ socket.Shutdown(); }
+  
+  void HostnameLookup();
+  
+  const std::string& IP() const { return ip; }
+  const std::string& Hostname() const { return ip; }
+  std::string HostnameAndIP() const;
   
   long long BytesRead() const { return bytesRead; }
   long long BytesWrite() const { return bytesWrite; }

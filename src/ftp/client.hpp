@@ -68,6 +68,7 @@ class Client : public util::Thread
   bool CheckState(ClientState reqdState);
   void InnerRun();
   void Run();
+  bool PreCheckAddress();
   void LookupIdent();
   void IdleReset(std::string commandLine)  ;
   
@@ -159,6 +160,8 @@ public:
   
   static bool IsSiteopOnly()
   { return siteopOnly; }
+  
+  bool PostCheckAddress();
 };
 
 } /* ftp namespace */

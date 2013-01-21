@@ -29,6 +29,7 @@
 #include "ftp/error.hpp"
 #include "cmd/error.hpp"
 #include "exec/cscript.hpp"
+#include "acl/ipmaskcache.hpp"
 
 namespace ftp
 {
@@ -279,6 +280,20 @@ void Client::LogTraffic() const
         control.BytesRead() + data.BytesRead());
 }
 
+bool Client::PostCheckAddress()
+{
+  return acl::IpMaskCache::Check(user.UID(), ident + "@" + control.IP()) ||
+        (control.IP() != control.Hostname() &&
+         acl::IpMaskCache::Check(user.UID(), ident + "@" + control.Hostname()));
+}
+
+bool Client::PreCheckAddress()
+{
+  return acl::IpMaskCache::Check("*@" + control.IP()) ||
+        (control.IP() != control.Hostname() &&
+         acl::IpMaskCache::Check("*@" + control.Hostname()));
+}
+
 void Client::InnerRun()
 {
   using util::scope_guard;
@@ -290,11 +305,20 @@ void Client::InnerRun()
     db::mail::LogOffPurgeTrash(user.UID());
     LogTraffic();
   });
+  
+  control.HostnameLookup();
+  
+  if (!PreCheckAddress())
+  {
+    logs::security << "Refused connection from unknown address: " 
+                   << control.HostnameAndIP() << logs::endl;
+    return;
+  }
 
   LookupIdent();
   
   logs::debug << "Servicing client connected from "
-              << ident << "@" << control.RemoteEndpoint() << logs::endl;
+              << ident << "@" << control.HostnameAndIP() << logs::endl;
     
   try
   {

@@ -26,6 +26,7 @@ public:
   
   static void Initialize();
   static bool Check(const std::string& addr);
+  static bool Check(acl::UserID uid, const std::string& addr);
   static util::Error Add(acl::UserID uid, const std::string& mask,
       std::vector<std::string>& deleted);
   static util::Error Add(acl::UserID uid, const std::string& mask)

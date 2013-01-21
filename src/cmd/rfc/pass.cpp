@@ -38,6 +38,18 @@ void PASSCommand::Execute()
     return;
   }
   
+  if (!client.PostCheckAddress())
+  {
+    std::ostringstream identAtAddress;
+    identAtAddress << client.Ident() << "@" << control.HostnameAndIP();
+    logs::security << "Refusing login from unknown ident@ip: " 
+                   << identAtAddress.str() << logs::endl;
+    control.Reply(ftp::ServiceUnavailable, "Login not allowed from " + 
+          identAtAddress.str() + ".");
+    client.SetState(ftp::ClientState::Finished);
+    return;
+  }
+  
   if (client.User().Deleted())
   {
     control.Reply(ftp::ServiceUnavailable, "You have been deleted. Goodbye.");
@@ -119,7 +131,6 @@ void PASSCommand::Execute()
   os << "User " << client.User().Name() << " logged in.";
 
   control.Reply(ftp::UserLoggedIn, os.str());
-  return;
 }
 
 } /* rfc namespace */

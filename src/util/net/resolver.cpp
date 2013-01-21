@@ -87,6 +87,23 @@ void Resolver::Resolve(const std::string& hostname, int32_t port)
   return Resolve();
 }
 
+std::string ReverseResolve(const Endpoint& ep)
+{
+  std::string hostname;
+  hostname.resize(NI_MAXHOST);
+  if (getnameinfo(ep.Addr(), ep.Length(), &hostname[0], hostname.size(), 
+                  nullptr, 0, 0) != 0)
+  {
+    return ep.IP().ToString();
+  }
+  return hostname;
+}
+
+std::string ReverseResolve(const IPAddress& ip)
+{
+  return ReverseResolve(Endpoint(ip, -1));
+}
+
 } /* net namespace */
 } /* util namespace */
 
