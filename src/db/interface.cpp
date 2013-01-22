@@ -36,7 +36,7 @@ void Initialize()
   Pool::Queue(TaskPtr(new db::EnsureIndex("groups",
     BSON("gid" << 1 << "name" << 1))));
   Pool::Queue(TaskPtr(new db::EnsureIndex("transfers", BSON("uid" << 1 << 
-    "direction" << 1 << "day" << 1 << "week" << 1 << "month" << 1 << 
+    "direction" << 1 << "section" << 1 << "day" << 1 << "week" << 1 << "month" << 1 << 
     "year" << 1))));
   Pool::Queue(TaskPtr(new db::EnsureIndex("ipmasks",
     BSON("uid" << 1 << "mask" << 1))));

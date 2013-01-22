@@ -17,28 +17,35 @@ void DELECommand::Execute()
 {
   fs::VirtualPath path(fs::PathFromUser(argStr));
 
-  bool loseCredits = 
-    !acl::path::FileAllowed<acl::path::Nostats>(client.User(), path) && 
-    fs::OwnerCache::Owner(fs::MakeReal(path)).UID() == client.User().UID();
+  bool loseCredits = fs::OwnerCache::Owner(fs::MakeReal(path)).UID() == client.User().UID();
   
-  off_t size;
-  util::Error e = fs::DeleteFile(client,  path, &size);
+  off_t bytes;
+  util::Error e = fs::DeleteFile(client,  path, &bytes);
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
     throw cmd::NoPostScriptError();
   }
+  
+  auto section = cfg::Get().SectionMatch(path);
+  bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
+  if (!nostats)
+  {
+    db::stats::UploadDecr(client.User(), bytes, section->Name());
+  }
 
   if (loseCredits)
   {
-    long long creditLoss = (size * client.UserProfile().Ratio()) / 1024;
-    acl::UserCache::DecrCredits(client.User().Name(), creditLoss);
-    db::stats::UploadDecr(client.User(), size / 1024);
-    std::ostringstream os;
-    os << "DELE command successful. (" << std::fixed << std::setprecision(2) 
-       << creditLoss / 1024.0 << "MB credits lost)";
-    control.Reply(ftp::FileActionOkay, os.str()); 
-    throw cmd::NoPostScriptError();
+    long long creditLoss = bytes * client.UserProfile().Ratio();
+    if (creditLoss)
+    {
+      acl::UserCache::DecrCredits(client.User().Name(), creditLoss);
+      std::ostringstream os;
+      os << "DELE command successful. (" << std::fixed << std::setprecision(2) 
+         << creditLoss / 1024.0 << "MB credits lost)";
+      control.Reply(ftp::FileActionOkay, os.str()); 
+      return;
+    }
   }
 
   control.Reply(ftp::FileActionOkay, "DELE command successful."); 

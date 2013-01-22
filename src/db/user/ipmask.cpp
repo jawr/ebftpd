@@ -9,7 +9,6 @@ namespace db { namespace ipmask
 void Add(acl::UserID uid, const std::string& mask)
 {
   mongo::BSONObj obj = BSON("uid" << uid << "mask" << mask);
-  std::cout << obj.toString() << std::endl;
   TaskPtr task(new db::Insert("ipmasks", obj));
   Pool::Queue(task);
 }

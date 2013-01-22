@@ -98,19 +98,13 @@ std::unordered_map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl:
   return db::bson::Stat::Unserialize(results.front());
 }
 
-void UploadDecr(const acl::User& user, long long bytes)
+void UploadDecr(const acl::User& user, long long bytes, const std::string& section)
 {
-  util::Time time;
-  mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
-    << "week" << time.Week() << "month" 
-    << time.Month() << "year" << time.Year()
-    << "direction" << "up");
-  mongo::BSONObj obj = BSON(
-    "$inc" << BSON("files" << -1) <<
-    "$inc" << BSON("bytes" << bytes*-1) <<
-    "$inc" << BSON("xfertime" << static_cast<long long>(0)));
-  TaskPtr task(new db::Update("transfers", query, obj, true));
-  Pool::Queue(task);
+  if (!section.empty())
+  {
+    Upload(user, -bytes, 0, section);
+    Upload(user, bytes, 0, "");
+  }
 }
 
 void Upload(const acl::User& user, long long bytes, long long xfertime, const std::string& section)
@@ -125,13 +119,15 @@ void Upload(const acl::User& user, long long bytes, long long xfertime, const st
     "$inc" << BSON("files" << 1) <<
     "$inc" << BSON("bytes" << bytes) <<
     "$inc" << BSON("xfertime" << xfertime));
+    
+  std::cout << query.toString() << std::endl;
+  std::cout << obj.toString() << std::endl;
   TaskPtr task(new db::Update("transfers", query, obj, true));
   Pool::Queue(task);
 }
 
 void Download(const acl::User& user, long long bytes, long long xfertime, const std::string& section)
 {
-  logs::debug << "DOWNLOAD: " << bytes << logs::endl;
   util::Time time;
   mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
     << "week" << time.Week() << "month" 
@@ -142,6 +138,8 @@ void Download(const acl::User& user, long long bytes, long long xfertime, const 
     "$inc" << BSON("files" << 1) <<
     "$inc" << BSON("bytes" << bytes) <<
     "$inc" << BSON("xfertime" << xfertime)); // how to handle the xfertime
+  std::cout << query.toString() << std::endl;
+  std::cout << obj.toString() << std::endl;
   TaskPtr task(new db::Update("transfers", query, obj, true));
   Pool::Queue(task);
 }

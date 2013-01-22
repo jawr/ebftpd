@@ -27,7 +27,7 @@ void ProtocolUpdate(acl::UserID uid, long long sendBytes, long long receiveBytes
   Pool::Queue(task);
 }
 
-Protocol CalculateUser(acl::UserID uid, ::stats::Timeframe timeframe)
+Traffic ProtocolUser(acl::UserID uid, ::stats::Timeframe timeframe)
 {
   mongo::BSONObj cmd = BSON("aggregate" << "protocol" << "pipeline" <<
     BSON_ARRAY(
@@ -44,11 +44,11 @@ Protocol CalculateUser(acl::UserID uid, ::stats::Timeframe timeframe)
   Pool::Queue(task);
   future.wait();
 
-  Protocol total;
+  Traffic total;
   try
   {
-    total = Protocol(result["send total"].Long(), 
-                          result["receive total"].Long());
+    total = Traffic(result["send total"].Long(), 
+                    result["receive total"].Long());
   }
   catch (const mongo::DBException& e)
   {
@@ -58,9 +58,9 @@ Protocol CalculateUser(acl::UserID uid, ::stats::Timeframe timeframe)
   return total;
 }
 
-Protocol CalculateTotal(::stats::Timeframe timeframe)
+Traffic ProtocolTotal(::stats::Timeframe timeframe)
 {
-  return CalculateUser(-1, timeframe);
+  return ProtocolUser(-1, timeframe);
 }
 
 } /* stats namespace */

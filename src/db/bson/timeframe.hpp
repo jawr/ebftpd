@@ -7,7 +7,7 @@
 namespace db { namespace bson
 {
 
-mongo::BSONObj TimeframeSerialize(::stats::Timeframe timeframe);
+mongo::BSONObj TimeframeSerialize(::stats::Timeframe timeframem);
 
 } /* bson namespace */
 } /* db namespace */

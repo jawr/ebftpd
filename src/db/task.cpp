@@ -64,7 +64,6 @@ void Delete::Execute(mongo::DBClientConnection& conn)
 
 void Select::Execute(mongo::DBClientConnection& conn)
 {
-
   results.clear();
   results.reserve(limit);
   
