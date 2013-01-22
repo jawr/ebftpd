@@ -47,8 +47,8 @@ Traffic ProtocolUser(acl::UserID uid, ::stats::Timeframe timeframe)
   Traffic total;
   try
   {
-    total = Traffic(result["send total"].Long(), 
-                    result["receive total"].Long());
+    total = Traffic(result["0"]["send total"].Long(), 
+                    result["0"]["receive total"].Long());
   }
   catch (const mongo::DBException& e)
   {

@@ -389,14 +389,17 @@ public:
 private:
   std::string command;
   Type type;
+  std::string description;
   std::string target;
   std::string arguments;
+
 public:
 
   SiteCmd() {}
   SiteCmd(const std::vector<std::string>& toks);
   const std::string& Command() const { return command; }
   Type GetType() const { return type; }
+  const std::string& Description() const { return description; }
   const std::string& Arguments() const { return arguments; }
   const std::string& Target() const { return target; }
 };

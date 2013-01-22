@@ -127,7 +127,6 @@ void Tag::Parse(std::string value)
 
 void Tag::ParseSize(long long bytes)
 {
-
   if (!precision.empty()) 
   {
     SetType(TagType::Float);
@@ -135,13 +134,14 @@ void Tag::ParseSize(long long bytes)
   }
 
   double value;
-
   if (measurement == Measurement::Kbyte)
     value = bytes / 1024.0;
   else if (measurement == Measurement::Mbyte)
     value = bytes / 1024.0 / 1024.0;
   else if (measurement == Measurement::Gbyte)
     value = bytes / 1024.0 / 1024.0 / 1024.0;
+  else
+    value = bytes;
 
   std::ostringstream os;
   os << boost::format(format) % value;
@@ -165,7 +165,7 @@ void Tag::ParseSize(long long bytes)
   this->value = os.str();
 }
 
-void Tag::ParseSpeed(long long bytes, long long xfertime)
+void Tag::ParseSpeed(double speed)
 {
   if (!precision.empty())
   {
@@ -176,11 +176,13 @@ void Tag::ParseSpeed(long long bytes, long long xfertime)
   float value;
 
   if (measurement == Measurement::Kbyte)
-    value = (bytes / 1024.0) / (xfertime / 1000.0);
+    value = speed / 1024.0;
   else if (measurement == Measurement::Mbyte)
-    value = (bytes / 1024.0 / 1024.0) / (xfertime / 1000.0);
+    value = speed / 1024.0 / 1024.0;
   else if (measurement == Measurement::Gbyte)
-    value = (bytes / 1024.0 / 1024.0 / 1024.0) / (xfertime / 1000.0);
+    value = speed / 1024.0 / 1024.0 / 1024.0;
+  else
+    value = speed;
 
   std::ostringstream os;
   os << boost::format(format) % value;

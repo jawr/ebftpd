@@ -31,7 +31,7 @@ public:
   static bool Exists(const std::string& name);
   static bool Exists(UserID uid);
   static util::Error Create(const std::string& name, const std::string& password,
-                     const std::string& flags, const acl::UserID creator);
+                     const std::string& flags, const UserID creator);
   static util::Error Delete(const std::string& name);
   static util::Error Purge(const std::string& name);
   static util::Error Readd(const std::string& name);
@@ -49,7 +49,8 @@ public:
   static util::Error AddGID(const std::string& name, GroupID secondaryGID);
   static util::Error DelGID(const std::string& name, GroupID secondaryGID);
   static util::Error ResetGIDs(const std::string& name);
-
+  static GroupID PrimaryGID(UserID uid);
+  
   static util::Error IncrCredits(const std::string& name, long long kbytes);
   static util::Error DecrCredits(const std::string& name, long long kbytes);
 

@@ -1,3 +1,4 @@
+#include <utility>
 #include <boost/optional.hpp>
 #include "cmd/site/help.hpp"
 #include "cmd/site/factory.hpp"
@@ -5,6 +6,7 @@
 #include "main.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace site
 {
@@ -73,26 +75,36 @@ void HELPCommand::List()
   head.RegisterValue("server", programFullname);
   foot.RegisterValue("server", programFullname);
     
-  const Factory::CommandDefsMap& commands = Factory::Commands();
-
-  std::vector<std::string> sorted;
-  for (const auto& kv : commands)
+  std::vector<std::pair<std::string, std::string>> sorted;
+  for (const auto& kv : Factory::Commands())
   {
     if (acl::AllowSiteCmd(client.User(), kv.second.ACLKeyword()))
     {
-      sorted.push_back(kv.first);
+      sorted.push_back(std::make_pair(kv.first, kv.second.Description()));
     }
   }
+  
+  for (const auto& sc : cfg::Get().SiteCmd())
+  {
+    auto def = Factory::LookupCustom(sc.Command());
+    if (def && acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
+      sorted.push_back(std::make_pair(sc.Command(), sc.Description()));
+  }
 
-  std::sort(sorted.begin(), sorted.end());
+  std::sort(sorted.begin(), sorted.end(),
+        [](const std::pair<std::string, std::string>& c1,
+           const std::pair<std::string, std::string>& c2)
+        {
+          return c1.first < c2.first;
+        });
 
   std::ostringstream os;
   os << head.Compile();
   
   for (const auto& command : sorted)
   {
-    body.RegisterValue("command", command);
-    body.RegisterValue("descr", commands.at(command).Description());
+    body.RegisterValue("command", command.first);
+    body.RegisterValue("descr", command.second);
     os << body.Compile();
     body.Reset();
   }

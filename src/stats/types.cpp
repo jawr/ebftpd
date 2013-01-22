@@ -15,10 +15,17 @@ template <> const char* util::EnumStrings<Timeframe>::values[] =
 
 template <> const char* util::EnumStrings<Direction>::values[] =
 {
-  "upload",
-  "download",
+  "up",
+  "down",
   ""
 };
 
+template <> const char* util::EnumStrings<SortField>::values[] =
+{
+  "bytes",
+  "files",
+  "speed"
+  ""
+};
 
 }

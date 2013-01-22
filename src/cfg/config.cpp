@@ -553,7 +553,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "site_cmd")
   {
-    ParameterCheck(opt, toks, 3, 4);
+    ParameterCheck(opt, toks, 4, 5);
     siteCmd.emplace_back(toks);
   }
   else if (opt == "requests")

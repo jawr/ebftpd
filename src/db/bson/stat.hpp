@@ -9,10 +9,7 @@ namespace db { namespace bson
 
 struct Stat
 {
-  // serialize is probably never needed. adding for consistency.
-  static mongo::BSONObj Serialize(const ::stats::Stat& stat);
   static ::stats::Stat Unserialize(const mongo::BSONObj& bo);
-  static ::stats::Stat UnserializeRaw(const mongo::BSONObj& bo);
 };
 
 } /* bson namespace */

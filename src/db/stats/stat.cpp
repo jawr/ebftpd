@@ -1,102 +1,51 @@
-#include <cstdint>
-#include <boost/thread/future.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <algorithm>
+#include <functional>
 #include <mongo/client/dbclient.h>
 #include "db/stats/stat.hpp"
+#include "acl/user.hpp"
 #include "db/task.hpp"
 #include "db/pool.hpp"
 #include "db/types.hpp"
-#include "db/bson/stat.hpp"
-#include "util/error.hpp"
+#include "stats/date.hpp"
+#include "cfg/get.hpp"
 #include "util/time.hpp"
-#include "logs/logs.hpp"
 #include "db/bson/error.hpp"
+#include "db/bson/timeframe.hpp"
+#include "db/bson/stat.hpp"
+#include "acl/usercache.hpp"
 
 namespace db { namespace stats
 {
 
-void Get(mongo::Query& query, QueryResults& results)
+void Update(const acl::User& user, long long bytes, long long xfertime, 
+    const std::string& section, ::stats::Direction direction, bool decrement)
 {
-  boost::unique_future<bool> future;
-  TaskPtr task(new db::Select("transfers", query, results, future));
-  Pool::Queue(task);
-
-  future.wait();
-
-  if (results.empty()) throw util::RuntimeError("No results");
+  int files = 1;
   
-  return;
-}
+  if (decrement)
+  {
+    files *= -1;
+    bytes *= -1;
+    xfertime *= -1;
+  }
 
-mongo::BSONObj GetFromCommand(const mongo::BSONObj& match)
-{
-  boost::unique_future<bool> future;
-  mongo::BSONObj cmd = BSON("aggregate" << "transfers" << "pipeline" <<
-    BSON_ARRAY(BSON("$match" << match) << BSON("$group" <<
-      BSON("_id" << "$uid" << "files" << BSON("$sum" << "$files") << "bytes" <<
-      BSON("$sum" << "$bytes") << "xfertime" << BSON("$sum" << "$xfertime")))
-    ));
-  mongo::BSONObj ret;
-  TaskPtr task(new db::RunCommand(cmd, ret, future));
+  ::stats::Date date(cfg::Get().WeekStart() == cfg::WeekStart::Monday);
+  mongo::BSONObjBuilder query;
+  query.append("uid", user.UID());
+  query.append("day", date.Day());
+  query.append("week", date.Week());
+  query.append("month", date.Month());
+  query.append("year", date.Year());
+  query.append("direction", util::EnumToString(direction));
+  query.append("section", section);
+
+  mongo::BSONObj update = BSON(
+    "$inc" << BSON("files" << files) <<
+    "$inc" << BSON("bytes" << bytes) <<
+    "$inc" << BSON("xfertime" << xfertime));
+    
+  TaskPtr task(new db::Update("transfers", query.obj(), update, true));
   Pool::Queue(task);
-
-  future.wait();
-
-  return ret;      
-}
-
-::stats::Stat GetWeekDown(acl::UserID uid, int week, int year)
-{
-  QueryResults results;
-  mongo::Query query = QUERY("uid" << uid << "week" << week << "year" << year
-    << "direction" << "dn");
-  Get(query, results);
-  return db::bson::Stat::Unserialize(results.front());
-}
-
-std::unordered_map<acl::UserID, ::stats::Stat> GetAllUp(const std::vector<acl::User>& users)
-{
-  std::unordered_map<acl::UserID, ::stats::Stat> stats;
-  for (auto& user: users)
-  {
-    stats.insert(std::make_pair(user.UID(), GetAllUp(user)));
-  } 
-  return stats; 
-}
-
-std::unordered_map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl::User>& users)
-{
-  std::unordered_map<acl::UserID, ::stats::Stat> stats;
-  for (auto& user: users)
-  {
-    stats.insert(std::make_pair(user.UID(), GetAllDown(user)));
-  } 
-  return stats; 
-}
-
-::stats::Stat GetAllDown(const acl::User& user)
-{
-  mongo::BSONObj match = BSON("uid" << user.UID() << "direction" << "dn");
-  mongo::BSONObj ret = GetFromCommand(match);
-  return db::bson::Stat::UnserializeRaw(ret);
-
-}
-
-::stats::Stat GetAllUp(const acl::User& user)
-{
-  mongo::BSONObj match = BSON("uid" << user.UID() << "direction" << "up");
-  mongo::BSONObj ret = GetFromCommand(match);
-  return db::bson::Stat::UnserializeRaw(ret);
-
-}
-
-::stats::Stat GetWeekUp(acl::UserID uid, int week, int year)
-{
-  QueryResults results;
-  mongo::Query query = QUERY("uid" << uid << "week" << week << "year" << year
-    << "direction" << "up");
-  Get(query, results);
-  return db::bson::Stat::Unserialize(results.front());
 }
 
 void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const std::string& section)
@@ -120,14 +69,14 @@ void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const st
   Pool::Queue(task);
   future.wait();
   
-  double speed = 0;
+  long long xfertime = 0;
   try
   {
-    long long xfertime = result["total xfertime"].Long();
-    if (xfertime > 0)
-      speed = result["total bytes"].Long() / xfertime / 1.0;
+    long long totalXfertime = result["0"]["total xfertime"].Long();
+    if (totalXfertime > 0)
+      xfertime = bytes / result["0"]["total bytes"].Long() / totalXfertime;
     else
-      speed = result["total bytes"].Long() / 1.0;
+      xfertime = bytes / result["0"]["total bytes"].Long();
   }
   catch (const mongo::DBException& e)
   {
@@ -135,54 +84,186 @@ void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const st
   }
 
   assert(!section.empty());
-  long long xfertime = bytes / speed;
-  Upload(user, bytes, xfertime, section, true);
-  Upload(user, bytes, xfertime, "");
+  Update(user, bytes, xfertime, section, ::stats::Direction::Upload, true);
+  Update(user, bytes, xfertime, "", ::stats::Direction::Upload, false);
 }
 
-void Upload(const acl::User& user, long long bytes, long long xfertime, 
-    const std::string& section, bool decrement)
+void Upload(const acl::User& user, long long bytes, long long xfertime, const std::string& section)
 {
-  int files = 1;
-  
-  if (decrement)
-  {
-    files *= -1;
-    bytes *= -1;
-    xfertime *= -1;
-  }
-
-  util::Time time;
-  mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
-    << "week" << time.Week() << "month" 
-    << time.Month() << "year" << time.Year()
-    << "direction" << "up"
-    << "section" << section);
-  mongo::BSONObj obj = BSON(
-    "$inc" << BSON("files" << files) <<
-    "$inc" << BSON("bytes" << bytes) <<
-    "$inc" << BSON("xfertime" << xfertime));
-    
-  TaskPtr task(new db::Update("transfers", query, obj, true));
-  Pool::Queue(task);
+  Update(user, bytes, xfertime, section, ::stats::Direction::Upload, false);
 }
 
 void Download(const acl::User& user, long long bytes, long long xfertime, const std::string& section)
 {
-  util::Time time;
-  mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
-    << "week" << time.Week() << "month" 
-    << time.Month() << "year" << time.Year()
-    << "direction" << "dn"
-    << "section" << section);
-  mongo::BSONObj obj = BSON(
-    "$inc" << BSON("files" << 1) <<
-    "$inc" << BSON("bytes" << bytes) <<
-    "$inc" << BSON("xfertime" << xfertime)); // how to handle the xfertime
-  TaskPtr task(new db::Update("transfers", query, obj, true));
-  Pool::Queue(task);
+  Update(user, bytes, xfertime, section, ::stats::Direction::Download, false);
 }
 
-// end
+std::vector< ::stats::Stat> RetrieveUsers(
+      const std::string& section, 
+      ::stats::Timeframe timeframe, 
+      ::stats::Direction direction, 
+      boost::optional< ::stats::SortField> sortField = boost::none, 
+      boost::optional<acl::UserID> uid = boost::none)
+{
+  static const char* sortFields[] =
+  {
+    "total bytes",
+    "total files",
+    "avg speed"
+  };
+
+  mongo::BSONObjBuilder match;
+  match.append("direction", util::EnumToString(direction));
+  match.appendElements(::db::bson::TimeframeSerialize(timeframe));
+  
+  if (!section.empty())
+    match.append("section", section);
+  else
+  {
+    mongo::BSONArrayBuilder sections;
+    for (const auto& kv : cfg::Get().Sections())
+      sections.append(kv.first);
+    match.appendElements(BSON("section" << BSON("$in" << sections.arr())));
+  }
+  
+  if (uid) match.append("uid", *uid);
+  
+  mongo::BSONArrayBuilder ops;
+  ops.append(BSON("$match" << match.obj()));
+  ops.append(BSON("$group" << BSON("_id" << "$uid" <<
+             "total bytes" << BSON("$sum" << "$bytes") <<
+             "total files" << BSON("$sum" << "$files") <<
+             "total xfertime" << BSON("$sum" << "$xfertime"))));
+  
+  ops.append(BSON("$project" << BSON("total bytes" << 1 <<
+             "total files" << 1 <<
+             "total xfertime" << 1 <<
+             "avg speed" << BSON("$divide" << 
+             BSON_ARRAY("$total bytes" << "$total xfertime")))));
+           
+  if (sortField) ops.append(BSON("$sort" << BSON(sortFields[static_cast<unsigned>(*sortField)] << -1)));
+
+  auto cmd = BSON("aggregate" << "transfers" << "pipeline" << ops.arr());
+std::cout << "CMD: " << cmd.toString() << std::endl;
+  boost::unique_future<bool> future;
+  mongo::BSONObj result;
+  TaskPtr task(new db::RunCommand(cmd, result, future));
+  Pool::Queue(task);
+  future.wait();
+  std::cout << "RESULT: " << result.toString() << std::endl;
+  std::vector< ::stats::Stat> users;
+  for (int i = 0; i < result.nFields(); ++i)
+  {
+    users.push_back(bson::Stat::Unserialize(result[i].Obj()));
+  }
+  
+  return users;
+}
+
+std::vector< ::stats::Stat> RetrieveGroups(
+      const std::string& section, 
+      ::stats::Timeframe timeframe, 
+      ::stats::Direction direction, 
+      boost::optional< ::stats::SortField> sortField = boost::none, 
+      boost::optional<acl::GroupID> gid = boost::none)
+{
+  auto users = RetrieveUsers(section, timeframe, direction, boost::none);
+  std::unordered_map<acl::GroupID, ::stats::Stat> stats;
+  
+  for (const auto& user : users)
+  {
+    auto ugid = acl::UserCache::PrimaryGID(user.ID());
+    if (gid && ugid != *gid) continue;
+    auto it = stats.insert(std::make_pair(ugid, user));
+    if (!it.second) it.first->second.Incr(user);
+  }
+
+  std::vector< ::stats::Stat> groups;
+  groups.reserve(stats.size());
+  
+  if (sortField)
+  {
+    std::function<bool(const ::stats::Stat& s1, const ::stats::Stat& s2)> sortCompare;
+    
+    switch (*sortField)
+    {
+      case ::stats::SortField::Files  :
+        sortCompare = [&](const ::stats::Stat& s1, const ::stats::Stat& s2)
+                      {
+                        return s1.Files() > s2.Files();
+                      };
+        break;
+      case ::stats::SortField::Bytes  :
+        sortCompare = [&](const ::stats::Stat& s1, const ::stats::Stat& s2)
+                      {
+                        return s1.Bytes() > s2.Bytes();
+                      };
+        break;
+      case ::stats::SortField::Speed  :
+        sortCompare = [&](const ::stats::Stat& s1, const ::stats::Stat& s2)
+                      {
+                        return s1.Speed() > s2.Speed();
+                      };
+        break;
+    }
+    
+    for (const auto& kv : stats)
+    {
+      auto pos = std::lower_bound(groups.begin(), groups.end(), kv.second, sortCompare);
+      groups.insert(pos, kv.second);
+    }
+  }
+  else
+  {
+    for (const auto& kv : stats)
+    {
+      groups.push_back(kv.second);
+    }
+  }
+  
+  return groups;
+}
+
+std::vector< ::stats::Stat> CalculateUserRanks(
+      const std::string& section, 
+      ::stats::Timeframe timeframe, 
+      ::stats::Direction direction, 
+      ::stats::SortField sortField)
+{
+  return RetrieveUsers(section, timeframe, direction, sortField);
+}
+
+
+std::vector< ::stats::Stat> CalculateGroupRanks(
+      const std::string& section, 
+      ::stats::Timeframe timeframe, 
+      ::stats::Direction direction, 
+      ::stats::SortField sortField)
+{
+  return RetrieveGroups(section, timeframe, direction, sortField);
+}
+
+::stats::Stat CalculateSingleUser(
+      acl::UserID uid, 
+      const std::string& section, 
+      ::stats::Timeframe timeframe, 
+      ::stats::Direction direction)
+{
+  auto users = RetrieveUsers(section, timeframe, direction, boost::none, uid);
+  if (users.empty()) return ::stats::Stat(uid);
+  return users.front();
+}
+
+::stats::Stat CalculateSingleGroup(
+      acl::GroupID gid, 
+      const std::string& section, 
+      ::stats::Timeframe timeframe, 
+      ::stats::Direction direction)
+{
+  auto groups = RetrieveGroups(section, timeframe, direction, boost::none, gid);
+  if (groups.empty()) return ::stats::Stat(gid);
+  return groups.front();
+}
+
 }
 }

@@ -6,7 +6,7 @@
 namespace stats
 {
 
-enum class Timeframe
+enum class Timeframe : unsigned
 {
   Day,
   Week,
@@ -17,13 +17,23 @@ enum class Timeframe
 
 template <> const char* util::EnumStrings<Timeframe>::values[];
 
-enum class Direction
+enum class Direction : unsigned
 {
   Upload,
   Download
 };
 
 template <> const char* util::EnumStrings<Direction>::values[];
+
+enum class SortField : unsigned
+{
+  Bytes,
+  Files,
+  Speed
+};
+
+template <> const char* util::EnumStrings<SortField>::values[];
+
 
 } /* stats namespace */
 

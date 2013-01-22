@@ -9,10 +9,10 @@ namespace db { namespace stats
 {
 
 long long TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe, 
-      const std::string& section, const std::string& direction)
+      const std::string& section, ::stats::Direction direction)
 {
   mongo::BSONObjBuilder match;
-  match.append("direction", direction);
+  match.append("direction", util::EnumToString(direction));
   if (!section.empty())
     match.append("section", section);
   else
@@ -41,7 +41,7 @@ long long TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
   long long total = 0;
   try
   {
-    total = result["total"].Long();
+    total = result["0"]["total"].Long();
   }
   catch (const mongo::DBException& e)
   {
@@ -54,8 +54,8 @@ long long TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
 Traffic TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
       const std::string& section)
 {
-  return Traffic(TransfersUser(uid, timeframe, section, "dn"),
-                 TransfersUser(uid, timeframe, section, "up"));
+  return Traffic(TransfersUser(uid, timeframe, section, ::stats::Direction::Upload),
+                 TransfersUser(uid, timeframe, section, ::stats::Direction::Download));
 }
 
 Traffic TransfersTotal(::stats::Timeframe timeframe, const std::string& section)

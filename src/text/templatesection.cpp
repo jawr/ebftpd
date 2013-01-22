@@ -97,8 +97,8 @@ void TemplateSection::RegisterSize(std::string key, long long bytes)
     values.emplace_back(key);
 }
 
-void TemplateSection::RegisterSpeed(std::string key, long long bytes, 
-  long long xfertime)
+
+void TemplateSection::RegisterSpeed(std::string key, double speed)
 {
   boost::to_lower(key);
   CheckValueExists(key);
@@ -108,13 +108,19 @@ void TemplateSection::RegisterSpeed(std::string key, long long bytes,
   {
     if (tag.Name() != key) continue;
     ok = true;
-    tag.ParseSpeed(bytes, xfertime);
+    tag.ParseSpeed(speed);
   }
 
   if (ok) //throw TemplateNoTag("No template tag with key: " + key);
     values.emplace_back(key);
 }
 
+void TemplateSection::RegisterSpeed(std::string key, long long bytes, 
+  long long xfertime)
+{
+  if (xfertime == 0) RegisterSpeed(key, bytes);
+  else RegisterSpeed(key, bytes / xfertime / 1.0);
+}
 std::string TemplateSection::Compile()
 {
   std::string ret = buffer;

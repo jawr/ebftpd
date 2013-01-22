@@ -93,8 +93,8 @@ void GROUPCommand::Execute()
   std::unordered_map<acl::UserID, acl::UserProfile> profiles = 
     db::userprofile::GetSelection(users);
 
-  std::unordered_map<acl::UserID, ::stats::Stat> dnStats = db::stats::GetAllDown(users);
-  std::unordered_map<acl::UserID, ::stats::Stat> upStats = db::stats::GetAllUp(users);
+  std::unordered_map<acl::UserID, ::stats::Stat> dnStats;// = db::stats::GetAllDown(users);
+  std::unordered_map<acl::UserID, ::stats::Stat> upStats;// = db::stats::GetAllUp(users);
 
   for (auto& user: users)
   {

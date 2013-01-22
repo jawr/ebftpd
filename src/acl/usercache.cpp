@@ -423,6 +423,14 @@ std::string UserCache::UIDToName(UserID uid)
   return it->second->Name();
 }
 
+GroupID UserCache::PrimaryGID(UserID uid)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByUIDMap::iterator it = instance.byUID.find(uid);
+  if (it == instance.byUID.end()) return -1;
+  return it->second->PrimaryGID();
+}
+
 unsigned UserCache::Count(bool includeDeleted)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);

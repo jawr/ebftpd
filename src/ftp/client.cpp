@@ -494,7 +494,7 @@ void Client::Run()
     logs::debug << "Client from " << control.RemoteEndpoint()
                 << " lost connection: " << e.Message() << logs::endl;
   }
-  catch (const std::exception& e)
+/*  catch (const std::exception& e)
   {
     logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
   }
@@ -502,7 +502,7 @@ void Client::Run()
   {
     throw;
     logs::error << "Unhandled error on client thread: Not descended from std::exception" << logs::endl;
-  }
+  }*/
   
   (void) finishedGuard; /* silence unused variable warning */
 }

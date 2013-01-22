@@ -61,8 +61,6 @@ void SITECommand::Execute()
       }
     }
   }
-  
-  return;
 }
 
 } /* rfc namespace */

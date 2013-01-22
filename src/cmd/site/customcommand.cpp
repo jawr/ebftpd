@@ -1,4 +1,5 @@
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include "cmd/site/customcommand.hpp"
 #include "cmd/splitargs.hpp"
 #include "cmd/site/factory.hpp"
@@ -58,7 +59,12 @@ void CustomTEXTCommand::Execute()
 // possibly this can be merged somehow
 void CustomALIASCommand::Execute()
 {
-  cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(custSiteCmd.Target(), true));
+  std::vector<std::string> tArgs;
+  cmd::SplitArgs(custSiteCmd.Target(), tArgs);
+  cmd::SplitArgs(argStr, args);
+  args.insert(args.begin(), tArgs.begin(), tArgs.end());
+  
+  cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(args[0], true));
   if (!def)
   { 
     control.Reply(ftp::CommandUnrecognised, "Command not understood");

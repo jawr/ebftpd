@@ -308,8 +308,8 @@ Privpath::Privpath(std::vector<std::string> toks)
 SiteCmd::SiteCmd(const std::vector<std::string>& toks)   
 {
   command = boost::to_upper_copy(toks[0]);
-  target = toks[2];
-  std::string typeStr(boost::to_upper_copy(toks[1]));
+  description = toks[1];
+  std::string typeStr(boost::to_upper_copy(toks[2]));
   if (typeStr == "EXEC") type = Type::EXEC;
   else if (typeStr == "TEXT") type = Type::TEXT;
   else if (typeStr == "ALIAS")
@@ -319,7 +319,8 @@ SiteCmd::SiteCmd(const std::vector<std::string>& toks)
   }
   else
     throw cfg::ConfigError("Invalid site_cmd parameter");
-  if (toks.size() == 4) arguments = toks[3];
+  target = toks[3];
+  if (toks.size() == 5) arguments = toks[4];
 }
 
 Cscript::Cscript(const std::vector<std::string>& toks)   

@@ -126,11 +126,10 @@ private:
    
   Factory();
   
-  static CommandDefOpt LookupCustom(const std::string& command);
-
   static Factory factory;
  
 public:
+  static CommandDefOpt LookupCustom(const std::string& command);
   static CommandDefOpt Lookup(const std::string& command, bool noCustom = false);
   
   static const CommandDefsMap& Commands()

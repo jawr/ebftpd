@@ -28,6 +28,7 @@ public:
 
   void RegisterSize(std::string key, long long bytes);
   void RegisterSpeed(std::string key, long long bytes, long long xfertime);
+  void RegisterSpeed(std::string key, double speed);
 
   void Reset() { values.clear(); }
 

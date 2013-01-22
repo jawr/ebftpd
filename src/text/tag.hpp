@@ -60,7 +60,7 @@ public:
   
   void Parse(std::string value);
   void ParseSize(long long bytes);
-  void ParseSpeed(long long bytes, long long xfertime);
+  void ParseSpeed(double speed);
 
   const std::string& Name() const { return name; }
   const std::string& Format() const { return format; }

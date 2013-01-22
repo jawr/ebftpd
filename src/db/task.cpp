@@ -14,9 +14,8 @@ void RunCommand::Execute(mongo::DBClientConnection& conn)
 {
   try
   {
-    logs::debug << cmd << logs::endl;
     if (conn.runCommand(database, cmd, ret))
-      ret = ret.getObjectField("result").getObjectField("0");
+      ret = ret.getObjectField("result");
     promise.set_value(true);
   }
   catch (const mongo::DBException& e)

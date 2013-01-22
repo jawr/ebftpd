@@ -12,7 +12,7 @@ void STATSCommand::Execute()
   os.imbue(std::locale(""));
   try
   {
-    ::stats::Stat down = db::stats::GetWeekDown(client.User().UID(), 43, 2012);
+    ::stats::Stat down;// = db::stats::GetWeekDown(client.User().UID(), 43, 2012);
   }
   catch (const util::RuntimeError& e)
   {
@@ -20,7 +20,7 @@ void STATSCommand::Execute()
 
   try
   {
-    ::stats::Stat up = db::stats::GetWeekUp(client.User().UID(), 43, 2012);
+    ::stats::Stat up;// = db::stats::GetWeekUp(client.User().UID(), 43, 2012);
   }
   catch (const util::RuntimeError& e)
   {

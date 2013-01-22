@@ -7,73 +7,24 @@
 namespace db { namespace bson
 {
 
-mongo::BSONObj Stat::Serialize(const ::stats::Stat& stat)
-{
-  mongo::BSONObjBuilder bob;
-  bob.append("uid", stat.uid);
-  bob.append("day", stat.day);
-  bob.append("month", stat.month);
-  bob.append("week", stat.week);
-  bob.append("year", stat.year);
-  bob.append("files", stat.files);
-  bob.append("bytes ", stat.bytes);
-  bob.append("xfertime", stat.xfertime);
-  if (stat.direction == ::stats::Direction::Upload)
-    bob.append("direction", "up");
-  else
-    bob.append("direction", "dn");
-  return bob.obj();
-}
-
-::stats::Stat Stat::UnserializeRaw(const mongo::BSONObj& bo)
-{
-  ::stats::Stat stat;
-  try
-  {
-    stat.uid = bo["_id"].Int();
-    stat.files = bo["files"].Int();
-    stat.bytes = bo["bytes"].Long();
-    stat.xfertime = bo["xfertime"].Long();
-  }
-  catch (const mongo::DBException& e)
-  {
-    /* no need to throw an error; a user might have no stats */
-    //UnserializeFailure("stat raw", e, bo);
-  }
-
-  return stat;
-}
-
 ::stats::Stat Stat::Unserialize(const mongo::BSONObj& bo)
 {
   ::stats::Stat stat;
-
   try
   {
-    stat.uid = bo["uid"].Int(); 
-
-    stat.files = bo["files"].Int();
-    stat.bytes = bo["bytes"].Long();
-    stat.xfertime = bo["xfertime"].Long();
-
-    if (bo["direction"].String() == "up")
-      stat.direction = ::stats::Direction::Upload;
-    else
-      stat.direction = ::stats::Direction::Download;
-
-    stat.day = bo["day"].Int();
-    stat.week = bo["week"].Int();
-    stat.month = bo["month"].Int();
-    stat.year = bo["year"].Int();
+    stat.id = bo["_id"].Int(); 
+    stat.files = bo["total files"].Int();
+    stat.bytes = bo["total bytes"].Long();
+    stat.xfertime = bo["total xfertime"].Long();
+    stat.speed = -1;
   } 
   catch (const mongo::DBException& e)
   {
     UnserializeFailure("stat", e, bo);
   }
-
   return stat;
 }
-  
+
 } /* bson namespace */
 } /* db namespace */
 
