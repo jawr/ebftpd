@@ -172,11 +172,10 @@ void CHANGECommand::Execute()
         int ratio = boost::lexical_cast<int>(args[4]);
         if (ratio < -1 || ratio > cfg::Get().MaximumRatio())
           throw boost::bad_lexical_cast();
+          
         db::userprofile::SetSectionRatio(user.UID(), args[3], ratio);
         std::ostringstream vos;
         vos << args[3] << " " << ratio;
-        std::cout << args[3] << " " << ratio << std::endl;
-        std::cout << vos.str() << std::endl;
         value = vos.str();
       }
       catch (const boost::bad_lexical_cast&)

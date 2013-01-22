@@ -118,8 +118,6 @@ void Upload(const acl::User& user, long long bytes, long long xfertime, const st
     "$inc" << BSON("bytes" << bytes) <<
     "$inc" << BSON("xfertime" << xfertime));
     
-  std::cout << query.toString() << std::endl;
-  std::cout << obj.toString() << std::endl;
   TaskPtr task(new db::Update("transfers", query, obj, true));
   Pool::Queue(task);
 }

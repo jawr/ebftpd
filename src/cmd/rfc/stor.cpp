@@ -254,6 +254,8 @@ void STORCommand::Execute()
     bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
     db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds(),
                       nostats ? "" : section->Name());    
+    
+    std::cout << "UP RATIO: " << stats::UploadRatio(client, path, section) << std::endl;
     acl::UserCache::IncrCredits(client.User().Name(), data.State().Bytes() * 
                                 stats::UploadRatio(client, path, section));
   }

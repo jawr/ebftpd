@@ -636,6 +636,19 @@ void Config::ParseSection(const std::string& opt, std::vector<std::string>& toks
     ParameterCheck(opt, toks, 1);
     currentSection->separateCredits = util::string::BoolLexicalCast(toks[0]);
   }
+  else if (opt == "ratio")
+  {
+    ParameterCheck(opt, toks, 1);
+    try
+    {
+      currentSection->ratio = boost::lexical_cast<int>(toks[0]);
+      if (currentSection->ratio < 0) throw boost::bad_lexical_cast();
+    }
+    catch (const boost::bad_lexical_cast&)
+    {
+      throw ConfigError("ratio must be zero or larger");
+    }
+  }
   else if (opt == "endsection")
   {
     currentSection = nullptr;

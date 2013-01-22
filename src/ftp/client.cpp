@@ -32,6 +32,7 @@
 #include "acl/ipmaskcache.hpp"
 #include "util/net/resolver.hpp"
 #include "acl/usercache.hpp"
+#include "db/error.hpp"
 
 namespace ftp
 {
@@ -231,13 +232,29 @@ void Client::ReloadUser()
 
   try
   {
-    boost::lock_guard<boost::mutex>  lock(mutex);
-    user = acl::UserCache::User(user.Name());
+    {
+      boost::lock_guard<boost::mutex>  lock(mutex);
+      user = acl::UserCache::User(user.Name());
+    }    
   }
   catch (const util::RuntimeError& e)
   {
-    logs::error << "Failed to reload user from cache for: " << e.Message() << logs::endl;
+    logs::error << "Failed to reload user from cache for: " 
+                << user.Name() << logs::endl;
   }  
+  
+  try
+  {
+    acl::UserProfile profile(db::userprofile::Get(user.UID()));
+  
+    boost::lock_guard<boost::mutex> lock(mutex);
+    this->profile = std::move(profile);
+  }
+  catch (const db::DBError& e)
+  {
+    logs::error << "Failed to reload user profile from cache for: " 
+                << user.Name() << logs::endl;
+  }
 }
 
 void Client::Handle()
