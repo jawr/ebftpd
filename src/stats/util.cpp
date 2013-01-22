@@ -1,8 +1,13 @@
 #include <sstream>
 #include <iomanip>
 #include "stats/util.hpp"
+#include "ftp/client.hpp"
+#include "acl/userprofile.hpp"
+#include "cfg/section.hpp"
+#include "acl/credits.hpp"
+#include "cfg/setting.hpp"
 
-namespace stats { namespace util
+namespace stats
 {
 
 std::string AutoUnitSpeedString(double speed)
@@ -39,5 +44,40 @@ std::string HighResSecondsString(const boost::posix_time::time_duration& duratio
   return os.str();
 }
 
-} /* util namespace */
+int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
+    const boost::optional<const cfg::Section&>& section)
+{
+  if (section)
+  {
+    int ratio = client.UserProfile().SectionRatio(section->Name());
+    if (ratio >= 0) return ratio;
+  }
+  
+  auto cc = acl::CreditCheck(client.User(), path);
+  if (cc && cc->Ratio() >= 0) return cc->Ratio();
+  
+  if (section &&  section->Ratio() >= 0) return section->Ratio();
+  
+  assert(client.UserProfile().Ratio() >= 0);
+  return client.UserProfile().Ratio();
+}
+
+int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
+    const boost::optional<const cfg::Section&>& section)
+{
+  if (section)
+  {
+    int ratio = client.UserProfile().SectionRatio(section->Name());
+    if (ratio >= 0) return ratio;
+  }
+  
+  auto cc = acl::CreditLoss(client.User(), path);
+  if (cc && cc->Ratio() >= 0) return cc->Ratio();
+  
+  if (section &&  section->Ratio() >= 0) return section->Ratio();
+  
+  assert(client.UserProfile().Ratio() >= 0);
+  return client.UserProfile().Ratio();
+}
+
 } /* stats namespace */

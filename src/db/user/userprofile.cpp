@@ -9,6 +9,7 @@
 #include "db/bson/userprofile.hpp"
 #include "db/error.hpp"
 #include "db/bson/bson.hpp"
+#include "cfg/get.hpp"
 
 namespace db { namespace userprofile
 {
@@ -104,21 +105,18 @@ void Unset(acl::UserID uid, const std::string& field)
 
 util::Error SetRatio(acl::UserID uid, const std::string& value)
 {
-  static const int maximumRatio = 9;
-
-  int i;
+  int ratio;
   try
   {
-    i = boost::lexical_cast<int>(value);
-    if (i < 0) throw boost::bad_lexical_cast();
+    ratio = boost::lexical_cast<int>(value);
+    if (ratio < 0 || ratio > cfg::Get().MaximumRatio())
+      throw boost::bad_lexical_cast();
   }
-  catch (const boost::bad_lexical_cast& e)
+  catch (const boost::bad_lexical_cast&)
   {
-    std::ostringstream os;
-    os << "Invalid value. Must be a number be a number from 0 to " << maximumRatio << ".";
-    return util::Error::Failure(os.str());
+    return util::Error::Failure("Invalid ratio");
   }
-  Set(uid, BSON("ratio" << i));
+  Set(uid, BSON("ratio" << ratio));
   return util::Error::Success();
 }
 
@@ -130,7 +128,7 @@ util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value)
     i = boost::lexical_cast<int>(value);
     if (i < 0) throw boost::bad_lexical_cast();
   }
-  catch (const boost::bad_lexical_cast& e)
+  catch (const boost::bad_lexical_cast&)
   {
     return util::Error::Failure("Invalid value. Must be a number of 0 or larger.");
   }
@@ -158,7 +156,7 @@ util::Error SetIdleTime(acl::UserID uid, const std::string& value)
     i = boost::lexical_cast<int>(value);
     if (i < -1) throw boost::bad_lexical_cast();
   }
-  catch (const boost::bad_lexical_cast& e)
+  catch (const boost::bad_lexical_cast&)
   {
     return util::Error::Failure("Invalid value. Must be a number of -1 or larger.");
   }
@@ -179,7 +177,7 @@ util::Error SetExpires(acl::UserID uid, std::string& value)
     {
       Set(uid, BSON("expires" << db::bson::ToDateT(boost::gregorian::from_simple_string(value))));
     }
-    catch (const std::exception& e)
+    catch (const std::exception&)
     {
       return util::Error::Failure("Invalid date. Must be in format YYYY-MM-DD or NEVER.");
     }
@@ -195,7 +193,7 @@ util::Error SetNumLogins(acl::UserID uid, const std::string& value)
     i = boost::lexical_cast<int>(value);
     if (i <= 0) throw boost::bad_lexical_cast();
   }
-  catch (const boost::bad_lexical_cast& e)
+  catch (const boost::bad_lexical_cast&)
   {
     return util::Error::Failure("Invalid value. Must be a number larger than 0.");
   }
@@ -218,7 +216,7 @@ util::Error SetMaxDlSpeed(acl::UserID uid, const std::string& value)
     i = boost::lexical_cast<int>(value);
     if (i < 0) throw boost::bad_lexical_cast();
   }
-  catch (const boost::bad_lexical_cast& e)
+  catch (const boost::bad_lexical_cast&)
   {
     return util::Error::Failure("Invalid value. Must be a number of 0 or larger.");
   }
@@ -234,7 +232,7 @@ util::Error SetMaxUlSpeed(acl::UserID uid, const std::string& value)
     i = boost::lexical_cast<int>(value);
     if (i < 0) throw boost::bad_lexical_cast();
   }
-  catch (const boost::bad_lexical_cast& e)
+  catch (const boost::bad_lexical_cast&)
   {
     return util::Error::Failure("Invalid value. Must be a number of 0 or larger.");
   }
@@ -250,7 +248,7 @@ util::Error SetMaxSimDl(acl::UserID uid, const std::string& value)
     i = boost::lexical_cast<int>(value);
     if (i < -1) throw boost::bad_lexical_cast();
   }
-  catch (const boost::bad_lexical_cast& e)
+  catch (const boost::bad_lexical_cast&)
   {
     return util::Error::Failure("Invalid value. Must be number of -1 or larger.");
   }
@@ -266,7 +264,7 @@ util::Error SetMaxSimUl(acl::UserID uid, const std::string& value)
     i = boost::lexical_cast<int>(value);
     if (i < -1) throw boost::bad_lexical_cast();
   }
-  catch (const boost::bad_lexical_cast& e)
+  catch (const boost::bad_lexical_cast&)
   {
     return util::Error::Failure("Invalid value. Must be a number of -1 or larger.");
   }
@@ -284,6 +282,22 @@ void Login(acl::UserID uid)
   Pool::Queue(task);
 }
 
+void SetSectionRatio(acl::UserID uid, const std::string& section, int ratio)
+{
+  auto query = QUERY("uid" << uid << "section ratio.section" << section);
+  auto obj = BSON("$set" << BSON("section ratio.$.ratio" << ratio));
+  boost::unique_future<int> future;
+  Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, future));
+  if (future.get() > 0) return;
+  
+  query = QUERY("uid" << uid);
+  obj = BSON("$push" << 
+          BSON("section ratio" << 
+            BSON("section" << section << "ratio" << ratio
+        )));
+
+  Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, true));
+}
 
 // end
 }

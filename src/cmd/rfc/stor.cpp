@@ -86,17 +86,6 @@ void STORCommand::DupeMessage(const fs::VirtualPath& path)
   control.Reply(ftp::BadFilename, os.str());
 }
 
-int STORCommand::Ratio(const fs::VirtualPath& path, 
-    const boost::optional<const cfg::Section&>& section)
-{
-  // insert sratio here
-  auto cc = acl::CreditCheck(client.User(), path);
-  if (cc && cc->Ratio() >= 0) return cc->Ratio();
-  if (section &&  section->Ratio() >= 0) return section->Ratio();
-  assert(client.UserProfile().Ratio() >= 0);
-  return client.UserProfile().Ratio();
-}
-
 bool STORCommand::CalcCRC(const fs::VirtualPath& path)
 {
   for (auto& mask : cfg::Get().CalcCrc())
@@ -252,7 +241,7 @@ void STORCommand::Execute()
   if (!e) control.PartReply(ftp::DataClosedOkay, "Failed to chmod upload: " + e.Message());
 
   boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
-  double speed = stats::util::CalculateSpeed(data.State().Bytes(), duration);
+  double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
 
   auto section = cfg::Get().SectionMatch(path);
 
@@ -265,11 +254,12 @@ void STORCommand::Execute()
     bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
     db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds(),
                       nostats ? "" : section->Name());    
-    acl::UserCache::IncrCredits(client.User().Name(), data.State().Bytes() * Ratio(path, section));
+    acl::UserCache::IncrCredits(client.User().Name(), data.State().Bytes() * 
+                                stats::UploadRatio(client, path, section));
   }
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
-      stats::util::AutoUnitSpeedString(speed)); 
+      stats::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
 }

@@ -17,17 +17,6 @@
 namespace cmd { namespace rfc
 {
 
-int RETRCommand::Ratio(const fs::VirtualPath& path, 
-      const boost::optional<const cfg::Section&>& section)
-{
-  // insert sratio here
-  auto cl = acl::CreditLoss(client.User(), path);
-  if (cl && cl->Ratio() >= 0) return cl->Ratio();
-  if (section && section->Ratio() >= 0) return section->Ratio();
-  assert(client.UserProfile().Ratio() >= 0);
-  return client.UserProfile().Ratio();
-}
-
 void RETRCommand::Execute()
 {
   namespace pt = boost::posix_time;
@@ -166,16 +155,17 @@ void RETRCommand::Execute()
   data.Close();
 
   pt::time_duration duration = data.State().EndTime() - data.State().StartTime();
-  double speed = stats::util::CalculateSpeed(data.State().Bytes(), duration);
+  double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
   auto section = cfg::Get().SectionMatch(path);
   bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
   db::stats::Download(client.User(), data.State().Bytes(), duration.total_milliseconds(),
                       nostats ? "" : section->Name());
   
-  acl::UserCache::DecrCredits(client.User().Name(), data.State().Bytes() * Ratio(path, section));
+  acl::UserCache::DecrCredits(client.User().Name(), data.State().Bytes() * 
+                              stats::DownloadRatio(client, path, section));
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
-      stats::util::AutoUnitSpeedString(speed)); 
+      stats::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
 }

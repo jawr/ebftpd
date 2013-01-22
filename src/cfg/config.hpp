@@ -135,6 +135,7 @@ class Config
   std::unordered_map<std::string, acl::ACL> commandACLs;  
   std::map<std::string, Section> sections;
   ::cfg::EPSVFxp epsvFxp;
+  int maximumRatio;
   
   static std::unordered_set<std::string> aclKeywords;
   static int latestVersion;
@@ -253,6 +254,7 @@ public:
   const std::map<std::string, Section>& Sections() const { return sections; }
   boost::optional<const Section&> SectionMatch(const fs::Path& path) const;
   ::cfg::EPSVFxp EPSVFxp() const { return epsvFxp; }
+  int MaximumRatio() const { return maximumRatio; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

@@ -37,6 +37,7 @@ util::Error SetMaxDlSpeed(acl::UserID uid, const std::string& value);
 util::Error SetMaxUlSpeed(acl::UserID uid, const std::string& value);
 util::Error SetMaxSimDl(acl::UserID uid, const std::string& value);
 util::Error SetMaxSimUl(acl::UserID uid, const std::string& value);
+void SetSectionRatio(acl::UserID uid, const std::string& section, int ratio);
 
 void Login(acl::UserID uid);
 // end

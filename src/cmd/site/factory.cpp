@@ -117,7 +117,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<site::DELIPCommand>()),
                       "Syntax: SITE DELIP <user> <ident@ip> [<ident@ip>..]",
                       "Delete ident@ip from user" }, },
-    { "CHANGE",     { 3,  3,  "change|changeallot|changeflags|"
+    { "CHANGE",     { 3,  4,  "change|changeallot|changeflags|"
                       "changeratio|changesratio|changehomedir", 
                       CreatorBasePtr(new Creator<site::CHANGECommand>()),  
                       "Syntax: SITE CHANGE <user> <setting> <value>\n"

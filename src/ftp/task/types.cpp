@@ -20,8 +20,8 @@ std::string WhoUser::Action() const
       action << "UP @ ";
     else
       action << "DN @ ";
-    action << stats::util::AutoUnitSpeedString(stats::
-        util::CalculateSpeed(tState.Bytes(), tState.StartTime(), now));
+    action << stats::AutoUnitSpeedString(stats::
+        CalculateSpeed(tState.Bytes(), tState.StartTime(), now));
   }
   
   return action.str();

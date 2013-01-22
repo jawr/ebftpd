@@ -2,6 +2,7 @@
 #define __ACL_USERPROFILE_HPP
 
 #include <string>
+#include <unordered_map>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
 #include "acl/types.hpp"
@@ -40,6 +41,7 @@ class UserProfile
 
   int loggedIn;
   boost::optional<boost::posix_time::ptime> lastLogin;
+  std::unordered_map<std::string, int> sectionRatio;
   
 public:
   UserProfile() :
@@ -94,6 +96,17 @@ public:
   const boost::gregorian::date& Created() const { return created; }
   const boost::optional<boost::posix_time::ptime>& LastLogin() const { return lastLogin; }
   int LoggedIn() const { return loggedIn; }
+  int SectionRatio(const std::string& section) const
+  {
+    try
+    {
+      return sectionRatio.at(section);
+    }
+    catch (const std::out_of_range&)
+    {
+      return -1;
+    }
+  }
 
   friend struct db::bson::UserProfile;
 };

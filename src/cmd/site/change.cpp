@@ -8,6 +8,7 @@
 #include "acl/allowsitecmd.hpp"
 #include "util/error.hpp"
 #include "cmd/error.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace site
 {
@@ -25,6 +26,8 @@ void CHANGECommand::Execute()
   }
   
   boost::to_lower(setting);
+  
+  if (setting != "sratio" && args.size() != 4) throw cmd::SyntaxError();
 
   std::vector<acl::User> users;
 
@@ -34,8 +37,7 @@ void CHANGECommand::Execute()
   {
     std::vector<std::string> userToks;
     boost::trim(args[1]);
-    boost::split(userToks, args[1], boost::is_any_of("\t "),
-      boost::token_compress_on);
+    boost::split(userToks, args[1], boost::is_any_of(" "), boost::token_compress_on);
 
     if (userToks.empty()) throw cmd::SyntaxError();
   
@@ -154,6 +156,36 @@ void CHANGECommand::Execute()
           ok = acl::UserCache::SetFlags(user.Name(), value);
         }
       }
+    }
+    else if (setting == "sratio")
+    {
+      const cfg::Config& config = cfg::Get();
+      boost::to_upper(args[3]);
+      if (config.Sections().find(args[3]) == config.Sections().end())
+      {
+        control.Reply(ftp::ActionNotOkay, "Section " + args[3] + " doesn't exist.");
+        return;
+      }
+      
+      try
+      {
+        int ratio = boost::lexical_cast<int>(args[4]);
+        if (ratio < -1 || ratio > cfg::Get().MaximumRatio())
+          throw boost::bad_lexical_cast();
+        db::userprofile::SetSectionRatio(user.UID(), args[3], ratio);
+        std::ostringstream vos;
+        vos << args[3] << " " << ratio;
+        std::cout << args[3] << " " << ratio << std::endl;
+        std::cout << vos.str() << std::endl;
+        value = vos.str();
+      }
+      catch (const boost::bad_lexical_cast&)
+      {
+        control.Reply(ftp::ActionNotOkay, "Invalid ratio");
+        return;
+      }
+      
+      ok = util::Error::Success();
     }
     else
     {

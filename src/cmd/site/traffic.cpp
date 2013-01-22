@@ -15,7 +15,7 @@ namespace cmd { namespace site
 std::string TRAFFICCommand::Format(const std::string& timeframe, 
     long long sendBytes, long long receiveBytes, const std::string& section)
 {
-  using namespace stats::util;
+  using namespace stats;
 
   std::ostringstream os;
   os << "| " << std::setw(9) << std::left << timeframe 

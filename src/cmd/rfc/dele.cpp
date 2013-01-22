@@ -9,6 +9,7 @@
 #include "fs/owner.hpp"
 #include "logs/logs.hpp"
 #include "cmd/error.hpp"
+#include "stats/util.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -36,7 +37,7 @@ void DELECommand::Execute()
 
   if (loseCredits)
   {
-    long long creditLoss = bytes * client.UserProfile().Ratio();
+    long long creditLoss = bytes * stats::UploadRatio(client, path, section);
     if (creditLoss)
     {
       acl::UserCache::DecrCredits(client.User().Name(), creditLoss);

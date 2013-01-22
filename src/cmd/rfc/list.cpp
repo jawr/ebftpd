@@ -59,7 +59,7 @@ void LISTCommand::Execute()
   
   data.Close();
   control.Reply(ftp::DataClosedOkay, "End of directory listing (" + 
-      stats::util::HighResSecondsString(data.State().StartTime(), data.State().EndTime()) + ")"); 
+      stats::HighResSecondsString(data.State().StartTime(), data.State().EndTime()) + ")"); 
   return;
 }
 

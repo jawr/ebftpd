@@ -46,7 +46,8 @@ Config::Config(const std::string& configFile) :
   emptyNuke(102400),
   maxSitecmdLines(-1),
   weekStart(::cfg::WeekStart::Sunday),
-  epsvFxp(::cfg::EPSVFxp::Allow)
+  epsvFxp(::cfg::EPSVFxp::Allow),
+  maximumRatio(10)
 {
   std::string line;
   std::ifstream io(configFile.c_str());
@@ -603,6 +604,19 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     else if (toks[0] == "deny") epsvFxp = ::cfg::EPSVFxp::Deny;
     else if (toks[0] == "force") epsvFxp = ::cfg::EPSVFxp::Force;
     else throw ConfigError("epsv_fxp must be allow, deny or force");
+  }
+  else if (opt == "maximum_ratio")
+  {
+    ParameterCheck(opt, toks, 1);
+    try
+    {
+      maximumRatio = boost::lexical_cast<int>(toks[0]);
+      if (maximumRatio < 0) throw boost::bad_lexical_cast();
+    }
+    catch (const boost::bad_lexical_cast&)
+    {
+      throw ConfigError("maximum_ratio must be zero or larger");
+    }
   }
   else
   {

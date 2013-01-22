@@ -2,8 +2,24 @@
 #define __STATS_UTIL_HPP
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 
-namespace stats { namespace util
+namespace ftp
+{
+class Client;
+}
+
+namespace fs
+{
+class VirtualPath;
+}
+
+namespace cfg
+{
+class Section;
+}
+
+namespace stats
 {
 
 inline double CalculateSpeed(long long bytes, const boost::posix_time::time_duration& duration)
@@ -27,7 +43,11 @@ inline std::string HighResSecondsString(const boost::posix_time::ptime& start,
   return HighResSecondsString(end - start);
 }
 
-} /* util namespace */
+int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
+    const boost::optional<const cfg::Section&>& section);
+int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
+    const boost::optional<const cfg::Section&>& section);
+
 } /* stats namespace */
 
 #endif

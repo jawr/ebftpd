@@ -100,11 +100,9 @@ std::unordered_map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl:
 
 void UploadDecr(const acl::User& user, long long bytes, const std::string& section)
 {
-  if (!section.empty())
-  {
-    Upload(user, -bytes, 0, section);
-    Upload(user, bytes, 0, "");
-  }
+  assert(!section.empty());
+  Upload(user, -bytes, 0, section);
+  Upload(user, bytes, 0, "");
 }
 
 void Upload(const acl::User& user, long long bytes, long long xfertime, const std::string& section)

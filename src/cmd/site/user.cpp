@@ -21,6 +21,7 @@
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace site
 {
@@ -103,6 +104,16 @@ void USERCommand::Execute()
   body.RegisterValue("creator", creator);
   body.RegisterValue("flags", user.Flags());
   body.RegisterValue("ratio", profile.Ratio());
+  
+  std::ostringstream sratio;
+  for (const auto& kv : cfg::Get().Sections())
+  {
+    int ratio = profile.SectionRatio(kv.first);
+    if (ratio >= 0)
+      sratio << kv.first << "(" << ratio << ") ";
+  }
+  body.RegisterValue("sratio", sratio.str());
+  
   body.RegisterSize("credits", user.Credits());
   body.RegisterValue("primary_group", 
     acl::GroupCache::GIDToName(user.PrimaryGID()));

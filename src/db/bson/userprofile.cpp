@@ -32,6 +32,14 @@ mongo::BSONObj UserProfile::Serialize(const acl::UserProfile& profile)
 
   if (profile.lastLogin)
     bob.append("last login", ToDateT(*profile.lastLogin));
+    
+  mongo::BSONArrayBuilder bab;
+  for (const auto& kv : profile.sectionRatio)
+  {
+    bab.append(BSON("section" << kv.first << "ratio" << kv.second));
+  }
+  
+  bob.append("section ratio", bab.arr());
   
   return bob.obj();
 }
@@ -66,6 +74,12 @@ acl::UserProfile UserProfile::Unserialize(const mongo::BSONObj& bo)
     mongo::BSONElement oid;
     bo.getObjectID(oid);
     profile.created = ToGregDate(oid.OID().asDateT());
+    
+    for (const auto& elem : bo["section ratio"].Array())
+    {
+      profile.sectionRatio.insert(std::make_pair(elem["section"].String(), elem["ratio"].Int()));
+    }
+    
   }
   catch (const mongo::DBException& e)
   {
