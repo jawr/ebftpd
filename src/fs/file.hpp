@@ -23,7 +23,8 @@ typedef boost::iostreams::file_descriptor_source FileSource;
 typedef std::shared_ptr<FileSource> FileSourcePtr;
 
 util::Error DeleteFile(const RealPath& path);
-util::Error DeleteFile(ftp::Client& client, const VirtualPath& path, off_t* size = 0);
+util::Error DeleteFile(ftp::Client& client, const VirtualPath& path, 
+                       off_t* size = nullptr, time_t* modTime = nullptr);
 
 util::Error RenameFile(const RealPath& oldPath, const RealPath& newPath);
 util::Error RenameFile(ftp::Client& client, const VirtualPath& oldPath,

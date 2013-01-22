@@ -28,7 +28,8 @@ util::Error DeleteFile(const RealPath& path)
   return util::Error::Success();
 }
 
-util::Error DeleteFile(ftp::Client& client, const VirtualPath& path, off_t* size)
+util::Error DeleteFile(ftp::Client& client, const VirtualPath& path, 
+      off_t* size, time_t* modTime)
 {
   util::Error e = PP::FileAllowed<PP::Delete>(client.User(), path);
   if (!e) return e;
@@ -37,7 +38,9 @@ util::Error DeleteFile(ftp::Client& client, const VirtualPath& path, off_t* size
   {
     try
     {
-      *size = Status(MakeReal(path)).Size();
+      Status status(MakeReal(path));
+      *size = status.Size();
+      *modTime = status.Native().st_mtime;
     }
     catch (const util::SystemError& e)
     {

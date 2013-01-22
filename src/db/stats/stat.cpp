@@ -10,6 +10,7 @@
 #include "util/error.hpp"
 #include "util/time.hpp"
 #include "logs/logs.hpp"
+#include "db/bson/error.hpp"
 
 namespace db { namespace stats
 {
@@ -98,15 +99,59 @@ std::unordered_map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl:
   return db::bson::Stat::Unserialize(results.front());
 }
 
-void UploadDecr(const acl::User& user, long long bytes, const std::string& section)
+void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const std::string& section)
 {
+  util::Time t(modTime);
+
+  auto cmd = BSON("aggregate" << "transfers" << "pipeline" << 
+    BSON_ARRAY(
+        BSON("$match" << 
+          BSON("year" << t.Year() << "month" << t.Month()  <<
+               "week" << t.Week() << "day" << t.Day())) <<
+        BSON("$group" << 
+          BSON("_id" << user.UID() << 
+            "total bytes" << BSON("$sum" << "$bytes") <<
+            "total xfertime" << BSON("$sum" << "$xfertime")
+      ))));
+    
+  boost::unique_future<bool> future;
+  mongo::BSONObj result;
+  TaskPtr task(new db::RunCommand(cmd, result, future));
+  Pool::Queue(task);
+  future.wait();
+  
+  double speed = 0;
+  try
+  {
+    long long xfertime = result["total xfertime"].Long();
+    if (xfertime > 0)
+      speed = result["total bytes"].Long() / xfertime / 1.0;
+    else
+      speed = result["total bytes"].Long() / 1.0;
+  }
+  catch (const mongo::DBException& e)
+  {
+    db::bson::UnserializeFailure("upload decr average speed", e, result, true);
+  }
+
   assert(!section.empty());
-  Upload(user, -bytes, 0, section);
-  Upload(user, bytes, 0, "");
+  long long xfertime = bytes / speed;
+  Upload(user, bytes, xfertime, section, true);
+  Upload(user, bytes, xfertime, "");
 }
 
-void Upload(const acl::User& user, long long bytes, long long xfertime, const std::string& section)
+void Upload(const acl::User& user, long long bytes, long long xfertime, 
+    const std::string& section, bool decrement)
 {
+  int files = 1;
+  
+  if (decrement)
+  {
+    files *= -1;
+    bytes *= -1;
+    xfertime *= -1;
+  }
+
   util::Time time;
   mongo::Query query = QUERY("uid" << user.UID() << "day" << time.Day()
     << "week" << time.Week() << "month" 
@@ -114,7 +159,7 @@ void Upload(const acl::User& user, long long bytes, long long xfertime, const st
     << "direction" << "up"
     << "section" << section);
   mongo::BSONObj obj = BSON(
-    "$inc" << BSON("files" << 1) <<
+    "$inc" << BSON("files" << files) <<
     "$inc" << BSON("bytes" << bytes) <<
     "$inc" << BSON("xfertime" << xfertime));
     
@@ -134,8 +179,6 @@ void Download(const acl::User& user, long long bytes, long long xfertime, const 
     "$inc" << BSON("files" << 1) <<
     "$inc" << BSON("bytes" << bytes) <<
     "$inc" << BSON("xfertime" << xfertime)); // how to handle the xfertime
-  std::cout << query.toString() << std::endl;
-  std::cout << obj.toString() << std::endl;
   TaskPtr task(new db::Update("transfers", query, obj, true));
   Pool::Queue(task);
 }

@@ -21,7 +21,8 @@ void DELECommand::Execute()
   bool loseCredits = fs::OwnerCache::Owner(fs::MakeReal(path)).UID() == client.User().UID();
   
   off_t bytes;
-  util::Error e = fs::DeleteFile(client,  path, &bytes);
+  time_t modTime;
+  util::Error e = fs::DeleteFile(client,  path, &bytes, &modTime);
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
@@ -32,7 +33,7 @@ void DELECommand::Execute()
   bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
   if (!nostats)
   {
-    db::stats::UploadDecr(client.User(), bytes, section->Name());
+    db::stats::UploadDecr(client.User(), bytes, modTime, section->Name());
   }
 
   if (loseCredits)

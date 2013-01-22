@@ -15,7 +15,6 @@ enum class Timeframe
   Alltime
 };
 
-
 template <> const char* util::EnumStrings<Timeframe>::values[];
 
 enum class Direction

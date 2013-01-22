@@ -1,6 +1,7 @@
 #ifndef __DB_STATS_STAT_HPP
 #define __DB_STATS_STAT_HPP
 
+#include <ctime>
 #include <unordered_map>
 #include <vector>
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -23,14 +24,14 @@ mongo::BSONObj GetFromCommand(const mongo::BSONObj& match);
 std::unordered_map<acl::UserID, ::stats::Stat> GetAllDown(const std::vector<acl::User>& users);
 std::unordered_map<acl::UserID, ::stats::Stat> GetAllUp(const std::vector<acl::User>& users);
 
-void Upload(const acl::User& user, long long bytes, long long xfertime, const std::string& section);
+void Upload(const acl::User& user, long long bytes, long long xfertime, 
+      const std::string& section, bool decrement = false);
 void Download(const acl::User& user, long long bytes, long long xfertime, const std::string& section);
 
-// we need to pass the creation date of the file to this in order to effect
-// the correct stats segment.
-void UploadDecr(const acl::User& user, long long bytes, const std::string& section);
+void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const std::string& section);
 
 // end
 }
 }
+
 #endif
