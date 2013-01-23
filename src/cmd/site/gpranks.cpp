@@ -1,5 +1,5 @@
 #include <boost/algorithm/string/case_conv.hpp>
-#include "cmd/site/ranks.hpp"
+#include "cmd/site/gpranks.hpp"
 #include "db/stats/stat.hpp"
 #include "stats/types.hpp"
 #include "cmd/error.hpp"
@@ -9,12 +9,13 @@
 #include "text/factory.hpp"
 #include "acl/groupcache.hpp"
 #include "logs/logs.hpp"
+#include "db/group/groupprofile.hpp"
 
 namespace cmd { namespace site
 
 {
 
-void RANKSCommand::Execute()
+void GPRANKSCommand::Execute()
 {
   ::stats::Timeframe tf;
   if (!util::EnumFromString(args[1], tf)) throw cmd::SyntaxError();
@@ -52,9 +53,9 @@ void RANKSCommand::Execute()
     }
   }
   
-  auto users = ::db::stats::CalculateUserRanks(section, tf, dir, sf);
+  auto groups = ::db::stats::CalculateGroupRanks(section, tf, dir, sf);
   
-  std::string tmplName = "ranks." + util::EnumToString(tf) + 
+  std::string tmplName = "gpranks." + util::EnumToString(tf) + 
                          "." + util::EnumToString(dir) + 
                          "." + util::EnumToString(sf);
                          
@@ -67,7 +68,7 @@ void RANKSCommand::Execute()
     }
     catch (const text::TemplateError&)
     {
-      templ.reset(text::Factory::GetTemplate("ranks"));
+      templ.reset(text::Factory::GetTemplate("gpranks"));
     }
   }
   catch (const text::TemplateError& e)
@@ -88,42 +89,37 @@ void RANKSCommand::Execute()
   long long totalFiles = 0;
   long long totalXfertime = 0;
 
-  acl::User user;
   int index = 0;
-  for (const auto& u : users)
+  for (const auto& g : groups)
   {
     if (index < number)
     {
+      std::string description;
       try
       {
-        user = acl::UserCache::User(u.ID());
+        description = db::groupprofile::Get(g.ID()).Description();
       }
       catch (const util::RuntimeError&)
       {
-        // exclude user from stats
-        logs::error << "Unable to load user with uid from user cache: " 
-                    << u.ID() << logs::endl;
-        continue;
       }
-      
       body.RegisterValue("index", ++index);
-      body.RegisterValue("user", user.Name());
-      body.RegisterValue("group", acl::GroupCache::GIDToName(user.PrimaryGID()));
-      body.RegisterValue("tagline", user.Tagline());
-      body.RegisterValue("files", u.Files());
-      body.RegisterSize("bytes", u.Bytes());
-      body.RegisterSpeed("speed", u.Speed());
+      body.RegisterValue("group", acl::GroupCache::GIDToName(g.ID()));
+//      body.RegisterValue("gruop", acl::GroupCache::GIDToName(group.PrimaryGID()));
+      body.RegisterValue("descr", description);
+      body.RegisterValue("files", g.Files());
+      body.RegisterSize("bytes", g.Bytes());
+      body.RegisterSpeed("speed", g.Speed());
       os << body.Compile();
       body.Reset();
     }
     
-    totalBytes += u.Bytes();
-    totalFiles += u.Files();
-    totalXfertime += u.Xfertime();
+    totalBytes += g.Bytes();
+    totalFiles += g.Files();
+    totalXfertime += g.Xfertime();
   }
   
   text::TemplateSection& foot = templ->Foot();
-  foot.RegisterValue("users", users.size());
+  foot.RegisterValue("groups", groups.size());
   foot.RegisterSize("bytes", totalBytes);
   foot.RegisterValue("files" ,totalFiles);
   foot.RegisterSpeed("speed", totalXfertime == 0 ? totalBytes : totalBytes / (totalXfertime / 1000.0));

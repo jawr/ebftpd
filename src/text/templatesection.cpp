@@ -128,11 +128,6 @@ std::string TemplateSection::Compile()
   {
     boost::replace_first(ret, "{{" + tag.Name() + "}}", tag.Value());
   }
-  // replace tags that haven't been registered with blank values
-  for (auto& tag: tags)
-  {
-    boost::replace_first(ret, "{{" + tag.Name() + "}}", "");
-  }
   return ret;
 }
 

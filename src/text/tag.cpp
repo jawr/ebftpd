@@ -12,7 +12,6 @@ namespace text
 
 Tag::Tag(const std::string& name) : 
   name(boost::to_lower_copy(name)),
-  value("{{" + this->name + "}}"),
   alignment(Alignment::Right), 
   measurement(Measurement::None), 
   caseConv(CaseConversion::None),

@@ -52,6 +52,7 @@
 #include "cmd/site/welcome.hpp"
 #include "cmd/site/goodbye.hpp"
 #include "cmd/site/ranks.hpp"
+#include "cmd/site/gpranks.hpp"
 
 namespace cmd { namespace site
 {
@@ -167,11 +168,11 @@ Factory::Factory()
                       "Change user's groups" }, },
     { "RANKS",      { 3, -1,  "ranks",
                       CreatorBasePtr(new Creator<site::RANKSCommand>()),
-                      "Syntax: SITE RANKS DAY|WEEK|MONTH|ALL UP|DOWN SPEED|AMOUNT|FILES [<number>] [<section>] [=<group>]",
+                      "Syntax: SITE RANKS DAY|WEEK|MONTH|ALL UP|DOWN SPEED|BYTES|FILES [<number>] [<section>] [=<group>]",
                       "Display user upload/download rankings" }, },
     { "GPRANKS",    { 3, -1,  "gpranks",
-                      nullptr,
-                      "Syntax: SITE GPRANKS DAY|WEEK|MONTH|ALL UP|DOWN SPEED|AMOUNT|FILES [<number>] [<section>]",
+                      CreatorBasePtr(new Creator<site::GPRANKSCommand>()),
+                      "Syntax: SITE GPRANKS DAY|WEEK|MONTH|ALL UP|DOWN SPEED|BYTES|FILES [<number>] [<section>]",
                       "Display group upload/download rankings" }, },
     { "NUKE",       { 3,  -1, "nuke",
                       nullptr,

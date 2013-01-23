@@ -174,7 +174,7 @@ std::vector< ::stats::Stat> RetrieveGroups(
   {
     auto ugid = acl::UserCache::PrimaryGID(user.ID());
     if (gid && ugid != *gid) continue;
-    auto it = stats.insert(std::make_pair(ugid, user));
+    auto it = stats.insert(std::make_pair(ugid, ::stats::Stat(ugid, user)));
     if (!it.second) it.first->second.Incr(user);
   }
 
