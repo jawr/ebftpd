@@ -39,13 +39,16 @@ long long TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
   future.wait();
 
   long long total = 0;
-  try
+  if (result.nFields() > 0)
   {
-    total = result["0"]["total"].Long();
-  }
-  catch (const mongo::DBException& e)
-  {
-    db::bson::UnserializeFailure("transfers total", e, result, true);
+    try
+    {
+      total = result["0"]["total"].Long();
+    }
+    catch (const mongo::DBException& e)
+    {
+      db::bson::UnserializeFailure("transfers total", e, result, true);
+    }
   }
   
   return total;

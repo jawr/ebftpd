@@ -28,6 +28,16 @@ std::string WordWrap(std::string& source, std::string::size_type length);
 void TitleSimple(std::string& s);
 std::string TitleSimpleCopy(const std::string& s);
 
+inline bool IsASCIIOnly(const std::string& s)
+{
+  for (char ch : s)
+  {
+    unsigned char uCh = static_cast<unsigned char>(ch);
+    if (uCh > 127) return false;
+  }
+  return true;
+}
+
 } /* string namespace */
 } /* util namespace */
 

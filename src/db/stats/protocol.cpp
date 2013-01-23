@@ -45,14 +45,17 @@ Traffic ProtocolUser(acl::UserID uid, ::stats::Timeframe timeframe)
   future.wait();
 
   Traffic total;
-  try
+  if (result.nFields() > 0)
   {
-    total = Traffic(result["0"]["send total"].Long(), 
-                    result["0"]["receive total"].Long());
-  }
-  catch (const mongo::DBException& e)
-  {
-    db::bson::UnserializeFailure("protocol total", e, result, true);
+    try
+    {
+      total = Traffic(result["0"]["send total"].Long(), 
+                      result["0"]["receive total"].Long());
+    }
+    catch (const mongo::DBException& e)
+    {
+      db::bson::UnserializeFailure("protocol total", e, result, true);
+    }
   }
   
   return total;

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <functional>
 #include <mongo/client/dbclient.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "db/stats/stat.hpp"
 #include "acl/user.hpp"
 #include "db/task.hpp"
@@ -70,17 +71,27 @@ void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const st
   future.wait();
   
   long long xfertime = 0;
-  try
+  if (result.nFields() > 0)
   {
-    long long totalXfertime = result["0"]["total xfertime"].Long();
-    if (totalXfertime > 0)
-      xfertime = bytes / result["0"]["total bytes"].Long() / totalXfertime;
-    else
-      xfertime = bytes / result["0"]["total bytes"].Long();
+    try
+    {
+      long long totalXfertime = result["0"]["total xfertime"].Long();
+      if (totalXfertime > 0)
+        xfertime = bytes / result["0"]["total bytes"].Long() / totalXfertime;
+      else
+        xfertime = bytes / result["0"]["total bytes"].Long();
+    }
+    catch (const mongo::DBException& e)
+    {
+      db::bson::UnserializeFailure("upload decr average speed", e, result, true);
+    }
   }
-  catch (const mongo::DBException& e)
+  else
   {
-    db::bson::UnserializeFailure("upload decr average speed", e, result, true);
+    namespace pt = boost::posix_time;
+    logs::db << "Failed to adjust xfertime on file deletion, "
+             << "no data available for that date: " 
+             << pt::to_simple_string(pt::from_time_t(modTime)) << logs::endl;
   }
 
   assert(!section.empty());
@@ -144,13 +155,13 @@ std::vector< ::stats::Stat> RetrieveUsers(
   if (sortField) ops.append(BSON("$sort" << BSON(sortFields[static_cast<unsigned>(*sortField)] << -1)));
 
   auto cmd = BSON("aggregate" << "transfers" << "pipeline" << ops.arr());
-std::cout << "CMD: " << cmd.toString() << std::endl;
+
   boost::unique_future<bool> future;
   mongo::BSONObj result;
   TaskPtr task(new db::RunCommand(cmd, result, future));
   Pool::Queue(task);
   future.wait();
-  std::cout << "RESULT: " << result.toString() << std::endl;
+
   std::vector< ::stats::Stat> users;
   for (int i = 0; i < result.nFields(); ++i)
   {
