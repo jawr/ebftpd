@@ -94,7 +94,11 @@ public:
   bool KickLogin() const { return kickLogin; }
   
   ::ftp::Control& Control() { return control; }
+  const ::ftp::Control& Control() const { return control; }
+  
   ::ftp::Data& Data() { return data; }
+  const ::ftp::Data& Data() const { return data; }
+  
   util::ProcessReader& Child() { return child; }
 
   void SetIdleTimeout(const boost::posix_time::seconds& idleTimeout)

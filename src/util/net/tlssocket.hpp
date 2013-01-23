@@ -42,6 +42,8 @@ public:
   
   void Close();
   /* No exceptions */
+  
+  std::string Cipher() const;
 };
 
 } /* net namespace */

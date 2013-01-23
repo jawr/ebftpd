@@ -70,6 +70,7 @@ public:
   { return socket.LocalEndpoint(); }
   
   bool IsTLS() const { return socket.IsTLS(); }
+  std::string TLSCipher() const { return socket.TLSCipher(); }
   
   void Interrupt() { socket.Shutdown(); }
   

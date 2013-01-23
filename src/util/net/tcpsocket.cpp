@@ -360,5 +360,11 @@ void TCPSocket::Shutdown()
   return WaitStateTimeout(state, &duration);
 }
 
+std::string TCPSocket::TLSCipher() const
+{
+  if (!tls.get()) return "NONE";
+  return tls->Cipher();
+}
+
 } /* net namespace */
 } /* util namespace */

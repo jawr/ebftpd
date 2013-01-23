@@ -125,5 +125,13 @@ void TLSSocket::Close()
   }
 }
 
+std::string TLSSocket::Cipher() const
+{
+  if (!session) return "NONE";
+  const char* cipher = SSL_get_cipher(session);
+  if (!cipher) return "NONE";
+  return cipher;
+}
+
 } /* net namespace */
 } /* util namespace */

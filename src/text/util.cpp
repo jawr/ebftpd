@@ -18,10 +18,6 @@ namespace text
 
 void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
 {
-  boost::unique_future<void> oucFuture;
-  auto ocuTask = std::make_shared<ftp::task::OnlineUserCount>(oucFuture);
-  ocuTask->Push();
-
   const cfg::Config& config = cfg::Get();
 
   ts.RegisterSpeed("last_speed", 0);
@@ -65,7 +61,11 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   ts.RegisterValue("tagline", client.User().Tagline());
   ts.RegisterSize("credits", client.User().Credits());
   ts.RegisterValue("time_online", "");
-  //boost::wait_for_all(oucFuture);
+
+  boost::unique_future<void> oucFuture;
+  auto ocuTask = std::make_shared<ftp::task::OnlineUserCount>(oucFuture);
+  ocuTask->Push();
+  oucFuture.wait();
   
   ts.RegisterValue("online_users", ocuTask->Count());
   ts.RegisterValue("all_online_users", ocuTask->AllCount());
@@ -81,6 +81,20 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
       ts.RegisterSize(prefix + "bytes", stat.Bytes());
       ts.RegisterSpeed(prefix + "speed", stat.Speed());
     }
+  }
+  
+  {
+    std::string tlsMode;
+    if (client.Control().IsTLS()) tlsMode = "control";
+    if (client.Data().Protection())
+    {
+      if (!tlsMode.empty()) tlsMode += '&';
+      tlsMode += "data";
+    }
+    if (tlsMode.empty()) tlsMode = "insecure";
+    
+    ts.RegisterValue("tls_mode", tlsMode);
+    ts.RegisterValue("tls_cipher", client.Control().TLSCipher());
   }
 }
 

@@ -129,6 +129,7 @@ public:
   /* No exceptions */
   
   bool IsTLS() const { return tls.get() != 0; }
+  std::string TLSCipher() const;
 };
 
 } /* net namespace */

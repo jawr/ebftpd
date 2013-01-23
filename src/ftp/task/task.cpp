@@ -114,6 +114,8 @@ void OnlineUserCount::Execute(Listener& listener)
     ++count;
     ++allCount;
   }
+  
+  promise.set_value();
 }
 
 }
