@@ -57,8 +57,8 @@ long long TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
 Traffic TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
       const std::string& section)
 {
-  return Traffic(TransfersUser(uid, timeframe, section, ::stats::Direction::Upload),
-                 TransfersUser(uid, timeframe, section, ::stats::Direction::Download));
+  return Traffic(TransfersUser(uid, timeframe, section, ::stats::Direction::Download),
+                 TransfersUser(uid, timeframe, section, ::stats::Direction::Upload));
 }
 
 Traffic TransfersTotal(::stats::Timeframe timeframe, const std::string& section)
