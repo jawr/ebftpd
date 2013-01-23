@@ -11,7 +11,8 @@ namespace cmd { namespace site
 
 void DELIPCommand::Execute()
 {
-  if (args[1] != client.User().Name() && !acl::AllowSiteCmd(client.User(), "delip"))
+  if (args[1] != client.User().Name() && 
+     !acl::AllowSiteCmd(client.User(), "delip"))
   {
     throw cmd::PermissionError();
   }

@@ -17,6 +17,7 @@
 #include "cmd/error.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
+#include "acl/allowsitecmd.hpp"
 
 namespace cmd { namespace site
 {
@@ -113,10 +114,25 @@ void MSGCommand::Send()
   std::vector<std::string> recipients;
   if (args[2] != "*")
   {
+    boost::trim(args[2]);
     boost::split(recipients, args[2], boost::is_any_of(" "), boost::token_compress_on);
+    if (recipients.size() > 1 &&
+        !acl::AllowSiteCmd(client.User(), "msg{")) 
+    {
+      throw cmd::PermissionError();
+    }
+    
+    bool equalsOp = false;
     for (auto& recipient : recipients)
-      if (recipient[0] != '=' && recipient[0] != '-')
+    {
+      if (recipient[0] == '=')
+        equalsOp = true;
+      else if (recipient[0] != '-')
         recipient.insert(recipient.begin(), '-');
+    }
+    
+    if (equalsOp && !acl::AllowSiteCmd(client.User(), "msg=")) 
+    throw cmd::PermissionError();
   }
   
   std::string body(boost::join(std::vector<std::
@@ -124,7 +140,10 @@ void MSGCommand::Send()
   
   std::vector<acl::User> users;
   if (recipients.empty()) 
+  {
+    if (!acl::AllowSiteCmd(client.User(), "msg*")) throw cmd::PermissionError();
     users = db::user::GetAll();
+  }
   else
   {
     for (auto& recipient : recipients)
