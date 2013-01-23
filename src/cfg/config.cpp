@@ -726,8 +726,7 @@ bool Config::CheckSetting(const std::string& name)
 
 void Config::SanityCheck()
 {
-  if (!CheckSetting("tls_certificate")) throw RequiredSetting("tls_certificate");
-  else if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
+  if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
   else if (!CheckSetting("port")) throw RequiredSetting("port");
   else if (!CheckSetting("valid_ip")) throw RequiredSetting("valid_ip");
   

@@ -1,10 +1,17 @@
 #include "cmd/rfc/auth.hpp"
+#include "util/net/tlscontext.hpp"
 
 namespace cmd { namespace rfc
 {
 
 void AUTHCommand::Execute()
 {
+  if (!util::net::TLSServerContext::Get())
+  {
+    control.Reply(ftp::ParameterNotImplemented, "TLS is not enabled.");
+    return;
+  }
+  
   if (args[1] == "SSL") data.SetProtection(true);
   else if (args[1] != "TLS")
   {

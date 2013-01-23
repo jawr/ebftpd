@@ -173,7 +173,7 @@ int main(int argc, char** argv)
     logs::error << "Failed to load config: " << e.Message() << logs::endl;
     return 1;
   }
-
+  
   logs::Initialise(cfg::Get().Datapath() / "logs");
   if (!Daemonise(foreground)) return 1;
   
@@ -186,20 +186,27 @@ int main(int argc, char** argv)
     }
   }
   
-  try
+  if (cfg::Get().TlsCertificate().IsEmpty())
   {
-    logs::debug << "Initialising TLS context.." << logs::endl;
-    util::net::TLSServerContext::Initialise(
-        cfg::Get().TlsCertificate().ToString(), 
-        cfg::Get().TlsCiphers().ToString());
-    util::net::TLSClientContext::Initialise(
-        cfg::Get().TlsCertificate().ToString(), 
-        cfg::Get().TlsCiphers().ToString());
+    logs::debug << "No TLS certificate set in config, TLS disabed." << logs::endl;
   }
-  catch (const util::net::NetworkError& e)
+  else
   {
-    logs::error << "TLS failed to initialise: " << e.Message() << logs::endl;
-    return 1;
+    try
+    {
+      logs::debug << "Initialising TLS context.." << logs::endl;
+      util::net::TLSServerContext::Initialise(
+          cfg::Get().TlsCertificate().ToString(), 
+          cfg::Get().TlsCiphers().ToString());
+      util::net::TLSClientContext::Initialise(
+          cfg::Get().TlsCertificate().ToString(), 
+          cfg::Get().TlsCiphers().ToString());
+    }
+    catch (const util::net::NetworkError& e)
+    {
+      logs::error << "TLS failed to initialise: " << e.Message() << logs::endl;
+      return 1;
+    }
   }
 
   logs::debug << "Initalising Templates.." << logs::endl;

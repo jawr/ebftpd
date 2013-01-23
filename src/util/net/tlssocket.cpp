@@ -64,9 +64,14 @@ void TLSSocket::EvaluateResult(int result)
 
 void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role, TLSSocket* id)
 {
-  session = SSL_new(role == Client ?
-                    TLSClientContext::Get() :
-                    TLSServerContext::Get());
+
+  SSL_CTX* ctx = role == Client ?
+                 TLSClientContext::Get() :
+                 TLSServerContext::Get();
+                 
+  if (!ctx) throw TLSError("TLS context not initialised.");
+
+  session = SSL_new(ctx);
   if (!session) throw TLSProtocolError();
   
   if (SSL_set_fd(session, socket.Socket()) != 1) throw TLSProtocolError();

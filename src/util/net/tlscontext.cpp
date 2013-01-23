@@ -209,7 +209,8 @@ void TLSClientContext::Initialise(const std::string& certificate,
 
 SSL_CTX* TLSClientContext::Get()
 {
-  assert(client.get());
+  if (!client.get()) return nullptr;
+  assert(client->context);
   return client->context;
 }
 
@@ -288,7 +289,8 @@ finish:
 
 SSL_CTX* TLSServerContext::Get()
 {
-  assert(server.get());
+  if (!server.get()) return nullptr;
+  assert(server->context);
   return server->context;
 }
 
