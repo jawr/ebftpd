@@ -7,9 +7,13 @@ namespace cmd { namespace rfc
 void QUITCommand::Execute()
 {
   std::string goodbye;
-  if (text::GenericTemplate("goodbye", goodbye))
-    control.Reply(ftp::ClosingControl, goodbye);
-  else control.Reply(ftp::ClosingControl, "Bye bye");
+  if (client.State() == ftp::ClientState::LoggedIn)
+  {
+    if (text::GenericTemplate(client, "goodbye", goodbye))
+      control.Reply(ftp::ClosingControl, goodbye);
+  }
+  
+  if (goodbye.empty()) control.Reply(ftp::ClosingControl, "Bye bye");
 
   client.SetState(ftp::ClientState::Finished);
 }
