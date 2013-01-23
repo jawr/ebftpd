@@ -49,13 +49,16 @@ public:
   {
     // prepend custom command arguments to user passed arguments
     std::string cArgStr(custSiteCmd.Arguments());
-    cArgStr += ' ';
-    cArgStr += argStr;
-    boost::trim(cArgStr);
+    if (!argStr.empty())
+    {
+      cArgStr += ' ';
+      cArgStr += argStr;
+    }
     
     // rebuild args
     std::vector<std::string> cArgs;
-    boost::split(cArgs, cArgStr, boost::is_any_of(" "), boost::token_compress_on);
+    if (!cArgStr.empty())
+      boost::split(cArgs, cArgStr, boost::is_any_of(" "), boost::token_compress_on);
     cArgs.insert(cArgs.begin(), custSiteCmd.Command());
     
     return new CommandT(custSiteCmd, client, cArgStr, cArgs);

@@ -10,6 +10,7 @@
 #include "acl/groupcache.hpp"
 #include "logs/logs.hpp"
 #include "db/group/groupprofile.hpp"
+#include "acl/allowsitecmd.hpp"
 
 namespace cmd { namespace site
 
@@ -17,6 +18,15 @@ namespace cmd { namespace site
 
 void GPRANKSCommand::Execute()
 {
+  if (args[0] == "RANKS")
+  {
+    if (!acl::AllowSiteCmd(client.User(), "gpranks")) throw cmd::PermissionError();
+  }
+  else
+  {
+    if (!acl::AllowSiteCmd(client.User(), "gpranksalias")) throw cmd::PermissionError();
+  }
+
   ::stats::Timeframe tf;
   if (!util::EnumFromString(args[1], tf)) throw cmd::SyntaxError();
 

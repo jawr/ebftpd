@@ -10,12 +10,22 @@
 #include "acl/groupcache.hpp"
 #include "logs/logs.hpp"
 #include "acl/acl.hpp"
+#include "acl/allowsitecmd.hpp"
 
 namespace cmd { namespace site
 {
 
 void RANKSCommand::Execute()
 {
+  if (args[0] == "RANKS")
+  {
+    if (!acl::AllowSiteCmd(client.User(), "ranks")) throw cmd::PermissionError();
+  }
+  else
+  {
+    if (!acl::AllowSiteCmd(client.User(), "ranksalias")) throw cmd::PermissionError();
+  }
+
   ::stats::Timeframe tf;
   if (!util::EnumFromString(args[1], tf)) throw cmd::SyntaxError();
 

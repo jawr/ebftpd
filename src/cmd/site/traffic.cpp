@@ -30,11 +30,6 @@ std::string TRAFFICCommand::Format(const std::string& timeframe,
 
 void TRAFFICCommand::Execute()
 {
-  static stats::Timeframe timeframes[] =
-  { stats::Timeframe::Day, stats::Timeframe::Week, 
-    stats::Timeframe::Month, stats::Timeframe::Year, 
-    stats::Timeframe::Alltime };
-
   std::map<stats::Timeframe, std::pair<long long, long long>> combined;
     
   std::ostringstream os;
@@ -50,7 +45,7 @@ void TRAFFICCommand::Execute()
 
   for (auto& section : sections)
   {
-    for (auto tf : timeframes)
+    for (auto tf : ::stats::timeframes)
     {
       db::stats::Traffic t(db::stats::TransfersTotal(tf, section));
       os << Format(util::string::TitleSimpleCopy(
@@ -65,7 +60,7 @@ void TRAFFICCommand::Execute()
      << "| Protocol traffic:                               |\n"
      << "|-----------.-----------.------------.------------|\n";
 
-  for (auto tf : timeframes)
+  for (auto tf : ::stats::timeframes)
   {
     db::stats::Traffic t(db::stats::ProtocolTotal(tf));
     os << Format(util::string::TitleSimpleCopy(
@@ -79,7 +74,7 @@ void TRAFFICCommand::Execute()
      << "| Combined traffic:                               |\n"
      << "|-----------.-----------.------------.------------|\n";
 
-   for (auto tf : timeframes)
+   for (auto tf : ::stats::timeframes)
   {
     os << Format(util::string::TitleSimpleCopy(
             ::util::EnumToString(tf)), combined[tf].first, 

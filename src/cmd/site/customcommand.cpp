@@ -61,10 +61,9 @@ void CustomALIASCommand::Execute()
 {
   std::vector<std::string> tArgs;
   cmd::SplitArgs(custSiteCmd.Target(), tArgs);
-  cmd::SplitArgs(argStr, args);
-  args.insert(args.begin(), tArgs.begin(), tArgs.end());
+  args.insert(args.begin() + 1, tArgs.begin() + 1, tArgs.end());
   
-  cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(args[0], true));
+  cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(tArgs[0], true));
   if (!def)
   { 
     control.Reply(ftp::CommandUnrecognised, "Command not understood");
