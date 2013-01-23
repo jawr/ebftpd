@@ -1,9 +1,35 @@
 #include "cmd/rfc/cwd.hpp"
 #include "fs/directory.hpp"
 #include "cmd/error.hpp"
+#include "cfg/get.hpp"
+#include "util/misc.hpp"
 
 namespace cmd { namespace rfc
 {
+
+void CWDCommand::ShowDiz(const fs::VirtualPath& path)
+{
+  fs::RealPath real(fs::MakeReal(path));
+  for (const auto& diz : cfg::Get().ShowDiz())
+  {
+    if (!diz.ACL().Evaluate(client.User())) continue;
+    try
+    {
+      fs::RealPath dizPath = real / diz.Path();
+      if (fs::Status(dizPath).IsReadable())
+      {
+        std::string lines;
+        if (util::ReadFileToString(dizPath.ToString(), lines))
+        {
+          control.PartReply(ftp::FileActionOkay, lines);
+        }
+      }
+    }
+    catch (const util::SystemError&)
+    {
+    }
+  }
+}
 
 void CWDCommand::Execute()
 {
@@ -12,6 +38,7 @@ void CWDCommand::Execute()
   util::Error e = fs::ChangeDirectory(client,  path);
   if (e)
   {
+    ShowDiz(path);
     control.Reply(ftp::FileActionOkay, "CWD command successful."); 
     return;
   }
@@ -19,6 +46,7 @@ void CWDCommand::Execute()
   fs::VirtualPath match;
   if (e.Errno() == ENOENT && (e = fs::ChangeAlias(client, argStr, match)))
   {
+    ShowDiz(path);
     control.Reply(ftp::FileActionOkay, "CWD command successful (Alias: " + 
           match.ToString() + ").");
     return;
@@ -26,6 +54,7 @@ void CWDCommand::Execute()
 
   if (e.Errno() == ENOENT && (e = fs::ChangeMatch(client, path, match)))
   {
+    ShowDiz(path);
     control.Reply(ftp::FileActionOkay, "CWD command successful (Matched: " + 
                  match.ToString() + ").");
     return;
@@ -33,6 +62,7 @@ void CWDCommand::Execute()
 
   if (e.Errno() == ENOENT && (e = fs::ChangeCdpath(client, argStr, match)))
   {
+    ShowDiz(path);
     control.Reply(ftp::FileActionOkay, "CWD command successful (Matched: " + 
                  match.ToString() + ").");
     return;    

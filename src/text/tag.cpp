@@ -92,10 +92,14 @@ void Tag::Compile()
     os << "=";
 
   if (!width.empty()) os << width;
-  if (!precision.empty()) os << "." << precision;
 
   if (type == TagType::String) os << "s";
-  else if (type == TagType::Float) os << "f";
+  else if (type == TagType::Float)
+  {
+    if (!precision.empty()) os << "." << precision;
+    else os << ".2";
+    os << "f";
+  }
   else if (type == TagType::Decimal) os << "d";
   else assert(false); // should never get here
 

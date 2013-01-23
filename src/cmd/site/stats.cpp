@@ -45,20 +45,6 @@ void STATSCommand::Execute()
   head.RegisterValue("user", userName);
   os << head.Compile();
   
-  static const ::stats::Timeframe timeframes[] =
-  {
-    ::stats::Timeframe::Day,
-    ::stats::Timeframe::Week,
-    ::stats::Timeframe::Month,
-    ::stats::Timeframe::Alltime,
-  };
-  
-  static const ::stats::Direction directions[] =
-  {
-    ::stats::Direction::Upload,
-    ::stats::Direction::Download
-  };
-  
   std::map< ::stats::Timeframe, std::map< ::stats::Direction, ::stats::Stat>> totals;
   
   text::TemplateSection& body = templ->Body();
@@ -66,9 +52,9 @@ void STATSCommand::Execute()
   {
     body.RegisterValue("section", kv.first);
 
-    for (auto tf : timeframes)
+    for (auto tf : ::stats::timeframes)
     {
-      for (auto dir : directions)
+      for (auto dir : ::stats::directions)
       {
         std::string prefix = util::EnumToString(tf) + "_" +
                              util::EnumToString(dir) + "_";
@@ -87,9 +73,9 @@ void STATSCommand::Execute()
   
   text::TemplateSection& foot = templ->Foot();
 
-  for (auto tf : timeframes)
+  for (auto tf : ::stats::timeframes)
   {
-    for (auto dir : directions)
+    for (auto dir : ::stats::directions)
     {
       std::string prefix = util::EnumToString(tf) + "_" +
                            util::EnumToString(dir) + "_";

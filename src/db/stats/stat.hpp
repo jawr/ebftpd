@@ -42,7 +42,6 @@ std::vector< ::stats::Stat> CalculateGroupRanks(
       const std::string& section, 
       ::stats::Timeframe timeframe, 
       ::stats::Direction direction);
-
 }
 }
 

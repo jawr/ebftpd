@@ -10,6 +10,8 @@
 #include "fs/directory.hpp"
 #include "ftp/task/task.hpp"
 #include "acl/groupcache.hpp"
+#include "db/stats/stat.hpp"
+#include "stats/stat.hpp"
 
 namespace text
 {
@@ -67,6 +69,19 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   
   ts.RegisterValue("online_users", ocuTask->Count());
   ts.RegisterValue("all_online_users", ocuTask->AllCount());
+  
+  for (auto tf : ::stats::timeframes)
+  {
+    for (auto dir : ::stats::directions)
+    {
+      std::string prefix = util::EnumToString(tf) + "_" +
+                           util::EnumToString(dir) + "_";
+      auto stat = db::stats::CalculateSingleUser(client.User().UID(), "", tf, dir);
+      ts.RegisterValue(prefix + "files", stat.Files());
+      ts.RegisterSize(prefix + "bytes", stat.Bytes());
+      ts.RegisterSpeed(prefix + "speed", stat.Speed());
+    }
+  }
 }
 
 util::Error GenericTemplate(const ftp::Client& client, const std::string& name, std::string& messages)
