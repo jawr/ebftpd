@@ -62,7 +62,7 @@ void USERCommand::Execute()
   {
     profile = db::userprofile::Get(user.UID());
   }
-  catch (const util::RuntimeError&e )
+  catch (const util::RuntimeError& e)
   {
     control.Reply(ftp::ActionNotOkay, e.Message());
     return;

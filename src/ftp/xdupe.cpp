@@ -124,9 +124,9 @@ std::vector<std::string> BuildDupeList(ftp::Client& client, const fs::VirtualPat
   }
   catch (const util::SystemError& e)
   {
-    logs::debug << "Error while building xdupe list: " << e.Message() << logs::endl;
+    logs::error << "Error while building xdupe list: " << e.Message() << logs::endl;
   }
-  return std::move(dupes);
+  return dupes;
 }
 
 std::vector<std::function<std::string(const 

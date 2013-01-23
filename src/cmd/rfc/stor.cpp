@@ -1,7 +1,6 @@
 #include <ios>
 #include <unistd.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/crc.hpp>
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
 #include "db/stats/stat.hpp"
@@ -22,6 +21,7 @@
 #include "acl/path.hpp"
 #include "fs/owner.hpp"
 #include "acl/credits.hpp"
+#include "util/crc32.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -29,13 +29,6 @@ namespace cmd { namespace rfc
 namespace 
 {
 const fs::Mode completeMode(fs::Mode("0666"));
-
-std::string CRCToString(boost::crc_32_type& crc)
-{
-  std::ostringstream os;
-  os << std::hex << std::uppercase << crc.checksum();
-  return os.str();
-}
 
 std::string FileAge(const fs::RealPath& path)
 {
@@ -186,7 +179,7 @@ void STORCommand::Execute()
   }
   
   bool calcCrc = CalcCRC(path);
-  boost::crc_32_type crc;
+  util::CRC32 crc32;
   
   try
   {
@@ -208,7 +201,7 @@ void STORCommand::Execute()
       
       fout->write(bufp, len);
       
-      if (calcCrc) crc.process_bytes(bufp, len);
+      if (calcCrc) crc32.Update(bufp, len);
       
       if (client.Profile().MaxUlSpeed() > 0)
         ftp::SpeedLimitSleep(data.State(), client.Profile().MaxUlSpeed());
@@ -246,7 +239,7 @@ void STORCommand::Execute()
   auto section = cfg::Get().SectionMatch(path);
 
   if (!exec::PostCheck(client, path, 
-                       calcCrc ? CRCToString(crc) : "000000", speed, 
+                       calcCrc ? crc32.HexString() : "000000", speed, 
                        section ? section->Name() : "-"))
     fs::DeleteFile(fs::MakeReal(path));
   else

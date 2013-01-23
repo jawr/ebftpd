@@ -102,12 +102,14 @@ void GPRANKSCommand::Execute()
       catch (const util::RuntimeError&)
       {
       }
+      
       body.RegisterValue("index", ++index);
       body.RegisterValue("group", acl::GroupCache::GIDToName(g.ID()));
       body.RegisterValue("descr", description);
       body.RegisterValue("files", g.Files());
       body.RegisterSize("bytes", g.Bytes());
       body.RegisterSpeed("speed", g.Speed());
+      
       os << body.Compile();
       body.Reset();
     }

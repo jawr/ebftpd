@@ -19,4 +19,3 @@ public:
 } /* cmd namespace */
 
 #endif
-

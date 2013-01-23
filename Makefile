@@ -3,7 +3,7 @@ CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic -rd
 CXXFLAGS += -Winit-self -pthread
 LIBS := -lmongoclient -lcrypto -lboost_thread -lboost_regex -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lssl -lboost_filesystem
-LIBS += -lboost_date_time -lboost_program_options
+LIBS += -lboost_date_time -lboost_program_options -lz
 INCLUDE := -Isrc -include src/pch.hpp
 
 UNITY := false
