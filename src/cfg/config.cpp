@@ -31,6 +31,7 @@ std::unordered_set<std::string> Config::aclKeywords;
 Config::Config(const std::string& configFile) : 
   version(++latestVersion),
   configFile(configFile),
+  currentSection(nullptr),
   port(-1),
   defaultFlags("3"),
   freeSpace(100),

@@ -104,7 +104,6 @@ void GPRANKSCommand::Execute()
       }
       body.RegisterValue("index", ++index);
       body.RegisterValue("group", acl::GroupCache::GIDToName(g.ID()));
-//      body.RegisterValue("gruop", acl::GroupCache::GIDToName(group.PrimaryGID()));
       body.RegisterValue("descr", description);
       body.RegisterValue("files", g.Files());
       body.RegisterSize("bytes", g.Bytes());
