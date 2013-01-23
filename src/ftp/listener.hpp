@@ -72,12 +72,12 @@ public:
   static void JoinThread();
   static void SetShutdown();
 
-  // tasks
   friend class task::KickUser;
   friend class task::GetOnlineUsers;
   friend class task::LoginKickUser;
   friend class task::UserUpdate;
   friend class task::Task;
+  friend class task::OnlineUserCount;
   
   friend void SignalHandler(int);
 };

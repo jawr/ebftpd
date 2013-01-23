@@ -178,6 +178,17 @@ void STORCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
+  if (!data.ProtectionOkay())
+  {
+    fout->close();
+    data.Close();
+    fs::DeleteFile(fs::MakeReal(path));
+    std::ostringstream os;
+    os << "TLS is enforced on " << (data.IsFXP() ? "FXP" : "data") << " transfers.";
+    control.Reply(ftp::ProtocolNotSupported, os.str());
+    return;
+  }
+
   bool calcCrc = CalcCRC(path);
   util::CRC32 crc32;
   

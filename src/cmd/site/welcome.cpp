@@ -7,7 +7,7 @@ namespace cmd { namespace site
 void WELCOMECommand::Execute()
 {
   std::string messages;
-  util::Error e = text::GenericTemplate("welcome", messages);
+  util::Error e = text::GenericTemplate(client, "welcome", messages);
   if (!e)
     control.Reply(ftp::ActionNotOkay, e.Message());
   else

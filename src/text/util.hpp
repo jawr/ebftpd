@@ -9,10 +9,18 @@ namespace fs
 class Path;
 }
 
+namespace ftp
+{
+class Client;
+}
+
 namespace text
 {
+class TemplateSection;
 
-util::Error GenericTemplate(const std::string& name, std::string& messages);
+void RegisterGlobals(const ftp::Client& client, TemplateSection& ts);
+util::Error GenericTemplate(const ftp::Client& client, const std::string& name, 
+      std::string& messages);
 
 } /* text namespace */
 

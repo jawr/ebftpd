@@ -114,6 +114,10 @@ public:
   
   long long BytesRead() const { return bytesRead; }
   long long BytesWrite() const { return bytesWrite; }
+  
+  bool IsFXP() const;
+  
+  bool ProtectionOkay() const;
 };
 
 } /* ftp namespace */

@@ -169,7 +169,7 @@ Factory::Factory()
                       "Change user's groups" }, },
     { "RANKS",      { 3, -1,  "ranks",
                       CreatorBasePtr(new Creator<site::RANKSCommand>()),
-                      "Syntax: SITE RANKS DAY|WEEK|MONTH|ALL UP|DOWN SPEED|BYTES|FILES [<number>] [<section>] [=<group>]",
+                      "Syntax: SITE RANKS DAY|WEEK|MONTH|ALL UP|DOWN SPEED|BYTES|FILES [<number>] [<section>] [<acl> ..]",
                       "Display user upload/download rankings" }, },
     { "GPRANKS",    { 3, -1,  "gpranks",
                       CreatorBasePtr(new Creator<site::GPRANKSCommand>()),

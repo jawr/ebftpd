@@ -122,7 +122,7 @@ void PASSCommand::Execute()
   db::userprofile::Login(client.User().UID());
 
   std::string welcome;
-  e = text::GenericTemplate("welcome", welcome);
+  e = text::GenericTemplate(client, "welcome", welcome);
   if (!e) logs::error << "Failed to display welcome message : " << e.Message() << logs::endl;
   else os << welcome;
   

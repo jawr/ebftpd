@@ -158,8 +158,7 @@ void Data::Open(TransferType transferType)
     listener.Close();
   }
   
-  if (transferType != TransferType::List &&
-      socket.RemoteEndpoint().IP() != client.Control().RemoteEndpoint().IP())
+  if (transferType != TransferType::List && IsFXP())
   {
     bool logging;
     if (!acl::AllowFxp(transferType, client.User(), logging))
@@ -191,6 +190,28 @@ void Data::Open(TransferType transferType)
   }
   
   state.Start(transferType);
+}
+
+bool Data::IsFXP() const
+{
+  return socket.RemoteEndpoint().IP() != client.Control().RemoteEndpoint().IP();
+}
+
+bool Data::ProtectionOkay() const
+{
+  if (protection) return true;
+  
+  if (state.Type() == TransferType::List)
+  {
+    return !cfg::Get().TLSListing().Evaluate(client.User());
+  }
+  else
+  if (IsFXP())
+  {
+    return !cfg::Get().TLSFxp().Evaluate(client.User());
+  }
+
+  return !cfg::Get().TLSData().Evaluate(client.User());
 }
 
 } /* ftp namespace */

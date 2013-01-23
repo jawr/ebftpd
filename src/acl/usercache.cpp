@@ -431,6 +431,14 @@ GroupID UserCache::PrimaryGID(UserID uid)
   return it->second->PrimaryGID();
 }
 
+bool UserCache::CheckGID(const std::string& name, acl::GroupID gid)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return false;
+  return it->second->CheckGID(gid);
+}
+
 unsigned UserCache::Count(bool includeDeleted)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);

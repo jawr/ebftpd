@@ -48,7 +48,11 @@ Config::Config(const std::string& configFile) :
   maxSitecmdLines(-1),
   weekStart(::cfg::WeekStart::Sunday),
   epsvFxp(::cfg::EPSVFxp::Allow),
-  maximumRatio(10)
+  maximumRatio(10),
+  tlsControl(acl::ACL::FromString("*")),
+  tlsListing(acl::ACL::FromString("*")),
+  tlsData(acl::ACL::FromString("!*")),
+  tlsFxp(acl::ACL::FromString("!*"))
 {
   std::string line;
   std::ifstream io(configFile.c_str());
@@ -618,6 +622,22 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     {
       throw ConfigError("maximum_ratio must be zero or larger");
     }
+  }
+  else if (opt == "tls_control")
+  {
+    tlsControl = acl::ACL::FromString(boost::join(toks, " "));
+  }
+  else if (opt == "tls_listing")
+  {
+    tlsListing = acl::ACL::FromString(boost::join(toks, " "));
+  }
+  else if (opt == "tls_data")
+  {
+    tlsData = acl::ACL::FromString(boost::join(toks, " "));
+  }
+  else if (opt == "tls_fxp")
+  {
+    tlsFxp = acl::ACL::FromString(boost::join(toks, " "));
   }
   else
   {

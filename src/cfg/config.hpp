@@ -137,6 +137,11 @@ class Config
   ::cfg::EPSVFxp epsvFxp;
   int maximumRatio;
   
+  acl::ACL tlsControl;
+  acl::ACL tlsListing;
+  acl::ACL tlsData;
+  acl::ACL tlsFxp;
+  
   static std::unordered_set<std::string> aclKeywords;
   static int latestVersion;
   
@@ -255,6 +260,10 @@ public:
   boost::optional<const Section&> SectionMatch(const fs::Path& path) const;
   ::cfg::EPSVFxp EPSVFxp() const { return epsvFxp; }
   int MaximumRatio() const { return maximumRatio; }
+  const acl::ACL& TLSControl() const { return tlsControl; }
+  const acl::ACL& TLSListing() const { return tlsListing; }
+  const acl::ACL& TLSData() const { return tlsData; }
+  const acl::ACL& TLSFxp() const { return tlsFxp; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

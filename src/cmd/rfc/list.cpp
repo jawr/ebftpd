@@ -24,7 +24,14 @@ void LISTCommand::Execute()
                  "Unable to open data connection: " + e.Message());
     return;
   }
-  
+  if (!data.ProtectionOkay())
+  {
+    data.Close();
+    control.Reply(ftp::ProtocolNotSupported, 
+                  "TLS is enforced on directory listings.");
+    return;
+  }
+
   std::string options;
   fs::Path path;
   if (args.size() >= 2)
@@ -40,7 +47,7 @@ void LISTCommand::Execute()
   }
   
   const cfg::Config& config = cfg::Get();
-  std::string forcedOptions = "l" + config.Lslong().Options();
+  std::string forcedOptions(nlst ? "" : "l" + config.Lslong().Options());
   
   DirectoryList dirList(client, data, path, ListOptions(options, forcedOptions),
                         config.Lslong().MaxRecursion());
@@ -60,7 +67,12 @@ void LISTCommand::Execute()
   data.Close();
   control.Reply(ftp::DataClosedOkay, "End of directory listing (" + 
       stats::HighResSecondsString(data.State().StartTime(), data.State().EndTime()) + ")"); 
-  return;
+}
+
+void LISTCommand::ExecuteNLST()
+{
+  nlst = true;
+  Execute();
 }
 
 } /* rfc namespace */

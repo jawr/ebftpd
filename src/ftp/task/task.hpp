@@ -71,6 +71,27 @@ public:
   void Execute(Listener& listener);
 };
 
+class OnlineUserCount : public Task
+{
+  int count;
+  int allCount;
+  boost::promise<void> promise;
+  
+public:
+  OnlineUserCount(boost::unique_future<void>& future) :
+    count(0), allCount(0)
+  {
+    future = promise.get_future();
+  }
+  
+  void Execute(Listener& listener);
+  
+  int Count() const { return count; }
+  int AllCount() const { return allCount; }
+  
+
+};
+
 class ReloadConfig : public Task
 {
 public:

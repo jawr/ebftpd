@@ -106,5 +106,15 @@ void UserUpdate::Execute(Listener& listener)
   }
 }
 
+void OnlineUserCount::Execute(Listener& listener)
+{
+  for (const auto& client: listener.clients)
+  {
+    if (client.State() != ClientState::LoggedIn) continue;
+    ++count;
+    ++allCount;
+  }
+}
+
 }
 }

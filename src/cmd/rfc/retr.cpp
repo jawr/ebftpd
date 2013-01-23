@@ -102,6 +102,15 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
+  if (!data.ProtectionOkay())
+  {
+    data.Close();
+    std::ostringstream os;
+    os << "TLS is enforced on " << (data.IsFXP() ? "FXP" : "data") << " transfers.";
+    control.Reply(ftp::ProtocolNotSupported, os.str());
+    return;
+  }
+  
   try
   {
     bool dlIncomplete = cfg::Get().DlIncomplete();

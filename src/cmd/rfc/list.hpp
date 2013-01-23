@@ -8,10 +8,13 @@ namespace cmd { namespace rfc
 
 class LISTCommand : public Command
 {
+  bool nlst;
+
 public:
   LISTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) { }
+    Command(client, client.Control(), client.Data(), argStr, args), nlst(false) { }
 
+  void ExecuteNLST();
   void Execute();
 };
 

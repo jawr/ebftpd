@@ -50,7 +50,8 @@ public:
   static util::Error DelGID(const std::string& name, GroupID secondaryGID);
   static util::Error ResetGIDs(const std::string& name);
   static GroupID PrimaryGID(UserID uid);
-  
+  static bool CheckGID(const std::string& name, acl::GroupID gid);
+
   static util::Error IncrCredits(const std::string& name, long long kbytes);
   static util::Error DecrCredits(const std::string& name, long long kbytes);
 

@@ -15,8 +15,6 @@ void AUTHCommand::Execute()
   
   control.Reply(ftp::SecurityExchangeOkay, "AUTH " + args[1] + " successful."); 
   control.NegotiateTLS();
-
-  return;
 }
 
 } /* rfc namespace */

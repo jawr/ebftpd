@@ -47,7 +47,8 @@ enum ReplyCode
   PageTypeUnknown = 551,
   NoDiskFree = 452,
   BadFilename = 553,
-  InvalidRESTParameter = 554
+  InvalidRESTParameter = 554,
+  ProtocolNotSupported = 522
 };
 
 }

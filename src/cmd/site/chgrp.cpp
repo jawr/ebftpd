@@ -11,7 +11,7 @@ namespace cmd { namespace site
 void CHGRPCommand::Execute()
 {
   std::vector<std::string>::size_type iterPoint = 3;
-  Method method = Method::Add;
+  Method method = Method::Toggle;
   std::ostringstream os;
   util::Error ok;
 
@@ -34,16 +34,18 @@ void CHGRPCommand::Execute()
   else
   {
     --iterPoint;
-    os << "Adding group(s) to " << args[1] << ":";    
+    os << "Toggling group(s) for " << args[1] << ":";    
   }
 
   std::vector<std::string>::iterator it = args.begin() + iterPoint;
   if (it == args.end()) throw cmd::SyntaxError();
   
-  std::string action(method == Method::Add ? "added" : "deleted");
-  
   for (; it != args.end(); ++it)
   {
+    std::string action = "toggled";
+    if (method == Method::Add) action = "added";
+    else if (method == Method::Delete) action = "deleted";
+  
     acl::GroupID gid = acl::GroupCache::NameToGID(*it);
     if (gid == -1)
     {
@@ -55,6 +57,21 @@ void CHGRPCommand::Execute()
       ok = acl::UserCache::AddGID(args[1], gid);
     else if (method == Method::Delete)
       ok = acl::UserCache::DelGID(args[1], gid);
+    else if (method == Method::Toggle)
+    {
+      std::cout << "toggle?" << std::endl;
+      if (acl::UserCache::CheckGID(args[1], gid))
+      {
+        ok = acl::UserCache::DelGID(args[1], gid);
+        action = "deleted";
+      }
+      else
+      {
+        ok = acl::UserCache::AddGID(args[1], gid);
+        action = "added";
+      }
+    }
+    
     if (!ok)
       os << "\nGroup " << *it << " not " << action << ": " << ok.Message();
     else

@@ -9,9 +9,9 @@
 #include "text/factory.hpp"
 #include "acl/groupcache.hpp"
 #include "logs/logs.hpp"
+#include "acl/acl.hpp"
 
 namespace cmd { namespace site
-
 {
 
 void RANKSCommand::Execute()
@@ -50,6 +50,13 @@ void RANKSCommand::Execute()
       control.Reply(ftp::ActionNotOkay, "Section " + section + " doesn't exist.");
       return;
     }
+  }
+  
+  acl::ACL acl(acl::ACL::FromString("*"));
+  if (args.size() >= 7)
+  {
+    std::vector<std::string> aclArgs(args.begin() + 6, args.end());
+    acl = acl::ACL::FromString(boost::join(aclArgs, " "));
   }
   
   auto users = ::db::stats::CalculateUserRanks(section, tf, dir, sf);
@@ -105,6 +112,8 @@ void RANKSCommand::Execute()
                     << u.ID() << logs::endl;
         continue;
       }
+      
+      if (!acl.Evaluate(user)) continue;
       
       body.RegisterValue("index", ++index);
       body.RegisterValue("user", user.Name());

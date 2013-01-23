@@ -12,7 +12,8 @@ class CHGRPCommand : public Command
   enum class Method
   {
     Add,
-    Delete
+    Delete,
+    Toggle
   };
 
 public:
