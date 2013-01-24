@@ -10,7 +10,7 @@ namespace util { namespace passwd
 std::string GenerateSalt(const unsigned int length)
 {
   std::vector<unsigned char> salt;
-  salt.reserve(length);
+  salt.resize(length);
   verify(RAND_bytes(salt.data(), length));
   return std::string(salt.begin(), salt.end());
 }
