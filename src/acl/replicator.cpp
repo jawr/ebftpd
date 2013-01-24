@@ -7,7 +7,7 @@ namespace acl
 std::shared_ptr<Replicator> Replicator::instance;
 
 Replicator::Replicator(int interval) :
-  interval(interval * 60),
+  interval(10 /*interval * 60*/),
   enabled(true)
 {
   alarm(this->interval);

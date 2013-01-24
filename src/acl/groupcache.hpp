@@ -2,9 +2,9 @@
 #define __ACL_GROUPCACHE_HPP
 
 #include <utility>
-#include <unordered_set>
 #include <unordered_map>
 #include <boost/thread/mutex.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/group.hpp"
 #include "acl/types.hpp"
 #include "util/error.hpp"
@@ -19,15 +19,15 @@ class GroupCache : public Replicable
   typedef std::unordered_map<GroupID, acl::Group*> ByGIDMap;
   
   mutable boost::mutex mutex;
-  std::unique_ptr<ByNameMap> byName;
-  std::unique_ptr<ByGIDMap> byGID;
+  ByNameMap byName;
+  ByGIDMap byGID;
   
-  unsigned changes;
+  boost::posix_time::ptime lastReplicate;
   
   static GroupCache instance;
   static bool initialized;
   
-  GroupCache() : changes(0) { }
+  GroupCache() : lastReplicate(boost::gregorian::date(1970,1,1)) { }
   
   ~GroupCache();
   

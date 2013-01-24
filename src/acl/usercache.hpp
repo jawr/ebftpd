@@ -4,6 +4,8 @@
 #include <utility>
 #include <unordered_map>
 #include <boost/thread/mutex.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include "acl/user.hpp"
 #include "util/error.hpp"
 #include "acl/replicable.hpp"
@@ -17,15 +19,15 @@ class UserCache : public Replicable
   typedef std::unordered_map<UserID, acl::User*> ByUIDMap;
   
   mutable boost::mutex mutex;
-  std::unique_ptr<ByNameMap> byName;
-  std::unique_ptr<ByUIDMap> byUID;
+  ByNameMap byName;
+  ByUIDMap byUID;
   
-  unsigned changes;
+  boost::posix_time::ptime lastReplicate;
   
   static UserCache instance;
   static bool initialized;
   
-  UserCache() : changes(0) { }
+  UserCache() : lastReplicate(boost::gregorian::date(1970,1,1)) { }
   
   ~UserCache();
   

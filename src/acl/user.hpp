@@ -17,6 +17,8 @@ namespace acl
 
 class User
 {
+  boost::posix_time::ptime modified;
+
   std::string name;
   std::string password;
   std::string salt;
@@ -31,6 +33,7 @@ class User
    
 public:
   User() :
+    modified(boost::posix_time::microsec_clock::local_time()),
     uid(-1),
     primaryGid(-1),
     credits(0)
@@ -38,13 +41,29 @@ public:
   
   User(const std::string& name, UserID uid, const std::string& password,
        const std::string& flags);
+
+  const boost::posix_time::ptime& Modified() const { return modified; }
        
   const std::string& Name() const { return name; }
-  void SetName(const std::string& name) { this->name = name; }
+  void SetName(const std::string& name)
+  {
+    modified = boost::posix_time::microsec_clock::local_time();
+    this->name = name;
+  }
 
   long long Credits() const { return credits; }
-  void DecrCredits(long long kbytes) { credits -= kbytes; }
-  void IncrCredits(long long kbytes) { credits += kbytes; }
+  
+  void DecrCredits(long long kbytes)
+  {
+    modified = boost::posix_time::microsec_clock::local_time();
+    credits -= kbytes;
+  }
+  
+  void IncrCredits(long long kbytes)
+  {
+    modified = boost::posix_time::microsec_clock::local_time();
+    credits += kbytes;
+  }
   
   void SetPassword(const std::string& password);
   bool VerifyPassword(const std::string& password) const;

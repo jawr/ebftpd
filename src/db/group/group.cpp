@@ -6,6 +6,7 @@
 #include "acl/group.hpp"
 #include "acl/types.hpp"
 #include "db/error.hpp"
+#include "db/bson/bson.hpp"
 
 namespace db { namespace group
 {
@@ -51,12 +52,14 @@ void Save(const acl::Group& group)
   Pool::Queue(task);
 }
 
-boost::ptr_vector<acl::Group> GetAllPtr()
+boost::ptr_vector<acl::Group> 
+GetAllPtr(const boost::optional<boost::posix_time::ptime>& modified)
 {
   boost::ptr_vector<acl::Group> groups;
 
   QueryResults results;
   mongo::Query query;
+  if (modified) query = QUERY("modified" << BSON("$gte" << db::bson::ToDateT(*modified)));
   boost::unique_future<bool> future;
   TaskPtr task(new db::Select("groups", query, results, future));
   Pool::Queue(task);

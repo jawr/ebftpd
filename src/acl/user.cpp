@@ -13,6 +13,7 @@ User::User(const std::string& name,
            UserID uid,
            const std::string& password,
            const std::string& flags) :
+  modified(boost::posix_time::microsec_clock::local_time()),
   name(name),
   uid(uid),
   primaryGid(-1),
@@ -26,6 +27,7 @@ void User::SetPassword(const std::string& password)
 {
   using namespace util::passwd;
   
+  modified = boost::posix_time::microsec_clock::local_time();
   std::string rawSalt = GenerateSalt();
   this->password = HexEncode(HashPassword(password, rawSalt));
   salt = HexEncode(rawSalt);
@@ -40,12 +42,14 @@ bool User::VerifyPassword(const std::string& password) const
 
 void User::SetFlags(const std::string& flags)
 {
+  modified = boost::posix_time::microsec_clock::local_time();
   assert(ValidFlags(flags));
   this->flags = flags;
 }
 
 void User::AddFlags(const std::string& flags)
 {
+  modified = boost::posix_time::microsec_clock::local_time();
   assert(ValidFlags(flags));
   for (char ch: flags)
   {
@@ -62,6 +66,7 @@ void User::AddFlag(Flag flag)
 
 void User::DelFlags(const std::string& flags)
 {
+  modified = boost::posix_time::microsec_clock::local_time();
   for (char ch: flags)
   {
     std::string::size_type pos = this->flags.find(ch);
@@ -90,23 +95,27 @@ bool User::CheckFlag(Flag flag) const
 
 void User::SetPrimaryGID(GroupID primaryGid)
 {
+  modified = boost::posix_time::microsec_clock::local_time();
   assert(primaryGid >= -1);
   this->primaryGid = primaryGid;
 }
 
 void User::AddSecondaryGID(GroupID gid)
 {
+  modified = boost::posix_time::microsec_clock::local_time();
   secondaryGids.push_back(gid);
 }
 
 void User::DelSecondaryGID(GroupID gid)
 {
+  modified = boost::posix_time::microsec_clock::local_time();
   secondaryGids.erase(std::remove(secondaryGids.begin(), secondaryGids.end(), gid), 
       secondaryGids.end());
 }
 
 void User::ResetSecondaryGIDs()
 {
+  modified = boost::posix_time::microsec_clock::local_time();
   secondaryGids.clear();
 }
 

@@ -118,6 +118,5 @@ void EnsureIndex::Execute(mongo::DBClientConnection& conn)
   }
 }
 
-
 // end
 }

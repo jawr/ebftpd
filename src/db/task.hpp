@@ -117,13 +117,6 @@ public:
   void Execute(mongo::DBClientConnection& conn);
 };
 
-class CacheReplicate : public Task
-{
-public:
-  void Execute(mongo::DBClientConnection& conn)
-  { std::cout << "replicate caches" << std::endl; }
-};
-
 // end
 }
 #endif

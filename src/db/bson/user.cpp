@@ -12,6 +12,7 @@ namespace db { namespace bson
 mongo::BSONObj User::Serialize(const acl::User& user)
 {
   mongo::BSONObjBuilder bob;
+  bob.append("modified", ToDateT(user.modified));
   bob.append("name", user.name);
   bob.append("salt", user.salt);
   bob.append("password", user.password);
@@ -28,6 +29,7 @@ void User::Unserialize(const mongo::BSONObj& bo, acl::User& user)
 {
   try
   {
+    user.modified = ToPosixTime(bo["modified"].Date());
     user.name = bo["name"].String();
     user.salt = bo["salt"].String();
     user.credits = bo["credits"].Long();

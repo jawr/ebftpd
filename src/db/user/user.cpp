@@ -7,6 +7,7 @@
 #include "acl/groupcache.hpp"
 #include "acl/group.hpp"
 #include "db/error.hpp"
+#include "db/bson/bson.hpp"
 
 namespace db { namespace user
 {
@@ -57,7 +58,8 @@ void Save(const acl::User& user, const std::string& field)
 {
   mongo::BSONObj userObj = db::bson::User::Serialize(user);
   mongo::Query query = QUERY("uid" << user.UID());
-  mongo::BSONObj obj = BSON("$set" << BSON(field << userObj[field]));
+  mongo::BSONObj obj = BSON("$set" << BSON(field << userObj[field]) <<
+                            "$set" << BSON("modified" << db::bson::ToDateT(user.Modified())));
   TaskPtr task(new db::Update("users", query, obj, false));
   Pool::Queue(task);
 }
@@ -74,12 +76,15 @@ void Delete(acl::UserID uid)
     Pool::Queue(task);      
 }
 
-boost::ptr_vector<acl::User> GetAllPtr()
+boost::ptr_vector<acl::User> 
+GetAllPtr(const boost::optional<boost::posix_time
+    ::ptime>& modified)
 {
   boost::ptr_vector<acl::User> users;
 
   QueryResults results;
   mongo::Query query;
+  if (modified) query = QUERY("modified" << BSON("$gte" << db::bson::ToDateT(*modified)));
   boost::unique_future<bool> future;
   TaskPtr task(new db::Select("users", query, results, future));
   Pool::Queue(task);
