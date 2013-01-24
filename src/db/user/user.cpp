@@ -3,6 +3,7 @@
 #include "db/task.hpp"
 #include "db/bson/user.hpp"
 #include "db/bson/userprofile.hpp"
+#include "db/bson/error.hpp"
 #include "db/types.hpp"
 #include "acl/groupcache.hpp"
 #include "acl/group.hpp"
@@ -12,38 +13,37 @@
 namespace db { namespace user
 {
 
-namespace
+bool Create(acl::User& user)
 {
-boost::mutex getNewUserIdMtx;
-}
-
-
-acl::UserID GetNewUserID()
-{
-  boost::lock_guard<boost::mutex> lock(getNewUserIdMtx);
-  
-  QueryResults results;
+  static const char* javascript =
+    "function newUser(user) {\n"
+    "  var users = db['users'];\n"
+    "  while (1) {\n"
+    "    var cursor = users.find({}, {uid : 1}).sort({uid : -1}).limit(1);\n"
+    "    user.uid = cursor.hasNext() ? cursor.next().uid + 1 : 0;\n"
+    "    users.insert(user);\n"
+    "    var err = db.getLastErrorObj();\n"
+    "    if (err &&  err.code == 11000) {\n"
+    "      if (users.findOne({uid : user.uid}))\n"
+    "        continue;\n"
+    "      else\n"
+    "        return -1;\n"
+    "    }\n"
+    "    break;\n"
+    "  }\n"
+    "  return user.uid\n"
+    "}";
+    
+  auto args = db::bson::User::Serialize(user);
+  mongo::BSONElement ret;
   boost::unique_future<bool> future;
-  mongo::Query query;
-  query.sort("uid", 0);
-  TaskPtr task(new db::Select("users", query, results, future, 1));
-  Pool::Queue(task);
-
-  future.wait();
-
-  if (results.size() == 0) return 0;
-
-  acl::UserID uid;
-  try
-  {
-    uid = results.back().getIntField("uid") + 1;
-  }
-  catch (const mongo::DBException& e)
-  {
-    IDGenerationFailure("user", e);
-  }
   
-  return uid;
+  auto task = std::make_shared<db::Eval>(javascript, args, ret, future);
+  Pool::Queue(task);
+  if (!future.get()) throw DBError("Error while creating user.");
+
+  user.uid = static_cast<acl::UserID>(ret.Double());
+  return user.uid != -1;
 }
 
 void Save(const acl::User& user)

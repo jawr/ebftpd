@@ -87,9 +87,11 @@ class Insert : public Task
 {
   std::string collection;
   mongo::BSONObj obj;
+  bool failOkay;
+  
 public:
-  Insert(const std::string& collection, const mongo::BSONObj& obj) :
-    collection(collection), obj(obj) {}
+  Insert(const std::string& collection, const mongo::BSONObj& obj, bool failOkay = false) :
+    collection(collection), obj(obj), failOkay(failOkay) {}
   void Execute(mongo::DBClientConnection& conn);
 };
 
@@ -113,6 +115,26 @@ public:
     const mongo::BSONObj& obj, bool upsert=false) :
     collection(collection), obj(obj), query(query), upsert(upsert),
     dummyFuture(promise.get_future()) { }
+  
+  void Execute(mongo::DBClientConnection& conn);
+};
+
+class Eval : public Task
+{
+  std::string javascript;
+  mongo::BSONObj& args;
+  mongo::BSONElement& ret;
+  boost::promise<bool> promise;
+  
+  std::string SimplifyJavascript();
+  
+public:
+  Eval(const std::string& javascript, mongo::BSONObj& args, 
+       mongo::BSONElement& ret, boost::unique_future<bool>& future) :
+    javascript(javascript), args(args), ret(ret)
+  {
+    future = promise.get_future();
+  }
   
   void Execute(mongo::DBClientConnection& conn);
 };

@@ -10,7 +10,7 @@
 namespace db { namespace group
 {
 
-acl::GroupID GetNewGroupID();
+bool Create(acl::Group& group);
 void Save(const acl::Group& group);
 std::vector<acl::Group> GetAll();
 boost::ptr_vector<acl::Group> 

@@ -54,6 +54,7 @@ bool UserCache::Replicate()
   auto now = boost::posix_time::microsec_clock::local_time();
   bool complete = true;
   
+  boost::lock_guard<boost::mutex> createLock(createMutex);
   boost::ptr_vector<acl::User> users = db::user::GetAllPtr(lastReplicate);
   
   if (!users.empty())
@@ -73,13 +74,18 @@ bool UserCache::Replicate()
           byUID.at(user->UID()) = user.get();
         }
         else
+        {
           complete = false;
+          continue;
+        }
       }
       else
       {
         byUID.insert(std::make_pair(user->UID(), user.get()));
         byName.insert(std::make_pair(user->Name(), user.get()));
       }
+      
+      std::make_shared<ftp::task::UserUpdate>(user->UID())->Push();
       user.release();
     }  
   }
@@ -127,23 +133,32 @@ util::Error UserCache::Create(const std::string& name, const std::string& passwo
   util::Error e(UserAllowed(name));
   if (!e) return e;
   
-  acl::UserID uid = db::user::GetNewUserID();
-
+  boost::lock_guard<boost::mutex> createLock(instance.createMutex);
+  try
   {
-    boost::lock_guard<boost::mutex> lock(instance.mutex);
-    if (instance.byName.find(name) != instance.byName.end())
-      return util::Error::Failure("User " + name + " already exists.");
+    std::unique_ptr<acl::User> user(new acl::User(name, password, flags));
+    if (Exists(user->Name()) || !db::user::Create(*user))
+        return util::Error::Failure("User " + name + " already exists.");
 
-    std::unique_ptr<acl::User> user(new acl::User(name, uid, password, flags));
+    {
+      boost::lock_guard<boost::mutex> lock(instance.mutex);
+      assert(instance.byName.find(name) == instance.byName.end());
+        
+      instance.byName.insert(std::make_pair(user->Name(), user.get()));
+      instance.byUID.insert(std::make_pair(user->UID(), user.get()));
       
-    instance.byName.insert(std::make_pair(name, user.get()));
-    instance.byUID.insert(std::make_pair(uid, user.get()));
-    
-    Save(*user.release());
-    UserProfile profile(uid, creator);
-    db::userprofile::Save(profile);
-    return util::Error::Success();
+      Save(*user);
+      UserProfile profile(user->UID(), creator);
+      db::userprofile::Save(profile);
+      user.release();
+    }
   }
+  catch (const util::RuntimeError& e)
+  {
+    return util::Error::Failure(e.Message());
+  }
+  
+  return util::Error::Success();
 }
 
 util::Error UserCache::Purge(const std::string& name)

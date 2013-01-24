@@ -5,9 +5,19 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/types.hpp"
 
+namespace acl
+{
+class Group;
+}
+
 namespace db { namespace bson
 {
 struct Group;
+}
+
+namespace group
+{
+bool Create(acl::Group& group);
 }
 }
 
@@ -22,9 +32,9 @@ class Group
   
 public:
   Group() : modified(boost::posix_time::microsec_clock::local_time()), gid(-1) {}
-  Group(const std::string& name, GroupID gid) : 
+  Group(const std::string& name) : 
     modified(boost::posix_time::microsec_clock::local_time()), 
-    name(name), gid(gid)
+    name(name), gid(-1)
   { }
   
   const boost::posix_time::ptime& Modified() const { return modified; }
@@ -39,6 +49,7 @@ public:
   GroupID GID() const { return gid; }
   
   friend struct db::bson::Group;
+  friend bool db::group::Create(acl::Group& group);
 };
 
 } /* acl namespace */

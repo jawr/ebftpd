@@ -28,15 +28,27 @@ void Initialize()
 {
   db::Pool::StartThread();
 
-  Pool::Queue(TaskPtr(new db::EnsureIndex("users",
-    BSON("uid" << 1 << "name" << 1))));
-  Pool::Queue(TaskPtr(new db::EnsureIndex("groups",
-    BSON("gid" << 1 << "name" << 1))));
-  Pool::Queue(TaskPtr(new db::EnsureIndex("transfers", BSON("uid" << 1 << 
-    "direction" << 1 << "section" << 1 << "day" << 1 << "week" << 1 << "month" << 1 << 
-    "year" << 1))));
-  Pool::Queue(TaskPtr(new db::EnsureIndex("ipmasks",
-    BSON("uid" << 1 << "mask" << 1))));
+  Pool::Queue(std::make_shared<db::EnsureIndex>("users", BSON("uid" << 1)));
+  Pool::Queue(std::make_shared<db::EnsureIndex>("users", BSON("name" << 1)));
+  Pool::Queue(std::make_shared<db::EnsureIndex>("groups", BSON("gid" << 1)));
+  Pool::Queue(std::make_shared<db::EnsureIndex>("groups", BSON("name" << 1)));
+  
+  Pool::Queue(std::make_shared<db::EnsureIndex>("transfers", 
+          BSON("uid" << 1 << "direction" << 1 << 
+               "section" << 1 << "day" << 1 << 
+               "week" << 1 << "month" << 1 << 
+               "year" << 1)));
+               
+  Pool::Queue(std::make_shared<db::EnsureIndex>("ipmasks", BSON("uid" << 1)));
+    
+  Pool::Queue(std::make_shared<db::Insert>("globals", 
+          BSON("_id" << "last uid" << "value" << 0), true));
+  
+  Pool::Queue(std::make_shared<db::Insert>("globals", 
+          BSON("_id" << "last gid" << "value" << 0), true));
+      
+  Pool::Queue(std::make_shared<db::Insert>("globals", 
+          BSON("_id" << "ipmasks modified" << "value" << mongo::Date_t()), true));
 }
 
 void Cleanup()

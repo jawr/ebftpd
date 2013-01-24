@@ -7,8 +7,20 @@
 #include "acl/flags.hpp"
 #include "acl/types.hpp"
 
-namespace db { namespace bson {
+namespace acl
+{
+class User;
+}
+
+namespace db {  namespace bson {
+
 struct User;
+
+}
+
+namespace user
+{
+bool Create(acl::User& user);
 }
 }
 
@@ -34,13 +46,13 @@ class User
 public:
   User() :
     modified(boost::posix_time::microsec_clock::local_time()),
+    flags("6"),
     uid(-1),
     primaryGid(-1),
     credits(0)
   { }
   
-  User(const std::string& name, UserID uid, const std::string& password,
-       const std::string& flags);
+  User(const std::string& name, const std::string& password, const std::string& flags);
 
   const boost::posix_time::ptime& Modified() const { return modified; }
        
@@ -96,6 +108,7 @@ public:
   void SetTagline(const std::string& tagline) { this->tagline = tagline; }
   
   friend struct db::bson::User;
+  friend bool db::user::Create(acl::User& user);
 };
 
 }

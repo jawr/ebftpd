@@ -18,6 +18,7 @@ class GroupCache : public Replicable
   typedef std::unordered_map<std::string, acl::Group*> ByNameMap;
   typedef std::unordered_map<GroupID, acl::Group*> ByGIDMap;
   
+  mutable boost::mutex createMutex;
   mutable boost::mutex mutex;
   ByNameMap byName;
   ByGIDMap byGID;

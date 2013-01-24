@@ -10,12 +10,11 @@ namespace acl
 {
 
 User::User(const std::string& name,
-           UserID uid,
            const std::string& password,
            const std::string& flags) :
   modified(boost::posix_time::microsec_clock::local_time()),
   name(name),
-  uid(uid),
+  uid(-1),
   primaryGid(-1),
   credits(0)
 {

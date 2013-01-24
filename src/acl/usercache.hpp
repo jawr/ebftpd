@@ -18,6 +18,7 @@ class UserCache : public Replicable
   typedef std::unordered_map<std::string, acl::User*> ByNameMap;
   typedef std::unordered_map<UserID, acl::User*> ByUIDMap;
   
+  mutable boost::mutex createMutex;
   mutable boost::mutex mutex;
   ByNameMap byName;
   ByUIDMap byUID;

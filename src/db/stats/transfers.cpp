@@ -38,12 +38,14 @@ long long TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
   Pool::Queue(task);
   future.wait();
 
+  result = result["result"].Obj();
+  
   long long total = 0;
   if (result.nFields() > 0)
   {
     try
     {
-      total = result["0"]["total"].Long();
+      total = result[0]["total"].Long();
     }
     catch (const mongo::DBException& e)
     {

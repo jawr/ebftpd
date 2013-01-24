@@ -13,7 +13,7 @@
 namespace db { namespace user
 {
 
-acl::UserID GetNewUserID();
+bool Create(acl::User& user);
 void Save(const acl::User& user);    
 void Save(const acl::User& user, const std::string& field);
 void Delete(acl::UserID uid);

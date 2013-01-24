@@ -4,6 +4,7 @@
 #include "db/error.hpp"
 #include "logs/logs.hpp"
 #include "cfg/get.hpp"
+#include "util/string.hpp"
 
 namespace db
 {
@@ -14,8 +15,7 @@ void RunCommand::Execute(mongo::DBClientConnection& conn)
 {
   try
   {
-    if (conn.runCommand(database, cmd, ret))
-      ret = ret.getObjectField("result");
+    conn.runCommand(database, cmd, ret);
     promise.set_value(true);
   }
   catch (const mongo::DBException& e)
@@ -99,8 +99,9 @@ void Insert::Execute(mongo::DBClientConnection& conn)
   }
   catch (const mongo::DBException& e)
   {
-    logs::db << "Insert failed: " << database << "." << collection 
-             << " : " << obj.toString() << " : " << e.what() << logs::endl;
+    if (!failOkay)
+      logs::db << "Insert failed: " << database << "." << collection 
+               << " : " << obj.toString() << " : " << e.what() << logs::endl;
   }
 }
 
@@ -115,6 +116,38 @@ void EnsureIndex::Execute(mongo::DBClientConnection& conn)
   {
     logs::db << "Ensure index failed: " << database << "." << collection
              << " : " << obj.toString() << " : " << e.what() << logs::endl;
+  }
+}
+
+std::string Eval::SimplifyJavascript()
+{
+  std::string simple = boost::replace_all_copy(javascript, "\n", " ");
+  util::string::CompressWhitespace(simple);
+  if (boost::starts_with(simple, "function "))
+  {
+    auto pos = simple.find_first_of("\t {", 9);
+    if (pos != std::string::npos)
+    {
+      return simple.substr(9, pos - 9);
+    }
+  }
+  return simple;
+}
+
+void Eval::Execute(mongo::DBClientConnection& conn)
+{
+  try
+  {
+    mongo::BSONObj info;
+    if (!conn.eval(database, javascript, info, ret, &args))
+      LastErrorToException(conn);
+    promise.set_value(true);
+  }
+  catch (const mongo::DBException& e)
+  {
+    promise.set_value(false);
+    logs::db << "Eval failed: " << database << ":" 
+             << SimplifyJavascript() << " : " << e.what() << logs::endl;
   }
 }
 
