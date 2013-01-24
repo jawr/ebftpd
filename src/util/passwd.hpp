@@ -3,18 +3,17 @@
 
 #include <string>
 
-namespace util
-{
-namespace passwd
+namespace util { namespace passwd
 {
 
-const unsigned int defaultSaltLength = 32;
+extern const unsigned int defaultSaltLength;
 
 std::string GenerateSalt(unsigned int length = defaultSaltLength);
 std::string HashPassword(const std::string& password, const std::string& salt);
 std::string HexEncode(const std::string& data);
 std::string HexDecode(const std::string& data);
 
-}}
+} /* passwd namespace */
+} /* util namespace */
 
 #endif

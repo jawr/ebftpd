@@ -1,4 +1,7 @@
+#include <vector>
 #include <sstream>
+#include <iterator>
+#include <iomanip>
 #include <openssl/rand.h>
 #include <openssl/evp.h>
 #include "util/passwd.hpp"
@@ -7,12 +10,13 @@
 namespace util { namespace passwd
 {
 
+const unsigned int defaultSaltLength = 32;
+
 std::string GenerateSalt(const unsigned int length)
 {
-  return "";
   std::vector<unsigned char> salt;
   salt.resize(length);
-  verify(RAND_bytes(salt.data(), length));
+  verify(RAND_bytes(salt.data(), length) == 1);
   return std::string(salt.begin(), salt.end());
 }
 
@@ -34,9 +38,9 @@ std::string HexEncode(const std::string& s)
 {
   std::ostringstream os;
   os << std::hex << std::setfill('0') << std::uppercase;
-  for (unsigned ch : s) 
+  for (unsigned char ch : s)
   {
-    os << std::setw(2) << ch;
+    os << std::setw(2) << static_cast<unsigned>(ch);
   }
   return os.str();
 }
@@ -57,5 +61,20 @@ std::string HexDecode(const std::string& s)
   return os.str();
 }
 
-} /* crypto namespace */
+} /* passwd namespace */
 } /* util namespace */
+
+
+#ifdef __UTIL_PASSWD_TEST
+
+#include <iostream>
+
+int main()
+{  
+  std::cout << util::passwd::HexDecode(util::passwd::HexEncode("Hello")) << std::endl;
+  std::string salt = util::passwd::GenerateSalt();
+  std::cout << salt.length() << std::endl;
+  std::cout << util::passwd::HexEncode(salt) << std::endl;
+}
+
+#endif
