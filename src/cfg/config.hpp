@@ -136,6 +136,7 @@ class Config
   std::map<std::string, Section> sections;
   ::cfg::EPSVFxp epsvFxp;
   int maximumRatio;
+  int cacheReplicate;
   
   acl::ACL tlsControl;
   acl::ACL tlsListing;
@@ -264,6 +265,7 @@ public:
   const acl::ACL& TLSListing() const { return tlsListing; }
   const acl::ACL& TLSData() const { return tlsData; }
   const acl::ACL& TLSFxp() const { return tlsFxp; }
+  int CacheReplicate() const { return cacheReplicate; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

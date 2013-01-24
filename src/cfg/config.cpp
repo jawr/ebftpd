@@ -49,6 +49,7 @@ Config::Config(const std::string& configFile) :
   weekStart(::cfg::WeekStart::Sunday),
   epsvFxp(::cfg::EPSVFxp::Allow),
   maximumRatio(10),
+  cacheReplicate(1),
   tlsControl(acl::ACL::FromString("*")),
   tlsListing(acl::ACL::FromString("*")),
   tlsData(acl::ACL::FromString("!*")),

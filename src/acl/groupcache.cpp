@@ -3,6 +3,7 @@
 #include "db/group/group.hpp"
 #include "logs/logs.hpp"
 #include "db/group/groupprofile.hpp"
+#include "acl/replicator.hpp"
 
 namespace acl
 {
@@ -12,10 +13,10 @@ bool GroupCache::initialized = false;
 
 GroupCache::~GroupCache()
 {
-  while (!byName.empty())
+  while (!byName->empty())
   {
-    delete byName.begin()->second;
-    byName.erase(byName.begin());
+    delete byName->begin()->second;
+    byName->erase(byName->begin());
   }
 }
 
@@ -23,18 +24,46 @@ void GroupCache::Initialize()
 {
   logs::debug << "Initialising group cache.." << logs::endl;
   assert(!instance.initialized);
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  instance.Replicate();
+  Replicator::Register(&instance);
+  instance.initialized = true;
+}
+
+bool GroupCache::Replicate()
+{
+  unsigned changes;
+  
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    changes = this->changes;
+  }
+
+  std::unique_ptr<ByNameMap> byName(new ByNameMap());
+  std::unique_ptr<ByGIDMap> byGID(new ByGIDMap());
+
   boost::ptr_vector<acl::Group> groups = db::group::GetAllPtr();
   while (!groups.empty())
   {
     auto group = groups.release(groups.begin());
   
-    instance.byGID.insert(std::make_pair(group->GID(), group.get()));
-    instance.byName.insert(std::make_pair(group->Name(), group.get()));
+    byGID->insert(std::make_pair(group->GID(), group.get()));
+    byName->insert(std::make_pair(group->Name(), group.get()));
     group.release();
   } 
 
-  instance.initialized = true;
+  {
+    boost::unique_lock<boost::mutex> lock(mutex);
+    if (changes != this->changes)
+    {
+      lock.unlock();
+      return false;
+    }
+    
+    std::swap(this->byGID, byGID);
+    std::swap(this->byName, byName);
+  }
+  
+  return true;
 }
 
 void GroupCache::Save(const acl::Group& group)
@@ -45,27 +74,27 @@ void GroupCache::Save(const acl::Group& group)
 bool GroupCache::Exists(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  return instance.byName.find(name) != instance.byName.end();
+  return instance.byName->find(name) != instance.byName->end();
 }
 
 bool GroupCache::Exists(GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  return instance.byGID.find(gid) != instance.byGID.end();
+  return instance.byGID->find(gid) != instance.byGID->end();
 }
 
 util::Error GroupCache::Create(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  if (instance.byName.find(name) != instance.byName.end())
+  if (instance.byName->find(name) != instance.byName->end())
     return util::Error::Failure("Group " + name + " already exists.");
 
   acl::GroupID gid = db::group::GetNewGroupID();
 
   std::unique_ptr<acl::Group> group(new acl::Group(name, gid));
     
-  instance.byName.insert(std::make_pair(name, group.get()));
-  instance.byGID.insert(std::make_pair(gid, group.get()));
+  instance.byName->insert(std::make_pair(name, group.get()));
+  instance.byGID->insert(std::make_pair(gid, group.get()));
   
   Save(*group.release());
   db::groupprofile::Save(GroupProfile(gid));
@@ -76,8 +105,8 @@ util::Error GroupCache::Create(const std::string& name)
 util::Error GroupCache::Delete(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end())
+  ByNameMap::iterator it = instance.byName->find(name);
+  if (it == instance.byName->end())
     return util::Error::Failure("Group " + name + " doesn't exist.");
   
   if (it->second->GID() == 0) return util::Error::Failure("Cannot delete root group with GID 0.");
@@ -86,9 +115,9 @@ util::Error GroupCache::Delete(const std::string& name)
   db::group::Delete(gid);
   db::groupprofile::Delete(gid);
   
-  instance.byGID.erase(instance.byGID.find(gid));
+  instance.byGID->erase(instance.byGID->find(gid));
   delete it->second;
-  instance.byName.erase(it);
+  instance.byName->erase(it);
     
   return util::Error::Success();
 }
@@ -96,15 +125,15 @@ util::Error GroupCache::Delete(const std::string& name)
 util::Error GroupCache::Rename(const std::string& oldName, const std::string& newName)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  if (instance.byName.find(newName) != instance.byName.end())
+  if (instance.byName->find(newName) != instance.byName->end())
     return util::Error::Failure("New name " + newName + " taken by another group.");
   
-  ByNameMap::iterator it = instance.byName.find(oldName);
-  if (it == instance.byName.end()) return util::Error::Failure("Group " + oldName + " doesn't exist.");
+  ByNameMap::iterator it = instance.byName->find(oldName);
+  if (it == instance.byName->end()) return util::Error::Failure("Group " + oldName + " doesn't exist.");
 
   it->second->SetName(newName);
-  instance.byName.insert(std::make_pair(newName, it->second));
-  instance.byName.erase(it);
+  instance.byName->insert(std::make_pair(newName, it->second));
+  instance.byName->erase(it);
   
   Save(*it->second);
   
@@ -114,9 +143,9 @@ util::Error GroupCache::Rename(const std::string& oldName, const std::string& ne
 acl::Group GroupCache::Group(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  ByNameMap::iterator it = instance.byName.find(name);
+  ByNameMap::iterator it = instance.byName->find(name);
 
-  if (it == instance.byName.end()) 
+  if (it == instance.byName->end()) 
     throw util::RuntimeError("Group (" + name + ") doesn't exist.");
 
   return *it->second;
@@ -125,8 +154,8 @@ acl::Group GroupCache::Group(const std::string& name)
 acl::Group GroupCache::Group(GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  ByGIDMap::iterator it = instance.byGID.find(gid);
-  if (it == instance.byGID.end())
+  ByGIDMap::iterator it = instance.byGID->find(gid);
+  if (it == instance.byGID->end())
   {
     std::ostringstream os;
     os << "Group with gid " << gid << " doesn't exist.";
@@ -138,8 +167,8 @@ acl::Group GroupCache::Group(GroupID gid)
 GroupID GroupCache::NameToGID(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return -1;
+  ByNameMap::iterator it = instance.byName->find(name);
+  if (it == instance.byName->end()) return -1;
   return it->second->GID();
 }
 
@@ -147,8 +176,8 @@ std::string GroupCache::GIDToName(GroupID gid)
 {
   if (gid == -1) return "NoGroup";
   boost::lock_guard<boost::mutex> lock(instance.mutex);
-  ByGIDMap::iterator it = instance.byGID.find(gid);
-  if (it == instance.byGID.end()) return "UNKNOWN";
+  ByGIDMap::iterator it = instance.byGID->find(gid);
+  if (it == instance.byGID->end()) return "UNKNOWN";
   return it->second->Name();
 }
 

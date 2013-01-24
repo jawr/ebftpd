@@ -19,6 +19,8 @@
 #include "db/error.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
+#include "acl/ipmaskcache.hpp"
+#include "acl/util.hpp"
 #include "ftp/client.hpp"
 #include "util/error.hpp"
 #include "util/daemonise.hpp"
@@ -26,6 +28,7 @@
 #include "signals/signal.hpp"
 #include "text/factory.hpp"
 #include "text/error.hpp"
+#include "acl/replicator.hpp"
 
 #include "version.hpp"
 
@@ -229,9 +232,16 @@ int main(int argc, char** argv)
     logs::error << "DB failed to initialise: " << e.Message() << logs::endl;
     return 1;
   }
+
+  acl::Replicator::Initialise(cfg::Get().CacheReplicate());
+
+  acl::GroupCache::Initialize();
+  acl::UserCache::Initialize();
+  acl::IpMaskCache::Initialize();  
+  acl::CreateDefaults();
   
   fs::OwnerCache::Start();
-  
+    
   int exitStatus = 0;
   if (!ftp::Listener::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
@@ -246,6 +256,7 @@ int main(int argc, char** argv)
     signals::Handler::StopThread();
   }
 
+  acl::Replicator::Cancel();
   db::Cleanup();
   fs::OwnerCache::Stop();
 

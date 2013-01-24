@@ -6,21 +6,26 @@
 #include <boost/thread/mutex.hpp>
 #include "acl/user.hpp"
 #include "util/error.hpp"
+#include "acl/replicable.hpp"
 
 namespace acl
 {
 
-class UserCache
+class UserCache : public Replicable
 {
   typedef std::unordered_map<std::string, acl::User*> ByNameMap;
   typedef std::unordered_map<UserID, acl::User*> ByUIDMap;
   
   mutable boost::mutex mutex;
-  ByNameMap byName;
-  ByUIDMap byUID;
+  std::unique_ptr<ByNameMap> byName;
+  std::unique_ptr<ByUIDMap> byUID;
+  
+  unsigned changes;
   
   static UserCache instance;
   static bool initialized;
+  
+  UserCache() : changes(0) { }
   
   ~UserCache();
   
@@ -28,6 +33,8 @@ class UserCache
   static void Save(const acl::User& user, const std::string& field);
   
 public:
+  bool Replicate();
+
   static bool Exists(const std::string& name);
   static bool Exists(UserID uid);
   static util::Error Create(const std::string& name, const std::string& password,
