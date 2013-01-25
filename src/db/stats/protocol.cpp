@@ -44,15 +44,15 @@ Traffic ProtocolUser(acl::UserID uid, ::stats::Timeframe timeframe)
   Pool::Queue(task);
   future.wait();
 
-  result = result["result"].Obj();
+  auto elems = result["result"].Array();
   
   Traffic total;
-  if (result.nFields() > 0)
+  if (!elems.empty())
   {
     try
     {
-      total = Traffic(result[0]["send total"].Long(), 
-                      result[0]["receive total"].Long());
+      total = Traffic(elems[0]["send total"].Long(), 
+                      elems[0]["receive total"].Long());
     }
     catch (const mongo::DBException& e)
     {

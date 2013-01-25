@@ -164,11 +164,12 @@ std::vector< ::stats::Stat> RetrieveUsers(
   Pool::Queue(task);
   future.wait();
 
-  result = result["result"].Obj();
+  auto elems = result["result"].Array();
+
   std::vector< ::stats::Stat> users;
-  for (int i = 0; i < result.nFields(); ++i)
+  for (const auto& elem : elems)
   {
-    users.push_back(bson::Stat::Unserialize(result[i].Obj()));
+    users.push_back(bson::Stat::Unserialize(elem.Obj()));
   }
   
   return users;

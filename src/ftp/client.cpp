@@ -39,6 +39,7 @@ std::atomic_bool Client::siteopOnly(false);
 
 Client::Client() :
   data(*this), 
+  userUpdated(false),
   state(ClientState::LoggedOut),
   passwordAttemps(0),
   kickLogin(false),

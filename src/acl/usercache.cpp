@@ -510,7 +510,6 @@ bool UserCache::IPAllowed(const std::string& address)
 {
   std::string identAddress = "*@" + address;
   boost::shared_lock<boost::shared_mutex> lock(instance.ipMutex);
-  std::cout << instance.ipMasks.size() << std::endl;
   for (auto uid : instance.ipMasks)
   {
     for (auto& mask : uid.second)
