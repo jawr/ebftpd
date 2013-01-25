@@ -17,6 +17,7 @@ struct Group
   static mongo::BSONObj Serialize(const acl::Group& group);
   static std::unique_ptr<acl::Group> UnserializePtr(const mongo::BSONObj& bo);
   static acl::Group Unserialize(const mongo::BSONObj& bo);
+  static void Unserialize(const mongo::BSONObj& bo, acl::Group& group);
 };
 
 } /* bson namespace */

@@ -7,7 +7,6 @@
 #include "acl/types.hpp"
 #include "acl/user.hpp"
 #include "acl/usercache.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "db/user/userprofile.hpp"
 #include "acl/userprofile.hpp"
 #include "acl/groupcache.hpp"
@@ -143,7 +142,7 @@ void USERCommand::Execute()
   body.RegisterSize("weekly_allot", profile.WeeklyAllotment());
 
   std::vector<std::string> masks;
-  auto ok = acl::IpMaskCache::List(user.UID(), masks);
+  auto ok = acl::UserCache::ListIPMasks(user.Name(), masks);
   int idx = 0;
   for (auto& i : masks)
   {

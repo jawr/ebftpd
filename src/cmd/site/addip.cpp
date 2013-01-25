@@ -2,7 +2,6 @@
 #include "cmd/site/addip.hpp"
 #include "util/error.hpp"
 #include "acl/usercache.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "acl/secureip.hpp"
 #include "acl/ipstrength.hpp"
 #include "acl/allowsitecmd.hpp"
@@ -49,7 +48,7 @@ void ADDIPCommand::Execute()
       ok = util::Error::Failure(errmsg.str());
     }
     else
-      ok = acl::IpMaskCache::Add(user.UID(), *it, deleted);
+      ok = acl::UserCache::AddIPMask(user.Name(), *it, deleted);
       
     if (ok)
     {

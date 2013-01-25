@@ -2,7 +2,6 @@
 #include <boost/lexical_cast.hpp>
 #include "cmd/site/delip.hpp"
 #include "acl/usercache.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "acl/allowsitecmd.hpp"
 #include "cmd/error.hpp"
 
@@ -55,7 +54,7 @@ void DELIPCommand::Execute()
   if (all)
   {
     std::vector<std::string> deleted;
-    util::Error ok = acl::IpMaskCache::DeleteAll(user.UID(), deleted);
+    util::Error ok = acl::UserCache::DelAllIPMasks(user.Name(), deleted);
     if (!ok)
     {
       control.Reply(ftp::ActionNotOkay, ok.Message());
@@ -77,7 +76,7 @@ void DELIPCommand::Execute()
     std::string mask;
     for (int index : indexes)
     {
-      util::Error ok = acl::IpMaskCache::Delete(user.UID(), index, mask);
+      util::Error ok = acl::UserCache::DelIPMask(user.Name(), index, mask);
       if (!ok)
         os << "\nIP not deleted: " << ok.Message();
       else

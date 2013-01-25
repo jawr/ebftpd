@@ -69,17 +69,19 @@ void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const st
   TaskPtr task(new db::RunCommand(cmd, result, future));
   Pool::Queue(task);
   future.wait();
+
+  result = result["result"].Obj();
   
   long long xfertime = 0;
   if (result.nFields() > 0)
   {
     try
     {
-      long long totalXfertime = result["0"]["total xfertime"].Long();
+      long long totalXfertime = result[0]["total xfertime"].Long();
       if (totalXfertime > 0)
-        xfertime = bytes / result["0"]["total bytes"].Long() / totalXfertime;
+        xfertime = bytes / result[0]["total bytes"].Long() / totalXfertime;
       else
-        xfertime = bytes / result["0"]["total bytes"].Long();
+        xfertime = bytes / result[0]["total bytes"].Long();
     }
     catch (const mongo::DBException& e)
     {
@@ -162,6 +164,7 @@ std::vector< ::stats::Stat> RetrieveUsers(
   Pool::Queue(task);
   future.wait();
 
+  result = result["result"].Obj();
   std::vector< ::stats::Stat> users;
   for (int i = 0; i < result.nFields(); ++i)
   {

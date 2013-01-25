@@ -6,17 +6,19 @@
 #include <sys/types.h>
 #include "acl/flags.hpp"
 #include "acl/types.hpp"
+#include "util/error.hpp"
 
-namespace db { namespace bson {
-struct User;
-}
-}
+namespace acl { class User; }
+namespace db { namespace bson { struct User; }
+namespace user { bool Create(acl::User& user); } }
 
 namespace acl
 {
 
 class User
 {
+  boost::posix_time::ptime modified;
+
   std::string name;
   std::string password;
   std::string salt;
@@ -28,23 +30,42 @@ class User
   
   long long credits;
   std::string tagline;
+  
+  std::vector<std::string> ipMasks;
    
 public:
   User() :
+    modified(boost::posix_time::microsec_clock::local_time()),
+    flags("6"),
     uid(-1),
     primaryGid(-1),
     credits(0)
   { }
   
-  User(const std::string& name, UserID uid, const std::string& password,
-       const std::string& flags);
+  User(const std::string& name, const std::string& password, const std::string& flags);
+
+  const boost::posix_time::ptime& Modified() const { return modified; }
        
   const std::string& Name() const { return name; }
-  void SetName(const std::string& name) { this->name = name; }
+  void SetName(const std::string& name)
+  {
+    modified = boost::posix_time::microsec_clock::local_time();
+    this->name = name;
+  }
 
   long long Credits() const { return credits; }
-  void DecrCredits(long long kbytes) { credits -= kbytes; }
-  void IncrCredits(long long kbytes) { credits += kbytes; }
+  
+  void DecrCredits(long long kbytes)
+  {
+    modified = boost::posix_time::microsec_clock::local_time();
+    credits -= kbytes;
+  }
+  
+  void IncrCredits(long long kbytes)
+  {
+    modified = boost::posix_time::microsec_clock::local_time();
+    credits += kbytes;
+  }
   
   void SetPassword(const std::string& password);
   bool VerifyPassword(const std::string& password) const;
@@ -76,7 +97,14 @@ public:
   const std::string& Tagline() const { return tagline; }
   void SetTagline(const std::string& tagline) { this->tagline = tagline; }
   
+  util::Error AddIPMask(const std::string& mask, std::vector<std::string> &redundant);
+  util::Error DelIPMask(decltype(ipMasks.size()) index, std::string& deleted);
+  void DelAllIPMasks(std::vector<std::string>& deleted);
+  std::vector<std::string> ListIPMasks() const
+  { return ipMasks; }
+  
   friend struct db::bson::User;
+  friend bool db::user::Create(acl::User& user);
 };
 
 }

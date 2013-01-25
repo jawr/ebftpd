@@ -6,41 +6,42 @@
 #include "acl/group.hpp"
 #include "acl/types.hpp"
 #include "db/error.hpp"
+#include "db/bson/bson.hpp"
 
 namespace db { namespace group
 {
 
-namespace
+bool Create(acl::Group& group)
 {
-boost::mutex getNewGroupIdMtx;
-}
-
-acl::GroupID GetNewGroupID()
-{
-  boost::lock_guard<boost::mutex> lock(getNewGroupIdMtx);
-  
-  QueryResults results;
+  static const char* javascript =
+    "function newGroup(group) {\n"
+    "  var groups = db['groups'];\n"
+    "  while (1) {\n"
+    "    var cursor = groups.find({}, {gid : 1}).sort({gid : -1}).limit(1);\n"
+    "    group.gid = cursor.hasNext() ? cursor.next().gid + 1 : 0;\n"
+    "    groups.insert(group);\n"
+    "    var err = db.getLastErrorObj();\n"
+    "    if (err &&  err.code == 11000) {\n"
+    "      if (groups.findOne({gid : group.gid}))\n"
+    "        continue;\n"
+    "      else\n"
+    "        return -1;\n"
+    "    }\n"
+    "    break;\n"
+    "  }\n"
+    "  return group.gid\n"
+    "}";
+    
+  auto args = db::bson::Group::Serialize(group);
+  mongo::BSONElement ret;
   boost::unique_future<bool> future;
-  mongo::Query query;
-  query.sort("gid", 0);
-  TaskPtr task(new db::Select("groups", query, results, future, 1));
-  Pool::Queue(task);
-
-  future.wait();
-
-  if (results.size() == 0) return 0;
-
-  acl::GroupID gid;
-  try
-  {
-    gid = results.back().getIntField("gid") + 1;
-  }
-  catch (const mongo::DBException& e)
-  {
-    IDGenerationFailure("group", e);
-  }
   
-  return gid;
+  auto task = std::make_shared<db::Eval>(javascript, args, ret, future);
+  Pool::Queue(task);
+  if (!future.get()) throw DBError("Error while creating group.");
+
+  group.gid = static_cast<acl::GroupID>(ret.Double());
+  return group.gid != -1;
 }
 
 void Save(const acl::Group& group)
@@ -51,12 +52,14 @@ void Save(const acl::Group& group)
   Pool::Queue(task);
 }
 
-boost::ptr_vector<acl::Group> GetAllPtr()
+boost::ptr_vector<acl::Group> 
+GetAllPtr(const boost::optional<boost::posix_time::ptime>& modified)
 {
   boost::ptr_vector<acl::Group> groups;
 
   QueryResults results;
   mongo::Query query;
+  if (modified) query = QUERY("modified" << BSON("$gte" << db::bson::ToDateT(*modified)));
   boost::unique_future<bool> future;
   TaskPtr task(new db::Select("groups", query, results, future));
   Pool::Queue(task);

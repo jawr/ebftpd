@@ -34,7 +34,7 @@ void RETRCommand::Execute()
   {
     std::ostringstream os;
     os << "You have reached your maximum of " << client.Profile().MaxSimDl() 
-       << " simultaenous download(s).";
+       << " simultaneous download(s).";
     control.Reply(ftp::ActionNotOkay, os.str());
     throw cmd::NoPostScriptError();
   }

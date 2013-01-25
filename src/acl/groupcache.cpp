@@ -3,6 +3,7 @@
 #include "db/group/group.hpp"
 #include "logs/logs.hpp"
 #include "db/group/groupprofile.hpp"
+#include "acl/replicator.hpp"
 
 namespace acl
 {
@@ -23,18 +24,53 @@ void GroupCache::Initialize()
 {
   logs::debug << "Initialising group cache.." << logs::endl;
   assert(!instance.initialized);
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
-  boost::ptr_vector<acl::Group> groups = db::group::GetAllPtr();
-  while (!groups.empty())
-  {
-    auto group = groups.release(groups.begin());
-  
-    instance.byGID.insert(std::make_pair(group->GID(), group.get()));
-    instance.byName.insert(std::make_pair(group->Name(), group.get()));
-    group.release();
-  } 
-
+  instance.Replicate();
+  Replicator::Register(&instance);
   instance.initialized = true;
+}
+
+bool GroupCache::Replicate()
+{
+  auto now = boost::posix_time::microsec_clock::local_time();
+  bool complete = true;
+
+  boost::lock_guard<boost::mutex> createLock(createMutex);
+  boost::ptr_vector<acl::Group> groups = db::group::GetAllPtr(lastReplicate);
+  
+  if (!groups.empty())
+  {
+    boost::unique_lock<boost::mutex> lock(mutex);
+    while (!groups.empty())
+    {
+      auto group = groups.release(groups.begin());
+
+      auto it = byName.find(group->Name());
+      if (it != byName.end())
+      {
+        if (group->Modified() >= it->second->Modified())
+        {
+          delete it->second;
+          it->second = group.get();
+          byGID.at(group->GID()) = group.get();
+        }
+        else
+        {
+          complete = false;
+          continue;
+        }
+      }
+      else
+      {
+        byGID.insert(std::make_pair(group->GID(), group.get()));
+        byName.insert(std::make_pair(group->Name(), group.get()));
+      }
+      
+      group.release();
+    }  
+  }
+  
+  lastReplicate = now;
+  return complete;
 }
 
 void GroupCache::Save(const acl::Group& group)
@@ -56,19 +92,29 @@ bool GroupCache::Exists(GroupID gid)
 
 util::Error GroupCache::Create(const std::string& name)
 {
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
-  if (instance.byName.find(name) != instance.byName.end())
-    return util::Error::Failure("Group " + name + " already exists.");
-
-  acl::GroupID gid = db::group::GetNewGroupID();
-
-  std::unique_ptr<acl::Group> group(new acl::Group(name, gid));
+  boost::lock_guard<boost::mutex> createLock(instance.createMutex);
+  try
+  {
+    std::unique_ptr<acl::Group> group(new acl::Group(name));
+    if (Exists(group->Name()) ||  !db::group::Create(*group))
+      return util::Error::Failure("Group " + name + " already exists.");
     
-  instance.byName.insert(std::make_pair(name, group.get()));
-  instance.byGID.insert(std::make_pair(gid, group.get()));
-  
-  Save(*group.release());
-  db::groupprofile::Save(GroupProfile(gid));
+    {
+      boost::lock_guard<boost::mutex> lock(instance.mutex);
+      assert(instance.byName.find(name) == instance.byName.end());
+
+      instance.byName.insert(std::make_pair(group->Name(), group.get()));
+      instance.byGID.insert(std::make_pair(group->GID(), group.get()));
+      
+      Save(*group);
+      db::groupprofile::Save(GroupProfile(group->GID()));
+      group.release();
+    }
+  }
+  catch (const util::RuntimeError& e)
+  {
+    return util::Error::Failure(e.Message());
+  }
   
   return util::Error::Success();
 }

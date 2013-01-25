@@ -6,7 +6,6 @@
 #include "cfg/config.hpp"
 #include "acl/securepass.hpp"
 #include "acl/passwdstrength.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "cmd/error.hpp"
 #include "acl/groupcache.hpp"
 #include "cmd/site/addip.hpp"

@@ -10,6 +10,7 @@
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "cfg/error.hpp"
+#include "acl/replicator.hpp"
 
 namespace signals
 {
@@ -34,6 +35,7 @@ void Handler::Run()
   sigaddset(&mask, SIGINT);
   sigaddset(&mask, SIGQUIT);
   sigaddset(&mask, SIGTERM);
+  sigaddset(&mask, SIGALRM);
   
   int signo;
   while (true)
@@ -68,6 +70,10 @@ void Handler::Run()
         logs::debug << "Server interrupted!" << logs::endl;
         std::make_shared<ftp::task::Exit>()->Push();
         return;
+      }
+      case SIGALRM  :
+      {
+        acl::Replicator::Replicate();
       }
     }
   }
