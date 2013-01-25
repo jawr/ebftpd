@@ -6,7 +6,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/types.hpp"
 #include "acl/userprofile.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "util/error.hpp"
 #include "acl/user.hpp"
 
@@ -21,6 +20,7 @@ boost::ptr_vector<acl::User> GetAllPtr(const boost::optional<boost::posix_time::
 std::vector<acl::User> GetAll();
 void Login(acl::UserID user);
 std::vector<acl::User> GetByACL(std::string acl); 
+void SaveIPMasks(const acl::User& user);
 
 // end
 }

@@ -28,7 +28,7 @@ class GroupCache : public Replicable
   static GroupCache instance;
   static bool initialized;
   
-  GroupCache() : lastReplicate(boost::gregorian::date(1970,1,1)) { }
+  GroupCache() : lastReplicate(boost::gregorian::date(1970, 1, 1)) { }
   
   ~GroupCache();
   

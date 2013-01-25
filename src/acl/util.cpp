@@ -3,7 +3,6 @@
 #include "util/error.hpp"
 #include "acl/groupcache.hpp"
 #include "acl/usercache.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "util/verify.hpp"
 
 namespace acl
@@ -23,7 +22,7 @@ void CreateDefaults()
   {
     assert(acl::UserCache::NameToUID("ebftpd") == 0);
     acl::UserCache::SetPrimaryGID("ebftpd", 0);
-    acl::IpMaskCache::Add(0, "*@127.0.0.1");
+    acl::UserCache::AddIPMask("ebftpd", "*@127.0.0.1");
   }
   
   if (!acl::UserCache::Exists(0))
@@ -33,12 +32,12 @@ void CreateDefaults()
   
   if (acl::UserCache::Create("biohazard", "password", "1", 0))
   {
-    verify(acl::IpMaskCache::Add(acl::UserCache::NameToUID("biohazard"), "*@127.0.0.1"));
+    verify(acl::UserCache::AddIPMask("biohazard", "*@127.0.0.1"));
   }
   
   if (acl::UserCache::Create("io", "password", "1", 0))
   {
-    verify(acl::IpMaskCache::Add(acl::UserCache::NameToUID("io"), "*@127.0.0.1"));
+    verify(acl::UserCache::AddIPMask("io", "*@127.0.0.1"));
   }
 }
 

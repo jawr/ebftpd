@@ -17,18 +17,22 @@ class UserCache : public Replicable
 {
   typedef std::unordered_map<std::string, acl::User*> ByNameMap;
   typedef std::unordered_map<UserID, acl::User*> ByUIDMap;
+  typedef std::unordered_map<acl::UserID, std::vector<std::string>> IPMaskMap;
   
   mutable boost::mutex createMutex;
   mutable boost::mutex mutex;
   ByNameMap byName;
   ByUIDMap byUID;
+
+  mutable boost::shared_mutex ipMutex;
+  IPMaskMap ipMasks;
   
   boost::posix_time::ptime lastReplicate;
   
   static UserCache instance;
   static bool initialized;
   
-  UserCache() : lastReplicate(boost::gregorian::date(1970,1,1)) { }
+  UserCache() : lastReplicate(boost::gregorian::date(1970, 1, 1)) { }
   
   ~UserCache();
   
@@ -78,6 +82,17 @@ public:
   
   static UserID NameToUID(const std::string& name);
   static std::string UIDToName(UserID uid);
+  
+  static bool IPAllowed(const std::string& address);
+  static bool IdentIPAllowed(acl::UserID uid, const std::string& identAddress);
+  
+  static util::Error AddIPMask(const std::string& name, const std::string& mask,
+                               std::vector<std::string>& redundant);
+  static util::Error AddIPMask(const std::string& name, const std::string& mask);  
+  static util::Error DelIPMask(const std::string& name, int index, std::string& deleted);
+  static util::Error DelAllIPMasks(const std::string& name, std::vector<std::string>& deleted);
+  
+  static util::Error ListIPMasks(const std::string& name, std::vector<std::string>& masks);  
 };
 
 } /* acl namespace */

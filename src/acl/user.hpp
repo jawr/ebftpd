@@ -6,23 +6,11 @@
 #include <sys/types.h>
 #include "acl/flags.hpp"
 #include "acl/types.hpp"
+#include "util/error.hpp"
 
-namespace acl
-{
-class User;
-}
-
-namespace db {  namespace bson {
-
-struct User;
-
-}
-
-namespace user
-{
-bool Create(acl::User& user);
-}
-}
+namespace acl { class User; }
+namespace db { namespace bson { struct User; }
+namespace user { bool Create(acl::User& user); } }
 
 namespace acl
 {
@@ -42,6 +30,8 @@ class User
   
   long long credits;
   std::string tagline;
+  
+  std::vector<std::string> ipMasks;
    
 public:
   User() :
@@ -106,6 +96,12 @@ public:
   
   const std::string& Tagline() const { return tagline; }
   void SetTagline(const std::string& tagline) { this->tagline = tagline; }
+  
+  util::Error AddIPMask(const std::string& mask, std::vector<std::string> &redundant);
+  util::Error DelIPMask(decltype(ipMasks.size()) index, std::string& deleted);
+  void DelAllIPMasks(std::vector<std::string>& deleted);
+  std::vector<std::string> ListIPMasks() const
+  { return ipMasks; }
   
   friend struct db::bson::User;
   friend bool db::user::Create(acl::User& user);

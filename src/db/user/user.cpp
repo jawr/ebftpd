@@ -161,6 +161,14 @@ std::vector<acl::User> GetByACL(std::string acl)
   return users;
 }
 
+void SaveIPMasks(const acl::User& user)
+{
+  auto query = QUERY("uid" << user.UID());
+  auto update = BSON("$set" << BSON("ip masks" << db::bson::SerializeContainer(user.ListIPMasks())) <<
+                     "$set" << BSON("modified" << db::bson::ToDateT(user.Modified())));
+  Pool::Queue(std::make_shared<db::Update>("users", query, update, true));
+}
+
 // end
 }
 }

@@ -19,7 +19,6 @@
 #include "db/error.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "acl/util.hpp"
 #include "ftp/client.hpp"
 #include "util/error.hpp"
@@ -237,7 +236,6 @@ int main(int argc, char** argv)
 
   acl::GroupCache::Initialize();
   acl::UserCache::Initialize();
-  acl::IpMaskCache::Initialize();  
   acl::CreateDefaults();
   
   fs::OwnerCache::Start();

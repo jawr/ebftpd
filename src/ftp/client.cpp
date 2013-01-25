@@ -16,7 +16,6 @@
 #include "acl/types.hpp"
 #include "cfg/get.hpp"
 #include "util/misc.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "main.hpp"
 #include "util/net/identclient.hpp"
 #include "util/string.hpp"
@@ -29,7 +28,6 @@
 #include "ftp/error.hpp"
 #include "cmd/error.hpp"
 #include "exec/cscript.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "util/net/resolver.hpp"
 #include "acl/usercache.hpp"
 #include "db/error.hpp"
@@ -327,14 +325,14 @@ void Client::LogTraffic() const
 
 bool Client::PostCheckAddress()
 {
-  return acl::IpMaskCache::Check(user.UID(), ident + "@" + IP()) ||
-        (IP() != Hostname() && acl::IpMaskCache::Check(user.UID(), ident + "@" + Hostname()));
+  return acl::UserCache::IdentIPAllowed(user.UID(), ident + "@" + IP()) ||
+        (IP() != Hostname() && acl::UserCache::IdentIPAllowed(user.UID(), ident + "@" + Hostname()));
 }
 
 bool Client::PreCheckAddress()
 {
-  if (!acl::IpMaskCache::Check("*@" + IP()) ||
-        (IP() != Hostname() && acl::IpMaskCache::Check("*@" + Hostname())))
+  if (!acl::UserCache::IPAllowed(IP()) ||
+        (IP() != Hostname() && acl::UserCache::IPAllowed(Hostname())))
   {
     logs::security << "Refused connection from unknown address: " 
                    << HostnameAndIP() << logs::endl;

@@ -10,6 +10,7 @@
 #include "cfg/get.hpp"
 #include "ftp/task/task.hpp"
 #include "acl/replicator.hpp"
+#include "util/string.hpp"
 
 namespace acl
 {
@@ -56,14 +57,15 @@ bool UserCache::Replicate()
   
   boost::lock_guard<boost::mutex> createLock(createMutex);
   boost::ptr_vector<acl::User> users = db::user::GetAllPtr(lastReplicate);
-  
+
+  int done = 0;
   if (!users.empty())
   {
     boost::unique_lock<boost::mutex> lock(mutex);
+    boost::unique_lock<boost::shared_mutex> ipLock(ipMutex);
     while (!users.empty())
     {
       auto user = users.release(users.begin());
-
       auto it = byName.find(user->Name());
       if (it != byName.end())
       {
@@ -72,6 +74,7 @@ bool UserCache::Replicate()
           delete it->second;
           it->second = user.get();
           byUID.at(user->UID()) = user.get();
+          ipMasks.at(user->UID()) = user->ListIPMasks();
         }
         else
         {
@@ -83,13 +86,15 @@ bool UserCache::Replicate()
       {
         byUID.insert(std::make_pair(user->UID(), user.get()));
         byName.insert(std::make_pair(user->Name(), user.get()));
+        ipMasks.insert(std::make_pair(user->UID(), user->ListIPMasks()));
       }
       
       std::make_shared<ftp::task::UserUpdate>(user->UID())->Push();
       user.release();
-    }  
+    }
+    ++done;
   }
-  
+
   lastReplicate = now;
   return complete;
 }
@@ -150,6 +155,9 @@ util::Error UserCache::Create(const std::string& name, const std::string& passwo
       Save(*user);
       UserProfile profile(user->UID(), creator);
       db::userprofile::Save(profile);
+      
+      boost::lock_guard<boost::shared_mutex> ipLock(instance.ipMutex);
+      instance.ipMasks.insert(std::make_pair(user->UID(), std::vector<std::string>()));
       user.release();
     }
   }
@@ -178,7 +186,10 @@ util::Error UserCache::Purge(const std::string& name)
   
   db::user::Delete(uid);
   db::userprofile::Delete(uid);
-  
+
+  boost::unique_lock<boost::shared_mutex> ipLock(instance.ipMutex);
+  instance.ipMasks.erase(uid);
+    
   return util::Error::Success();
 }
 
@@ -493,6 +504,149 @@ unsigned UserCache::Count(bool includeDeleted)
     if (!kv.second->Deleted()) ++count;
   }
   return count;
+}
+
+bool UserCache::IPAllowed(const std::string& address)
+{
+  std::string identAddress = "*@" + address;
+  boost::shared_lock<boost::shared_mutex> lock(instance.ipMutex);
+  std::cout << instance.ipMasks.size() << std::endl;
+  for (auto uid : instance.ipMasks)
+  {
+    for (auto& mask : uid.second)
+    {
+      if (util::string::WildcardMatch(mask, identAddress))
+        return true; 
+    }
+  }
+  return false;
+}
+
+bool UserCache::IdentIPAllowed(acl::UserID uid, const std::string& identAddress)
+{
+  boost::shared_lock<boost::shared_mutex> lock(instance.ipMutex);
+  auto it = instance.ipMasks.find(uid);
+  if (it != instance.ipMasks.end())
+  {
+    for (const std::string& mask : it->second)
+    {
+      if (util::string::WildcardMatch(mask, identAddress))
+        return true;     
+    }
+  }
+  return false;
+}
+
+util::Error UserCache::AddIPMask(const std::string& name, const std::string& mask,
+                                 std::vector<std::string>& redundant)
+{
+  redundant.clear();
+  
+  {
+    boost::lock_guard<boost::mutex> lock(instance.mutex);
+    auto it = instance.byName.find(name);
+    if (it == instance.byName.end()) 
+      return util::Error::Failure("User " + name + " doesn't exist.");
+    
+    acl::User& user = *it->second;
+    
+    auto e = user.AddIPMask(mask, redundant);
+    if (!e) return e;  
+
+    {
+      boost::unique_lock<boost::shared_mutex> ipLock(instance.ipMutex);
+      auto it = instance.ipMasks.find(user.UID());
+      if (it == instance.ipMasks.end())
+      {
+        assert(redundant.empty());
+        instance.ipMasks.insert(std::make_pair(user.UID(), std::vector<std::string>{mask}));
+      }
+      else
+      {
+        auto& masks = it->second;
+        masks.erase(std::remove_if(masks.begin(), masks.end(),
+              [redundant](const std::string& mask)
+              {
+                return std::find(redundant.begin(), redundant.end(), mask) != redundant.end();
+              }), masks.end());
+        masks.push_back(mask);
+      }
+    }
+    
+    db::user::SaveIPMasks(user);
+  }
+  
+  return util::Error::Success();
+}
+
+util::Error UserCache::AddIPMask(const std::string& name, const std::string& mask)
+{
+  std::vector<std::string> redundant;
+  return AddIPMask(name, mask, redundant);
+}
+
+util::Error UserCache::DelIPMask(const std::string& name, int index, std::string& deleted)
+{
+  {
+    boost::lock_guard<boost::mutex> lock(instance.mutex);
+    auto it = instance.byName.find(name);
+    if (it == instance.byName.end()) 
+      return util::Error::Failure("User " + name + " doesn't exist.");
+    
+    acl::User& user = *it->second;
+    
+    auto e = user.DelIPMask(index, deleted);
+    if (!e) return e;  
+
+    {
+      boost::unique_lock<boost::shared_mutex> ipLock(instance.ipMutex);
+      auto it = instance.ipMasks.find(user.UID());
+      assert(it != instance.ipMasks.end());
+      
+      auto& masks = it->second;
+      masks.erase(std::remove(masks.begin(), masks.end(), deleted), masks.end());
+    }
+    
+    db::user::SaveIPMasks(user);
+  }
+  
+  return util::Error::Success();
+}
+
+util::Error UserCache::DelAllIPMasks(const std::string& name, std::vector<std::string>& deleted)
+{
+  {
+    boost::lock_guard<boost::mutex> lock(instance.mutex);
+    auto it = instance.byName.find(name);
+    if (it == instance.byName.end()) 
+      return util::Error::Failure("User " + name + " doesn't exist.");
+    
+    acl::User& user = *it->second;
+    
+    user.DelAllIPMasks(deleted);
+
+    {
+      boost::unique_lock<boost::shared_mutex> ipLock(instance.ipMutex);
+      auto it = instance.ipMasks.find(user.UID());
+      if (it != instance.ipMasks.end()) it->second.clear();
+    }
+  }
+  
+  return util::Error::Success();  
+}
+
+util::Error UserCache::ListIPMasks(const std::string& name, std::vector<std::string>& masks)
+{
+  {
+    boost::lock_guard<boost::mutex> lock(instance.mutex);
+    auto it = instance.byName.find(name);
+    if (it == instance.byName.end()) 
+      return util::Error::Failure("User " + name + " doesn't exist.");
+      
+    masks = it->second->ListIPMasks();
+  }
+  
+  return util::Error::Success();
 }
 
 } /* acl namespace */

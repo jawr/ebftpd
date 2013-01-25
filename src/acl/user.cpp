@@ -5,6 +5,7 @@
 #include "acl/user.hpp"
 #include "acl/types.hpp"
 #include "db/user/user.hpp"
+#include "util/string.hpp"
 
 namespace acl
 {
@@ -126,6 +127,52 @@ bool User::HasSecondaryGID(GroupID gid)
 bool User::CheckGID(GroupID gid)
 {
   return primaryGid == gid || HasSecondaryGID(gid);
+}
+
+util::Error User::AddIPMask(const std::string& mask, std::vector<std::string>& redundant)
+{
+  for (const std::string& m : ipMasks)
+  {
+    if (util::string::WildcardMatch(m, mask, false))
+      return util::Error::Failure("Broader matching mask already exists");
+  }
+
+  for (auto it = ipMasks.begin(); it != ipMasks.end();)
+  {
+    if (util::string::WildcardMatch(mask, *it, false))
+    {
+      redundant.push_back(*it);
+      it = ipMasks.erase(it);
+    }
+    else
+      ++it;
+  }
+  
+  if (ipMasks.size() >= 10)
+  {
+    return util::Error::Failure("Maximum of 10 IP masks reached");
+  }
+  
+  modified = boost::posix_time::microsec_clock::local_time();  
+  ipMasks.push_back(mask);
+  
+  return util::Error::Success();
+}
+
+util::Error User::DelIPMask(decltype(ipMasks.size()) index, std::string& deleted)
+{
+  if (index >= ipMasks.size()) return util::Error::Failure("IP mask index out of range");
+  modified = boost::posix_time::microsec_clock::local_time();  
+  deleted = *(ipMasks.begin() + index);
+  ipMasks.erase(ipMasks.begin() + index);
+  return util::Error::Success();
+}
+
+void User::DelAllIPMasks(std::vector<std::string>& deleted)
+{
+  modified = boost::posix_time::microsec_clock::local_time();  
+  deleted = std::move(ipMasks);
+  assert(ipMasks.empty());
 }
 
 } /* acl namespace */

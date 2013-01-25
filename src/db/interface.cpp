@@ -13,9 +13,6 @@
 #include "db/bson/user.hpp"
 #include "db/bson/group.hpp"
 #include "acl/types.hpp"
-#include "acl/usercache.hpp"
-#include "acl/groupcache.hpp"
-#include "acl/ipmaskcache.hpp"
 #include "acl/types.hpp"
 #include "logs/logs.hpp"
 #include "db/error.hpp"
@@ -40,6 +37,9 @@ void Initialize()
                "year" << 1)));
                
   Pool::Queue(std::make_shared<db::EnsureIndex>("ipmasks", BSON("uid" << 1)));
+    
+  Pool::Queue(std::make_shared<db::Insert>("globals", 
+          BSON("_id" << "ipmasks modified" << "value" << mongo::Date_t()), true));
 }
 
 void Cleanup()
