@@ -10,7 +10,12 @@ Replicator::Replicator(int interval) :
   interval(interval),
   enabled(true)
 {
-  alarm(this->interval);
+  ResetTimer();
+}
+
+void Replicator::ResetTimer()
+{
+  if (enabled) alarm(interval);
 }
 
 void Replicator::Run(const std::shared_ptr<BusyGuard>& lock)
@@ -36,7 +41,8 @@ void Replicator::Run(const std::shared_ptr<BusyGuard>& lock)
     logs::debug << "Cache replication successful." << logs::endl;
   }
   
-  if (enabled) alarm(interval);
+  ResetTimer();
+  
   (void) lock;
 }
 

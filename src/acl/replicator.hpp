@@ -33,6 +33,7 @@ class Replicator
   }
 
   void InnerReplicate();
+  void ResetTimer();
   
 public:
 

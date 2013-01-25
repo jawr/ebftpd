@@ -40,15 +40,6 @@ void Initialize()
                "year" << 1)));
                
   Pool::Queue(std::make_shared<db::EnsureIndex>("ipmasks", BSON("uid" << 1)));
-    
-  Pool::Queue(std::make_shared<db::Insert>("globals", 
-          BSON("_id" << "last uid" << "value" << 0), true));
-  
-  Pool::Queue(std::make_shared<db::Insert>("globals", 
-          BSON("_id" << "last gid" << "value" << 0), true));
-      
-  Pool::Queue(std::make_shared<db::Insert>("globals", 
-          BSON("_id" << "ipmasks modified" << "value" << mongo::Date_t()), true));
 }
 
 void Cleanup()
