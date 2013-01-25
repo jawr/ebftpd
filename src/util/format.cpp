@@ -18,13 +18,24 @@ template <> const char* util::EnumStrings<String>::values[]
 
 int main()
 {
-  util::Format Format([](const std::string& s) { std::cout << s << std::endl; });
- 
-  Format(String::UserNotExist, "someone", "ignores", "too many", "args");
-  Format(String::GroupNotExist, "SOMEGROUP");
-  Format(String::UnableCreateUser, "someone", "some error message");
+  {
+    util::Format Format([](const std::string& s) { std::cout << s << std::endl; });
+   
+    Format(String::UserNotExist, "someone", "ignores", "too many", "args");
+    Format(String::GroupNotExist, "SOMEGROUP");
+    Format(String::UnableCreateUser, "someone", "some error message");
+  }
   
-  Format("hello %s%c", "world", '!');
+  {
+    util::Format Format;
+    std::cout << Format("hello %s%c", "world", '!') << std::endl;
+    
+    std::string s = Format("some %s string %i", "other", 123).String();
+    std::cout << s << std::endl;
+    
+    s = Format("muahahaha %.2f", 23.676457);
+    std::cout << s << std::endl;
+  }
 }
 
 #endif

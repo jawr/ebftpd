@@ -88,7 +88,13 @@ public:
   }
 
   std::string String() const { return format.str(); }  
+  operator std::string() const { return format.str(); }
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Format& format)
+{
+  return (os << format.String());
+}
 
 } /* util namespace */
 
