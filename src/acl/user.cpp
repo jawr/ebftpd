@@ -134,7 +134,7 @@ util::Error User::AddIPMask(const std::string& mask, std::vector<std::string>& r
   for (const std::string& m : ipMasks)
   {
     if (util::string::WildcardMatch(m, mask, false))
-      return util::Error::Failure("Broader matching mask already exists");
+      return util::Error::Failure("Broader mask already exists");
   }
 
   for (auto it = ipMasks.begin(); it != ipMasks.end();)
