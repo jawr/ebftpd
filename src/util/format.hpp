@@ -2,6 +2,7 @@
 #define __UTIL_FORMAT_HPP
 
 #include <string>
+#include <functional>
 #include <boost/format.hpp>
 #include "util/enum.hpp"
 
@@ -10,9 +11,10 @@ namespace util
 
 class Format
 {
+public:
   typedef std::function<void(const std::string& s)> OutputFunction;
   
-public:
+protected:
   boost::format format;
   std::function<void(const std::string& s)> output;
 
@@ -44,6 +46,8 @@ public:
 public:
   Format() = default;
   Format(const OutputFunction& output) : output(output) { }
+  
+  virtual ~Format() { }
 
   template <typename Enum>
   Format& operator()(Enum e)
