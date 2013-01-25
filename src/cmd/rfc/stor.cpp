@@ -120,7 +120,7 @@ void STORCommand::Execute()
   {
     std::ostringstream os;
     os << "You have reached your maximum of " << client.Profile().MaxSimUl() 
-       << " simultaenous upload(s).";
+       << " simultaneous upload(s).";
     control.Reply(ftp::ActionNotOkay, os.str());
     throw cmd::NoPostScriptError();
   }
