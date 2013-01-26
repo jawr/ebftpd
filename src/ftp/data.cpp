@@ -1,3 +1,4 @@
+#include <sys/select.h>
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
 #include "util/net/interfaces.hpp"
@@ -7,6 +8,7 @@
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
 #include "cfg/get.hpp"
+#include "ftp/error.hpp"
 
 namespace ftp
 {
@@ -182,10 +184,7 @@ void Data::Open(TransferType transferType)
          pasvType == PassiveType::CPSV) && 
         (transferType == TransferType::Upload ||
          transferType == TransferType::Download))
-      role = util::net::TLSSocket::Client;
-  
-    if (role == util::net::TLSSocket::Client) logs::debug << "TLS Client handshake" << logs::endl;
-    else logs::debug << "TLS Server handshake" << logs::endl;
+      role = util::net::TLSSocket::Client;  
     socket.HandshakeTLS(role);
   }
   
@@ -213,5 +212,111 @@ bool Data::ProtectionOkay() const
 
   return !cfg::Get().TLSData().Evaluate(client.User());
 }
+
+void Data::HandleControl()
+{
+  try
+  {
+    std::string command = client.Control().NextCommand();
+    
+    if (command == "ABOR")
+    {
+      client.Control().Reply(ftp::DataCloseAborted, 
+          "Abort requested, closing data connection");
+      throw TransferAborted();
+    }
+    else
+    if (command == "QUIT")
+    {
+      client.Control().Reply(ftp::ClosingControl, "Bye bye");
+      client.SetState(ftp::ClientState::Finished);
+      throw util::net::EndOfStream();
+    }
+    else
+    if (command == "STAT")
+    {
+      std::ostringstream os;
+      os << "Status: " << state.Bytes() << " bytes transferred";
+      client.Control().Reply(ftp::FileStatus, os.str());
+    }
+    else
+    {
+      client.Control().Reply(ftp::BadCommandSequence, 
+                "Unsupported command during transfer");
+    }
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    throw ftp::ControlError(std::current_exception());
+  }
+}
+
+size_t Data::Read(char* buffer, size_t size)
+{
+  fd_set readSet;
+  struct timeval tv;
+  int controlSock = client.Control().socket.Socket();
+  int max = std::max(socket.Socket(), controlSock);
+  
+  while (true)
+  {
+    FD_ZERO(&readSet);
+    FD_SET(socket.Socket(), &readSet);
+    FD_SET(controlSock, &readSet);
+    memcpy(&tv, &socket.Timeout().Timeval(), sizeof(tv));
+  
+    int n = select(max + 1, &readSet, nullptr, nullptr, &tv);
+    if (!n) throw util::net::TimeoutError();
+    if (n < 0) throw util::net::NetworkSystemError(errno);
+    
+    if (FD_ISSET(controlSock, &readSet))
+    {
+      HandleControl();
+    }
+    
+    if (FD_ISSET(socket.Socket(), &readSet))
+    {
+      return socket.Read(buffer, size);
+    }
+  }
+}
+
+void Data::Write(const char* buffer, size_t len)
+{
+  fd_set readSet;
+  fd_set writeSet;
+  struct timeval tv;
+  int controlSock = client.Control().socket.Socket();
+  int max = std::max(socket.Socket(), controlSock);
+  
+  while (true)
+  {
+    FD_ZERO(&readSet);
+    FD_SET(controlSock, &readSet);
+
+    FD_ZERO(&writeSet);
+    FD_SET(socket.Socket(), &writeSet);
+
+    memcpy(&tv, &socket.Timeout().Timeval(), sizeof(tv));
+  
+    int n = select(max + 1, &readSet, &writeSet, nullptr, &tv);
+    if (!n) throw util::net::TimeoutError();
+    if (n < 0) throw util::net::NetworkSystemError(errno);
+    
+    if (FD_ISSET(controlSock, &readSet))
+    {
+      HandleControl();
+    }
+    
+    if (FD_ISSET(socket.Socket(), &writeSet))
+    {
+      socket.Write(buffer, len);
+      if (state.Type() == TransferType::List)
+        bytesWrite += len;
+      return;
+    }
+  }
+}
+
 
 } /* ftp namespace */

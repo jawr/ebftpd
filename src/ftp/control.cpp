@@ -7,6 +7,7 @@
 #include "util/net/tcplistener.hpp"
 #include "logs/logs.hpp"
 #include "ftp/error.hpp"
+#include "ftp/util.hpp"
 
 namespace ftp
 {
@@ -117,7 +118,8 @@ std::string Control::NextCommand(const boost::posix_time::time_duration* timeout
     bytesRead += commandLine.length();
     boost::trim_right_if(commandLine, boost::is_any_of("\n"));
     boost::trim_right_if(commandLine, boost::is_any_of("\r"));
-    logs::debug << commandLine << logs::endl;
+    StripTelnetChars(commandLine);
+    logs::debug << commandLine << logs::endl;    
     return commandLine;
   }
 

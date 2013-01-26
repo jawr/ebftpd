@@ -13,6 +13,7 @@
 #include "cmd/error.hpp"
 #include "acl/path.hpp"
 #include "acl/credits.hpp"
+#include "ftp/error.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -111,6 +112,7 @@ void RETRCommand::Execute()
     return;
   }
   
+  bool aborted = false;
   try
   {
     bool dlIncomplete = cfg::Get().DlIncomplete();
@@ -142,6 +144,7 @@ void RETRCommand::Execute()
         ftp::SpeedLimitSleep(data.State(), client.Profile().MaxDlSpeed());
     }
   }
+  catch (const ftp::TransferAborted&) { aborted = true; }
   catch (const std::ios_base::failure& e)
   {
     fin->close();
@@ -167,6 +170,14 @@ void RETRCommand::Execute()
     
     throw cmd::NoPostScriptError();
   }
+  catch (const ftp::ControlError& e)
+  {
+    fin->close();
+    data.Close();
+    db::stats::Download(client.User(), data.State().Bytes(), 
+                        data.State().Duration().total_milliseconds());
+    e.Rethrow();
+  }
   
   fin->close();
   data.Close();
@@ -181,7 +192,11 @@ void RETRCommand::Execute()
                               stats::DownloadRatio(client, path, section));
 
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
-  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
+  
+  if (aborted)
+    control.Reply(ftp::DataClosedOkay, "Transfer aborted @ " + stats::AutoUnitSpeedString(speed)); 
+  else
+    control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
 }

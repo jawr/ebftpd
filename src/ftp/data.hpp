@@ -66,6 +66,8 @@ class Data : public ReadWriteable
   long long bytesWrite;
   
   TransferState state;
+  
+  void HandleControl();
 
 public:
   explicit Data(Client& client);
@@ -95,17 +97,8 @@ public:
     state.Stop();
   }
   
-  size_t Read(char* buffer, size_t size)
-  {
-    return socket.Read(buffer, size);
-  }
-  
-  void Write(const char* buffer, size_t len)
-  {
-    socket.Write(buffer, len);
-    if (state.Type() == TransferType::List)
-      bytesWrite += len;
-  }
+  size_t Read(char* buffer, size_t size);
+  void Write(const char* buffer, size_t len);
   
   TransferState& State() { return state; }
   const TransferState& State() const { return state; }

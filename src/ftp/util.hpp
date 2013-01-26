@@ -2,6 +2,7 @@
 #define __FTP_UTIL_HPP
 
 #include <vector>
+#include <string>
 #include <sys/types.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
@@ -35,6 +36,17 @@ inline void SpeedLimitSleep(const TransferState& state, int maxSpeed)
   pt::time_duration minElapsed = pt::microseconds((state.Bytes()  / 
       1024.0 / maxSpeed) * 1000000);
   boost::this_thread::sleep(minElapsed - elapsed);
+}
+
+inline void StripTelnetChars(std::string& commandLine)
+{
+  auto it = commandLine.begin();
+  for (; it != commandLine.end(); ++it)
+  {
+    if (static_cast<unsigned char>(*it) <= 240) break;
+  }
+  
+  commandLine.erase(commandLine.begin(), it);
 }
 
 } /* ftp namespace */

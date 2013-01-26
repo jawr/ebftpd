@@ -78,6 +78,7 @@ public:
   long long BytesWrite() const { return bytesWrite; }
   
   std::string WaitForIdnt();
+  friend class Data;
 };
 
 } /* ftp namespace */

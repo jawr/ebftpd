@@ -22,6 +22,7 @@
 #include "fs/owner.hpp"
 #include "acl/credits.hpp"
 #include "util/crc32.hpp"
+#include "ftp/error.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -191,6 +192,7 @@ void STORCommand::Execute()
 
   bool calcCrc = CalcCRC(path);
   util::CRC32 crc32;
+  bool aborted = false;
   
   try
   {
@@ -219,6 +221,7 @@ void STORCommand::Execute()
     }
   }
   catch (const util::net::EndOfStream&) { }
+  catch (const ftp::TransferAborted&) { aborted = true; }
   catch (const util::net::NetworkError& e)
   {
     fout->close();
@@ -245,6 +248,16 @@ void STORCommand::Execute()
                       data.State().Duration().total_milliseconds());    
     
     throw cmd::NoPostScriptError();
+  }
+  catch (const ftp::ControlError& e)
+  {
+    fout->close();
+    data.Close();
+    fs::DeleteFile(fs::MakeReal(path));    
+    db::stats::Upload(client.User(), data.State().Bytes(), 
+                      data.State().Duration().total_milliseconds());    
+
+    e.Rethrow();
   }
   
   fout->close();
@@ -273,7 +286,10 @@ void STORCommand::Execute()
                                 stats::UploadRatio(client, path, section));
   }
 
-  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
+  if (aborted)
+    control.Reply(ftp::DataClosedOkay, "Transfer aborted @ " + stats::AutoUnitSpeedString(speed)); 
+  else
+    control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
 }
