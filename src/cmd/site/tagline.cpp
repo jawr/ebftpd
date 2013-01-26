@@ -2,29 +2,16 @@
 #include "cmd/site/tagline.hpp"
 #include "acl/usercache.hpp"
 #include "db/user/userprofile.hpp"
+#include "acl/util.hpp"
 
 namespace cmd { namespace site
 {
 
-const std::string TAGLINECommand::charsNotAllowed("!%[]");
-
-bool TAGLINECommand::Valid(const std::string& tagline)
-{
-  for (char ch : tagline)
-    if (!std::isprint(ch) || 
-        charsNotAllowed.find(ch) != std::string::npos)
-      return false;
-  return true;
-}
-
 void TAGLINECommand::Execute()
 {
-  if (!Valid(argStr))
+  if (!acl::Validate(acl::ValidationType::Tagline, argStr))
   {
-    control.Reply(ftp::ActionNotOkay, 
-                  "Tagline most contain only printable "
-                  "characters and none of the following: " +
-                  charsNotAllowed);
+    control.Reply(ftp::ActionNotOkay, "Tagline contains invalid characters");
     return;
   }
 

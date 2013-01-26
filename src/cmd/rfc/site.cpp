@@ -7,6 +7,7 @@
 #include "cmd/splitargs.hpp"
 #include "cmd/error.hpp"
 #include "exec/cscript.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -45,6 +46,12 @@ void SITECommand::Execute()
     }
     else
     {
+      if (!util::string::IsASCIIOnly(argStr))
+      {
+        control.Reply(ftp::SyntaxError, "SITE command arguments must contain ASCII characters only");
+        return;
+      }
+    
       try
       {
         command->Execute();
