@@ -172,7 +172,6 @@ void RETRCommand::Execute()
   data.Close();
 
   auto duration = data.State().Duration();
-  double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
   auto section = cfg::Get().SectionMatch(path);
   bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
   db::stats::Download(client.User(), data.State().Bytes(), duration.total_milliseconds(),
@@ -181,6 +180,7 @@ void RETRCommand::Execute()
   acl::UserCache::DecrCredits(client.User().Name(), data.State().Bytes() * 
                               stats::DownloadRatio(client, path, section));
 
+  double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;

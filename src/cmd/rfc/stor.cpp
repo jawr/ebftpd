@@ -255,13 +255,14 @@ void STORCommand::Execute()
 
   auto duration = data.State().Duration();
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
-
   auto section = cfg::Get().SectionMatch(path);
 
   if (!exec::PostCheck(client, path, 
                        calcCrc ? crc32.HexString() : "000000", speed, 
-                       section ? section->Name() : "-"))
+                       section ? section->Name() : ""))
+  {
     fs::DeleteFile(fs::MakeReal(path));
+  }
   else
   {
     bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
