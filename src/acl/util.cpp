@@ -24,7 +24,9 @@ boost::regex validationPatterns[] =
 void CreateDefaults()
 {
   if (acl::GroupCache::Create("ebftpd"))
+  {
     verify(acl::GroupCache::NameToGID("ebftpd") == 0);
+  }
   
   verify(acl::GroupCache::Exists(0));
 
