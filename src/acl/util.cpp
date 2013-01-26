@@ -26,7 +26,7 @@ void CreateDefaults()
   if (acl::GroupCache::Create("ebftpd"))
     verify(acl::GroupCache::NameToGID("ebftpd") == 0);
   
-  verify(!acl::GroupCache::Exists(0));
+  verify(acl::GroupCache::Exists(0));
 
   if (acl::UserCache::Create("ebftpd", "ebftpd", "1", 0))
   {

@@ -18,6 +18,7 @@ const std::vector< ::stats::Timeframe> timeframes =
   ::stats::Timeframe::Day,
   ::stats::Timeframe::Week,
   ::stats::Timeframe::Month,
+  ::stats::Timeframe::Year,
   ::stats::Timeframe::Alltime,
 };
 
