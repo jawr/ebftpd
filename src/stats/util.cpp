@@ -6,6 +6,7 @@
 #include "cfg/section.hpp"
 #include "acl/credits.hpp"
 #include "cfg/setting.hpp"
+#include "acl/path.hpp"
 
 namespace stats
 {
@@ -65,6 +66,8 @@ int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path,
 int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
     const boost::optional<const cfg::Section&>& section)
 {
+  if (acl::path::FileAllowed<acl::path::Freefile>(client.User(), path)) return 0;
+  
   if (section)
   {
     int ratio = client.UserProfile().SectionRatio(section->Name());
