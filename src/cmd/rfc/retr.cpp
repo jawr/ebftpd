@@ -148,6 +148,10 @@ void RETRCommand::Execute()
     data.Close();
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from disk: " + std::string(e.what()));
+
+    db::stats::Download(client.User(), data.State().Bytes(), 
+                        data.State().Duration().total_milliseconds());
+    
     throw cmd::NoPostScriptError();
   }
   catch (const util::net::NetworkError& e)
@@ -157,13 +161,17 @@ void RETRCommand::Execute()
     control.Reply(ftp::DataCloseAborted,
                  "Error while writing to data connection: " +
                  e.Message());
+    
+    db::stats::Download(client.User(), data.State().Bytes(), 
+                        data.State().Duration().total_milliseconds());
+    
     throw cmd::NoPostScriptError();
   }
   
   fin->close();
   data.Close();
 
-  pt::time_duration duration = data.State().EndTime() - data.State().StartTime();
+  auto duration = data.State().Duration();
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
   auto section = cfg::Get().SectionMatch(path);
   bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
@@ -173,8 +181,7 @@ void RETRCommand::Execute()
   acl::UserCache::DecrCredits(client.User().Name(), data.State().Bytes() * 
                               stats::DownloadRatio(client, path, section));
 
-  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
-      stats::AutoUnitSpeedString(speed)); 
+  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
 }

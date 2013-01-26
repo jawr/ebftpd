@@ -86,6 +86,13 @@ public:
     boost::lock_guard<boost::mutex> lock(mutex);
     return endTime;
   }
+  
+  boost::posix_time::time_duration Duration() const
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    if (type == TransferType::None) return endTime - startTime;
+    else return boost::posix_time::microsec_clock::local_time() - startTime;
+  }
 };
 
 } /* ftp namespace */

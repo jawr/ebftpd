@@ -11,13 +11,13 @@ namespace db { namespace stats
 {
 
 void Upload(const acl::User& user, long long bytes, 
-      long long xfertime, const std::string& section);
+      long long xfertime, const std::string& section = "");
 
 void Download(const acl::User& user, long long bytes, 
-      long long xfertime, const std::string& section);
+      long long xfertime, const std::string& section = "");
 
 void UploadDecr(const acl::User& user, long long bytes, 
-      time_t modTime, const std::string& section);
+      time_t modTime, const std::string& section = "");
 
 std::vector< ::stats::Stat> CalculateUserRanks(
       const std::string& section, 

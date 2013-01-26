@@ -227,6 +227,10 @@ void STORCommand::Execute()
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from data connection: " +
                  e.Message());
+    
+    db::stats::Upload(client.User(), data.State().Bytes(), 
+                      data.State().Duration().total_milliseconds());    
+    
     throw cmd::NoPostScriptError();
   }
   catch (const std::ios_base::failure& e)
@@ -236,6 +240,11 @@ void STORCommand::Execute()
     fs::DeleteFile(fs::MakeReal(path));
     control.Reply(ftp::DataCloseAborted,
                   "Error while writing to disk: " + std::string(e.what()));
+    
+    db::stats::Upload(client.User(), data.State().Bytes(), 
+                      data.State().Duration().total_milliseconds());    
+    
+    throw cmd::NoPostScriptError();
   }
   
   fout->close();
@@ -244,7 +253,7 @@ void STORCommand::Execute()
   e = fs::Chmod(client, path, completeMode);
   if (!e) control.PartReply(ftp::DataClosedOkay, "Failed to chmod upload: " + e.Message());
 
-  boost::posix_time::time_duration duration = data.State().EndTime() - data.State().StartTime();
+  auto duration = data.State().Duration();
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
 
   auto section = cfg::Get().SectionMatch(path);
@@ -263,8 +272,7 @@ void STORCommand::Execute()
                                 stats::UploadRatio(client, path, section));
   }
 
-  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + 
-      stats::AutoUnitSpeedString(speed)); 
+  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
 }
