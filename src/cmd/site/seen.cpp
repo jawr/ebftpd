@@ -10,12 +10,10 @@ namespace cmd { namespace site
 
 void SEENCommand::Execute()
 {
-  acl::User user;
   acl::UserProfile profile;
   try
   {
-    user = acl::UserCache::User(args[1]);
-    profile = db::userprofile::Get(user.UID());
+    profile = db::userprofile::Get(acl::UserCache::NameToUID(args[1]));
   }
   catch (const util::RuntimeError& e)
   {
@@ -24,6 +22,9 @@ void SEENCommand::Execute()
   }
 
   std::ostringstream os;
+  if (args[1] == client.User().Name())
+    os << "Looking at you right now!";
+  else
   if (!profile.LastLogin())
     os << "User " << args[1] << " has never logged in.";
   else

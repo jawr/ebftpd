@@ -11,6 +11,8 @@
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
+#include "db/group/groupprofile.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -31,29 +33,36 @@ void GROUPSCommand::Execute()
   }
 
   std::ostringstream os;
-  if (groups.size() > 0)
+  text::TemplateSection& head = templ->Head();
+  os << head.Compile();
+
+  text::TemplateSection& body = templ->Body();
+
+  for (auto& group: groups)
   {
-    text::TemplateSection& head = templ->Head();
-    os << head.Compile();
-
-    text::TemplateSection& body = templ->Body();
-
-    for (auto& group: groups)
+    std::string description;
+    try
     {
-      std::vector<acl::User> users = db::user::GetByACL("=" + group.Name());
-
-      body.Reset();
-      body.RegisterValue("users", users.size());
-      body.RegisterValue("group", group.Name());
-      os << body.Compile();
+      description = db::groupprofile::Get(group.GID()).Description();
     }
+    catch (const util::RuntimeError& e)
+    {
+      logs::error << "Unable to load group profile for: " 
+                  << group.Name() << logs::endl;
+    }
+    
+    std::vector<acl::User> users = db::user::GetByACL("=" + group.Name());
 
-    text::TemplateSection& foot = templ->Foot();
-    foot.RegisterValue("total_groups", groups.size());
-    os << foot.Compile();
+    body.RegisterValue("users", users.size());
+    body.RegisterValue("group", group.Name());
+    body.RegisterValue("descr", description);
+    os << body.Compile();
+    body.Reset();
   }
-  else
-    os << "No groups added.";
+
+  text::TemplateSection& foot = templ->Foot();
+  foot.RegisterValue("total_groups", groups.size());
+  os << foot.Compile();
 
   control.Reply(ftp::CommandOkay, os.str());
 }

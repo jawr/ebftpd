@@ -58,7 +58,7 @@ void Set(acl::GroupID gid, mongo::BSONObj obj)
 {
   obj = BSON("$set" << obj);
   mongo::Query query = QUERY("gid" << gid);
-  TaskPtr task(new db::Update("userprofiles", query, obj, false));
+  TaskPtr task(new db::Update("groupprofiles", query, obj, false));
   Pool::Queue(task);
 }
 
