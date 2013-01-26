@@ -43,7 +43,6 @@ Config::Config(const std::string& configFile) :
   dlIncomplete(true),
   totalUsers(20),
   multiplierMax(10),
-  oneliners(10),
   emptyNuke(102400),
   maxSitecmdLines(-1),
   weekStart(::cfg::WeekStart::Sunday),
@@ -146,7 +145,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "tls_ciphers")
   {
     ParameterCheck(opt, toks, 1);
-    tlsCiphers = fs::Path(toks[0]);
+    tlsCiphers = toks[0];
   }
   else if (opt == "reload_config")
   {
@@ -204,11 +203,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1);
     multiplierMax = boost::lexical_cast<int>(toks.at(0));
-  }
-  else if (opt == "oneliners")
-  {
-    ParameterCheck(opt, toks, 1);
-    oneliners = boost::lexical_cast<int>(toks.at(0));
   }
   else if (opt == "empty_nuke")
   {
@@ -323,11 +317,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1, -1);
     noretrieve.insert(noretrieve.end(), toks.begin(), toks.end());
   }
-  else if (opt == "tagline")
-  {
-    ParameterCheck(opt, toks, 1);
-    tagline = toks[0];
-  }
   else if (opt == "speed_limit")
   {
     ParameterCheck(opt, toks, 4, -1);
@@ -377,20 +366,10 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 2, -1);
     goodbyeMsg.emplace_back(toks); 
   }
-  else if (opt == "newsfile")
-  {
-    ParameterCheck(opt, toks, 2, -1);
-    newsfile.emplace_back(toks); 
-  }
   else if (opt == "cdpath")
   {
     ParameterCheck(opt, toks, 1);
     cdpath.emplace_back(toks[0]);
-  }
-  else if (opt == "nodupecheck")
-  {
-    ParameterCheck(opt, toks, 1);
-    nodupecheck = toks.at(0);
   }
   else if (opt == "alias")
   {
@@ -507,11 +486,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 2, -1);
     showTotals.emplace_back(toks); 
   }
-  else if (opt == "dupe_check")
-  {
-    ParameterCheck(opt, toks, 1, 2);
-    dupeCheck = setting::DupeCheck(toks);
-  }
   else if (opt == "cscript")
   {
     ParameterCheck(opt, toks, 3);
@@ -541,11 +515,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 3);
     nukedirStyle = setting::NukedirStyle(toks);
-  }
-  else if (opt == "privgroup")
-  {
-    ParameterCheck(opt, toks, 2);
-    privgroup.emplace_back(toks);
   }
   else if (opt == "msg_path")
   {

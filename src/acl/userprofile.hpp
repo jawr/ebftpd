@@ -33,6 +33,7 @@ class UserProfile
   int numLogins;
 
   std::string comment;
+  std::string tagline;
   
   int maxDlSpeed;
   int maxUlSpeed;
@@ -77,8 +78,7 @@ public:
   {
   }
 
-  const boost::optional<boost::gregorian::date>& Expires() const
-  { return expires; }
+  const boost::optional<boost::gregorian::date>& Expires() const { return expires; }
   bool Expired() const;
   acl::UserID Creator() const { return creator; }
   int Ratio() const { return ratio; }
@@ -88,6 +88,7 @@ public:
   int IdleTime() const { return idleTime; }
   int NumLogins() const { return numLogins; }
   const std::string& Comment() const { return comment; }
+  const std::string& Tagline() const { return tagline; }
   int MaxDlSpeed() const { return maxDlSpeed; }
   int MaxUlSpeed() const { return maxUlSpeed; }
   int MaxSimDl() const { return maxSimDl; }
@@ -96,6 +97,7 @@ public:
   const boost::gregorian::date& Created() const { return created; }
   const boost::optional<boost::posix_time::ptime>& LastLogin() const { return lastLogin; }
   int LoggedIn() const { return loggedIn; }
+  
   int SectionRatio(const std::string& section) const
   {
     try

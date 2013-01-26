@@ -246,6 +246,7 @@ public:
   int MaxLines() const { return maxLines; }
 };
 
+/*
 class DupeCheck : public Setting
 {
   int days;
@@ -255,7 +256,7 @@ public:
   DupeCheck(const std::vector<std::string>& toks);
   int Days() const { return days; }
   bool IgnoreCase() const { return ignoreCase; }
-};
+};*/
 
 class Lslong : public Setting
 {
@@ -344,17 +345,6 @@ public:
   const std::string& Format() const { return format; }
   int MinBytes() const { return minBytes; }
   Type GetType() const { return type; } // anonymous enum?
-};
-
-class Privgroup : public Setting
-{
-  std::string group;
-  std::string description;
-public:
-  Privgroup() : group("STAFF"), description("Staff Group") {}
-  Privgroup(const std::vector<std::string>& toks);
-  const std::string& Group() const { return group; }
-  const std::string& Description() const { return description; }
 };
 
 class Msgpath : public Setting

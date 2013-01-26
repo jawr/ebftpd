@@ -190,12 +190,12 @@ ShowTotals::ShowTotals(std::vector<std::string> toks)
   paths = toks;
 }
 
-DupeCheck::DupeCheck(const std::vector<std::string>& toks)   
+/*DupeCheck::DupeCheck(const std::vector<std::string>& toks)   
 {
   days = boost::lexical_cast<int>(toks.at(0));
   if (days < 0) throw boost::bad_lexical_cast();
   ignoreCase = util::string::BoolLexicalCast(toks.at(1));
-}
+}*/
 
 Lslong::Lslong(std::vector<std::string> toks)   
 {
@@ -283,12 +283,6 @@ NukedirStyle::NukedirStyle(const std::vector<std::string>& toks)
       break;
   }
   minBytes = boost::lexical_cast<int>(toks.at(2));
-}
-
-Privgroup::Privgroup(const std::vector<std::string>& toks)   
-{
-  group = toks.at(0);
-  description = toks.at(1);
 }
 
 Msgpath::Msgpath(const std::vector<std::string>& toks)   

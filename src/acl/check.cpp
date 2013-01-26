@@ -46,15 +46,6 @@ struct Traits<Goodbye>
   }
 };
 
-template <>
-struct Traits<Newsfile>
-{
-  static fs::Path Choose(const User& user)
-  {
-    return Evaluate(cfg::Get().Newsfile(), user);
-  }
-};
-
 template <Type type>
 fs::Path Chooose(const User& user)
 {

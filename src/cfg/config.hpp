@@ -42,7 +42,7 @@ class Config
   fs::Path sitepath;
   fs::Path pidfile;
   fs::Path tlsCertificate;
-  fs::Path tlsCiphers;
+  std::string tlsCiphers;
   int port;
   std::string defaultFlags;
   // glftpd
@@ -71,7 +71,6 @@ class Config
   std::vector<setting::AllowFxp> allowFxp;
   std::vector<setting::Right> welcomeMsg;
   std::vector<setting::Right> goodbyeMsg;
-  std::vector<setting::Right> newsfile;
   fs::Path banner;
   std::vector<setting::Alias> alias;
   std::vector<fs::Path> cdpath;
@@ -102,26 +101,21 @@ class Config
   std::vector<setting::Right> showDiz;
   std::vector<setting::ShowTotals> showTotals;
   bool dlIncomplete;
-  setting::DupeCheck dupeCheck;
   std::vector<setting::Cscript> cscript;
   std::vector<std::string> idleCommands;
   unsigned totalUsers;
   setting::Lslong lslong;
   std::vector<setting::HiddenFiles> hiddenFiles;
   std::vector<std::string> noretrieve;
-  std::string tagline;
   std::string email;
   int multiplierMax;
-  int oneliners;
   setting::Requests requests;
   setting::Lastonline lastonline;
   long emptyNuke;
-  std::string nodupecheck;
   std::vector<setting::Creditcheck> creditcheck;
   std::vector<setting::Creditloss> creditloss;
   setting::NukedirStyle nukedirStyle;
   acl::ACL hideuser;
-  std::vector<setting::Privgroup> privgroup;
   std::vector<setting::Msgpath> msgpath;
   std::vector<setting::Privpath> privpath;
   std::vector<setting::SiteCmd> siteCmd;
@@ -168,7 +162,7 @@ public:
   const fs::Path& Sitepath() const { return sitepath; }
   const fs::Path& Pidfile() const { return pidfile; }
   const fs::Path& TlsCertificate() const { return tlsCertificate; }
-  const fs::Path& TlsCiphers() const { return tlsCiphers; }
+  const std::string& TlsCiphers() const { return tlsCiphers; }
   int Port() const { return port; }
   const std::string& DefaultFlags() const { return defaultFlags; }
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
@@ -197,7 +191,6 @@ public:
   const std::vector<setting::AllowFxp>& AllowFxp() const { return allowFxp; }
   const std::vector<setting::Right>& WelcomeMsg() const { return welcomeMsg; }
   const std::vector<setting::Right>& GoodbyeMsg() const { return goodbyeMsg; }
-  const std::vector<setting::Right>& Newsfile() const { return newsfile; }
   const fs::Path& Banner() const { return banner; }
   const std::vector<setting::Alias>& Alias() const { return alias; }
   const std::vector<fs::Path>& Cdpath() const { return cdpath; }
@@ -228,26 +221,21 @@ public:
   const std::vector<std::string>& BannedUsers() const { return bannedUsers; }
   const std::vector<setting::Right>& ShowDiz() const { return showDiz; }
   bool DlIncomplete() const { return dlIncomplete; }
-  const setting::DupeCheck& DupeCheck() const { return dupeCheck; }
   const std::vector<setting::Cscript>& Cscript() const { return cscript; }
   const std::vector<std::string>& IdleCommands() const { return idleCommands; }
   unsigned TotalUsers() const { return totalUsers; }
   const setting::Lslong& Lslong() const { return lslong; }
   const std::vector<setting::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
   const std::vector<std::string>& Noretrieve() const { return noretrieve; }
-  const std::string& Tagline() const { return tagline; }
   const std::string& Email() const { return email; }
   int MultiplierMax() const { return multiplierMax; }
-  int Oneliners() const { return oneliners; }
   const setting::Requests& Requests() const { return requests; }
   const setting::Lastonline& Lastonline() const { return lastonline; }
   long EmptyNuke() const { return emptyNuke; }
-  const std::string& Nodupecheck() const { return nodupecheck; }
   const std::vector<setting::Creditcheck>& Creditcheck() const { return creditcheck; }
   const std::vector<setting::Creditloss>& Creditloss() const { return creditloss; }
   const setting::NukedirStyle& NukedirStyle() const { return nukedirStyle; }
   const acl::ACL& Hideuser() const { return hideuser; }
-  const std::vector<setting::Privgroup>& Privgroup() const { return privgroup; }
   const std::vector<setting::Msgpath>& Msgpath() const { return msgpath; }
   const std::vector<setting::Privpath>& Privpath() const { return privpath; }
   const std::vector<setting::SiteCmd>& SiteCmd() const { return siteCmd; }

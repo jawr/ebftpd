@@ -126,8 +126,7 @@ bool UserCache::Exists(UserID uid)
 util::Error UserCache::Create(const std::string& name, const std::string& password,
                               const std::string& flags, acl::UserID creator)
 {
-  const cfg::Config& config = cfg::Get();
-  unsigned totalUsers = config.TotalUsers();
+  unsigned totalUsers = cfg::Get().TotalUsers();
   if (totalUsers > 0 && Count() >= totalUsers)
   {
     std::ostringstream os;
