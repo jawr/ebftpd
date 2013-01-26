@@ -103,9 +103,18 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
+  scope_guard dataGuard = make_guard([&]
+  {
+    if (data.State().Type() != ftp::TransferType::None)
+    {
+      data.Close();
+      db::stats::Download(client.User(), data.State().Bytes(), 
+                          data.State().Duration().total_milliseconds());
+    }
+  });  
+
   if (!data.ProtectionOkay())
   {
-    data.Close();
     std::ostringstream os;
     os << "TLS is enforced on " << (data.IsFXP() ? "FXP" : "data") << " transfers.";
     control.Reply(ftp::ProtocolNotSupported, os.str());
@@ -147,35 +156,21 @@ void RETRCommand::Execute()
   catch (const ftp::TransferAborted&) { aborted = true; }
   catch (const std::ios_base::failure& e)
   {
-    fin->close();
-    data.Close();
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from disk: " + std::string(e.what()));
-
-    db::stats::Download(client.User(), data.State().Bytes(), 
-                        data.State().Duration().total_milliseconds());
     
     throw cmd::NoPostScriptError();
   }
   catch (const util::net::NetworkError& e)
   {
-    fin->close();
-    data.Close();
     control.Reply(ftp::DataCloseAborted,
                  "Error while writing to data connection: " +
                  e.Message());
-    
-    db::stats::Download(client.User(), data.State().Bytes(), 
-                        data.State().Duration().total_milliseconds());
-    
+
     throw cmd::NoPostScriptError();
   }
   catch (const ftp::ControlError& e)
   {
-    fin->close();
-    data.Close();
-    db::stats::Download(client.User(), data.State().Bytes(), 
-                        data.State().Duration().total_milliseconds());
     e.Rethrow();
   }
   
@@ -199,6 +194,7 @@ void RETRCommand::Execute()
     control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
+  (void) dataGuard;
 }
 
 } /* rfc namespace */

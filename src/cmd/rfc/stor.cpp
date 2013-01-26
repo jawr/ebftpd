@@ -159,6 +159,21 @@ void STORCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
+  bool fileOkay = data.RestartOffset() > 0;
+  scope_guard fileGuard = make_guard([&]{
+    if (!fileOkay)
+    {
+      try
+      {
+        fs::DeleteFile(fs::MakeReal(path));
+      }
+      catch (std::exception& e)
+      {
+        logs::error << "Failed to delete failed upload: " << e.what() << logs::endl;
+      }
+    }
+  });  
+  
   std::stringstream os;
   os << "Opening " << (data.DataType() == ftp::DataType::ASCII ? "ASCII" : "BINARY") 
      << " connection for upload of " 
@@ -178,12 +193,19 @@ void STORCommand::Execute()
                  "Unable to open data connection: " + e.Message());
     throw cmd::NoPostScriptError();
   }
+
+  scope_guard dataGuard = make_guard([&]
+  {
+    if (data.State().Type() != ftp::TransferType::None)
+    {
+      data.Close();
+      db::stats::Upload(client.User(), data.State().Bytes(), 
+                        data.State().Duration().total_milliseconds());            
+    }
+  });  
   
   if (!data.ProtectionOkay())
   {
-    fout->close();
-    data.Close();
-    fs::DeleteFile(fs::MakeReal(path));
     std::ostringstream os;
     os << "TLS is enforced on " << (data.IsFXP() ? "FXP" : "data") << " transfers.";
     control.Reply(ftp::ProtocolNotSupported, os.str());
@@ -193,6 +215,8 @@ void STORCommand::Execute()
   bool calcCrc = CalcCRC(path);
   util::CRC32 crc32;
   bool aborted = false;
+  
+  fileOkay = false;
   
   try
   {
@@ -224,42 +248,23 @@ void STORCommand::Execute()
   catch (const ftp::TransferAborted&) { aborted = true; }
   catch (const util::net::NetworkError& e)
   {
-    fout->close();
-    data.Close();
-    fs::DeleteFile(fs::MakeReal(path));
     control.Reply(ftp::DataCloseAborted,
                  "Error while reading from data connection: " +
                  e.Message());
-    
-    db::stats::Upload(client.User(), data.State().Bytes(), 
-                      data.State().Duration().total_milliseconds());    
     
     throw cmd::NoPostScriptError();
   }
   catch (const std::ios_base::failure& e)
   {
-    fout->close();
-    data.Close();
-    fs::DeleteFile(fs::MakeReal(path));
     control.Reply(ftp::DataCloseAborted,
                   "Error while writing to disk: " + std::string(e.what()));
-    
-    db::stats::Upload(client.User(), data.State().Bytes(), 
-                      data.State().Duration().total_milliseconds());    
-    
     throw cmd::NoPostScriptError();
   }
   catch (const ftp::ControlError& e)
   {
-    fout->close();
-    data.Close();
-    fs::DeleteFile(fs::MakeReal(path));    
-    db::stats::Upload(client.User(), data.State().Bytes(), 
-                      data.State().Duration().total_milliseconds());    
-
     e.Rethrow();
   }
-  
+
   fout->close();
   data.Close();
   
@@ -270,14 +275,11 @@ void STORCommand::Execute()
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
   auto section = cfg::Get().SectionMatch(path);
 
-  if (!exec::PostCheck(client, path, 
+  if (exec::PostCheck(client, path, 
                        calcCrc ? crc32.HexString() : "000000", speed, 
                        section ? section->Name() : ""))
   {
-    fs::DeleteFile(fs::MakeReal(path));
-  }
-  else
-  {
+    fileOkay = true;
     bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
     db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds(),
                       nostats ? "" : section->Name());    
@@ -292,6 +294,8 @@ void STORCommand::Execute()
     control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
   
   (void) countGuard;
+  (void) fileGuard;
+  (void) dataGuard;
 }
 
 } /* rfc namespace */
