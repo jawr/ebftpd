@@ -299,6 +299,71 @@ void SetSectionRatio(acl::UserID uid, const std::string& section, int ratio)
   Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, true));
 }
 
-// end
+bool CreditsDecrement(acl::UserID uid, long long bytes, 
+        const std::string& section, bool negativeOkay)
+{
+  mongo::BSONObjBuilder elemQuery;
+  elemQuery.append("section", section);
+  if (!negativeOkay) elemQuery.append("value", BSON("$gte" << bytes));
+  
+  auto query = BSON("uid" << uid << 
+                    "credits" << BSON("$elemMatch" << elemQuery.obj()));
+                    
+  auto update = BSON("$inc" << BSON("credits.$.value" << -bytes));
+                    
+  auto cmd = BSON("findandmodify" << "userprofiles" <<
+                  "query" << query <<
+                  "update" << update);
+                  
+  boost::unique_future<bool> future;
+  mongo::BSONObj result;
+  Pool::Queue(std::make_shared<db::RunCommand>(cmd, result, future));
+  return future.get() && result["value"].type() != mongo::jstNULL;
+}
+
+void CreditsIncrement(acl::UserID uid, long long bytes,
+        const std::string& section)
+{
+  auto function = [uid, bytes, section](mongo::DBClientConnection& conn)
+    {
+      auto updateExisting = [&]() -> bool
+        {
+          auto query = BSON("uid" << uid << 
+                            "credits" << BSON("$elemMatch" << BSON("section" << section)));
+                            
+          auto update = BSON("$inc" << BSON("credits.$.value" << bytes));
+                            
+          auto cmd = BSON("findandmodify" << "userprofiles" <<
+                          "query" << query <<
+                          "update" << update);
+          std::cout << "query: " << query.toString() << std::endl;
+          std::cout << "update: " << update.toString() << std::endl;
+          std::cout << "cmd: " << cmd.toString() << std::endl;
+                          
+          mongo::BSONObj result;
+          return RunCommand::Execute(conn, cmd, result) && 
+                 result["value"].type() != mongo::jstNULL;
+        };
+
+      auto doInsert = [&]() -> bool
+      {
+        auto query = QUERY("uid" << uid << "credits" << BSON("$not" << 
+                           BSON("$elemMatch" << BSON("section" << section))));
+        auto update = BSON("$push" << BSON("credits" << BSON("section" << section << "value" << bytes)));
+        return Update::Execute(conn, "userprofiles", query, update, false) > 0;
+      };
+      
+      if (updateExisting()) return;
+      if (doInsert()) return;
+      if (updateExisting()) return;
+
+      logs::db << "Unable to increment credits for UID " << uid;
+      if (!section.empty()) logs::db << " in section " << section;
+      logs::db << logs::endl;
+    };
+    
+  Pool::Queue(std::make_shared<db::Function>(function));
+}
+
 }
 }

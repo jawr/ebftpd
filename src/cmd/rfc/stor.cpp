@@ -23,6 +23,7 @@
 #include "acl/credits.hpp"
 #include "util/crc32.hpp"
 #include "ftp/error.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -283,9 +284,10 @@ void STORCommand::Execute()
     bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
     db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds(),
                       nostats ? "" : section->Name());    
-    
-    acl::UserCache::IncrCredits(client.User().Name(), data.State().Bytes() * 
-                                stats::UploadRatio(client, path, section));
+
+    db::userprofile::CreditsIncrement(client.User().UID(), 
+            data.State().Bytes() * stats::UploadRatio(client, path, section),
+            section ? section->Name() : "");
   }
 
   if (aborted)

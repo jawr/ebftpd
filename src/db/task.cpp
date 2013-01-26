@@ -11,37 +11,51 @@ namespace db
 
 Task::Task() : database(cfg::Get().Database().Name()) { }
 
-void RunCommand::Execute(mongo::DBClientConnection& conn)
+bool RunCommand::Execute(mongo::DBClientConnection& conn,
+          const mongo::BSONObj& cmd, mongo::BSONObj& ret)
 {
+  const std::string& database = cfg::Get().Database().Name();
   try
   {
     conn.runCommand(database, cmd, ret);
-    promise.set_value(true);
+    return true;
   }
   catch (const mongo::DBException& e)
   {
-    logs::db << "Query failed: " << database << " : " << cmd.toString() 
+    logs::db << "Command failed: " << database << " : " << cmd.toString() 
              << " : " << e.what() << logs::endl;
-    promise.set_value(false);
+    return false;
   }
 }
 
-void Update::Execute(mongo::DBClientConnection& conn)
+void RunCommand::Execute(mongo::DBClientConnection& conn)
 {
+  promise.set_value(Execute(conn, cmd, ret));
+}
+
+int Update::Execute(mongo::DBClientConnection& conn, const std::string& collection, 
+                    const mongo::Query& query, const mongo::BSONObj& obj, bool upsert)
+{
+  const std::string& database = cfg::Get().Database().Name();
   try
   {
     conn.update(database + "." + collection, query, obj, upsert, false);
     LastErrorToException(conn);
-    promise.set_value(conn.getLastErrorDetailed()["n"].Int());
+    return conn.getLastErrorDetailed()["n"].Int();
   }
   catch (const mongo::DBException& e)
   {
-    promise.set_value(-1);
     logs::db << "Update failed: " << database << "." 
              << collection << " : " << query.toString() 
              << " : " << obj.toString() << " upsert=" 
              << upsert << " : " << e.what() << logs::endl;
-  }
+    return -1;
+  }  
+}
+
+void Update::Execute(mongo::DBClientConnection& conn)
+{
+  promise.set_value(Execute(conn, collection, query, obj, upsert));
 }
 
 void Delete::Execute(mongo::DBClientConnection& conn)

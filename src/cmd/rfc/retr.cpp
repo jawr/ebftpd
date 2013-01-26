@@ -14,6 +14,7 @@
 #include "acl/path.hpp"
 #include "acl/credits.hpp"
 #include "ftp/error.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -81,6 +82,15 @@ void RETRCommand::Execute()
     control.Reply(ftp::ActionNotOkay, "File can't be downloaded in ASCII, change to BINARY.");
     throw cmd::NoPostScriptError();
   }
+  
+  auto section = cfg::Get().SectionMatch(path);
+  int ratio = stats::DownloadRatio(client, path, section);
+  if (!db::userprofile::CreditsDecrement(client.User().UID(), 
+            size * ratio, section ? section->Name() : "", false))
+  {
+    control.Reply(ftp::ActionNotOkay, "Not enough credits to download that file.");
+    throw cmd::NoPostScriptError();
+  }
 
   std::stringstream os;
   os << "Opening " << (data.DataType() == ftp::DataType::ASCII ? "ASCII" : "BINARY") 
@@ -110,6 +120,22 @@ void RETRCommand::Execute()
       data.Close();
       db::stats::Download(client.User(), data.State().Bytes(), 
                           data.State().Duration().total_milliseconds());
+    }
+    
+    if (size > data.State().Bytes())
+    {
+      // download failed short, give the remaining credits back
+      db::userprofile::CreditsIncrement(client.User().UID(), 
+              (size - data.State().Bytes()) * ratio,
+              section ? section->Name() : "");
+    }
+    else
+    if (data.State().Bytes() > size)
+    {
+      // final download size was larger than at start, take some more credits
+      db::userprofile::CreditsDecrement(client.User().UID(), 
+              (data.State().Bytes() - size) * ratio, 
+              section ? section->Name() : "", true);
     }
   });  
 
@@ -178,14 +204,10 @@ void RETRCommand::Execute()
   data.Close();
 
   auto duration = data.State().Duration();
-  auto section = cfg::Get().SectionMatch(path);
   bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
   db::stats::Download(client.User(), data.State().Bytes(), duration.total_milliseconds(),
                       nostats ? "" : section->Name());
-  
-  acl::UserCache::DecrCredits(client.User().Name(), data.State().Bytes() * 
-                              stats::DownloadRatio(client, path, section));
-
+                      
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
   
   if (aborted)

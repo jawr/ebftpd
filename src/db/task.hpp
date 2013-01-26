@@ -35,12 +35,17 @@ class RunCommand : public Task
   const mongo::BSONObj& cmd;
   mongo::BSONObj& ret;
   boost::promise<bool> promise;
+  
 public:
   RunCommand(const mongo::BSONObj& cmd, mongo::BSONObj& ret, 
-    boost::unique_future<bool>& future) : cmd(cmd), ret(ret)
+             boost::unique_future<bool>& future) : 
+    cmd(cmd), ret(ret)
   {
     future = promise.get_future();
   }
+  
+  static bool Execute(mongo::DBClientConnection& conn, const mongo::BSONObj& cmd, mongo::BSONObj& ret);
+
   void Execute(mongo::DBClientConnection& conn);
 };
 
@@ -107,15 +112,28 @@ protected:
   
 public:
   Update(const std::string& collection, const mongo::Query& query, 
-    const mongo::BSONObj& obj, boost::unique_future<int>& future, bool upsert=false) :
-    collection(collection), obj(obj), query(query), upsert(upsert)
-  { future = promise.get_future(); }
+         const mongo::BSONObj& obj, boost::unique_future<int>& future, 
+         bool upsert = false) :
+    collection(collection), 
+    obj(obj), 
+    query(query), 
+    upsert(upsert)
+  {
+    future = promise.get_future();
+  }
   
   Update(const std::string& collection, const mongo::Query& query, 
-    const mongo::BSONObj& obj, bool upsert=false) :
-    collection(collection), obj(obj), query(query), upsert(upsert),
-    dummyFuture(promise.get_future()) { }
+         const mongo::BSONObj& obj, bool upsert = false) :
+    collection(collection), 
+    obj(obj), 
+    query(query), 
+    upsert(upsert),
+    dummyFuture(promise.get_future()) 
+  { }
   
+  static int Execute(mongo::DBClientConnection& conn, const std::string& collection, 
+                     const mongo::Query& query, const mongo::BSONObj& obj, bool upsert = false);
+
   void Execute(mongo::DBClientConnection& conn);
 };
 
@@ -139,6 +157,40 @@ public:
   void Execute(mongo::DBClientConnection& conn);
 };
 
-// end
+class Function : public Task
+{
+  std::function<void(mongo::DBClientConnection&)> function;
+  
+public:
+  Function(std::function<void(mongo::DBClientConnection&)> function) :
+    function(function) { }
+  
+  void Execute(mongo::DBClientConnection& conn)
+  {
+    function(conn);
+  }
+};
+
+template <typename T>
+class FutureFunction : public Task
+{
+  std::function<T(mongo::DBClientConnection&)> function;
+  boost::promise<T> promise;
+  
+public:
+  FutureFunction(std::function<T(mongo::DBClientConnection&)> function,
+           boost::unique_future<T>& future) :
+    function(function)
+  {
+    future = promise.get_future();
+  }
+  
+  void Execute(mongo::DBClientConnection& conn)
+  {
+    promise.set_value(function(conn));
+  }
+};
+
 }
+
 #endif

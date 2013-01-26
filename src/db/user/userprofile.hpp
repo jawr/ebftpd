@@ -19,8 +19,13 @@ void Delete(acl::UserID uid);
 std::vector<acl::UserProfile> GetAll();
 acl::UserProfile Get(acl::UserID uid);
 
-std::unordered_map<acl::UserID, acl::UserProfile> GetSelection(
-  const std::vector<acl::User>& users);
+std::unordered_map<acl::UserID, acl::UserProfile>
+GetSelection(const std::vector<acl::User>& users);
+
+bool CreditsDecrement(acl::UserID uid, long long bytes, 
+        const std::string& section, bool negativeOkay);
+void CreditsIncrement(acl::UserID uid, long long bytes,
+        const std::string& section);
 
 // setters
 void Set(acl::UserID uid, mongo::BSONObj obj);
