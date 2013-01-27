@@ -20,7 +20,6 @@ mongo::BSONObj User::Serialize(const acl::User& user)
   bob.append("uid", user.uid);
   bob.append("primary gid", user.primaryGid);
   bob.append("secondary gids", SerializeContainer(user.secondaryGids));
-  bob.append("tagline", user.tagline);
   bob.append("ip masks", SerializeContainer(user.ipMasks));
 
   return bob.obj();

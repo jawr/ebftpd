@@ -137,7 +137,10 @@ void CHANGECommand::Execute()
     else if (setting == "num_logins")
       ok = db::userprofile::SetNumLogins(user.UID(), value);
     else if (setting == "tagline")
-      ok = acl::UserCache::SetTagline(user.Name(), value);
+    {
+      db::userprofile::SetTagline(user.UID(), value);
+      ok = util::Error::Success();
+    }
     else if (setting == "comment")
       ok = db::userprofile::SetComment(user.UID(), value);
     else if (setting == "max_dlspeed")

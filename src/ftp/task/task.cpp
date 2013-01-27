@@ -57,7 +57,7 @@ void GetOnlineUsers::Execute(Listener& listener)
   for (auto& client: listener.clients)
   {
     if (client.State() != ClientState::LoggedIn) continue;
-    users.emplace_back(WhoUser(client.User(), client.Data().State(), client.IdleTime(), 
+    users.emplace_back(WhoUser(client.User().UID(), client.Data().State(), client.IdleTime(), 
                        client.CurrentCommand(), client.Ident(), client.Hostname()));
   }
   

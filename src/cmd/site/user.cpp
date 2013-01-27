@@ -128,7 +128,7 @@ void USERCommand::Execute()
   }
   
   body.RegisterValue("secondary_groups", secondaryGroups.str());
-  body.RegisterValue("tagline", user.Tagline());
+  body.RegisterValue("tagline", profile.Tagline());
   body.RegisterValue("comment", profile.Comment());
   body.RegisterSize("weekly_allot", profile.WeeklyAllotment());
 

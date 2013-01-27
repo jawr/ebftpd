@@ -28,8 +28,6 @@ class User
   GroupID primaryGid;
   std::vector<GroupID> secondaryGids;
   
-  std::string tagline;
-  
   std::vector<std::string> ipMasks;
    
 public:
@@ -77,9 +75,6 @@ public:
   bool HasSecondaryGID(GroupID gid);
   
   bool CheckGID(GroupID gid);
-  
-  const std::string& Tagline() const { return tagline; }
-  void SetTagline(const std::string& tagline) { this->tagline = tagline; }
   
   util::Error AddIPMask(const std::string& mask, std::vector<std::string> &redundant);
   util::Error DelIPMask(decltype(ipMasks.size()) index, std::string& deleted);

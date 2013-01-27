@@ -17,6 +17,7 @@
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
+#include "acl/usercache.hpp"
 
 namespace cmd { namespace site
 {
@@ -24,9 +25,9 @@ namespace cmd { namespace site
 void SWHOCommand::Execute()
 {
   boost::unique_future<bool> future;
-  std::vector<ftp::task::WhoUser> users;
+  std::vector<ftp::task::WhoUser> whoUsers;
 
-  std::make_shared<ftp::task::GetOnlineUsers>(users, future)->Push();
+  std::make_shared<ftp::task::GetOnlineUsers>(whoUsers, future)->Push();
   future.wait();
 
   boost::optional<text::Template> templ;
@@ -49,16 +50,16 @@ void SWHOCommand::Execute()
   head.RegisterValue("sitename_short", cfg.SitenameShort());
   os << head.Compile();
 
-  for (auto& user: users)
+  for (auto& whoUser : whoUsers)
   {
     body.Reset();
-    body.RegisterValue("user", user.user.Name());
-    body.RegisterValue("ident_address", user.ident + "@" + user.address);
-    body.RegisterValue("action", user.Action());
+    body.RegisterValue("user", acl::UserCache::UIDToName(whoUser.uid));
+    body.RegisterValue("ident_address", whoUser.ident + "@" + whoUser.address);
+    body.RegisterValue("action", whoUser.Action());
     os << body.Compile();
   }
 
-  foot.RegisterValue("users", users.size());
+  foot.RegisterValue("users", whoUsers.size());
   foot.RegisterValue("total_users", cfg.TotalUsers());
   os << foot.Compile();
 

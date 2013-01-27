@@ -20,6 +20,7 @@ mongo::BSONObj UserProfile::Serialize(const acl::UserProfile& profile)
   bob.append("idle time", profile.idleTime);
   bob.append("num logins", profile.numLogins);
   bob.append("comment", profile.comment);
+  bob.append("tagline", profile.tagline);
   bob.append("max dl speed", profile.maxDlSpeed);
   bob.append("max ul speed", profile.maxUlSpeed);
   bob.append("max sim dl", profile.maxSimDl);
@@ -68,6 +69,7 @@ acl::UserProfile UserProfile::Unserialize(const mongo::BSONObj& bo)
     profile.idleTime = bo["idle time"].Int();
     profile.numLogins = bo["num logins"].Int();
     profile.comment = bo["comment"].String();
+    profile.tagline = bo["tagline"].String();
     profile.maxDlSpeed = bo["max dl speed"].Int();
     profile.maxUlSpeed = bo["max ul speed"].Int();
     profile.maxSimDl = bo["max sim dl"].Int();

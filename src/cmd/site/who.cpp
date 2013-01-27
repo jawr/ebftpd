@@ -19,6 +19,7 @@
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
+#include "acl/usercache.hpp"
 
 namespace cmd { namespace site
 {
@@ -26,9 +27,9 @@ namespace cmd { namespace site
 void WHOCommand::Execute()
 {
   boost::unique_future<bool> future;
-  std::vector<ftp::task::WhoUser> users;
+  std::vector<ftp::task::WhoUser> whoUsers;
 
-  std::make_shared<ftp::task::GetOnlineUsers>(users, future)->Push();
+  std::make_shared<ftp::task::GetOnlineUsers>(whoUsers, future)->Push();
 
   const cfg::Config& cfg = cfg::Get();
 
@@ -53,35 +54,44 @@ void WHOCommand::Execute()
   head.RegisterValue("sitename_short", cfg.SitenameShort());
   os << head.Compile();
 
-  acl::Group groupObj;
-  std::string group;
-  for (auto& user: users)
+  acl::User user;
+  int count = 0;
+  for (auto& whoUser: whoUsers)
   {
-    body.Reset();
+    try
+    {
+      user = acl::UserCache::User(whoUser.uid);
+    }
+    catch (const util::RuntimeError&)
+    {
+      continue;
+    }
+    
+    ++count;
+    
     std::string tagline;
     try
     {
-      tagline = user.user.Tagline();
+      tagline = db::userprofile::Get(whoUser.uid).Tagline();
     }
-    catch (const util::RuntimeError& e)
+    catch (const util::RuntimeError&)
     {
-      tagline = "Profile missing";
     }
     
-    body.RegisterValue("user", user.user.Name());
+    body.RegisterValue("user", user.Name());
     body.RegisterValue("group", 
-      acl::GroupCache::GIDToName(user.user.PrimaryGID()));
+      acl::GroupCache::GIDToName(user.PrimaryGID()));
     body.RegisterValue("tagline", tagline);
-    body.RegisterValue("action", user.Action());
+    body.RegisterValue("action", whoUser.Action());
     os << body.Compile();
+    body.Reset();
   }
 
-  foot.RegisterValue("users", users.size());
+  foot.RegisterValue("users", count);
   foot.RegisterValue("total_users", cfg.TotalUsers());
   os << foot.Compile();
 
   control.Reply(ftp::CommandOkay, os.str());
-  return; 
 }
 
 // end

@@ -51,7 +51,7 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   ts.RegisterValue("flags", client.User().Flags());
   ts.RegisterValue("ratio", acl::RatioString(client.UserProfile()));
   
-  ts.RegisterValue("tagline", client.User().Tagline());
+  ts.RegisterValue("tagline", client.UserProfile().Tagline());
   ts.RegisterValue("credits", acl::CreditString(client.UserProfile()));
   ts.RegisterValue("time_online", "");
 

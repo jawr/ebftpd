@@ -282,6 +282,11 @@ void SetRatio(acl::UserID uid, const std::string& section, int ratio)
   Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, true));
 }
 
+void SetTagline(acl::UserID uid, const std::string& tagline)
+{
+  Set(uid, BSON("tagline" << tagline));
+}
+
 bool DecrCredits(acl::UserID uid, long long bytes, 
         const std::string& section, bool negativeOkay)
 {

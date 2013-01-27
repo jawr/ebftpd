@@ -11,6 +11,7 @@
 #include "logs/logs.hpp"
 #include "acl/acl.hpp"
 #include "acl/allowsitecmd.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace site
 {
@@ -123,12 +124,21 @@ void RANKSCommand::Execute()
         continue;
       }
       
+      std::string tagline;
+      try
+      {
+        tagline = db::userprofile::Get(u.ID()).Tagline();
+      }
+      catch (const util::RuntimeError&)
+      {
+      }
+      
       if (!acl.Evaluate(user)) continue;
       
       body.RegisterValue("index", ++index);
       body.RegisterValue("user", user.Name());
       body.RegisterValue("group", acl::GroupCache::GIDToName(user.PrimaryGID()));
-      body.RegisterValue("tagline", user.Tagline());
+      body.RegisterValue("tagline", tagline);
       body.RegisterValue("files", u.Files());
       body.RegisterSize("bytes", u.Bytes());
       body.RegisterSpeed("speed", u.Speed());

@@ -397,18 +397,6 @@ util::Error UserCache::ResetGIDs(const std::string& name)
   return util::Error::Success();
 }
 
-util::Error UserCache::SetTagline(const std::string& name, const std::string& tagline)
-{
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
-  ByNameMap::iterator it = instance.byName.find(name);
-  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
-  
-  it->second->SetTagline(tagline);
-  
-  Save(*it->second, "tagline");
-  return util::Error::Success();
-}
-
 acl::User UserCache::User(const std::string& name)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
