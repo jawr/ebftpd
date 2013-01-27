@@ -109,7 +109,7 @@ void GROUPCommand::Execute()
     body.RegisterSize("amount_up", upStats[user.UID()].Bytes());
     body.RegisterValue("files_dn", dnStats[user.UID()].Files());
     body.RegisterSize("amount_dn", dnStats[user.UID()].Bytes());
-    body.RegisterValue("ratio", profiles[user.UID()].Ratio());
+    body.RegisterValue("ratio", profiles[user.UID()].Ratio(""));
     body.RegisterValue("weekly_allot", profiles[user.UID()].WeeklyAllotment());
     os << body.Compile();
     body.Reset();

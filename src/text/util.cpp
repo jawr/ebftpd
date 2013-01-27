@@ -12,6 +12,7 @@
 #include "acl/groupcache.hpp"
 #include "db/stats/stat.hpp"
 #include "stats/stat.hpp"
+#include "acl/util.hpp"
 
 namespace text
 {
@@ -48,18 +49,10 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   ts.RegisterValue("username", client.User().Name());
   ts.RegisterValue("groupname", acl::GroupCache::GIDToName(client.User().PrimaryGID()));
   ts.RegisterValue("flags", client.User().Flags());
-  
-  if (client.UserProfile().Ratio() == 0)
-    ts.RegisterValue("ratio", "Unlimited");
-  else
-  {
-    std::ostringstream ratio;
-    ratio << "1:" << client.UserProfile().Ratio();
-    ts.RegisterValue("ratio", ratio.str());
-  }
+  ts.RegisterValue("ratio", acl::RatioString(client.UserProfile()));
   
   ts.RegisterValue("tagline", client.User().Tagline());
-  ts.RegisterSize("credits", client.User().Credits());
+  ts.RegisterValue("credits", acl::CreditString(client.UserProfile()));
   ts.RegisterValue("time_online", "");
 
   boost::unique_future<void> oucFuture;

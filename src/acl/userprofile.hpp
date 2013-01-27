@@ -24,7 +24,6 @@ class UserProfile
   UserID creator;
   boost::gregorian::date created;
 
-  int ratio;
   int weeklyAllotment;
   std::string homeDir;
   std::string startupDir;
@@ -42,13 +41,13 @@ class UserProfile
 
   int loggedIn;
   boost::optional<boost::posix_time::ptime> lastLogin;
-  std::unordered_map<std::string, int> sectionRatio;
+  std::unordered_map<std::string, int> ratio;
+  std::unordered_map<std::string, long long> credits;
   
 public:
   UserProfile() :
     uid(-1),
     creator(0),
-    ratio(3),
     weeklyAllotment(0),
     homeDir("/"),
     startupDir("/"),
@@ -59,12 +58,12 @@ public:
     maxSimDl(-1),
     maxSimUl(-1),
     loggedIn(-1)
-  { }
+  {
+  }
   
   UserProfile(acl::UserID uid, acl::UserID creator) :
     uid(uid),
     creator(creator),
-    ratio(3),
     weeklyAllotment(0),
     homeDir("/"),
     startupDir("/"),
@@ -76,12 +75,13 @@ public:
     maxSimUl(2),
     loggedIn(0)
   {
+    ratio.insert(std::make_pair("", 3));
+    credits.insert(std::make_pair("", 0));
   }
 
   const boost::optional<boost::gregorian::date>& Expires() const { return expires; }
   bool Expired() const;
   acl::UserID Creator() const { return creator; }
-  int Ratio() const { return ratio; }
   int WeeklyAllotment() const { return weeklyAllotment; }
   const std::string& HomeDir() const { return homeDir; }
   const std::string& StartupDir() const { return startupDir; }
@@ -98,15 +98,27 @@ public:
   const boost::optional<boost::posix_time::ptime>& LastLogin() const { return lastLogin; }
   int LoggedIn() const { return loggedIn; }
   
-  int SectionRatio(const std::string& section) const
+  int Ratio(const std::string& section) const
   {
     try
     {
-      return sectionRatio.at(section);
+      return ratio.at(section);
     }
     catch (const std::out_of_range&)
     {
       return -1;
+    }
+  }
+  
+  long long Credits(const std::string& section) const
+  {
+    try
+    {
+      return credits.at(section);
+    }
+    catch (const std::out_of_range&)
+    {
+      return 0;
     }
   }
 

@@ -18,7 +18,6 @@ mongo::BSONObj User::Serialize(const acl::User& user)
   bob.append("password", user.password);
   bob.append("flags", user.flags);
   bob.append("uid", user.uid);
-  bob.append("credits", user.credits);
   bob.append("primary gid", user.primaryGid);
   bob.append("secondary gids", SerializeContainer(user.secondaryGids));
   bob.append("tagline", user.tagline);
@@ -34,7 +33,6 @@ void User::Unserialize(const mongo::BSONObj& bo, acl::User& user)
     user.modified = ToPosixTime(bo["modified"].Date());
     user.name = bo["name"].String();
     user.salt = bo["salt"].String();
-    user.credits = bo["credits"].Long();
     user.password = bo["password"].String();
     user.flags = bo["flags"].String();
     user.uid = bo["uid"].Int();

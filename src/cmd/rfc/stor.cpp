@@ -250,9 +250,7 @@ void STORCommand::Execute()
   catch (const util::net::NetworkError& e)
   {
     control.Reply(ftp::DataCloseAborted,
-                 "Error while reading from data connection: " +
-                 e.Message());
-    
+                 "Error while reading from data connection: " + e.Message());
     throw cmd::NoPostScriptError();
   }
   catch (const std::ios_base::failure& e)
@@ -284,10 +282,10 @@ void STORCommand::Execute()
     bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
     db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds(),
                       nostats ? "" : section->Name());    
-
-    db::userprofile::CreditsIncrement(client.User().UID(), 
+if (section) std::cout << "SEP " << section->SeparateCredits() << std::endl;
+    db::userprofile::IncrCredits(client.User().UID(), 
             data.State().Bytes() * stats::UploadRatio(client, path, section),
-            section ? section->Name() : "");
+            section && section->SeparateCredits() ? section->Name() : "");
   }
 
   if (aborted)

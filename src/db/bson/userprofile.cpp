@@ -14,7 +14,6 @@ mongo::BSONObj UserProfile::Serialize(const acl::UserProfile& profile)
   mongo::BSONObjBuilder bob;
   bob.append("uid", profile.uid);
   bob.append("creator", profile.creator);
-  bob.append("ratio", profile.ratio);
   bob.append("weekly allotment", profile.weeklyAllotment);
   bob.append("home dir", profile.homeDir);
   bob.append("startup dir", profile.startupDir);
@@ -33,13 +32,25 @@ mongo::BSONObj UserProfile::Serialize(const acl::UserProfile& profile)
   if (profile.lastLogin)
     bob.append("last login", ToDateT(*profile.lastLogin));
     
-  mongo::BSONArrayBuilder bab;
-  for (const auto& kv : profile.sectionRatio)
   {
-    bab.append(BSON("section" << kv.first << "ratio" << kv.second));
+    mongo::BSONArrayBuilder bab;
+    for (const auto& kv : profile.ratio)
+    {
+      bab.append(BSON("section" << kv.first << "value" << kv.second));
+    }
+    
+    bob.append("ratio", bab.arr());
   }
   
-  bob.append("section ratio", bab.arr());
+  {
+    mongo::BSONArrayBuilder bab;
+    for (const auto& kv : profile.credits)
+    {
+      bab.append(BSON("section" << kv.first << "value" << kv.second));
+    }
+    
+    bob.append("credits", bab.arr());    
+  }
   
   return bob.obj();
 }
@@ -51,7 +62,6 @@ acl::UserProfile UserProfile::Unserialize(const mongo::BSONObj& bo)
   try
   {  
     profile.uid = bo["uid"].Int();
-    profile.ratio = bo["ratio"].Int();
     profile.weeklyAllotment = bo["weekly allotment"].Int();
     profile.homeDir = bo["home dir"].String();
     profile.startupDir = bo["startup dir"].String();
@@ -70,14 +80,21 @@ acl::UserProfile UserProfile::Unserialize(const mongo::BSONObj& bo)
       
     if (bo.hasField("last login"))
       profile.lastLogin.reset(ToPosixTime(bo["last login"].Date()));
-    
+
     mongo::BSONElement oid;
     bo.getObjectID(oid);
     profile.created = ToGregDate(oid.OID().asDateT());
     
-    for (const auto& elem : bo["section ratio"].Array())
+    for (const auto& elem : bo["ratio"].Array())
     {
-      profile.sectionRatio.insert(std::make_pair(elem["section"].String(), elem["ratio"].Int()));
+      profile.ratio.insert(std::make_pair(elem["section"].String(), 
+                                          elem["value"].Int()));
+    }
+    
+    for (const auto& elem : bo["credits"].Array())
+    {
+      profile.credits.insert(std::make_pair(elem["section"].String(), 
+                                            elem["value"].Long()));
     }
     
   }

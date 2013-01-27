@@ -16,8 +16,7 @@ User::User(const std::string& name,
   modified(boost::posix_time::microsec_clock::local_time()),
   name(name),
   uid(-1),
-  primaryGid(-1),
-  credits(0)
+  primaryGid(-1)
 {
   SetPassword(password);
   AddFlags(flags);

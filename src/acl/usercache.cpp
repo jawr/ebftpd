@@ -397,36 +397,6 @@ util::Error UserCache::ResetGIDs(const std::string& name)
   return util::Error::Success();
 }
 
-util::Error UserCache::IncrCredits(const std::string& name, long long bytes)
-{
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
-  ByNameMap::iterator it = instance.byName.find(name);
-
-  if (it == instance.byName.end())
-    return util::Error::Failure("Unable to update credits, user " + 
-                                name + " doesn't exist.");
-
-  it->second->IncrCredits(bytes);
-
-  Save(*it->second);
-  return util::Error::Success();
-}
-
-util::Error UserCache::DecrCredits(const std::string& name, long long bytes)
-{
-  boost::lock_guard<boost::mutex> lock(instance.mutex);
-  ByNameMap::iterator it = instance.byName.find(name);
-
-  if (it == instance.byName.end()) 
-    return util::Error::Failure("Unable to update credits, user " + 
-                                name + " doesn't exist.");
-
-  it->second->DecrCredits(bytes);
-
-  Save(*it->second);
-  return util::Error::Success();
-}
-
 util::Error UserCache::SetTagline(const std::string& name, const std::string& tagline)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);

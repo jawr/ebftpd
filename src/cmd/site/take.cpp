@@ -8,12 +8,37 @@
 #include "acl/usercache.hpp"
 #include "acl/userprofile.hpp"
 #include "util/error.hpp"
+#include "db/user/userprofile.hpp"
+#include "cmd/error.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace site
 {
 
 void TAKECommand::Execute()
 {
+  std::string section;
+  if (boost::to_lower_copy(args[1]) == "-s")
+  {
+    section = boost::to_upper_copy(args[2]);
+    if (args.size() < 5) throw cmd::SyntaxError();
+    args.erase(args.begin() + 1, args.begin() + 3);
+    
+    const cfg::Config& config = cfg::Get();
+    auto it = config.Sections().find(section);
+    if (it == config.Sections().end())
+    {
+      control.Reply(ftp::ActionNotOkay, "Section " + section + " doesn't exist.");
+      return;
+    }
+    
+    if (!it->second.SeparateCredits())
+    {
+      control.Reply(ftp::ActionNotOkay, "Section " + section + " dosen't have separate credits.");
+      return;
+    }
+  }
+
   acl::User user;
   try
   {
@@ -27,7 +52,7 @@ void TAKECommand::Execute()
 
   std::string amount = args[2];
   std::string type = "K";
-  long credits;
+  long long credits;
   if (isalpha(amount.at(amount.length()-1)))
   {
     type.assign(amount.end()-1, amount.end());
@@ -37,23 +62,24 @@ void TAKECommand::Execute()
 
   try
   {
-    credits = boost::lexical_cast<long>(amount);
+    credits = boost::lexical_cast<long long>(amount);
   }
   catch (const boost::bad_lexical_cast& e)
   {
-    control.Reply(ftp::ActionNotOkay, "Error parsing number!");
-    return;
+    throw cmd::SyntaxError();
   }
 
   if (type == "G")
-    credits *= 1024 * 1024;
+    credits *= 1024 * 1024 * 1024;
   else if (type == "M")
+    credits *= 1024 * 1024;
+  else
     credits *= 1024;
 
-  acl::UserCache::DecrCredits(user.Name(), credits);
+  db::userprofile::DecrCredits(user.UID(), credits, section, true);
   
   std::ostringstream os;
-  os << "Taken " << std::fixed << std::setprecision(2) << credits 
+  os << "Taken " << std::fixed << std::setprecision(2) << credits / 1024.0
      << "KB credits from " << user.Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
 }

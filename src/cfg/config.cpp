@@ -567,6 +567,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "section")
   {
     ParameterCheck(opt, toks, 1);
+    boost::to_upper(toks[0]);
     auto result = sections.insert(std::make_pair(toks[0], Section(toks[0])));
     if (!result.second) throw ConfigError("Section " + toks[0] + " already exists.");
     currentSection = &result.first->second;

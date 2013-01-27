@@ -66,9 +66,6 @@ public:
   static GroupID PrimaryGID(UserID uid);
   static bool CheckGID(const std::string& name, acl::GroupID gid);
 
-  static util::Error IncrCredits(const std::string& name, long long kbytes);
-  static util::Error DecrCredits(const std::string& name, long long kbytes);
-
   static util::Error SetTagline(const std::string& name, const std::string& tagline);
   
   static unsigned Count(bool includeDeleted = false);

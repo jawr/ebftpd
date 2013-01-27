@@ -103,23 +103,6 @@ void Unset(acl::UserID uid, const std::string& field)
   Pool::Queue(task);
 }
 
-util::Error SetRatio(acl::UserID uid, const std::string& value)
-{
-  int ratio;
-  try
-  {
-    ratio = boost::lexical_cast<int>(value);
-    if (ratio < 0 || ratio > cfg::Get().MaximumRatio())
-      throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    return util::Error::Failure("Invalid ratio");
-  }
-  Set(uid, BSON("ratio" << ratio));
-  return util::Error::Success();
-}
-
 util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value)
 {
   int i;
@@ -282,24 +265,24 @@ void Login(acl::UserID uid)
   Pool::Queue(task);
 }
 
-void SetSectionRatio(acl::UserID uid, const std::string& section, int ratio)
+void SetRatio(acl::UserID uid, const std::string& section, int ratio)
 {
-  auto query = QUERY("uid" << uid << "section ratio.section" << section);
-  auto obj = BSON("$set" << BSON("section ratio.$.ratio" << ratio));
+  auto query = QUERY("uid" << uid << "ratio.section" << section);
+  auto obj = BSON("$set" << BSON("ratio.$.ratio" << ratio));
   boost::unique_future<int> future;
   Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, future));
   if (future.get() > 0) return;
   
   query = QUERY("uid" << uid);
   obj = BSON("$push" << 
-          BSON("section ratio" << 
-            BSON("section" << section << "ratio" << ratio
+          BSON("ratio" << 
+            BSON("section" << section << "value" << ratio
         )));
 
   Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, true));
 }
 
-bool CreditsDecrement(acl::UserID uid, long long bytes, 
+bool DecrCredits(acl::UserID uid, long long bytes, 
         const std::string& section, bool negativeOkay)
 {
   mongo::BSONObjBuilder elemQuery;
@@ -314,14 +297,16 @@ bool CreditsDecrement(acl::UserID uid, long long bytes,
   auto cmd = BSON("findandmodify" << "userprofiles" <<
                   "query" << query <<
                   "update" << update);
-                  
+std::cout << cmd.toString() << std::endl;
   boost::unique_future<bool> future;
   mongo::BSONObj result;
   Pool::Queue(std::make_shared<db::RunCommand>(cmd, result, future));
-  return future.get() && result["value"].type() != mongo::jstNULL;
+  future.wait();
+  std::cout << result.toString() << std::endl;
+  return /*negativeOkay || */(future.get() && result["value"].type() != mongo::jstNULL);
 }
 
-void CreditsIncrement(acl::UserID uid, long long bytes,
+void IncrCredits(acl::UserID uid, long long bytes,
         const std::string& section)
 {
   auto function = [uid, bytes, section](mongo::DBClientConnection& conn)

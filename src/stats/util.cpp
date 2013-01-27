@@ -50,7 +50,7 @@ int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path,
 {
   if (section)
   {
-    int ratio = client.UserProfile().SectionRatio(section->Name());
+    int ratio = client.UserProfile().Ratio(section->Name());
     if (ratio >= 0) return ratio;
   }
   
@@ -59,8 +59,8 @@ int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path,
   
   if (section &&  section->Ratio() >= 0) return section->Ratio();
   
-  assert(client.UserProfile().Ratio() >= 0);
-  return client.UserProfile().Ratio();
+  assert(client.UserProfile().Ratio("") >= 0);
+  return client.UserProfile().Ratio("");
 }
 
 int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
@@ -70,7 +70,7 @@ int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path,
   
   if (section)
   {
-    int ratio = client.UserProfile().SectionRatio(section->Name());
+    int ratio = client.UserProfile().Ratio(section->Name());
     if (ratio >= 0) return ratio;
   }
   
@@ -79,8 +79,8 @@ int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path,
   
   if (section &&  section->Ratio() >= 0) return section->Ratio();
   
-  assert(client.UserProfile().Ratio() >= 0);
-  return client.UserProfile().Ratio();
+  assert(client.UserProfile().Ratio("") >= 0);
+  return client.UserProfile().Ratio("");
 }
 
 } /* stats namespace */

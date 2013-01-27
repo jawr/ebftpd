@@ -110,7 +110,20 @@ void CHANGECommand::Execute()
     os << "\n";
 
     if (setting == "ratio")
-      ok = db::userprofile::SetRatio(user.UID(), value);
+    {
+      try
+      {
+        int ratio = boost::lexical_cast<int>(value);
+        if (ratio < 0) throw boost::bad_lexical_cast();
+        db::userprofile::SetRatio(user.UID(), "", ratio);
+        ok = util::Error::Success();
+      }
+      catch (const boost::bad_lexical_cast&)
+      {
+        control.Reply(ftp::ActionNotOkay, "Invalid ratio");
+        return;
+      }
+    }
     //else if (setting == "wkly_allotment")
       //ok = db::userprofile::SetWeeklyAllotment(user.UID(), value);
     //else if (setting == "homedir")
@@ -173,7 +186,7 @@ void CHANGECommand::Execute()
         if (ratio < -1 || ratio > cfg::Get().MaximumRatio())
           throw boost::bad_lexical_cast();
           
-        db::userprofile::SetSectionRatio(user.UID(), args[3], ratio);
+        db::userprofile::SetRatio(user.UID(), args[3], ratio);
         std::ostringstream vos;
         vos << args[3] << " " << ratio;
         value = vos.str();

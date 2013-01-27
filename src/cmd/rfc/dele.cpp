@@ -10,6 +10,7 @@
 #include "logs/logs.hpp"
 #include "cmd/error.hpp"
 #include "stats/util.hpp"
+#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -41,10 +42,11 @@ void DELECommand::Execute()
     long long creditLoss = bytes * stats::UploadRatio(client, path, section);
     if (creditLoss)
     {
-      acl::UserCache::DecrCredits(client.User().Name(), creditLoss);
+      db::userprofile::DecrCredits(client.User().UID(), creditLoss, 
+              section && section->SeparateCredits() ? section->Name() : "", true);
       std::ostringstream os;
       os << "DELE command successful. (" << std::fixed << std::setprecision(2) 
-         << creditLoss / 1024.0 << "MB credits lost)";
+         << creditLoss / 1024.0 / 1024.0 << "MB credits lost)";
       control.Reply(ftp::FileActionOkay, os.str()); 
       return;
     }

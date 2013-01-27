@@ -85,8 +85,8 @@ void RETRCommand::Execute()
   
   auto section = cfg::Get().SectionMatch(path);
   int ratio = stats::DownloadRatio(client, path, section);
-  if (!db::userprofile::CreditsDecrement(client.User().UID(), 
-            size * ratio, section ? section->Name() : "", false))
+  if (!db::userprofile::DecrCredits(client.User().UID(), size * ratio, 
+          section && section->SeparateCredits() ? section->Name() : "", false))
   {
     control.Reply(ftp::ActionNotOkay, "Not enough credits to download that file.");
     throw cmd::NoPostScriptError();
@@ -125,17 +125,17 @@ void RETRCommand::Execute()
     if (size > data.State().Bytes())
     {
       // download failed short, give the remaining credits back
-      db::userprofile::CreditsIncrement(client.User().UID(), 
+      db::userprofile::IncrCredits(client.User().UID(), 
               (size - data.State().Bytes()) * ratio,
-              section ? section->Name() : "");
+              section && section->SeparateCredits() ? section->Name() : "");
     }
     else
     if (data.State().Bytes() > size)
     {
       // final download size was larger than at start, take some more credits
-      db::userprofile::CreditsDecrement(client.User().UID(), 
+      db::userprofile::DecrCredits(client.User().UID(), 
               (data.State().Bytes() - size) * ratio, 
-              section ? section->Name() : "", true);
+              section && section->SeparateCredits() ? section->Name() : "", true);
     }
   });  
 

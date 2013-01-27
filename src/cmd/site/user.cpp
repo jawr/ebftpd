@@ -21,6 +21,7 @@
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
 #include "cfg/get.hpp"
+#include "acl/util.hpp"
 
 namespace cmd { namespace site
 {
@@ -102,18 +103,8 @@ void USERCommand::Execute()
     body.RegisterValue("expires", "Never");
   body.RegisterValue("creator", creator);
   body.RegisterValue("flags", user.Flags());
-  body.RegisterValue("ratio", profile.Ratio());
-  
-  std::ostringstream sratio;
-  for (const auto& kv : cfg::Get().Sections())
-  {
-    int ratio = profile.SectionRatio(kv.first);
-    if (ratio >= 0)
-      sratio << kv.first << "(" << ratio << ") ";
-  }
-  body.RegisterValue("sratio", sratio.str());
-  
-  body.RegisterSize("credits", user.Credits());
+  body.RegisterValue("ratio", acl::RatioString(profile));  
+  body.RegisterValue("credits", acl::CreditString(profile));
   body.RegisterValue("primary_group", 
     acl::GroupCache::GIDToName(user.PrimaryGID()));
 
@@ -158,7 +149,6 @@ void USERCommand::Execute()
 
   control.Reply(ftp::CommandOkay, os.str());
 }
-
 
 // end
 }

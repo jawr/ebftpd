@@ -28,7 +28,6 @@ class User
   GroupID primaryGid;
   std::vector<GroupID> secondaryGids;
   
-  long long credits;
   std::string tagline;
   
   std::vector<std::string> ipMasks;
@@ -38,8 +37,7 @@ public:
     modified(boost::posix_time::microsec_clock::local_time()),
     flags("6"),
     uid(-1),
-    primaryGid(-1),
-    credits(0)
+    primaryGid(-1)
   { }
   
   User(const std::string& name, const std::string& password, const std::string& flags);
@@ -53,20 +51,6 @@ public:
     this->name = name;
   }
 
-  long long Credits() const { return credits; }
-  
-  void DecrCredits(long long kbytes)
-  {
-    modified = boost::posix_time::microsec_clock::local_time();
-    credits -= kbytes;
-  }
-  
-  void IncrCredits(long long kbytes)
-  {
-    modified = boost::posix_time::microsec_clock::local_time();
-    credits += kbytes;
-  }
-  
   void SetPassword(const std::string& password);
   bool VerifyPassword(const std::string& password) const;
   
