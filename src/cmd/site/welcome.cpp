@@ -1,17 +1,27 @@
 #include "cmd/site/welcome.hpp"
 #include "text/util.hpp"
+#include "acl/message.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
 
 void WELCOMECommand::Execute()
 {
-  std::string messages;
-  util::Error e = text::GenericTemplate(client, "welcome", messages);
-  if (!e)
-    control.Reply(ftp::ActionNotOkay, e.Message());
-  else
-    control.Reply(ftp::CommandOkay, messages);
+  fs::Path welcomePath(acl::message::Choose<acl::message::Welcome>(client.User()));
+  if (!welcomePath.IsEmpty())
+  {
+    std::string welcome;
+    auto e = text::GenericTemplate(client, welcomePath, welcome);
+    if (!e) logs::error << "Failed to display welcome message : " << e.Message() << logs::endl;
+    else
+    {
+      control.Reply(ftp::CommandOkay, welcome);
+      return;
+    }
+  }
+  
+  control.Reply(ftp::CommandOkay, "No welcome message");
 }
 
 } /* site namespace */

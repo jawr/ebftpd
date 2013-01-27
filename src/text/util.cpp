@@ -13,6 +13,7 @@
 #include "db/stats/stat.hpp"
 #include "stats/stat.hpp"
 #include "acl/util.hpp"
+#include "text/parser.hpp"
 
 namespace text
 {
@@ -91,12 +92,10 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   }
 }
 
-util::Error GenericTemplate(const ftp::Client& client, const std::string& name, std::string& messages)
+util::Error GenericTemplate(const ftp::Client& client, Template& tmpl, std::string& messages)
 {
   try
-  {
-    Template tmpl = Factory::GetTemplate(name);
-    
+  {    
     // !!!!!!! UGLY running register globals 3 times.
     // need a mechanism for duplicating the registrations across
     // all sections
@@ -118,6 +117,36 @@ util::Error GenericTemplate(const ftp::Client& client, const std::string& name, 
   }
   
   return util::Error::Success();
+}
+
+util::Error GenericTemplate(const ftp::Client& client, const std::string& name, std::string& messages)
+{
+  try
+  {
+    Template tmpl(Factory::GetTemplate(name));
+    return GenericTemplate(client, tmpl, messages);
+  }
+  catch (const TemplateError& e)
+  {
+    return util::Error::Failure(e.Message());
+  }
+  
+  return util::Error::Success();
+}
+
+util::Error GenericTemplate(const ftp::Client& client, const fs::Path& path,
+      std::string& messages)
+{
+  try
+  {
+    TemplateParser parser(path.ToString());
+    Template tmpl(parser.Create());
+    return GenericTemplate(client, tmpl, messages);
+  }
+  catch (const TemplateError& e)
+  {
+    return util::Error::Failure(e.Message());
+  }
 }
 
 } /* text namespace */

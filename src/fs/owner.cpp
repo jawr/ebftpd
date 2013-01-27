@@ -198,7 +198,7 @@ bool OwnerCache::GetParentName(const RealPath& path, RealPath& parent, Path& nam
   if (status.IsDirectory())
   {
     parent = path;
-    name = ".";
+    name = Path(".");
   }
   else
   {

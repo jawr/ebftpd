@@ -1,5 +1,6 @@
 #include "cmd/rfc/quit.hpp"
 #include "text/util.hpp"
+#include "acl/message.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -9,8 +10,12 @@ void QUITCommand::Execute()
   std::string goodbye;
   if (client.State() == ftp::ClientState::LoggedIn)
   {
-    if (text::GenericTemplate(client, "goodbye", goodbye))
+    fs::Path goodbyePath(acl::message::Choose<acl::message::Goodbye>(client.User()));
+    if (!goodbyePath.IsEmpty() &&
+        text::GenericTemplate(client, goodbyePath, goodbye))
+    {
       control.Reply(ftp::ClosingControl, goodbye);
+    }
   }
   
   if (goodbye.empty()) control.Reply(ftp::ClosingControl, "Bye bye");

@@ -7,7 +7,7 @@ namespace cmd { namespace rfc
 
 void CDUPCommand::Execute()
 {
-  util::Error e = fs::ChangeDirectory(client,  fs::Resolve(fs::MakeVirtual("..")));
+  util::Error e = fs::ChangeDirectory(client,  fs::Resolve(fs::MakeVirtual(fs::Path(".."))));
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, "..: " + e.Message());

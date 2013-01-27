@@ -159,7 +159,7 @@ void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
   typedef boost::tokenizer<boost::char_separator<char>>  tokenizer;
   static const char* wildcardChars = "*?[]";
 
-  if (path.IsAbsolute()) parent = "/";
+  if (path.IsAbsolute()) parent = fs::Path("/");
   bool foundWildcards = false;
 
   boost::char_separator<char> sep("/");

@@ -212,14 +212,14 @@ public:
 
 class PathFilter : public Setting
 {
-  std::string messagePath;
+  fs::Path messagePath;
   boost::regex regex;
   acl::ACL acl;
   
 public:
   PathFilter() { }
   PathFilter(std::vector<std::string> toks);
-  const std::string& MessagePath() const { return messagePath; }
+  const fs::Path& MessagePath() const { return messagePath; }
   const boost::regex& Regex() const { return regex; }
   const acl::ACL& ACL() const { return acl; }
   

@@ -4,10 +4,7 @@
 #include "util/error.hpp"
 #include "ftp/client.hpp"
 
-namespace acl
-{
-              
-namespace Message
+namespace acl { namespace message
 {
 
 enum Type
@@ -20,8 +17,7 @@ enum Type
 template <Type type>
 fs::Path Choose(const User& user);
 
-}
-              
+} /* message namespace */
 } /* acl namespace */
 
 #endif

@@ -101,8 +101,8 @@ protected:
     
 public:
   Path() { }
-  Path(const std::string& path) : path(path) { }    
-  Path(const char* path) : path(path) { }  
+  explicit Path(const std::string& path) : path(path) { }    
+  explicit Path(const char* path) : path(path) { }  
 
   virtual ~Path() { cache.Clear(); }
     
@@ -126,7 +126,12 @@ public:
   const std::string& ToString() const { return path; }
   
   virtual Path& operator/=(const Path& rhs) { return Join(*this, rhs); }
+  virtual Path& operator/=(const std::string& rhs) { return Join(*this, Path(rhs)); }
+  virtual Path& operator/=(const char* rhs) { return Join(*this, Path(rhs)); }
+  
   virtual Path& operator&=(const Path& rhs) { return Append(*this, rhs); }
+  virtual Path& operator&=(const std::string& rhs) { return Append(*this, Path(rhs)); }
+  virtual Path& operator&=(const char* rhs) { return Append(*this, Path(rhs)); }
 
   bool operator==(const std::string& rhs) const { return path == rhs; }
   bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
@@ -162,9 +167,13 @@ public:
   
   VirtualPath& operator/=(const RealPath&) = delete;
   virtual VirtualPath& operator/=(const Path& rhs) { return Join(*this, rhs); }
+  virtual VirtualPath& operator/=(const std::string& rhs) { return Join(*this, Path(rhs)); }
+  virtual VirtualPath& operator/=(const char* rhs) { return Join(*this, Path(rhs)); }
 
   VirtualPath& operator&=(const RealPath&) = delete;
   virtual VirtualPath& operator&=(const Path& rhs) { return Append(*this, rhs); }
+  virtual VirtualPath& operator&=(const std::string& rhs) { return Append(*this, Path(rhs)); }
+  virtual VirtualPath& operator&=(const char* rhs) { return Append(*this, Path(rhs)); }
 
   // used for modifying the cache
   friend const RealPath& MakeReal(const VirtualPath& path);
@@ -185,9 +194,13 @@ public:
 
   RealPath& operator/=(const VirtualPath&) = delete;
   virtual RealPath& operator/=(const Path& rhs) { return Join(*this, rhs); }
+  virtual RealPath& operator/=(const std::string& rhs) { return Join(*this, Path(rhs)); }
+  virtual RealPath& operator/=(const char* rhs) { return Join(*this, Path(rhs)); }
 
   RealPath& operator&=(const RealPath&) = delete;
   virtual RealPath& operator&=(const Path& rhs) { return Append(*this, rhs); }  
+  virtual RealPath& operator&=(const std::string& rhs) { return Append(*this, Path(rhs)); }  
+  virtual RealPath& operator&=(const char* rhs) { return Append(*this, Path(rhs)); }  
   
   // used for modifying the cache
   friend const VirtualPath& MakeVirtual(const RealPath& path);
@@ -208,19 +221,55 @@ inline void Path::Cache::Clear()
 inline Path operator/(const Path& lhs, const Path& rhs)
 { return Path(lhs) /= rhs; }
 
+inline Path operator/(const Path& lhs, const std::string& rhs)
+{ return Path(lhs) /= rhs; }
+
+inline Path operator/(const Path& lhs, const char* rhs)
+{ return Path(lhs) /= rhs; }
+
 inline Path operator&(const Path& lhs, const Path& rhs)
+{ return Path(lhs) &= rhs; }
+
+inline Path operator&(const Path& lhs, const std::string& rhs)
+{ return Path(lhs) &= rhs; }
+
+inline Path operator&(const Path& lhs, const char* rhs)
 { return Path(lhs) &= rhs; }
 
 inline VirtualPath operator/(const VirtualPath& lhs, const Path& rhs)
 { return VirtualPath(lhs) /= rhs; }
 
+inline VirtualPath operator/(const VirtualPath& lhs, const std::string& rhs)
+{ return VirtualPath(lhs) /= rhs; }
+
+inline VirtualPath operator/(const VirtualPath& lhs, const char* rhs)
+{ return VirtualPath(lhs) /= rhs; }
+
 inline VirtualPath operator&(const VirtualPath& lhs, const Path& rhs)
+{ return VirtualPath(lhs) &= rhs; }
+
+inline VirtualPath operator&(const VirtualPath& lhs, const std::string& rhs)
+{ return VirtualPath(lhs) &= rhs; }
+
+inline VirtualPath operator&(const VirtualPath& lhs, const char* rhs)
 { return VirtualPath(lhs) &= rhs; }
 
 inline RealPath operator/(const RealPath& lhs, const Path& rhs)
 { return RealPath(lhs) /= rhs; }
 
+inline RealPath operator/(const RealPath& lhs, const std::string& rhs)
+{ return RealPath(lhs) /= rhs; }
+
+inline RealPath operator/(const RealPath& lhs, const char* rhs)
+{ return RealPath(lhs) /= rhs; }
+
 inline RealPath operator&(const RealPath& lhs, const Path& rhs)
+{ return RealPath(lhs) &= rhs; }
+
+inline RealPath operator&(const RealPath& lhs, const std::string& rhs)
+{ return RealPath(lhs) &= rhs; }
+
+inline RealPath operator&(const RealPath& lhs, const char* rhs)
 { return RealPath(lhs) &= rhs; }
 
 inline std::ostream& operator<<(std::ostream& os, const Path& path)
@@ -243,7 +292,7 @@ const RealPath& MakeReal(const VirtualPath& path);
 const RealPath& MakeReal(const RealPath& path);
 
 inline VirtualPath PathFromUser(const std::string& path)
-{ return fs::Resolve(fs::MakeVirtual(path)); }
+{ return fs::Resolve(fs::MakeVirtual(Path(path))); }
 
 } /* fs namespace */
 

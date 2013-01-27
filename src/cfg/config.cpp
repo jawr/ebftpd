@@ -120,27 +120,27 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   if (opt == "sitepath")
   {
     ParameterCheck(opt, toks, 1);
-    sitepath = fs::Path(toks.at(0));
+    sitepath = fs::Path(toks[0]);
   }
   else
   if (opt == "pidfile")
   {
     ParameterCheck(opt, toks, 1);
-    pidfile = fs::Path(toks.at(0));
+    pidfile = fs::Path(toks[0]);
   }
   else if (opt == "port")
   {
     ParameterCheck(opt, toks, 1);
-    port = boost::lexical_cast<int>(toks.at(0));
+    port = boost::lexical_cast<int>(toks[0]);
   }
   else if (opt == "default_flags")
   {
-    defaultFlags = toks.at(0);
+    defaultFlags = toks[0];
   }
   else if (opt == "tls_certificate")
   {
     ParameterCheck(opt, toks, 1);
-    tlsCertificate = fs::Path(toks.at(0));
+    tlsCertificate = fs::Path(toks[0]);
   }
   else if (opt == "tls_ciphers")
   {
@@ -154,7 +154,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "datapath")
   {
     ParameterCheck(opt, toks, 1);
-    datapath = fs::Path(toks.at(0));
+    datapath = fs::Path(toks[0]);
   }
   else if (opt == "pwd_path")
   {
@@ -167,7 +167,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "banner")
   {
     ParameterCheck(opt, toks, 1);
-    banner = fs::Path(toks.at(0));
+    banner = fs::Path(toks[0]);
   }
   else if (opt == "ascii_downloads")
   {
@@ -180,7 +180,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "free_space")
   {
     ParameterCheck(opt, toks, 1);
-    freeSpace = boost::lexical_cast<int>(toks.at(0));
+    freeSpace = boost::lexical_cast<int>(toks[0]);
   }
   else if (opt == "mmap_amount")
   {
@@ -202,17 +202,17 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "multiplier_max")
   {
     ParameterCheck(opt, toks, 1);
-    multiplierMax = boost::lexical_cast<int>(toks.at(0));
+    multiplierMax = boost::lexical_cast<int>(toks[0]);
   }
   else if (opt == "empty_nuke")
   {
     ParameterCheck(opt, toks, 1);
-    emptyNuke = boost::lexical_cast<int>(toks.at(0));
+    emptyNuke = boost::lexical_cast<int>(toks[0]);
   }
   else if (opt == "max_sitecmd_lines")
   {
     ParameterCheck(opt, toks, 1);
-    maxSitecmdLines = boost::lexical_cast<int>(toks.at(0));
+    maxSitecmdLines = boost::lexical_cast<int>(toks[0]);
   }
   else if (opt == "hideuser")
   {
@@ -231,7 +231,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "dl_incomplete")
   {
     ParameterCheck(opt, toks, 1);
-    dlIncomplete = util::string::BoolLexicalCast(toks.at(0));
+    dlIncomplete = util::string::BoolLexicalCast(toks[0]);
   }
   else if (opt == "file_dl_count")
   {
@@ -270,7 +270,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "bouncer_only")
   {
     ParameterCheck(opt, toks, 1);
-    bouncerOnly = util::string::BoolLexicalCast(toks.at(0));
+    bouncerOnly = util::string::BoolLexicalCast(toks[0]);
   }
   else if (opt == "calc_crc")
   {
@@ -340,7 +340,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "pasv_addr")
   {
     ParameterCheck(opt, toks, 1);
-    pasvAddr.emplace_back(toks.at(0));
+    pasvAddr.emplace_back(toks[0]);
   }
   else if (opt == "active_ports")
   {
@@ -634,7 +634,7 @@ void Config::ParseSection(const std::string& opt, std::vector<std::string>& toks
   if (opt == "path")
   {
     ParameterCheck(opt, toks, 1);
-    currentSection->paths.push_back(toks[0]);
+    currentSection->paths.push_back(fs::Path(toks[0]));
   }
   else if (opt == "separate_credits")
   {
@@ -673,7 +673,7 @@ void Config::Parse(std::string line)
   for (auto& token : toks) boost::replace_all(token, "[:space:]", " ");
 
   if (toks.size() == 0) return;
-  std::string opt = toks.at(0);
+  std::string opt = toks[0];
   if (opt.size() == 0) return;
   
   // remove setting from args

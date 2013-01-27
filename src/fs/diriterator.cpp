@@ -70,7 +70,7 @@ void DirIterator::NextEntry()
       {  continue; }
     }
     
-    current = de.d_name;
+    current = fs::Path(de.d_name);
     break;
   }
 }

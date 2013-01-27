@@ -15,11 +15,11 @@ util::Error Factory::Initalize()
 {
   std::unique_ptr<Factory> factory(new Factory());
   
-  fs::Path datapath = cfg::Get().Datapath() / "text";
+  fs::Path textpath = cfg::Get().Datapath() / "text";
   
   try
   {
-    fs::DirIterator it(datapath);
+    fs::DirIterator it(textpath);
     fs::DirIterator end;
    
     // let's get all error's in one go 
@@ -29,7 +29,7 @@ util::Error Factory::Initalize()
     {
       if (it->Extension() != "tmpl") continue;
       
-      fs::Path file(datapath / *it);
+      fs::Path file(textpath / *it);
       std::string name = it->NoExtension(); 
       boost::to_lower(name);
 

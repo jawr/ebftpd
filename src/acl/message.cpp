@@ -1,28 +1,22 @@
 #include <cassert>
 #include <boost/algorithm/string/predicate.hpp>
-#include "acl/check.hpp"
+#include "acl/message.hpp"
 #include "acl/user.hpp"
 #include "fs/path.hpp"
 #include "fs/owner.hpp"
 #include "cfg/get.hpp"
 #include "util/string.hpp"
 
-#include <iostream>
-
-namespace acl
+namespace acl { namespace message
 {
 
-namespace Message
-{
-
-fs::Path Evaluate(const std::vector<cfg::setting::Right>& rights, 
-                     const User& user)
+fs::Path Evaluate(const std::vector<cfg::setting::Right>& rights, const User& user)
 {
   for (const auto& right : rights)
   {
     if (right.ACL().Evaluate(user)) return right.Path();
   }
-  return "";
+  return fs::Path();
 }
 
 template <Type type>
@@ -47,30 +41,13 @@ struct Traits<Goodbye>
 };
 
 template <Type type>
-fs::Path Chooose(const User& user)
+fs::Path Choose(const User& user)
 {
   return Traits<type>::Choose(user);
 }
 
-}
-  
+template fs::Path Choose<Welcome>(const User& user);
+template fs::Path Choose<Goodbye>(const User& user);
+
+} /* message namespace */
 } /* acl namespace */
-
-
-#ifdef ACL_CHECK_TEST
-
-int main()
-{
-  using namespace acl;
-  User user("test", "test", "1");
-  fs::Path path("/hello/there");
-
-  std::cout << (path + "/") << std::endl;
-  
-  std::cout << PathPermission::FileAllowed<PathPermission::Upload>(user, path) << std::endl;
-  std::cout << PathPermission::DirAllowed<PathPermission::Makedir>(user, path) << std::endl;
-  
-
-}
-
-#endif

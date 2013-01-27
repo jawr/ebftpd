@@ -43,7 +43,7 @@ void LISTCommand::Execute()
       optOffset += args[1].length();
     }
     
-    path = boost::trim_copy(std::string(argStr, optOffset));
+    path = fs::Path(boost::trim_copy(std::string(argStr, optOffset)));
   }
   
   const cfg::Config& config = cfg::Get();

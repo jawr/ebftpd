@@ -7,6 +7,7 @@
 #include "logs/logs.hpp"
 #include "cmd/error.hpp"
 #include "text/util.hpp"
+#include "acl/message.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -121,10 +122,14 @@ void PASSCommand::Execute()
   
   db::userprofile::Login(client.User().UID());
 
-  std::string welcome;
-  e = text::GenericTemplate(client, "welcome", welcome);
-  if (!e) logs::error << "Failed to display welcome message : " << e.Message() << logs::endl;
-  else os << welcome;
+  fs::Path welcomePath(acl::message::Choose<acl::message::Welcome>(client.User()));
+  if (!welcomePath.IsEmpty())
+  {
+    std::string welcome;
+    e = text::GenericTemplate(client, welcomePath, welcome);
+    if (!e) logs::error << "Failed to display welcome message : " << e.Message() << logs::endl;
+    else os << welcome;
+  }
   
   os << "User " << client.User().Name() << " logged in.";
 
