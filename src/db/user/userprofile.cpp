@@ -297,13 +297,13 @@ bool DecrCredits(acl::UserID uid, long long bytes,
   auto cmd = BSON("findandmodify" << "userprofiles" <<
                   "query" << query <<
                   "update" << update);
-std::cout << cmd.toString() << std::endl;
+
   boost::unique_future<bool> future;
   mongo::BSONObj result;
   Pool::Queue(std::make_shared<db::RunCommand>(cmd, result, future));
   future.wait();
-  std::cout << result.toString() << std::endl;
-  return /*negativeOkay || */(future.get() && result["value"].type() != mongo::jstNULL);
+  
+  return negativeOkay || (future.get() && result["value"].type() != mongo::jstNULL);
 }
 
 void IncrCredits(acl::UserID uid, long long bytes,
@@ -321,9 +321,6 @@ void IncrCredits(acl::UserID uid, long long bytes,
           auto cmd = BSON("findandmodify" << "userprofiles" <<
                           "query" << query <<
                           "update" << update);
-          std::cout << "query: " << query.toString() << std::endl;
-          std::cout << "update: " << update.toString() << std::endl;
-          std::cout << "cmd: " << cmd.toString() << std::endl;
                           
           mongo::BSONObj result;
           return RunCommand::Execute(conn, cmd, result) && 
