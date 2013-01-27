@@ -448,13 +448,16 @@ void Client::InnerRun()
   else
   {
     std::string command = control.WaitForIdnt();
-    if (command.empty() && cfg::Get().BouncerOnly())
+    if (command.empty())
     {
-      logs::security << "Timeout while waiting for IDNT command from bouncer: "
-                     << HostnameAndIP() << logs::endl;
-      return;
+      if (cfg::Get().BouncerOnly())
+      {
+        logs::security << "Timeout while waiting for IDNT command from bouncer: "
+                       << HostnameAndIP() << logs::endl;
+        return;
+      }
     }
-    
+    else
     if (!IdntParse(command))
     {
       logs::security << "Malformed IDNT Command from bouncer: "
