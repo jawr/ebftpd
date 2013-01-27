@@ -474,12 +474,12 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "max_ustats")
   {
     ParameterCheck(opt, toks, 2, -1);
-    maxUstats = setting::ACLInt(toks);
+    maxUstats.emplace_back(toks);
   }
   else if (opt == "max_gstats")
   {
     ParameterCheck(opt, toks, 2, -1);
-    maxGstats = setting::ACLInt(toks);
+    maxGstats.emplace_back(toks);
   }
   else if (opt == "show_totals")
   {

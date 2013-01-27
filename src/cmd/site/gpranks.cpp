@@ -11,6 +11,7 @@
 #include "logs/logs.hpp"
 #include "db/group/groupprofile.hpp"
 #include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 
 namespace cmd { namespace site
 
@@ -48,6 +49,12 @@ void GPRANKSCommand::Execute()
     {
       throw cmd::SyntaxError();
     }
+  }
+  
+  int maxNumber = acl::stats::MaxGroups(client.User());
+  if (maxNumber != -1)
+  {
+    number = std::min(maxNumber, number);
   }
   
   const cfg::Config& config = cfg::Get();

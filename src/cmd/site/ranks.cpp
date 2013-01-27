@@ -12,6 +12,7 @@
 #include "acl/acl.hpp"
 #include "acl/allowsitecmd.hpp"
 #include "db/user/userprofile.hpp"
+#include "acl/misc.hpp"
 
 namespace cmd { namespace site
 {
@@ -48,6 +49,12 @@ void RANKSCommand::Execute()
     {
       throw cmd::SyntaxError();
     }
+  }
+
+  int maxNumber = acl::stats::MaxUsers(client.User());
+  if (maxNumber != -1)
+  {
+    number = std::min(maxNumber, number);
   }
   
   const cfg::Config& config = cfg::Get();

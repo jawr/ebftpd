@@ -1,6 +1,6 @@
 #include "cmd/site/welcome.hpp"
 #include "text/util.hpp"
-#include "acl/message.hpp"
+#include "acl/misc.hpp"
 #include "logs/logs.hpp"
 
 namespace cmd { namespace site

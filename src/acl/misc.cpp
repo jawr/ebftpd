@@ -1,6 +1,6 @@
 #include <cassert>
 #include <boost/algorithm/string/predicate.hpp>
-#include "acl/message.hpp"
+#include "acl/misc.hpp"
 #include "acl/user.hpp"
 #include "fs/path.hpp"
 #include "fs/owner.hpp"
@@ -50,4 +50,28 @@ template fs::Path Choose<Welcome>(const User& user);
 template fs::Path Choose<Goodbye>(const User& user);
 
 } /* message namespace */
+
+namespace stats
+{
+
+int Max(const std::vector<cfg::setting::ACLInt>& maxStats, const User& user)
+{
+  for (const auto& maxStat : maxStats)
+  {
+    if (maxStat.ACL().Evaluate(user)) return maxStat.Arg();
+  }
+  return -1;
+}
+
+int MaxUsers(const User& user)
+{
+  return Max(cfg::Get().MaxUstats(), user);
+}
+
+int MaxGroups(const User& user)
+{
+  return Max(cfg::Get().MaxGstats(), user);
+}
+
+} /* stats namespace */
 } /* acl namespace */

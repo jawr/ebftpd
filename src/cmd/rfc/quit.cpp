@@ -1,6 +1,6 @@
 #include "cmd/rfc/quit.hpp"
 #include "text/util.hpp"
-#include "acl/message.hpp"
+#include "acl/misc.hpp"
 
 namespace cmd { namespace rfc
 {

@@ -1,7 +1,7 @@
 #include "cmd/site/goodbye.hpp"
 #include "text/util.hpp"
 #include "logs/logs.hpp"
-#include "acl/message.hpp"
+#include "acl/misc.hpp"
 
 namespace cmd { namespace site
 {

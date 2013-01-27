@@ -95,8 +95,8 @@ class Config
   // end rights
   std::vector<setting::PathFilter> pathFilter;
   setting::MaxUsers maxUsers;
-  setting::ACLInt maxUstats;
-  setting::ACLInt maxGstats;
+  std::vector<setting::ACLInt> maxUstats;
+  std::vector<setting::ACLInt> maxGstats;
   std::vector<std::string> bannedUsers;
   std::vector<setting::Right> showDiz;
   std::vector<setting::ShowTotals> showTotals;
@@ -216,8 +216,8 @@ public:
 
   const std::vector<setting::PathFilter>& PathFilter() const { return pathFilter; }
   const setting::MaxUsers& MaxUsers() const { return maxUsers; }
-  const setting::ACLInt MaxUstats() const { return maxUstats; }
-  const setting::ACLInt MacGstats() const { return maxGstats; }
+  const std::vector<setting::ACLInt>& MaxUstats() const { return maxUstats; }
+  const std::vector<setting::ACLInt>& MaxGstats() const { return maxGstats; }
   const std::vector<std::string>& BannedUsers() const { return bannedUsers; }
   const std::vector<setting::Right>& ShowDiz() const { return showDiz; }
   bool DlIncomplete() const { return dlIncomplete; }

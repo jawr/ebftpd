@@ -64,11 +64,12 @@ class ACLInt : public Setting
 {
   int arg;
   acl::ACL acl;
+  
 public:
   ACLInt() {}
   ACLInt(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
-  int Int() const { return arg; }
+  int Arg() const { return arg; }
 };
 
 // glftpd
