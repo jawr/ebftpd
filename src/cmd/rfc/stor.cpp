@@ -118,14 +118,27 @@ void STORCommand::Execute()
   
   if (!exec::PreCheck(client, path)) throw cmd::NoPostScriptError();
 
-  if (!ftp::Counter::StartUpload(client.User().UID(), client.Profile().MaxSimUl()))
+  switch(ftp::Counter::StartUpload(client.User().UID(), 
+         client.Profile().MaxSimUl(), 
+         client.User().CheckFlag(acl::Flag::Exempt)))
   {
-    std::ostringstream os;
-    os << "You have reached your maximum of " << client.Profile().MaxSimUl() 
-       << " simultaneous upload(s).";
-    control.Reply(ftp::ActionNotOkay, os.str());
-    throw cmd::NoPostScriptError();
-  }
+    case ftp::CounterResult::PersonalFail  :
+    {
+      std::ostringstream os;
+      os << "You have reached your maximum of " << client.Profile().MaxSimUl() 
+         << " simultaneous uploads(s).";
+      control.Reply(ftp::ActionNotOkay, os.str());
+      throw cmd::NoPostScriptError();
+    }
+    case ftp::CounterResult::GlobalFail    :
+    {
+      control.Reply(ftp::ActionNotOkay, 
+          "The server has reached it's maximum number of simultaneous uploads.");
+      throw cmd::NoPostScriptError();          
+    }
+    case ftp::CounterResult::Okay          :
+      break;
+  }  
   
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopUpload(client.User().UID()); });  
 

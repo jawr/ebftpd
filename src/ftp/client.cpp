@@ -66,9 +66,23 @@ void Client::SetState(ClientState state)
 void Client::SetLoggedIn(const acl::UserProfile& profile, bool kicked)
 {
   
-  util::Error e(Counter::LogIn(user.UID(), profile.NumLogins(), kicked, 
-                      user.CheckFlag(acl::Flag::Exempt)));
-  if (!e) throw util::RuntimeError(e.Message());
+  auto result = Counter::LogIn(user.UID(), profile.NumLogins(), kicked, 
+                               user.CheckFlag(acl::Flag::Exempt));
+  switch (result)
+  {
+    case CounterResult::PersonalFail  :
+    {
+      std::ostringstream os;
+      os << "You've reached your maximum of " << profile.NumLogins() << " login(s).";
+      throw util::RuntimeError(os.str());
+    }
+    case CounterResult::GlobalFail    :
+    {
+      throw util::RuntimeError("The server has reached it's maximum number of logged in users.");
+    }
+    case CounterResult::Okay          :
+      break;
+  }
 
   if (profile.IdleTime() == -1)
     SetIdleTimeout(cfg::Get().IdleTimeout().Timeout());

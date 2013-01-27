@@ -32,13 +32,26 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  if (!ftp::Counter::StartDownload(client.User().UID(), client.Profile().MaxSimDl()))
+  switch(ftp::Counter::StartDownload(client.User().UID(), 
+         client.Profile().MaxSimDl(), 
+         client.User().CheckFlag(acl::Flag::Exempt)))
   {
-    std::ostringstream os;
-    os << "You have reached your maximum of " << client.Profile().MaxSimDl() 
-       << " simultaneous download(s).";
-    control.Reply(ftp::ActionNotOkay, os.str());
-    throw cmd::NoPostScriptError();
+    case ftp::CounterResult::PersonalFail  :
+    {
+      std::ostringstream os;
+      os << "You have reached your maximum of " << client.Profile().MaxSimDl() 
+         << " simultaneous download(s).";
+      control.Reply(ftp::ActionNotOkay, os.str());
+      throw cmd::NoPostScriptError();
+    }
+    case ftp::CounterResult::GlobalFail    :
+    {
+      control.Reply(ftp::ActionNotOkay, 
+          "The server has reached it's maximum number of simultaneous downloads.");
+      throw cmd::NoPostScriptError();          
+    }
+    case ftp::CounterResult::Okay          :
+      break;
   }
   
   scope_guard countGuard = make_guard([&]{ ftp::Counter::StopDownload(client.User().UID()); });  

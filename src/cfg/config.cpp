@@ -325,7 +325,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "sim_xfers")
   {
     ParameterCheck(opt, toks, 2);
-    simXfers.emplace_back(toks);
+    simXfers = setting::SimXfers(toks);
   }
   else if (opt == "secure_ip")
   {

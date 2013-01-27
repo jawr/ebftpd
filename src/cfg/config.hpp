@@ -60,7 +60,7 @@ class Config
   std::vector<std::string> bouncerIp;
   bool bouncerOnly;
   std::vector<setting::SpeedLimit> speedLimit;
-  std::vector<setting::SimXfers> simXfers;
+  setting::SimXfers simXfers;
   std::vector<std::string> calcCrc;
   std::vector<std::string> xdupe;
   std::vector<std::string> validIp;
@@ -180,7 +180,7 @@ public:
   bool IsBouncer(const std::string& ip) const;
   bool BouncerOnly() const { return bouncerOnly; }
   const std::vector<setting::SpeedLimit>& SpeedLimit() const { return speedLimit; }
-  const std::vector<setting::SimXfers>& SimXfers() const { return simXfers; }
+  const setting::SimXfers& SimXfers() const { return simXfers; }
   const std::vector<std::string>& CalcCrc() const { return calcCrc; }
   const std::vector<std::string>& Xdupe() const { return xdupe; }
   const std::vector<std::string>& ValidIp() const { return validIp; }

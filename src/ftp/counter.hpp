@@ -4,31 +4,39 @@
 #include <boost/thread/mutex.hpp>
 #include <unordered_map>
 #include "acl/types.hpp"
-#include "util/error.hpp"
 
 namespace ftp
 {
 
+enum class CounterResult
+{
+  PersonalFail,
+  GlobalFail,
+  Okay
+};
+
 class Counter
 {
   static boost::mutex loggedInMutex;
-  static std::unordered_map<acl::UserID, int> loggedIn;
   static int totalLoggedIn;
+  static std::unordered_map<acl::UserID, int> loggedIn;
   
-  static boost::mutex curUploadsMutex;
-  static std::unordered_map<acl::UserID, int> curUploads;
+  static boost::mutex uploadsMutex;
+  static int totalUploads;
+  static std::unordered_map<acl::UserID, int> uploads;
   
-  static boost::mutex curDownloadsMutex;
-  static std::unordered_map<acl::UserID, int> curDownloads;
+  static boost::mutex downloadsMutex;
+  static int totalDownloads;
+  static std::unordered_map<acl::UserID, int> downloads;
 
 public:
- static util::Error LogIn(acl::UserID uid, int limit, bool kickLogin, bool exempt);
+ static CounterResult LogIn(acl::UserID uid, int limit, bool kickLogin, bool exempt);
  static void LogOut(acl::UserID uid);
  
- static bool StartUpload(acl::UserID uid, int limit);
+ static CounterResult StartUpload(acl::UserID uid, int limit, bool exempt);
  static void StopUpload(acl::UserID uid);
  
- static bool StartDownload(acl::UserID uid, int limit);
+ static CounterResult StartDownload(acl::UserID uid, int limit, bool exempt);
  static void StopDownload(acl::UserID uid);
 };
 
