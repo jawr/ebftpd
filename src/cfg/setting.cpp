@@ -95,20 +95,26 @@ SpeedLimit::SpeedLimit(std::vector<std::string> toks)
   path = fs::Path(toks[0]);
   dlLimit = boost::lexical_cast<long>(toks[1]);
   ulLimit = boost::lexical_cast<long>(toks[2]);
-  toks.erase(toks.begin(), toks.begin()+3);
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));                                    
+  if (toks.size() > 3)
+  {
+    toks.erase(toks.begin(), toks.begin() + 3);
+    acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  }
+  else
+  {
+    acl = acl::ACL::FromString("*");
+  }
 }
 
 SimXfers::SimXfers(std::vector<std::string> toks)
 {
-  maxDownloads = boost::lexical_cast<unsigned int>(toks[0]);
-  maxUploads = boost::lexical_cast<unsigned int>(toks[1]);
+  maxDownloads = boost::lexical_cast<unsigned>(toks[0]);
+  maxUploads = boost::lexical_cast<unsigned>(toks[1]);
 }
 
-PasvAddr::PasvAddr(const std::vector<std::string>& toks)   
+PasvAddr::PasvAddr(const std::vector<std::string>& toks) :
+  addr(toks[0])
 {
-  addr = toks[0];
-  if (toks.size() > 1) nat = util::string::BoolLexicalCast(toks[1]);
 }
 
 Ports::Ports(const std::vector<std::string>& toks)   
@@ -135,8 +141,15 @@ AllowFxp::AllowFxp(std::vector<std::string> toks)
   downloads = util::string::BoolLexicalCast(toks[0]);
   uploads   = util::string::BoolLexicalCast(toks[1]);
   logging   = util::string::BoolLexicalCast(toks[2]);
-  toks.erase(toks.begin(), toks.begin() + 3);
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  if (toks.size() > 3)
+  {
+    toks.erase(toks.begin(), toks.begin() + 3);
+    acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  }
+  else
+  {
+    acl = acl::ACL::FromString("*");
+  }
 }
 
 Alias::Alias(const std::vector<std::string>& toks)   
@@ -178,8 +191,15 @@ MaxUsers::MaxUsers(const std::vector<std::string>& toks)
 ACLInt::ACLInt(std::vector<std::string> toks)   
 {
   arg = boost::lexical_cast<int>(toks[0]);
-  toks.erase(toks.begin());
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
+  if (toks.size() > 1)
+  {
+    toks.erase(toks.begin());
+    acl = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
+  }
+  else
+  {
+    acl = acl::ACL::FromString("*");
+  }
 }
 
 ShowTotals::ShowTotals(std::vector<std::string> toks)   

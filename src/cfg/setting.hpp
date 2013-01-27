@@ -44,7 +44,6 @@ public:
   const std::string& Password() const { return password; }
 };
 
-// generics
 class Right : public Setting
 {
   fs::Path path;
@@ -53,7 +52,6 @@ class Right : public Setting
   bool specialVar;
   
 public:
-  Right() {}
   Right(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
   const fs::Path& Path() const { return path; }
@@ -66,13 +64,10 @@ class ACLInt : public Setting
   acl::ACL acl;
   
 public:
-  ACLInt() {}
   ACLInt(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
   int Arg() const { return arg; }
 };
-
-// glftpd
 
 class AsciiDownloads : public Setting
 {
@@ -101,8 +96,6 @@ class SecureIp : public Setting
   acl::ACL acl;
 
 public:
-  SecureIp() : strength(2, false, true) { acl = acl::ACL::FromString("*"); } 
-  
   SecureIp(std::vector<std::string> toks);
   const acl::IPStrength& Strength() const { return strength; }
   const acl::ACL& ACL() const { return acl; }
@@ -122,7 +115,6 @@ class BouncerIp : public Setting
 {
   std::vector<std::string> addrs;
 public:
-  BouncerIp() {}
   BouncerIp(const std::vector<std::string>& toks);
   const std::vector<std::string>& Addrs() const { return addrs; }
 };
@@ -134,7 +126,6 @@ class SpeedLimit : public Setting
   long ulLimit;
   acl::ACL acl;
 public:
-  SpeedLimit() {}
   SpeedLimit(std::vector<std::string> toks);
   const fs::Path& Path() const { return path; }
   long DlLimit() const { return dlLimit; }
@@ -146,8 +137,9 @@ class SimXfers : public Setting
 {
   int maxDownloads;
   int maxUploads;
+  
 public:
-  SimXfers() {}
+  SimXfers() : maxDownloads(-1), maxUploads(-1) { }
   SimXfers(std::vector<std::string> toks);
   int MaxDownloads() const { return maxDownloads; }
   int MaxUploads() const { return maxUploads; }
@@ -156,11 +148,8 @@ public:
 class PasvAddr : public Setting
 {
   std::string addr;
-  bool nat;
 public:
-  PasvAddr() {}
   PasvAddr(const std::vector<std::string>& toks);
-  bool Nat() const { return nat; }
   const std::string& Addr() const { return addr; }
 };
 
@@ -174,7 +163,6 @@ public:
   int To() const { return to; }
 };
  
-// active/pasv ports
 class Ports : public Setting
 {
   std::vector<PortRange> ranges;
@@ -183,7 +171,6 @@ public:
   Ports(const std::vector<std::string>& toks);
   const std::vector<PortRange>& Ranges() const { return ranges; }
 };
-// end
 
 class AllowFxp : public Setting
 {
@@ -191,8 +178,12 @@ class AllowFxp : public Setting
   bool uploads;
   bool logging;
   acl::ACL acl;
+  
 public:
-  AllowFxp() {}
+  AllowFxp() :
+    downloads(true), uploads(true), 
+    logging(false), acl(acl::ACL::FromString("*"))
+  { }
   AllowFxp(std::vector<std::string> toks);
   bool Downloads() const { return downloads; }
   bool Uploads() const { return uploads; }
@@ -205,7 +196,6 @@ class Alias : public Setting
   std::string name;
   fs::Path path;
 public:
-  Alias() {}
   Alias(const std::vector<std::string>& toks);
   const std::string& Name() const { return name; }
   const fs::Path& Path() const { return path; }
@@ -218,7 +208,6 @@ class PathFilter : public Setting
   acl::ACL acl;
   
 public:
-  PathFilter() { }
   PathFilter(std::vector<std::string> toks);
   const fs::Path& MessagePath() const { return messagePath; }
   const boost::regex& Regex() const { return regex; }
@@ -231,7 +220,7 @@ class MaxUsers : public Setting
   int users;
   int exemptUsers;
 public:
-  MaxUsers() : users(10), exemptUsers(5) {}
+  MaxUsers() : users(50), exemptUsers(5) {}
   MaxUsers(const std::vector<std::string>& toks);
   int Users() const { return users; }
   int ExemptUsers() const { return exemptUsers; }
@@ -242,22 +231,9 @@ class ShowTotals : public Setting
   int maxLines;
   std::vector<std::string> paths;
 public:
-  ShowTotals() {}
   ShowTotals(std::vector<std::string> toks);
   int MaxLines() const { return maxLines; }
 };
-
-/*
-class DupeCheck : public Setting
-{
-  int days;
-  bool ignoreCase;
-public:
-  DupeCheck() {}
-  DupeCheck(const std::vector<std::string>& toks);
-  int Days() const { return days; }
-  bool IgnoreCase() const { return ignoreCase; }
-};*/
 
 class Lslong : public Setting
 {
@@ -265,7 +241,7 @@ class Lslong : public Setting
   std::string options;
   int maxRecursion;
 public:
-  Lslong() {}
+  Lslong() : options("l"), maxRecursion(0) { }
   Lslong(std::vector<std::string> toks);
   const fs::Path& Bin() const { return bin; }
   const std::string& Options() const { return options; }
@@ -277,7 +253,6 @@ class HiddenFiles : public Setting
   fs::Path path;
   std::vector<std::string> masks;
 public:
-  HiddenFiles() {}
   HiddenFiles(std::vector<std::string> toks);
   const fs::Path& Path() const { return path; }
   const std::vector<std::string>& Masks() const { return masks; }
@@ -288,7 +263,7 @@ class Requests : public Setting
   fs::Path path;
   int max;
 public:
-  Requests() : path("/ftp-data/misc/requests"), max(10) {}
+  Requests() : max(10) { }
   Requests(const std::vector<std::string>& toks);
   const fs::Path& Path() const { return path; }                              
   int Max() const { return max; }
@@ -296,13 +271,17 @@ public:
 
 class Lastonline : public Setting
 {
+public:
   enum Type { ALL, TIMEOUT, ALL_WITH_ACTIVITY };
+
+private:
   Type type;
   int max;
+
 public:
   Lastonline() : type(ALL), max(10) {}
   Lastonline(const std::vector<std::string>& toks);
-  Type GetType() const { return type; } // anonymous enum?
+  Type GetType() const { return type; }
   int Max() const { return max; }
 };
 
@@ -311,8 +290,8 @@ class Creditcheck : public Setting
   fs::Path path;
   int ratio;
   acl::ACL acl;
+  
 public:
-  Creditcheck() {}
   Creditcheck(std::vector<std::string> toks);
   const fs::Path& Path() const { return path; }
   int Ratio() const { return ratio; }
@@ -325,8 +304,8 @@ class Creditloss : public Setting
   bool allowLeechers;
   fs::Path path;
   acl::ACL acl;
+  
 public:
-  Creditloss() {}
   Creditloss(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
   int Ratio() const { return ratio; }
@@ -336,16 +315,20 @@ public:
 
 class NukedirStyle : public Setting
 {
-  std::string format;
+public:
   enum Type { DELETE_ALL, DELETE_FILES, KEEP };
+
+private:
+  std::string format;
   Type type;
   int minBytes;
+
 public:
-  NukedirStyle() {}
+  NukedirStyle() : type(KEEP), minBytes(1024 * 1024) { }
   NukedirStyle(const std::vector<std::string>& toks);
   const std::string& Format() const { return format; }
   int MinBytes() const { return minBytes; }
-  Type GetType() const { return type; } // anonymous enum?
+  Type GetType() const { return type; }
 };
 
 class Msgpath : public Setting
@@ -353,8 +336,8 @@ class Msgpath : public Setting
   std::string path;
   fs::Path file;
   acl::ACL acl;
+  
 public:
-  Msgpath() {}
   Msgpath(const std::vector<std::string>& toks);
   const std::string& Path() const { return path; }
   const acl::ACL& ACL() const { return acl; }
@@ -365,8 +348,8 @@ class Privpath : public Setting
 {
   fs::Path path; // no wildcards to avoid slowing down listing
   acl::ACL acl;
+
 public:
-  Privpath() {}
   Privpath(std::vector<std::string> toks);
   const fs::Path& Path() const { return path; }
   const acl::ACL& ACL() const { return acl; }
@@ -385,8 +368,6 @@ private:
   std::string arguments;
 
 public:
-
-  SiteCmd() {}
   SiteCmd(const std::vector<std::string>& toks);
   const std::string& Command() const { return command; }
   Type GetType() const { return type; }
@@ -406,8 +387,6 @@ private:
   fs::Path path;
   
 public:
-
-  Cscript() {}
   Cscript(const std::vector<std::string>& toks);
   const std::string& Command() const { return command; }                       
   const fs::Path& Path() const { return path; }
@@ -443,7 +422,6 @@ class CheckScript : public Setting
   bool disabled;
 
 public:
-  CheckScript() { }
   CheckScript(const std::vector<std::string>& toks);
 
   const fs::Path Path() const { return path; }

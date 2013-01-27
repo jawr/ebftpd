@@ -319,7 +319,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "speed_limit")
   {
-    ParameterCheck(opt, toks, 4, -1);
+    ParameterCheck(opt, toks, 3, -1);
     speedLimit.emplace_back(toks);
   }
   else if (opt == "sim_xfers")
@@ -353,7 +353,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "allow_fxp")
   {
-    ParameterCheck(opt, toks, 4, -1);
+    ParameterCheck(opt, toks, 3, -1);
     allowFxp.emplace_back(toks);
   }
   else if (opt == "welcome_msg")
@@ -473,12 +473,12 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "max_ustats")
   {
-    ParameterCheck(opt, toks, 2, -1);
+    ParameterCheck(opt, toks, 1, -1);
     maxUstats.emplace_back(toks);
   }
   else if (opt == "max_gstats")
   {
-    ParameterCheck(opt, toks, 2, -1);
+    ParameterCheck(opt, toks, 1, -1);
     maxGstats.emplace_back(toks);
   }
   else if (opt == "show_totals")
@@ -703,9 +703,7 @@ void Config::ParameterCheck(const std::string& opt,
 
 bool Config::CheckSetting(const std::string& name)
 {
-  std::unordered_map<std::string, int>::const_iterator it;
-  it = settingsCache.find(name);
-  return (it != settingsCache.end());
+  return settingsCache.find(name) != settingsCache.end();
 }
 
 void Config::SanityCheck()
@@ -716,6 +714,8 @@ void Config::SanityCheck()
   
   if (loginPrompt.empty())
     loginPrompt = sitenameLong + ": " + programFullname + " connected.";
+    
+  if (allowFxp.empty()) allowFxp.emplace_back();
 }
 
 bool Config::IsBouncer(const std::string& ip) const
