@@ -1,6 +1,7 @@
 #ifndef __FTP_UTIL_HPP
 #define __FTP_UTIL_HPP
 
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <sys/types.h>
@@ -28,14 +29,15 @@ inline void ASCIITranscodeSTOR(const char* source, size_t len, std::vector<char>
 #endif
 }
 
-inline void SpeedLimitSleep(const TransferState& state, int maxSpeed)
+inline void SpeedLimitSleep(const TransferState& state, int maxSpeed, 
+      const boost::posix_time::time_duration& globalSleep)
 {
   namespace pt = boost::posix_time;
   pt::time_duration elapsed = 
       pt::microsec_clock::local_time() - state.StartTime();
   pt::time_duration minElapsed = pt::microseconds((state.Bytes()  / 
       1024.0 / maxSpeed) * 1000000);
-  boost::this_thread::sleep(minElapsed - elapsed);
+  boost::this_thread::sleep(std::max(minElapsed - elapsed, globalSleep));
 }
 
 inline void StripTelnetChars(std::string& commandLine)

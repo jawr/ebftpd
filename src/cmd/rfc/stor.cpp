@@ -229,11 +229,11 @@ void STORCommand::Execute()
   bool calcCrc = CalcCRC(path);
   util::CRC32 crc32;
   bool aborted = false;
-  
   fileOkay = false;
   
   try
   {
+    auto globalSleep = pt::seconds(0);
     std::vector<char> asciiBuf;
     char buffer[16384];
     while (true)
@@ -255,7 +255,7 @@ void STORCommand::Execute()
       if (calcCrc) crc32.Update(bufp, len);
       
       if (client.Profile().MaxUlSpeed() > 0)
-        ftp::SpeedLimitSleep(data.State(), client.Profile().MaxUlSpeed());
+        ftp::SpeedLimitSleep(data.State(), client.Profile().MaxUlSpeed(), globalSleep);
     }
   }
   catch (const util::net::EndOfStream&) { }

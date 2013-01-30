@@ -4,6 +4,12 @@
 #include "util/error.hpp"
 #include "ftp/client.hpp"
 
+namespace cfg { namespace setting
+{
+class SpeedLimit;
+}
+}
+
 namespace acl { namespace message
 {
 
@@ -26,6 +32,16 @@ int MaxGroups(const User& user);
 
 } /* stats namespace */
 
+namespace speed
+{
+
+std::vector<const cfg::setting::SpeedLimit*>
+UploadLimit(const User& user, const fs::Path& path);
+
+std::vector<const cfg::setting::SpeedLimit*>
+DownloadLimit(const User& user, const fs::Path& path);
+
+} /* speed namespace */
 } /* acl namespace */
 
 #endif

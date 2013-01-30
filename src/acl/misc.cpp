@@ -74,4 +74,45 @@ int MaxGroups(const User& user)
 }
 
 } /* stats namespace */
+
+namespace speed
+{
+
+std::vector<const cfg::setting::SpeedLimit*>
+UploadLimit(const User& user, const fs::Path& path)
+{
+  std::vector<const cfg::setting::SpeedLimit*> matches;
+  if (!user.CheckFlag(acl::Flag::Exempt))
+  {
+    for (const auto& limit : cfg::Get().SpeedLimit())
+    {
+      if (limit.UlLimit() > 0 && limit.ACL().Evaluate(user) &&
+          util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
+      {
+        matches.emplace_back(&limit);
+      }
+    }
+  }
+  return matches;
+}
+
+std::vector<const cfg::setting::SpeedLimit*>
+DownloadLimit(const User& user, const fs::Path& path)
+{
+  std::vector<const cfg::setting::SpeedLimit*> matches;
+  if (!user.CheckFlag(acl::Flag::Exempt))
+  {
+    for (const auto& limit : cfg::Get().SpeedLimit())
+    {
+      if (limit.DlLimit() > 0 && limit.ACL().Evaluate(user) &&
+          util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
+      {
+        matches.emplace_back(&limit);
+      }
+    }
+  }
+  return matches;
+}
+
+} /* speed namespace */
 } /* acl namespace */

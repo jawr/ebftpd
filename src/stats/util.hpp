@@ -3,6 +3,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
+#include <cmath>
 
 namespace ftp
 {
@@ -32,6 +33,12 @@ inline double CalculateSpeed(long long bytes, const boost::posix_time::ptime& st
         const boost::posix_time::ptime& end)
 {
   return CalculateSpeed(bytes, end - start);
+}
+
+inline boost::posix_time::time_duration SpeedLimitSleep(double speed, double speedLimit)
+{
+  if (speed <= speedLimit) return boost::posix_time::microseconds(0);
+  return boost::posix_time::microseconds(std::ceil(speed / speedLimit * 1000000.0));
 }
         
 std::string AutoUnitSpeedString(double speed);

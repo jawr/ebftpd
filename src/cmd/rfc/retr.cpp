@@ -15,6 +15,7 @@
 #include "acl/credits.hpp"
 #include "ftp/error.hpp"
 #include "db/user/userprofile.hpp"
+#include "acl/misc.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -162,7 +163,15 @@ void RETRCommand::Execute()
   
   bool aborted = false;
   try
-  {
+  {    
+    double lastSpeed = 0;
+    auto speedLimit = acl::speed::DownloadLimit(client.User(), path);
+    scope_guard speedLimitGuard = make_guard([&]
+    {
+      if (!speedLimit.empty())
+        ftp::Counter::DownloadSpeedLimitClear(lastSpeed, speedLimit);
+    });
+
     bool dlIncomplete = cfg::Get().DlIncomplete();
     std::vector<char> asciiBuf;
     char buffer[16384];
@@ -172,7 +181,7 @@ void RETRCommand::Execute()
       if (len < 0) 
       {
         if (!dlIncomplete || !fs::IsIncomplete(MakeReal(path))) break;
-        boost::this_thread::sleep(boost::posix_time::microseconds(10000));
+        boost::this_thread::sleep(pt::microseconds(10000));
         continue;
       }
       
@@ -188,9 +197,21 @@ void RETRCommand::Execute()
       
       data.Write(bufp, len);
 
-      if (client.Profile().MaxDlSpeed() > 0)
-        ftp::SpeedLimitSleep(data.State(), client.Profile().MaxDlSpeed());
+      if (client.Profile().MaxDlSpeed() > 0 || !speedLimit.empty())
+      {
+        double speed = stats::CalculateSpeed(data.State().Bytes(), data.State().Duration());
+        auto sleep = stats::SpeedLimitSleep(speed, client.Profile().MaxDlSpeed() * 1024);
+        if (!speedLimit.empty())
+        {
+          sleep = std::max(sleep, ftp::Counter::UploadSpeedLimitSleep(lastSpeed, speed, speedLimit));
+        }
+        
+        boost::this_thread::sleep(sleep);
+        lastSpeed = speed;
+      }
     }
+    
+    (void) speedLimitGuard;
   }
   catch (const ftp::TransferAborted&) { aborted = true; }
   catch (const std::ios_base::failure& e)
