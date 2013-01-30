@@ -16,8 +16,6 @@ void PROTCommand::Execute()
       return;
     }
     
-    control.Reply(ftp::ParameterNotImplemented,
-                 "Protection type 'secure' not implemented.");
     data.SetProtection(true);
     control.Reply(ftp::CommandOkay, "Protection type set to 'private'.");
   }
