@@ -13,7 +13,6 @@
 #include "cfg/get.hpp"
 #include "fs/dircontainer.hpp"
 #include "fs/path.hpp"
-#include "logs/logs.hpp"
 
 namespace PP = acl::path;
 
@@ -148,7 +147,6 @@ util::Error RemoveDirectory(ftp::Client& client, const VirtualPath& path)
     DirContainer dirCont(MakeReal(path));
     for (auto& name : dirCont)
     {
-      logs::debug << name << logs::endl;
       if (name.ToString()[0] !=  '.') return
         util::Error::Failure(ENOTEMPTY);
         
@@ -157,6 +155,7 @@ util::Error RemoveDirectory(ftp::Client& client, const VirtualPath& path)
           !status.IsWriteable())
         return util::Error::Failure(ENOTEMPTY);
     }
+    
     
     dirCont.Rewind();
     

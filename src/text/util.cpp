@@ -43,12 +43,22 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
 
   const fs::VirtualPath& workDir = fs::WorkDirectory();
   ts.RegisterValue("work_dir", workDir.ToString());
-  ts.RegisterSize("free_space", 0);
-  auto section = config.SectionMatch(workDir);
-  ts.RegisterValue("section", section ? section->Name() : "");
+  
+  unsigned long long freeSpace = -1;
+  (void) fs::FreeDiskSpace(fs::MakeReal(workDir), freeSpace);
+  ts.RegisterSize("free_space", freeSpace);
+
+  if (ts.HasTag("section"))
+  {
+    auto section = config.SectionMatch(workDir);
+    ts.RegisterValue("section", section ? section->Name() : "");
+  }
   
   ts.RegisterValue("username", client.User().Name());
-  ts.RegisterValue("groupname", acl::GroupCache::GIDToName(client.User().PrimaryGID()));
+  if (ts.HasTag("groupname")) 
+  {
+    ts.RegisterValue("groupname", acl::GroupCache::GIDToName(client.User().PrimaryGID()));
+  }
   ts.RegisterValue("flags", client.User().Flags());
   ts.RegisterValue("ratio", acl::RatioString(client.UserProfile()));
   
@@ -56,13 +66,16 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   ts.RegisterValue("credits", acl::CreditString(client.UserProfile()));
   ts.RegisterValue("time_online", "");
 
-  boost::unique_future<void> oucFuture;
-  auto ocuTask = std::make_shared<ftp::task::OnlineUserCount>(oucFuture);
-  ocuTask->Push();
-  oucFuture.wait();
-  
-  ts.RegisterValue("online_users", ocuTask->Count());
-  ts.RegisterValue("all_online_users", ocuTask->AllCount());
+  if (ts.HasTag("online_users") || ts.HasTag("all_online_users"))
+  {
+    boost::unique_future<void> oucFuture;
+    auto ocuTask = std::make_shared<ftp::task::OnlineUserCount>(oucFuture);
+    ocuTask->Push();
+    oucFuture.wait();
+    
+    ts.RegisterValue("online_users", ocuTask->Count());
+    ts.RegisterValue("all_online_users", ocuTask->AllCount());
+  }
   
   for (auto tf : ::stats::timeframes)
   {
@@ -70,10 +83,15 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
     {
       std::string prefix = util::EnumToString(tf) + "_" +
                            util::EnumToString(dir) + "_";
-      auto stat = db::stats::CalculateSingleUser(client.User().UID(), "", tf, dir);
-      ts.RegisterValue(prefix + "files", stat.Files());
-      ts.RegisterSize(prefix + "size", stat.KBytes());
-      ts.RegisterSpeed(prefix + "speed", stat.Speed());
+      if (ts.HasTag(prefix + "files") ||
+          ts.HasTag(prefix + "size") ||
+          ts.HasTag(prefix + "speed"))
+      {
+        auto stat = db::stats::CalculateSingleUser(client.User().UID(), "", tf, dir);
+        ts.RegisterValue(prefix + "files", stat.Files());
+        ts.RegisterSize(prefix + "size", stat.KBytes());
+        ts.RegisterSpeed(prefix + "speed", stat.Speed());
+      }
     }
   }
   
@@ -95,14 +113,10 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
 util::Error GenericTemplate(const ftp::Client& client, Template& tmpl, std::string& messages)
 {
   try
-  {    
-    // !!!!!!! UGLY running register globals 3 times.
-    // need a mechanism for duplicating the registrations across
-    // all sections
-    
+  {
     RegisterGlobals(client, tmpl.Head());
-    RegisterGlobals(client, tmpl.Body());
-    RegisterGlobals(client, tmpl.Foot());
+    tmpl.Head().DuplicateTags(tmpl.Body());
+    tmpl.Head().DuplicateTags(tmpl.Foot());
     
     std::ostringstream os;
     os << tmpl.Head().Compile();

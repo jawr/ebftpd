@@ -143,11 +143,35 @@ public:
 };
 
 template <>
-struct Traits<Dirlog>
+struct Traits<Eventlog>
 {
   static util::Error Allowed(const User& user, const fs::VirtualPath& path)
   {
-    if (Evaluate(cfg::Get().Dirlog(), user, path))
+    if (Evaluate(cfg::Get().Eventlog(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+};
+
+template <>
+struct Traits<Dupelog>
+{
+  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+  {
+    if (Evaluate(cfg::Get().Dupelog(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+};
+
+template <>
+struct Traits<Indexed>
+{
+  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+  {
+    if (Evaluate(cfg::Get().Indexed(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -327,6 +351,7 @@ template util::Error FileAllowed<Upload>(const User& user, const fs::VirtualPath
 template util::Error FileAllowed<Resume>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Overwrite>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Download>(const User& user, const fs::VirtualPath& path);
+template util::Error FileAllowed<Eventlog>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Rename>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Filemove>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Delete>(const User& user, const fs::VirtualPath& path);
@@ -348,7 +373,9 @@ util::Error DirAllowed(const User& user, const fs::VirtualPath& path)
 
 template util::Error DirAllowed<Makedir>(const User& user, const fs::VirtualPath& path);
 template util::Error DirAllowed<Rename>(const User& user, const fs::VirtualPath& path);
-template util::Error DirAllowed<Dirlog>(const User& user, const fs::VirtualPath& path);
+template util::Error DirAllowed<Eventlog>(const User& user, const fs::VirtualPath& path);
+template util::Error DirAllowed<Dupelog>(const User& user, const fs::VirtualPath& path);
+template util::Error DirAllowed<Indexed>(const User& user, const fs::VirtualPath& path);
 template util::Error DirAllowed<Nuke>(const User& user, const fs::VirtualPath& path);
 template util::Error DirAllowed<Delete>(const User& user, const fs::VirtualPath& path);
 template util::Error DirAllowed<View>(const User& user, const fs::VirtualPath& path);

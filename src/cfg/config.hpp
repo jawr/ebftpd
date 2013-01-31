@@ -88,7 +88,9 @@ class Config
   std::vector<setting::Right> upload;
   std::vector<setting::Right> download;
   std::vector<setting::Right> nuke;
-  std::vector<setting::Right> dirlog;
+  std::vector<setting::Right> eventlog;
+  std::vector<setting::Right> dupelog;
+  std::vector<setting::Right> indexed;
   std::vector<setting::Right> hideinwho;
   std::vector<setting::Right> freefile;
   std::vector<setting::Right> nostats;
@@ -213,7 +215,9 @@ public:
   const std::vector<setting::Right>& Upload() const { return upload; } 
   const std::vector<setting::Right>& Download() const { return download; } 
   const std::vector<setting::Right>& Nuke() const { return nuke; } 
-  const std::vector<setting::Right>& Dirlog() const { return dirlog; } 
+  const std::vector<setting::Right>& Eventlog() const { return eventlog; } 
+  const std::vector<setting::Right>& Dupelog() const { return dupelog; }
+  const std::vector<setting::Right>& Indexed() const { return indexed; }
   const std::vector<setting::Right>& Hideinwho() const { return hideinwho; } 
   const std::vector<setting::Right>& Freefile() const { return freefile; } 
   const std::vector<setting::Right>& Nostats() const { return nostats; } 

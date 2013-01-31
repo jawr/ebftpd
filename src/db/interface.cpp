@@ -29,6 +29,8 @@ void Initialize()
   Pool::Queue(std::make_shared<db::EnsureIndex>("users", BSON("name" << 1)));
   Pool::Queue(std::make_shared<db::EnsureIndex>("groups", BSON("gid" << 1)));
   Pool::Queue(std::make_shared<db::EnsureIndex>("groups", BSON("name" << 1)));
+  Pool::Queue(std::make_shared<db::EnsureIndex>("index", BSON("path" << 1)));
+  Pool::Queue(std::make_shared<db::EnsureIndex>("dupe", BSON("directory" << 1)));
   
   Pool::Queue(std::make_shared<db::EnsureIndex>("transfers", 
           BSON("uid" << 1 << "direction" << 1 << 

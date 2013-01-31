@@ -3,6 +3,8 @@
 #include "acl/path.hpp"
 #include "fs/directory.hpp"
 #include "cmd/error.hpp"
+#include "db/index/index.hpp"
+#include "acl/path.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -22,9 +24,11 @@ void RNTOCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
+  bool isDirectory;
   try
   {
-    if (fs::Status(client, client.RenameFrom()).IsDirectory())
+    isDirectory = fs::Status(client, client.RenameFrom()).IsDirectory();
+    if (isDirectory)
       e = fs::RenameDirectory(client, client.RenameFrom(), path);
     else
       e = fs::RenameFile(client, client.RenameFrom(), path);    
@@ -39,6 +43,15 @@ void RNTOCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
     throw cmd::NoPostScriptError();
+  }
+
+  if (isDirectory)
+  {
+    if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), client.RenameFrom()))
+      db::index::Delete(client.RenameFrom().ToString());
+
+    if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
+      db::index::Add(path.ToString());
   }
   
   control.Reply(ftp::FileActionOkay, "RNTO command successful.");

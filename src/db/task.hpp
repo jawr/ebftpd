@@ -60,10 +60,13 @@ class Select : public Task
   
 public:
   Select(const std::string& collection, const mongo::Query& query,
-    QueryResults& results, boost::unique_future<bool>& future, int limit = 0, int skip = 0) : 
-      collection(collection), query(query), results(results),
-      limit(limit), skip(skip)
-    { future = promise.get_future(); }
+         QueryResults& results, boost::unique_future<bool>& future, 
+         int limit = 0, int skip = 0) : 
+    collection(collection), query(query), results(results),
+    limit(limit), skip(skip)
+  {
+    future = promise.get_future();
+  }
 
   void Execute(mongo::DBClientConnection& conn);
 };

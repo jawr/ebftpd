@@ -3,7 +3,7 @@
 
 #include <string>
 #include <unordered_map>
-
+#include <functional>
 #include "text/tag.hpp"
 #include "util/error.hpp"
 
@@ -27,6 +27,15 @@ public:
   void RegisterSpeed(std::string tagName, double speed);
 
   std::string Compile();
+  
+  void DuplicateTags(TemplateSection& section) const 
+  { section.tags.insert(section.tags.end(), tags.begin(), tags.end()); }
+  
+  bool HasTag(const std::string& tagName) const
+  {
+    return std::find_if(tags.begin(), tags.end(), 
+                  [tagName](const Tag& tag) { return tag.Name() == tagName; }) == tags.end();
+  }
 };
 
 // end

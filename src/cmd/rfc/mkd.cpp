@@ -3,6 +3,7 @@
 #include "acl/path.hpp"
 #include "exec/check.hpp"
 #include "cmd/error.hpp"
+#include "db/index/index.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -28,6 +29,9 @@ void MKDCommand::Execute()
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
     throw cmd::NoPostScriptError();
   }
+  
+  if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
+    db::index::Add(path.ToString());
   
   control.Reply(ftp::PathCreated, "MKD command successful."); 
 }

@@ -431,12 +431,21 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 2, -1);
     nuke.emplace_back(toks);
   }
-  else if (opt == "dirlog")
+  else if (opt == "eventlog")
   {
     ParameterCheck(opt, toks, 2, -1);
-    dirlog.emplace_back(toks);
+    eventlog.emplace_back(toks);
   }
-  else if (opt == "hideinwho")
+  else if (opt == "dupelog")
+  {
+    ParameterCheck(opt, toks, 2, -1);
+    dupelog.emplace_back(toks);
+  }
+  else if (opt == "indexed")
+  {
+    ParameterCheck(opt, toks, 2, -1);
+    indexed.emplace_back(toks);
+  }  else if (opt == "hideinwho")
   {
     ParameterCheck(opt, toks, 2, -1);
     hideinwho.emplace_back(toks);
