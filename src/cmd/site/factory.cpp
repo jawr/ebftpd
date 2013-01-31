@@ -53,6 +53,7 @@
 #include "cmd/site/goodbye.hpp"
 #include "cmd/site/ranks.hpp"
 #include "cmd/site/gpranks.hpp"
+#include "cmd/site/diskfree.hpp"
 
 namespace cmd { namespace site
 {
@@ -87,6 +88,10 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<site::DELUSERCommand>()),
                       "Syntax: SITE DELUSER <user>",
                       "Delete a user" }, },
+    { "DISKFREE",   { 0,  1,  "diskfree",
+                      CreatorBasePtr(new Creator<site::DISKFREECommand>()),
+                      "Syntax: SITE DISKFREE [<path>]",
+                      "Display disk space free" }, },
     { "READD",      { 1,  1,  "readd",
                       CreatorBasePtr(new Creator<site::READDCommand>()),
                       "Syntax: SITE READD <user>",
