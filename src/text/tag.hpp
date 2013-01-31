@@ -59,7 +59,7 @@ public:
   void Compile();
   
   void Parse(std::string value);
-  void ParseSize(long long bytes);
+  void ParseSize(long long kBytes);
   void ParseSpeed(double speed);
 
   const std::string& Name() const { return name; }

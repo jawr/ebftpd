@@ -13,7 +13,7 @@ namespace cmd { namespace site
 {
 
 std::string TRAFFICCommand::Format(const std::string& timeframe, 
-    long long sendBytes, long long receiveBytes, const std::string& section)
+    long long sendKBytes, long long receiveKBytes, const std::string& section)
 {
   using namespace stats;
 
@@ -21,9 +21,9 @@ std::string TRAFFICCommand::Format(const std::string& timeframe,
   os << "| " << std::setw(9) << std::left << timeframe 
      << " | " << std::setw(9) << section.substr(0, 9) 
      << " | " << std::setw(10) << std::right
-     << AutoUnitString(receiveBytes).substr(0,10) 
+     << AutoUnitString(receiveKBytes).substr(0,10) 
      << "| " << std::setw(10) 
-     << AutoUnitString(sendBytes).substr(0,10) << " " 
+     << AutoUnitString(sendKBytes).substr(0,10) << " " 
      << " |";
   return os.str();
 }
@@ -50,9 +50,9 @@ void TRAFFICCommand::Execute()
       db::stats::Traffic t(db::stats::TransfersTotal(tf, section));
       os << Format(util::string::TitleSimpleCopy(
               ::util::EnumToString(tf)),
-              t.SendBytes(), t.ReceiveBytes(), section) << "\n";
-      combined[tf].first += t.SendBytes();
-      combined[tf].second += t.ReceiveBytes();    
+              t.SendKBytes(), t.ReceiveKBytes(), section) << "\n";
+      combined[tf].first += t.SendKBytes();
+      combined[tf].second += t.ReceiveKBytes();    
     }
   }
      
@@ -65,9 +65,9 @@ void TRAFFICCommand::Execute()
     db::stats::Traffic t(db::stats::ProtocolTotal(tf));
     os << Format(util::string::TitleSimpleCopy(
             ::util::EnumToString(tf)), 
-            t.SendBytes(), t.ReceiveBytes()) << "\n";
-    combined[tf].first += t.SendBytes();
-    combined[tf].second += t.ReceiveBytes();
+            t.SendKBytes(), t.ReceiveKBytes()) << "\n";
+    combined[tf].first += t.SendKBytes();
+    combined[tf].second += t.ReceiveKBytes();
   }
   
   os << "|-----------'-----------'------------'------------+\n"

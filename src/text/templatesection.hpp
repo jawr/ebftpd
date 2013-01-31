@@ -26,7 +26,7 @@ public:
   void RegisterValue(std::string key, const std::string& value);
   void RegisterValue(std::string key, int value);
 
-  void RegisterSize(std::string key, long long bytes);
+  void RegisterSize(std::string key, long long kBytes);
   void RegisterSpeed(std::string key, long long bytes, long long xfertime);
   void RegisterSpeed(std::string key, double speed);
 

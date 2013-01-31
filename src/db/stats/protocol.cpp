@@ -9,7 +9,7 @@
 namespace db { namespace stats
 {
 
-void ProtocolUpdate(acl::UserID uid, long long sendBytes, long long receiveBytes)
+void ProtocolUpdate(acl::UserID uid, long long sendKBytes, long long receiveKBytes)
 {
   ::stats::Date date(cfg::Get().WeekStart() == cfg::WeekStart::Monday);
   
@@ -21,8 +21,8 @@ void ProtocolUpdate(acl::UserID uid, long long sendBytes, long long receiveBytes
   qbob.append("year", date.Year());
   mongo::Query query(qbob.obj());
   
-  mongo::BSONObj bo = BSON("$inc" << BSON("send bytes" << sendBytes) <<
-                           "$inc" << BSON("receive bytes" << receiveBytes));
+  mongo::BSONObj bo = BSON("$inc" << BSON("send kbytes" << sendKBytes) <<
+                           "$inc" << BSON("receive kbytes" << receiveKBytes));
   TaskPtr task(new db::Update("protocol", query, bo, true));
   Pool::Queue(task);
 }
@@ -34,8 +34,8 @@ Traffic ProtocolUser(acl::UserID uid, ::stats::Timeframe timeframe)
       BSON("$match" << ::db::bson::TimeframeSerialize(timeframe)) <<
       BSON("$group" << 
         BSON("_id" << (uid == -1 ? "" : "$uid") <<
-          "send total" << BSON("$sum" << "$send bytes") <<
-          "receive total" << BSON("$sum" << "$receive bytes")
+          "send total" << BSON("$sum" << "$send kbytes") <<
+          "receive total" << BSON("$sum" << "$receive kbytes")
         ))));
   
   boost::unique_future<bool> future;

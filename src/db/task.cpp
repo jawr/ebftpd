@@ -17,6 +17,7 @@ bool RunCommand::Execute(mongo::DBClientConnection& conn,
   const std::string& database = cfg::Get().Database().Name();
   try
   {
+    std::cout << cmd.toString() << std::endl;
     conn.runCommand(database, cmd, ret);
     return true;
   }

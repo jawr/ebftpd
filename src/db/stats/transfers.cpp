@@ -29,7 +29,7 @@ long long TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
       BSON("$match" << match.obj()) <<
       BSON("$group" << 
         BSON("_id" << (uid == -1 ? "" : "$uid") <<
-          "total" << BSON("$sum" << "$bytes")
+          "total" << BSON("$sum" << "$kbytes")
         ))));
   
   boost::unique_future<bool> future;

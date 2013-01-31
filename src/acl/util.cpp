@@ -61,7 +61,7 @@ bool Validate(ValidationType type, const std::string& s)
 std::string FormatRatio(int ratio)
 {
   assert(ratio >= 0);
-  if (ratio == 0) return "unlimited";
+  if (ratio == 0) return "Unlimited";
   std::ostringstream os;
   os << "1:" << ratio;
   return os.str();

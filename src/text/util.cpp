@@ -72,7 +72,7 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
                            util::EnumToString(dir) + "_";
       auto stat = db::stats::CalculateSingleUser(client.User().UID(), "", tf, dir);
       ts.RegisterValue(prefix + "files", stat.Files());
-      ts.RegisterSize(prefix + "bytes", stat.Bytes());
+      ts.RegisterSize(prefix + "size", stat.KBytes());
       ts.RegisterSpeed(prefix + "speed", stat.Speed());
     }
   }

@@ -76,8 +76,6 @@ void GIVECommand::Execute()
     credits *= 1024 * 1024 * 1024;
   else if (type == "M")
     credits *= 1024 * 1024;
-  else
-    credits *= 1024;
 
   std::ostringstream os;
   if (acl::AllowSiteCmd(client.User(), "giveown") &&

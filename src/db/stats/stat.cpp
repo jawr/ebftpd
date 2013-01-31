@@ -18,15 +18,14 @@
 namespace db { namespace stats
 {
 
-void Update(const acl::User& user, long long bytes, long long xfertime, 
+void Update(const acl::User& user, long long kBytes, long long xfertime, 
     const std::string& section, ::stats::Direction direction, bool decrement)
 {
   int files = 1;
-  
   if (decrement)
   {
     files *= -1;
-    bytes *= -1;
+    kBytes *= -1;
     xfertime *= -1;
   }
 
@@ -42,14 +41,14 @@ void Update(const acl::User& user, long long bytes, long long xfertime,
 
   mongo::BSONObj update = BSON(
     "$inc" << BSON("files" << files) <<
-    "$inc" << BSON("bytes" << bytes) <<
+    "$inc" << BSON("kbytes" << kBytes) <<
     "$inc" << BSON("xfertime" << xfertime));
     
   TaskPtr task(new db::Update("transfers", query.obj(), update, true));
   Pool::Queue(task);
 }
 
-void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const std::string& section)
+void UploadDecr(const acl::User& user, long long kBytes, time_t modTime, const std::string& section)
 {
   util::Time t(modTime);
 
@@ -60,7 +59,7 @@ void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const st
                "week" << t.Week() << "day" << t.Day())) <<
         BSON("$group" << 
           BSON("_id" << user.UID() << 
-            "total bytes" << BSON("$sum" << "$bytes") <<
+            "total kbytes" << BSON("$sum" << "$kbytes") <<
             "total xfertime" << BSON("$sum" << "$xfertime")
       ))));
     
@@ -79,9 +78,9 @@ void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const st
     {
       long long totalXfertime = result[0]["total xfertime"].Long();
       if (totalXfertime > 0)
-        xfertime = bytes / result[0]["total bytes"].Long() / totalXfertime;
+        xfertime = kBytes / result[0]["total kbytes"].Long() / totalXfertime;
       else
-        xfertime = bytes / result[0]["total bytes"].Long();
+        xfertime = kBytes / result[0]["total kbytes"].Long();
     }
     catch (const mongo::DBException& e)
     {
@@ -97,18 +96,18 @@ void UploadDecr(const acl::User& user, long long bytes, time_t modTime, const st
   }
 
   assert(!section.empty());
-  Update(user, bytes, xfertime, section, ::stats::Direction::Upload, true);
-  Update(user, bytes, xfertime, "", ::stats::Direction::Upload, false);
+  Update(user, kBytes, xfertime, section, ::stats::Direction::Upload, true);
+  Update(user, kBytes, xfertime, "", ::stats::Direction::Upload, false);
 }
 
-void Upload(const acl::User& user, long long bytes, long long xfertime, const std::string& section)
+void Upload(const acl::User& user, long long kBytes, long long xfertime, const std::string& section)
 {
-  Update(user, bytes, xfertime, section, ::stats::Direction::Upload, false);
+  Update(user, kBytes, xfertime, section, ::stats::Direction::Upload, false);
 }
 
-void Download(const acl::User& user, long long bytes, long long xfertime, const std::string& section)
+void Download(const acl::User& user, long long kBytes, long long xfertime, const std::string& section)
 {
-  Update(user, bytes, xfertime, section, ::stats::Direction::Download, false);
+  Update(user, kBytes, xfertime, section, ::stats::Direction::Download, false);
 }
 
 std::vector< ::stats::Stat> RetrieveUsers(
@@ -120,7 +119,7 @@ std::vector< ::stats::Stat> RetrieveUsers(
 {
   static const char* sortFields[] =
   {
-    "total bytes",
+    "total kbytes",
     "total files",
     "avg speed"
   };
@@ -144,15 +143,15 @@ std::vector< ::stats::Stat> RetrieveUsers(
   mongo::BSONArrayBuilder ops;
   ops.append(BSON("$match" << match.obj()));
   ops.append(BSON("$group" << BSON("_id" << "$uid" <<
-             "total bytes" << BSON("$sum" << "$bytes") <<
+             "total kbytes" << BSON("$sum" << "$kbytes") <<
              "total files" << BSON("$sum" << "$files") <<
              "total xfertime" << BSON("$sum" << "$xfertime"))));
   
-  ops.append(BSON("$project" << BSON("total bytes" << 1 <<
+  ops.append(BSON("$project" << BSON("total kbytes" << 1 <<
              "total files" << 1 <<
              "total xfertime" << 1 <<
              "avg speed" << BSON("$divide" << 
-             BSON_ARRAY("$total bytes" << "$total xfertime")))));
+             BSON_ARRAY("$total kbytes" << "$total xfertime")))));
            
   if (sortField) ops.append(BSON("$sort" << BSON(sortFields[static_cast<unsigned>(*sortField)] << -1)));
 
@@ -211,7 +210,7 @@ std::vector< ::stats::Stat> RetrieveGroups(
       case ::stats::SortField::Bytes  :
         sortCompare = [&](const ::stats::Stat& s1, const ::stats::Stat& s2)
                       {
-                        return s1.Bytes() > s2.Bytes();
+                        return s1.KBytes() > s2.KBytes();
                       };
         break;
       case ::stats::SortField::Speed  :

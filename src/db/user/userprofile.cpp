@@ -268,7 +268,8 @@ void Login(acl::UserID uid)
 void SetRatio(acl::UserID uid, const std::string& section, int ratio)
 {
   auto query = QUERY("uid" << uid << "ratio.section" << section);
-  auto obj = BSON("$set" << BSON("ratio.$.ratio" << ratio));
+  auto obj = BSON("$set" << BSON("ratio.$.value" << ratio));
+        std::cout << obj.toString() << std::endl;
   boost::unique_future<int> future;
   Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, future));
   if (future.get() > 0) return;
@@ -287,17 +288,17 @@ void SetTagline(acl::UserID uid, const std::string& tagline)
   Set(uid, BSON("tagline" << tagline));
 }
 
-bool DecrCredits(acl::UserID uid, long long bytes, 
+bool DecrCredits(acl::UserID uid, long long kBytes, 
         const std::string& section, bool negativeOkay)
 {
   mongo::BSONObjBuilder elemQuery;
   elemQuery.append("section", section);
-  if (!negativeOkay) elemQuery.append("value", BSON("$gte" << bytes));
+  if (!negativeOkay) elemQuery.append("value", BSON("$gte" << kBytes));
   
   auto query = BSON("uid" << uid << 
                     "credits" << BSON("$elemMatch" << elemQuery.obj()));
                     
-  auto update = BSON("$inc" << BSON("credits.$.value" << -bytes));
+  auto update = BSON("$inc" << BSON("credits.$.value" << -kBytes));
                     
   auto cmd = BSON("findandmodify" << "userprofiles" <<
                   "query" << query <<
@@ -311,17 +312,17 @@ bool DecrCredits(acl::UserID uid, long long bytes,
   return negativeOkay || (future.get() && result["value"].type() != mongo::jstNULL);
 }
 
-void IncrCredits(acl::UserID uid, long long bytes,
+void IncrCredits(acl::UserID uid, long long kBytes,
         const std::string& section)
 {
-  auto function = [uid, bytes, section](mongo::DBClientConnection& conn)
+  auto function = [uid, kBytes, section](mongo::DBClientConnection& conn)
     {
       auto updateExisting = [&]() -> bool
         {
           auto query = BSON("uid" << uid << 
                             "credits" << BSON("$elemMatch" << BSON("section" << section)));
                             
-          auto update = BSON("$inc" << BSON("credits.$.value" << bytes));
+          auto update = BSON("$inc" << BSON("credits.$.value" << kBytes));
                             
           auto cmd = BSON("findandmodify" << "userprofiles" <<
                           "query" << query <<
@@ -336,7 +337,7 @@ void IncrCredits(acl::UserID uid, long long bytes,
       {
         auto query = QUERY("uid" << uid << "credits" << BSON("$not" << 
                            BSON("$elemMatch" << BSON("section" << section))));
-        auto update = BSON("$push" << BSON("credits" << BSON("section" << section << "value" << bytes)));
+        auto update = BSON("$push" << BSON("credits" << BSON("section" << section << "value" << kBytes)));
         return Update::Execute(conn, "userprofiles", query, update, false) > 0;
       };
       

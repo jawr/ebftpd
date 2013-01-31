@@ -73,8 +73,6 @@ void TAKECommand::Execute()
     credits *= 1024 * 1024 * 1024;
   else if (type == "M")
     credits *= 1024 * 1024;
-  else
-    credits *= 1024;
 
   db::userprofile::DecrCredits(user.UID(), credits, section, true);
   
