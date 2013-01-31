@@ -194,6 +194,8 @@ util::Error UserCache::Purge(const std::string& name)
 
 util::Error UserCache::Delete(const std::string& name)
 {
+  if (cfg::Get().IsMaster(name)) return util::Error::Failure("Cannot delete a master.");
+  
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) 

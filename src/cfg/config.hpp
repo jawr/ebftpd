@@ -1,6 +1,7 @@
 #ifndef __CFG_CONFIG_CPP
 #define __CFG_CONFIG_CPP
 
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -173,6 +174,10 @@ public:
   const std::string& SitenameShort() const { return sitenameShort; }
   const std::string& LoginPrompt() const { return loginPrompt; }
   const std::vector<std::string>& Master() const { return master; }  
+  bool IsMaster(const std::string& login) const
+  {
+    return std::find(master.begin(), master.end(), login) != master.end();
+  }
   const std::vector<setting::SecureIp>& SecureIp() const { return secureIp; }
   const std::vector<setting::SecurePass>& SecurePass() const { return securePass; }
   const fs::Path& Datapath() const { return datapath; }
