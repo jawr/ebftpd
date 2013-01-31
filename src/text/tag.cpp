@@ -132,19 +132,37 @@ std::string Tag::CompileInteger() const
 std::string Tag::CompileDouble() const
 {
   double value = boost::get<double>(this->value);
+  std::string unitStr;
   switch (unitConv)
   {
+    case UnitConversion::Auto   :
+    {
+      if (value < 1024.0)
+      {
+        unitStr = "KB";
+      }
+      else if (value < 1024.0 * 1024.0)
+      {
+        value /= 1024;
+        unitStr = "MB";
+      }
+      else
+      {
+        value /= 1024 * 1024;
+        unitStr = "GB";
+      }
+      break;
+    }
     case UnitConversion::Gbyte  :
       value /= 1024;
     case UnitConversion::Mbyte  :
       value /= 1024;
     case UnitConversion::Kbyte  :
-    case UnitConversion::Auto   :
       break;
   }
 
   std::string format(this->format.empty() ? ".2" : this->format);
-  return Format(format + "f", value);
+  return Format(format + "f", value) + unitStr;
 }
 
 std::string Tag::Compile() const

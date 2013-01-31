@@ -12,13 +12,13 @@
 #include "util/time.hpp"
 #include "stats/stat.hpp"
 #include "db/stats/stat.hpp"
-#include "stats/conversions.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
 #include "acl/groupprofile.hpp"
+#include "acl/util.hpp"
 
 namespace cmd { namespace site
 {
@@ -109,7 +109,7 @@ void GROUPCommand::Execute()
     body.RegisterSize("size_up", upStats[user.UID()].KBytes());
     body.RegisterValue("files_dn", dnStats[user.UID()].Files());
     body.RegisterSize("size_dn", dnStats[user.UID()].KBytes());
-    body.RegisterValue("ratio", profiles[user.UID()].Ratio(""));
+    body.RegisterValue("ratio", acl::RatioString(profiles[user.UID()]));
     body.RegisterValue("weekly_allot", profiles[user.UID()].WeeklyAllotment());
     os << body.Compile();
   }
