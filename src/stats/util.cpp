@@ -16,14 +16,13 @@ std::string AutoUnitSpeedString(double speed)
   return AutoUnitString(speed) + "/s";
 }
 
-std::string AutoUnitString(double amount)
+std::string AutoUnitString(double kBytes)
 {
   std::stringstream os;
   os << std::fixed << std::setprecision(2);
-  if (amount < 1024.0) os << amount << "B";
-  else if (amount < 1024.0 * 1024.0) os << (amount / 1024.0) << "KB";
-  else if (amount < 1024.0 * 1024.0 * 1024.0) os << (amount / (1024.0  * 1024.0)) << "MB";
-  else os << (amount / (1024.0 * 1024.0 * 1024.0)) << "GB";
+  if (kBytes < 1024.0) os << kBytes << "KB";
+  else if (kBytes < 1024.0 * 1024.0) os << kBytes / 1024.0 << "MB";
+  else os << (kBytes / (1024.0 * 1024.0)) << "GB";
   return os.str();
 }
 

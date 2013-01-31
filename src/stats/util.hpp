@@ -46,7 +46,7 @@ inline boost::posix_time::time_duration SpeedLimitSleep(
 }
         
 std::string AutoUnitSpeedString(double speed);
-std::string AutoUnitString(double amount);
+std::string AutoUnitString(double kBytes);
 std::string HighResSecondsString(const boost::posix_time::time_duration& duration);
 inline std::string HighResSecondsString(const boost::posix_time::ptime& start, 
         const boost::posix_time::ptime& end)

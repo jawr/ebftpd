@@ -246,9 +246,9 @@ void RETRCommand::Execute()
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
   
   if (aborted)
-    control.Reply(ftp::DataClosedOkay, "Transfer aborted @ " + stats::AutoUnitSpeedString(speed)); 
+    control.Reply(ftp::DataClosedOkay, "Transfer aborted @ " + stats::AutoUnitSpeedString(speed / 1024)); 
   else
-    control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed)); 
+    control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed / 1024)); 
   
   (void) countGuard;
   (void) dataGuard;
