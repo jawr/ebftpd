@@ -36,6 +36,7 @@ void SEARCHCommand::Execute()
       body.RegisterValue("index", ++index);
       body.RegisterValue("datetime", boost::lexical_cast<std::string>(result.dateTime));
       body.RegisterValue("path", result.path);
+      body.RegisterValue("section", result.section);
       os << body.Compile();
     }
 

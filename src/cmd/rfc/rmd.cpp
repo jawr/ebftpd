@@ -9,7 +9,7 @@ namespace cmd { namespace rfc
 
 void RMDCommand::Execute()
 {
-  fs::VirtualPath path(fs::Resolve(fs::VirtualPath(argStr)));
+  fs::VirtualPath path(fs::PathFromUser(argStr));
   util::Error e = fs::RemoveDirectory(client,  path);
   if (!e)
   {

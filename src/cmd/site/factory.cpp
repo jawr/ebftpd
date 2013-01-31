@@ -55,6 +55,7 @@
 #include "cmd/site/gpranks.hpp"
 #include "cmd/site/diskfree.hpp"
 #include "cmd/site/search.hpp"
+#include "cmd/site/update.hpp"
 
 namespace cmd { namespace site
 {
@@ -206,9 +207,9 @@ Factory::Factory()
                       "Syntax: SITE PREDUPE <filemask>",
                       "Forcefully dupe all future uploads matching a file mask" }, },
     { "UPDATE",     { 1,  1,  "update",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::UPDATECommand>()),
                       "Syntax: SITE UPDATE <pathmask>",
-                      "Add all directories matching a path mask to the site search index" }, },
+                      "Add all directories matching a path mask to the site index" }, },
     { "DUPE",       { 1,  -1, "dupe",
                       nullptr,
                       "Syntax: SITE DUPE [-MAX <number>] [-FROM <mmddyy>] [-TO <mmddyy>] <string> [<string> .. ]",

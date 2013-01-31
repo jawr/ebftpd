@@ -8,9 +8,10 @@
 namespace db { namespace index
 {
 
-void Add(const std::string& path)
+void Add(const std::string& path, const std::string& section)
 {
-  Pool::Queue(std::make_shared<db::Insert>("index", BSON("path" << path)));
+  Pool::Queue(std::make_shared<db::Insert>("index", 
+          BSON("path" << path << "section" << section)));
 }
 
 void Delete(const std::string& path)
@@ -49,6 +50,7 @@ std::vector<SearchResult> Search(const std::vector<std::string>& terms)
       mongo::BSONElement oid;
       obj.getObjectID(oid);
       results.emplace_back(obj["path"].String(),
+                           obj["section"].String(),
                            db::bson::ToPosixTime(oid.OID().asDateT()));
     }
   }

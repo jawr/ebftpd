@@ -5,6 +5,7 @@
 #include "cmd/error.hpp"
 #include "db/index/index.hpp"
 #include "acl/path.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -47,11 +48,16 @@ void RNTOCommand::Execute()
 
   if (isDirectory)
   {
+    // this should be changed to a single move action so as to retain the
+    // creation date in the database
     if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), client.RenameFrom()))
       db::index::Delete(client.RenameFrom().ToString());
 
     if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
-      db::index::Add(path.ToString());
+    {
+      auto section = cfg::Get().SectionMatch(path);
+      db::index::Add(path.ToString(), section ? section->Name() : "");
+    }
   }
   
   control.Reply(ftp::FileActionOkay, "RNTO command successful.");

@@ -322,9 +322,7 @@ struct Traits<Hideowner>
 
 bool PrivatePath(const fs::VirtualPath& path, const User& user)
 {
-  const std::vector<cfg::setting::Privpath>& privPath = 
-    cfg::Get().Privpath();
-  for (const auto& pp : privPath)
+  for (const auto& pp : cfg::Get().Privpath())
   {
     if (!path.ToString().compare(0, pp.Path().Length(), pp.Path().ToString()))
       return !pp.ACL().Evaluate(user);

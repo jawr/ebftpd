@@ -4,6 +4,7 @@
 #include "exec/check.hpp"
 #include "cmd/error.hpp"
 #include "db/index/index.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -31,7 +32,10 @@ void MKDCommand::Execute()
   }
   
   if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
-    db::index::Add(path.ToString());
+  {
+    auto section = cfg::Get().SectionMatch(path);
+    db::index::Add(path.ToString(), section ? section->Name() : "");
+  }
   
   control.Reply(ftp::PathCreated, "MKD command successful."); 
 }
