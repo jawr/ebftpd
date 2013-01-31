@@ -276,15 +276,19 @@ void SetRatio(acl::UserID uid, const std::string& section, int ratio)
         std::cout << obj.toString() << std::endl;
   boost::unique_future<int> future;
   Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, future));
-  if (future.get() > 0) return;
   
-  query = QUERY("uid" << uid);
-  obj = BSON("$push" << 
-          BSON("ratio" << 
-            BSON("section" << section << "value" << ratio
-        )));
+  if (future.get() < 1)
+  {
+    query = QUERY("uid" << uid);
+    obj = BSON("$push" << 
+            BSON("ratio" << 
+              BSON("section" << section << "value" << ratio
+          )));
 
-  Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, true));
+    Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, future, true));
+    future.wait();
+  }
+  
   std::make_shared<ftp::task::UserUpdate>(uid)->Push();
 }
 
