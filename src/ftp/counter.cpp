@@ -4,99 +4,34 @@
 
 namespace ftp
 {
-
-boost::mutex Counter::loggedInMutex;
-int Counter::totalLoggedIn = 0;
-std::unordered_map<acl::UserID, int> Counter::loggedIn;
-
-boost::mutex Counter::uploadsMutex;
-int Counter::totalUploads = 0;
-std::unordered_map<acl::UserID, int> Counter::uploads;
-
-boost::mutex Counter::downloadsMutex;
-int Counter::totalDownloads = 0;
-std::unordered_map<acl::UserID, int> Counter::downloads;
-
-CounterResult Counter::LogIn(acl::UserID uid, int limit, bool kickLogin, bool exempt)
+namespace
 {
-  const cfg::Config& config = cfg::Get();
-  boost::lock_guard<boost::mutex> lock(loggedInMutex);
-  int& count = loggedIn[uid];
-  if (count - kickLogin >= limit)
-  {
-    return CounterResult::PersonalFail;
-  }
-  int maxUsers = config.MaxUsers().Users();
-  if (exempt) maxUsers += config.MaxUsers().ExemptUsers();
-  if (totalLoggedIn - kickLogin > maxUsers)
-  {
-    return CounterResult::GlobalFail;
-  }
-  ++count;
-  ++totalLoggedIn;
-  return CounterResult::Okay;
+int MaximumUploads()
+{
+  return cfg::Get().SimXfers().MaxUploads();
 }
 
-void Counter::LogOut(acl::UserID uid)
+int MaximumDownloads()
 {
-  boost::lock_guard<boost::mutex> lock(loggedInMutex);
-  int& count = loggedIn[uid];
-  if (count > 0) --count;
-  if (totalLoggedIn > 0) --totalLoggedIn;
+  return cfg::Get().SimXfers().MaxDownloads();
 }
 
-CounterResult Counter::StartUpload(acl::UserID uid, int limit, bool exempt)
+int UploadSpeedLimit(const cfg::setting::SpeedLimit& limit)
 {
-  const cfg::Config& config = cfg::Get();
-  boost::lock_guard<boost::mutex> lock(uploadsMutex);
-  int& count = uploads[uid];
-  if (count >= limit) return CounterResult::PersonalFail;
-  if (!exempt && config.SimXfers().MaxUploads() != -1 &&
-      totalUploads >= config.SimXfers().MaxUploads())
-  {
-    return CounterResult::GlobalFail;
-  }
-  ++count;
-  ++totalUploads;
-  return CounterResult::Okay;
+  return limit.UlLimit();
 }
 
-void Counter::StopUpload(acl::UserID uid)
+int DownloadSpeedLimit(const cfg::setting::SpeedLimit& limit)
 {
-  boost::lock_guard<boost::mutex> lock(uploadsMutex);
-  int& count = uploads[uid];
-  if (count > 0)
-  {
-    --count;
-    --totalUploads;
-  }
+  return limit.DlLimit();
 }
 
-CounterResult Counter::StartDownload(acl::UserID uid, int limit, bool exempt)
-{
-  const cfg::Config& config = cfg::Get();
-  boost::lock_guard<boost::mutex> lock(downloadsMutex);
-  int& count = downloads[uid];
-  if (count >= limit) return CounterResult::PersonalFail;;
-  if (!exempt && config.SimXfers().MaxDownloads() != -1 &&
-      totalDownloads >= config.SimXfers().MaxDownloads())
-  {
-    return CounterResult::GlobalFail;
-  }
-  ++count;
-  ++totalDownloads;
-  return CounterResult::Okay;
 }
 
-void Counter::StopDownload(acl::UserID uid)
-{
-  boost::lock_guard<boost::mutex> lock(downloadsMutex);
-  int& count = downloads[uid];
-  if (count > 0)
-  {
-    --count;
-    --totalDownloads;
-  }
-}
+LoginCounter Counter::logins;
+TransferCounter Counter::uploads(MaximumUploads);
+TransferCounter Counter::downloads(MaximumDownloads);
+SpeedCounter Counter::uploadSpeeds(UploadSpeedLimit);
+SpeedCounter Counter::downloadSpeeds(DownloadSpeedLimit);
 
 } /* ftp namespace */

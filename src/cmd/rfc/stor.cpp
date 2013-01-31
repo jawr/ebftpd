@@ -24,6 +24,7 @@
 #include "util/crc32.hpp"
 #include "ftp/error.hpp"
 #include "db/user/userprofile.hpp"
+#include "acl/misc.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -118,7 +119,7 @@ void STORCommand::Execute()
   
   if (!exec::PreCheck(client, path)) throw cmd::NoPostScriptError();
 
-  switch(ftp::Counter::StartUpload(client.User().UID(), 
+  switch(ftp::Counter::Upload().Start(client.User().UID(), 
          client.Profile().MaxSimUl(), 
          client.User().CheckFlag(acl::Flag::Exempt)))
   {
@@ -140,7 +141,7 @@ void STORCommand::Execute()
       break;
   }  
   
-  scope_guard countGuard = make_guard([&]{ ftp::Counter::StopUpload(client.User().UID()); });  
+  scope_guard countGuard = make_guard([&]{ ftp::Counter::Upload().Stop(client.User().UID()); });  
 
   if (data.DataType() == ftp::DataType::ASCII &&
      !cfg::Get().AsciiUploads().Allowed(path.ToString()))
@@ -229,11 +230,17 @@ void STORCommand::Execute()
   bool calcCrc = CalcCRC(path);
   util::CRC32 crc32;
   bool aborted = false;
-  
   fileOkay = false;
   
   try
   {
+    ftp::SpeedInfoOpt lastSpeed;
+    auto speedLimit = acl::speed::UploadLimit(client.User(), path);
+    scope_guard speedLimitGuard = make_guard([&]
+    {
+      ftp::Counter::UploadSpeeds().Clear(lastSpeed, speedLimit);
+    });
+
     std::vector<char> asciiBuf;
     char buffer[16384];
     while (true)
@@ -254,9 +261,23 @@ void STORCommand::Execute()
       
       if (calcCrc) crc32.Update(bufp, len);
       
-      if (client.Profile().MaxUlSpeed() > 0)
-        ftp::SpeedLimitSleep(data.State(), client.Profile().MaxUlSpeed());
+      if (client.Profile().MaxUlSpeed() > 0 || !speedLimit.empty())
+      {
+        auto speed = ftp::SpeedInfo(data.State().Duration(), data.State().Bytes());
+        auto sleep = client.Profile().MaxUlSpeed() > 0 ?
+                     stats::SpeedLimitSleep(speed.xfertime, speed.bytes, client.Profile().MaxUlSpeed() * 1024) : 
+                     pt::microseconds(0);
+        if (!speedLimit.empty())
+        {
+          sleep = std::max(sleep, ftp::Counter::UploadSpeeds().Update(lastSpeed, speed, speedLimit));
+          lastSpeed = speed;
+        }
+        
+        boost::this_thread::sleep(sleep);
+      }
     }
+    
+    (void) speedLimitGuard;
   }
   catch (const util::net::EndOfStream&) { }
   catch (const ftp::TransferAborted&) { aborted = true; }
@@ -295,7 +316,7 @@ void STORCommand::Execute()
     bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
     db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds(),
                       nostats ? "" : section->Name());    
-if (section) std::cout << "SEP " << section->SeparateCredits() << std::endl;
+
     db::userprofile::IncrCredits(client.User().UID(), 
             data.State().Bytes() * stats::UploadRatio(client, path, section),
             section && section->SeparateCredits() ? section->Name() : "");

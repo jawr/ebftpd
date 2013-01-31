@@ -57,16 +57,20 @@ void Client::SetState(ClientState state)
   assert(state != ClientState::LoggedIn); // these 2 states have own setter
   assert(state != ClientState::WaitingPassword);
   
-  if (state == ClientState::Finished) Counter::LogOut(user.UID());
-  
+ 
   boost::lock_guard<boost::mutex> lock(mutex);
+  if (state == ClientState::Finished && 
+      this->state == ClientState::LoggedIn) 
+  {
+    Counter::Login().Stop(user.UID());
+  }
   this->state = state;
 }
 
 void Client::SetLoggedIn(const acl::UserProfile& profile, bool kicked)
 {
   
-  auto result = Counter::LogIn(user.UID(), profile.NumLogins(), kicked, 
+  auto result = Counter::Login().Start(user.UID(), profile.NumLogins(), kicked, 
                                user.CheckFlag(acl::Flag::Exempt));
   switch (result)
   {

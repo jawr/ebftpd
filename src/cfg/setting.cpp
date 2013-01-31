@@ -210,13 +210,6 @@ ShowTotals::ShowTotals(std::vector<std::string> toks)
   paths = toks;
 }
 
-/*DupeCheck::DupeCheck(const std::vector<std::string>& toks)   
-{
-  days = boost::lexical_cast<int>(toks[0]);
-  if (days < 0) throw boost::bad_lexical_cast();
-  ignoreCase = util::string::BoolLexicalCast(toks[1]);
-}*/
-
 Lslong::Lslong(std::vector<std::string> toks)   
 {
   options = toks[0];
