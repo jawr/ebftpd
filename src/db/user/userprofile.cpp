@@ -10,6 +10,7 @@
 #include "db/error.hpp"
 #include "db/bson/bson.hpp"
 #include "cfg/get.hpp"
+#include "ftp/task/task.hpp"
 
 namespace db { namespace userprofile
 {
@@ -67,6 +68,7 @@ void Save(const acl::UserProfile& profile)
   mongo::Query query = QUERY("uid" << profile.UID());
   TaskPtr task(new db::Update("userprofiles", query, obj, true));
   Pool::Queue(task);
+  std::make_shared<ftp::task::UserUpdate>(profile.UID())->Push();
 }
 
 std::vector<acl::UserProfile> GetAll()
@@ -93,6 +95,7 @@ void Set(acl::UserID uid, mongo::BSONObj obj)
   mongo::Query query = QUERY("uid" << uid);
   TaskPtr task(new db::Update("userprofiles", query, obj, false));
   Pool::Queue(task);
+  std::make_shared<ftp::task::UserUpdate>(uid)->Push();
 }
 
 void Unset(acl::UserID uid, const std::string& field)
@@ -101,6 +104,7 @@ void Unset(acl::UserID uid, const std::string& field)
   mongo::Query query = QUERY("uid" << uid);
   TaskPtr task(new db::Update("userprofiles", query, obj, false));
   Pool::Queue(task);
+  std::make_shared<ftp::task::UserUpdate>(uid)->Push();
 }
 
 util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value)
@@ -280,6 +284,7 @@ void SetRatio(acl::UserID uid, const std::string& section, int ratio)
         )));
 
   Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, true));
+  std::make_shared<ftp::task::UserUpdate>(uid)->Push();
 }
 
 void SetTagline(acl::UserID uid, const std::string& tagline)
