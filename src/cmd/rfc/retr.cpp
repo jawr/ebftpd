@@ -33,7 +33,7 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  switch(ftp::Counter::StartDownload(client.User().UID(), 
+  switch(ftp::Counter::Download().Start(client.User().UID(), 
          client.Profile().MaxSimDl(), 
          client.User().CheckFlag(acl::Flag::Exempt)))
   {
@@ -55,7 +55,7 @@ void RETRCommand::Execute()
       break;
   }
   
-  scope_guard countGuard = make_guard([&]{ ftp::Counter::StopDownload(client.User().UID()); });  
+  scope_guard countGuard = make_guard([&]{ ftp::Counter::Download().Stop(client.User().UID()); });  
   
   fs::VirtualPath path(fs::PathFromUser(argStr));
 
@@ -164,12 +164,11 @@ void RETRCommand::Execute()
   bool aborted = false;
   try
   {    
-    double lastSpeed = 0;
+    ftp::SpeedInfoOpt lastSpeed;
     auto speedLimit = acl::speed::DownloadLimit(client.User(), path);
     scope_guard speedLimitGuard = make_guard([&]
     {
-      if (!speedLimit.empty())
-        ftp::Counter::DownloadSpeedLimitClear(lastSpeed, speedLimit);
+      ftp::Counter::DownloadSpeeds().Clear(lastSpeed, speedLimit);
     });
 
     bool dlIncomplete = cfg::Get().DlIncomplete();
@@ -199,15 +198,17 @@ void RETRCommand::Execute()
 
       if (client.Profile().MaxDlSpeed() > 0 || !speedLimit.empty())
       {
-        double speed = stats::CalculateSpeed(data.State().Bytes(), data.State().Duration());
-        auto sleep = stats::SpeedLimitSleep(speed, client.Profile().MaxDlSpeed() * 1024);
+        auto speed = ftp::SpeedInfo(data.State().Duration(), data.State().Bytes());
+        auto sleep = client.Profile().MaxDlSpeed() > 0 ?
+                     stats::SpeedLimitSleep(speed.xfertime, speed.bytes, client.Profile().MaxDlSpeed() * 1024) : 
+                     pt::microseconds(0);
         if (!speedLimit.empty())
         {
-          sleep = std::max(sleep, ftp::Counter::UploadSpeedLimitSleep(lastSpeed, speed, speedLimit));
+          sleep = std::max(sleep, ftp::Counter::DownloadSpeeds().Update(lastSpeed, speed, speedLimit));
+          lastSpeed = speed;
         }
         
         boost::this_thread::sleep(sleep);
-        lastSpeed = speed;
       }
     }
     

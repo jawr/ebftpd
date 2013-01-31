@@ -35,10 +35,14 @@ inline double CalculateSpeed(long long bytes, const boost::posix_time::ptime& st
   return CalculateSpeed(bytes, end - start);
 }
 
-inline boost::posix_time::time_duration SpeedLimitSleep(double speed, double speedLimit)
+inline boost::posix_time::time_duration SpeedLimitSleep(
+      const boost::posix_time::time_duration& xfertime, 
+      long long bytes, long limit)
 {
-  if (speed <= speedLimit) return boost::posix_time::microseconds(0);
-  return boost::posix_time::microseconds(std::ceil(speed / speedLimit * 1000000.0));
+  auto minXfertime = boost::posix_time::microseconds((bytes / static_cast<double>(limit)) * 1000000);
+  if (minXfertime < xfertime) return boost::posix_time::microseconds(0);
+  return std::min<boost::posix_time::time_duration>(boost::posix_time::
+          microseconds(100000), minXfertime - xfertime);
 }
         
 std::string AutoUnitSpeedString(double speed);
