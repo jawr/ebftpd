@@ -14,7 +14,7 @@ namespace db { namespace bson
   {
     stat.id = bo["_id"].Int(); 
     stat.files = bo["total files"].Int();
-    stat.bytes = bo["total bytes"].Long();
+    stat.kBytes = bo["total kbytes"].Long();
     stat.xfertime = bo["total xfertime"].Long();
     stat.speed = -1;
   } 

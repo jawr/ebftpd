@@ -66,19 +66,25 @@ int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path,
 int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
     const boost::optional<const cfg::Section&>& section)
 {
+  int i = 0;
+  std::cout << ++i << std::endl;
   if (acl::path::FileAllowed<acl::path::Freefile>(client.User(), path)) return 0;
   
+  std::cout << ++i << std::endl;
   if (section)
   {
     int ratio = client.UserProfile().Ratio(section->Name());
     if (ratio >= 0) return ratio;
   }
   
+  std::cout << ++i << std::endl;
   auto cc = acl::CreditLoss(client.User(), path);
   if (cc && cc->Ratio() >= 0) return cc->Ratio();
   
+  std::cout << ++i << std::endl;
   if (section &&  section->Ratio() >= 0) return section->Ratio();
   
+  std::cout << ++i << std::endl;
   assert(client.UserProfile().Ratio("") >= 0);
   return client.UserProfile().Ratio("");
 }

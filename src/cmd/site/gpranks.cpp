@@ -102,7 +102,7 @@ void GPRANKSCommand::Execute()
   
   text::TemplateSection& body = templ->Body();
 
-  long long totalBytes = 0;
+  long long totalKBytes = 0;
   long long totalFiles = 0;
   long long totalXfertime = 0;
 
@@ -124,23 +124,23 @@ void GPRANKSCommand::Execute()
       body.RegisterValue("group", acl::GroupCache::GIDToName(g.ID()));
       body.RegisterValue("descr", description);
       body.RegisterValue("files", g.Files());
-      body.RegisterSize("bytes", g.Bytes());
+      body.RegisterSize("size", g.KBytes());
       body.RegisterSpeed("speed", g.Speed());
       
       os << body.Compile();
       body.Reset();
     }
     
-    totalBytes += g.Bytes();
+    totalKBytes += g.KBytes();
     totalFiles += g.Files();
     totalXfertime += g.Xfertime();
   }
   
   text::TemplateSection& foot = templ->Foot();
   foot.RegisterValue("groups", groups.size());
-  foot.RegisterSize("bytes", totalBytes);
+  foot.RegisterSize("size", totalKBytes);
   foot.RegisterValue("files" ,totalFiles);
-  foot.RegisterSpeed("speed", totalXfertime == 0 ? totalBytes : totalBytes / (totalXfertime / 1000.0));
+  foot.RegisterSpeed("speed", totalXfertime == 0 ? totalKBytes : totalKBytes / (totalXfertime / 1000.0));
   os << foot.Compile();
   
   control.Reply(ftp::CommandOkay, os.str());

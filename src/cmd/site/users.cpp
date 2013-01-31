@@ -62,11 +62,11 @@ void USERSCommand::Execute()
       body.Reset();
       body.RegisterValue("user", user.Name());
       body.RegisterValue("group", acl::GroupCache::GIDToName(user.PrimaryGID()));
-      body.RegisterSize("upload", upStat.Bytes());
-      body.RegisterSize("download", dnStat.Bytes());
+      body.RegisterSize("upload", upStat.KBytes());
+      body.RegisterSize("download", dnStat.KBytes());
 
-      totalUploaded += upStat.Bytes();
-      totalDownloaded += dnStat.Bytes();
+      totalUploaded += upStat.KBytes();
+      totalDownloaded += dnStat.KBytes();
       totalUploadedFiles += upStat.Files();
       totalDownloadedFiles += dnStat.Files();
       

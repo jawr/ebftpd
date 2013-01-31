@@ -338,8 +338,8 @@ bool Client::ConfirmCommand(const std::string& argStr)
 
 void Client::LogTraffic() const
 {
-  db::stats::ProtocolUpdate(user.UID(), control.BytesWrite() + data.BytesWrite(),
-        control.BytesRead() + data.BytesRead());
+  db::stats::ProtocolUpdate(user.UID(), (control.BytesWrite() + data.BytesWrite()) / 1024,
+                            (control.BytesRead() + data.BytesRead()) / 1024);
 }
 
 bool Client::PostCheckAddress()

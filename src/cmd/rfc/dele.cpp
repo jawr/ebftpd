@@ -34,12 +34,12 @@ void DELECommand::Execute()
   bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
   if (!nostats)
   {
-    db::stats::UploadDecr(client.User(), bytes, modTime, section->Name());
+    db::stats::UploadDecr(client.User(), bytes / 1024, modTime, section->Name());
   }
 
   if (loseCredits)
   {
-    long long creditLoss = bytes * stats::UploadRatio(client, path, section);
+    long long creditLoss = bytes / 1024 * stats::UploadRatio(client, path, section);
     if (creditLoss)
     {
       db::userprofile::DecrCredits(client.User().UID(), creditLoss, 

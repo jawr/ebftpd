@@ -106,9 +106,9 @@ void GROUPCommand::Execute()
     body.RegisterValue("flag", flag);
     body.RegisterValue("user", user.Name());
     body.RegisterValue("files_up", upStats[user.UID()].Files());
-    body.RegisterSize("amount_up", upStats[user.UID()].Bytes());
+    body.RegisterSize("size_up", upStats[user.UID()].KBytes());
     body.RegisterValue("files_dn", dnStats[user.UID()].Files());
-    body.RegisterSize("amount_dn", dnStats[user.UID()].Bytes());
+    body.RegisterSize("size_dn", dnStats[user.UID()].KBytes());
     body.RegisterValue("ratio", profiles[user.UID()].Ratio(""));
     body.RegisterValue("weekly_allot", profiles[user.UID()].WeeklyAllotment());
     os << body.Compile();

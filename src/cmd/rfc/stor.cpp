@@ -214,7 +214,7 @@ void STORCommand::Execute()
     if (data.State().Type() != ftp::TransferType::None)
     {
       data.Close();
-      db::stats::Upload(client.User(), data.State().Bytes(), 
+      db::stats::Upload(client.User(), data.State().Bytes() / 1024, 
                         data.State().Duration().total_milliseconds());            
     }
   });  
@@ -314,11 +314,12 @@ void STORCommand::Execute()
   {
     fileOkay = true;
     bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
-    db::stats::Upload(client.User(), data.State().Bytes(), duration.total_milliseconds(),
+    db::stats::Upload(client.User(), data.State().Bytes() / 1024,
+                      duration.total_milliseconds(),
                       nostats ? "" : section->Name());    
 
     db::userprofile::IncrCredits(client.User().UID(), 
-            data.State().Bytes() * stats::UploadRatio(client, path, section),
+            data.State().Bytes() / 1024 * stats::UploadRatio(client, path, section),
             section && section->SeparateCredits() ? section->Name() : "");
   }
 

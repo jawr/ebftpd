@@ -147,20 +147,20 @@ void RANKSCommand::Execute()
       body.RegisterValue("group", acl::GroupCache::GIDToName(user.PrimaryGID()));
       body.RegisterValue("tagline", tagline);
       body.RegisterValue("files", u.Files());
-      body.RegisterSize("bytes", u.Bytes());
+      body.RegisterSize("size", u.KBytes());
       body.RegisterSpeed("speed", u.Speed());
       os << body.Compile();
       body.Reset();
     }
     
-    totalBytes += u.Bytes();
+    totalBytes += u.KBytes();
     totalFiles += u.Files();
     totalXfertime += u.Xfertime();
   }
   
   text::TemplateSection& foot = templ->Foot();
   foot.RegisterValue("users", users.size());
-  foot.RegisterSize("bytes", totalBytes);
+  foot.RegisterSize("size", totalBytes);
   foot.RegisterValue("files" ,totalFiles);
   foot.RegisterSpeed("speed", totalXfertime == 0 ? totalBytes : totalBytes / (totalXfertime / 1000.0));
   os << foot.Compile();

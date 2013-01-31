@@ -132,7 +132,7 @@ void RETRCommand::Execute()
     if (data.State().Type() != ftp::TransferType::None)
     {
       data.Close();
-      db::stats::Download(client.User(), data.State().Bytes(), 
+      db::stats::Download(client.User(), data.State().Bytes() / 1024, 
                           data.State().Duration().total_milliseconds());
     }
     
@@ -140,7 +140,7 @@ void RETRCommand::Execute()
     {
       // download failed short, give the remaining credits back
       db::userprofile::IncrCredits(client.User().UID(), 
-              (size - data.State().Bytes()) * ratio,
+              (size - data.State().Bytes()) / 1024 * ratio,
               section && section->SeparateCredits() ? section->Name() : "");
     }
     else
@@ -240,7 +240,7 @@ void RETRCommand::Execute()
 
   auto duration = data.State().Duration();
   bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
-  db::stats::Download(client.User(), data.State().Bytes(), duration.total_milliseconds(),
+  db::stats::Download(client.User(), data.State().Bytes() / 1024, duration.total_milliseconds(),
                       nostats ? "" : section->Name());
                       
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);

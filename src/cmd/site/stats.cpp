@@ -60,7 +60,7 @@ void STATSCommand::Execute()
                              util::EnumToString(dir) + "_";
         auto stat = db::stats::CalculateSingleUser(uid, kv.first, tf, dir);
         body.RegisterValue(prefix + "files", stat.Files());
-        body.RegisterSize(prefix + "bytes", stat.Bytes());
+        body.RegisterSize(prefix + "size", stat.KBytes());
         body.RegisterSpeed(prefix + "speed", stat.Speed());
     
         totals[tf][dir].Incr(stat);
@@ -80,7 +80,7 @@ void STATSCommand::Execute()
       std::string prefix = util::EnumToString(tf) + "_" +
                            util::EnumToString(dir) + "_";
       foot.RegisterValue(prefix + "files", totals[tf][dir].Files());
-      foot.RegisterSize(prefix + "bytes", totals[tf][dir].Bytes());
+      foot.RegisterSize(prefix + "size", totals[tf][dir].KBytes());
       foot.RegisterSpeed(prefix + "speed", totals[tf][dir].Speed());
     }
   }

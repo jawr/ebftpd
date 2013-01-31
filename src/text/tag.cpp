@@ -17,7 +17,7 @@ Tag::Tag(const std::string& name) :
   caseConv(CaseConversion::None),
   type(TagType::String),
   pretty(false)
-{}
+{ }
 
  void Tag::Register(const std::string& filter)
 {
@@ -128,7 +128,7 @@ void Tag::Parse(std::string value)
   this->value = os.str();
 }
 
-void Tag::ParseSize(long long bytes)
+void Tag::ParseSize(long long kBytes)
 {
   if (!precision.empty()) 
   {
@@ -137,15 +137,13 @@ void Tag::ParseSize(long long bytes)
   }
 
   double value;
-  if (measurement == Measurement::Kbyte)
-    value = bytes / 1024.0;
-  else if (measurement == Measurement::Mbyte)
-    value = bytes / 1024.0 / 1024.0;
+  if (measurement == Measurement::Mbyte)
+    value = kBytes / 1024.0;
   else if (measurement == Measurement::Gbyte)
-    value = bytes / 1024.0 / 1024.0 / 1024.0;
+    value = kBytes / 1024.0 / 1024.0 ;
   else
-    value = bytes;
-
+    value = kBytes;
+    
   std::ostringstream os;
   os << boost::format(format) % value;
 
@@ -176,14 +174,11 @@ void Tag::ParseSpeed(double speed)
     Compile();
   }
 
-  float value;
-
-  if (measurement == Measurement::Kbyte)
+  double value;
+  if (measurement == Measurement::Mbyte)
     value = speed / 1024.0;
-  else if (measurement == Measurement::Mbyte)
-    value = speed / 1024.0 / 1024.0;
   else if (measurement == Measurement::Gbyte)
-    value = speed / 1024.0 / 1024.0 / 1024.0;
+    value = speed / 1024.0 / 1024.0;
   else
     value = speed;
 

@@ -15,20 +15,20 @@ namespace stats
 class Traffic
 {
 private:
-  long long sendBytes;
-  long long receiveBytes;
+  long long sendKBytes;
+  long long receiveKBytes;
   std::string section;
   
 public:
-  Traffic() : sendBytes(0), receiveBytes(0) { }
-  Traffic(long long sendBytes, long long receiveBytes) : 
-    sendBytes(sendBytes), receiveBytes(receiveBytes) { }
-  Traffic(long long sendBytes, long long receiveBytes, const std::string& section) : 
-    sendBytes(sendBytes), receiveBytes(receiveBytes), section(section)
+  Traffic() : sendKBytes(0), receiveKBytes(0) { }
+  Traffic(long long sendKBytes, long long receiveKBytes) : 
+    sendKBytes(sendKBytes), receiveKBytes(receiveKBytes) { }
+  Traffic(long long sendKBytes, long long receiveKBytes, const std::string& section) : 
+    sendKBytes(sendKBytes), receiveKBytes(receiveKBytes), section(section)
   { }
   
-  long long SendBytes() const { return sendBytes; }
-  long long ReceiveBytes() const { return receiveBytes; }
+  long long SendKBytes() const { return sendKBytes; }
+  long long ReceiveKBytes() const { return receiveKBytes; }
   
   const std::string& Section() const { return section; }
   

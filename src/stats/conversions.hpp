@@ -10,7 +10,6 @@ namespace stats
 namespace tostring
 {
 
-std::string Byte(const Stat& stat);
 std::string Kbyte(const Stat& stat);
 std::string Mbyte(const Stat& stat);
 std::string Gbyte(const Stat& stat);

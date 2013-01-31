@@ -36,10 +36,6 @@ void Replicator::Run(const std::shared_ptr<BusyGuard>& lock)
   {
     logs::db << "Exceeded maximum retries while attempting cache replication" << logs::endl;
   }
-  else
-  {
-    logs::debug << "Cache replication successful." << logs::endl;
-  }
   
   ResetTimer();
   

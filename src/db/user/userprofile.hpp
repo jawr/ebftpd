@@ -22,9 +22,9 @@ acl::UserProfile Get(acl::UserID uid);
 std::unordered_map<acl::UserID, acl::UserProfile>
 GetSelection(const std::vector<acl::User>& users);
 
-bool DecrCredits(acl::UserID uid, long long bytes, 
+bool DecrCredits(acl::UserID uid, long long kBytes, 
         const std::string& section, bool negativeOkay);
-void IncrCredits(acl::UserID uid, long long bytes,
+void IncrCredits(acl::UserID uid, long long kBytes,
         const std::string& section);
 
 // setters

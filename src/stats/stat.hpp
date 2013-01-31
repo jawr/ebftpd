@@ -19,7 +19,7 @@ class Stat
   int32_t id;
 
   int files;
-  long long bytes;
+  long long kBytes;
   long long xfertime;
   mutable double speed;
 
@@ -29,24 +29,24 @@ class Stat
                 "id must be same as acl::GroupID");
   
 public:
-  Stat() : id(-1), files(0), bytes(0), xfertime(0), speed(-1) { }  
-  Stat(int32_t id) : id(id), files(0), bytes(0), xfertime(0), speed(-1) { }
+  Stat() : id(-1), files(0), kBytes(0), xfertime(0), speed(-1) { }  
+  Stat(int32_t id) : id(id), files(0), kBytes(0), xfertime(0), speed(-1) { }
   Stat(int32_t id, const Stat& stat) :
-    id(id), files(stat.files), bytes(stat.bytes), 
+    id(id), files(stat.files), kBytes(stat.kBytes), 
     xfertime(stat.xfertime), speed(-1)
   { }
 
   int32_t ID() const { return id; }
   int Files() const { return files; }
-  long long Bytes() const { return bytes; }
+  long long KBytes() const { return kBytes; }
   long long Xfertime() const { return xfertime; }
   
   double Speed() const
   {
     if (speed < 0)
     {
-      if (xfertime == 0) speed = bytes;
-      else speed = bytes / (xfertime / 1000.0);
+      if (xfertime == 0) speed = kBytes;
+      else speed = kBytes / (xfertime / 1000.0);
     }
     return speed;
   }
@@ -54,7 +54,7 @@ public:
   void Incr(const Stat& stat)
   {
     files += stat.files;
-    bytes += stat.bytes;
+    kBytes += stat.kBytes;
     xfertime += stat.xfertime;
   }
   
