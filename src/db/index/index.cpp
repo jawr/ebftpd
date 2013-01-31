@@ -10,8 +10,7 @@ namespace db { namespace index
 
 void Add(const std::string& path)
 {
-  Pool::Queue(std::make_shared<db::Insert>("index", 
-            BSON("path" << path << "date time" << mongo::Date_t())));
+  Pool::Queue(std::make_shared<db::Insert>("index", BSON("path" << path)));
 }
 
 void Delete(const std::string& path)
@@ -31,12 +30,14 @@ std::vector<SearchResult> Search(const std::vector<std::string>& terms)
   mongo::BSONObjBuilder bob;
   for (const std::string& term : terms)
   {
-    bob.appendRegex("path", "/" + EscapeSearchTerm(term) + "/", "i");
+    bob.appendRegex("path", EscapeSearchTerm(term), "i");
   }
   
+  mongo::Query query(bob.obj());
   QueryResults queryResults;
   boost::unique_future<bool> future;
-  Pool::Queue(std::make_shared<db::Select>("index", bob.obj(), queryResults, future));
+
+  Pool::Queue(std::make_shared<db::Select>("index", query, queryResults, future));
   
   future.wait();
   
@@ -45,8 +46,10 @@ std::vector<SearchResult> Search(const std::vector<std::string>& terms)
   {
     for (const auto& obj : queryResults)
     {
+      mongo::BSONElement oid;
+      obj.getObjectID(oid);
       results.emplace_back(obj["path"].String(),
-                           db::bson::ToPosixTime(obj["date time"].Date()));
+                           db::bson::ToPosixTime(oid.OID().asDateT()));
     }
   }
   

@@ -78,7 +78,7 @@ void Delete::Execute(mongo::DBClientConnection& conn)
 void Select::Execute(mongo::DBClientConnection& conn)
 {
   results.clear();
-  results.reserve(limit);
+  if (limit) results.reserve(limit);
   
   try
   {
@@ -89,6 +89,7 @@ void Select::Execute(mongo::DBClientConnection& conn)
     {
       results.push_back(cursor->nextSafe().copy());
     }
+    
     LastErrorToException(conn);
     promise.set_value(true);
   }

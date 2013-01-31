@@ -54,6 +54,7 @@
 #include "cmd/site/ranks.hpp"
 #include "cmd/site/gpranks.hpp"
 #include "cmd/site/diskfree.hpp"
+#include "cmd/site/search.hpp"
 
 namespace cmd { namespace site
 {
@@ -307,8 +308,8 @@ Factory::Factory()
                       "Syntax: SITE TIME",
                       "Display local time" }, },
     { "SEARCH",     { 1,  -1, "search",
-                      nullptr,
-                      "Syntax: SITE SEARCH [-MAX <number>] [-SECTION <section>] <string> [<string> ..]",
+                      CreatorBasePtr(new Creator<site::SEARCHCommand>()),
+                      "Syntax: SITE SEARCH [-MAX <number>] <string> [<string> ..]",
                       "Search the site index" }, },
     { "WELCOME",    { 0,  0,  "welcome",
                       CreatorBasePtr(new Creator<site::WELCOMECommand>()),
