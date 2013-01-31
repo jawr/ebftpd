@@ -128,7 +128,6 @@ void GPRANKSCommand::Execute()
       body.RegisterSpeed("speed", g.Speed());
       
       os << body.Compile();
-      body.Reset();
     }
     
     totalKBytes += g.KBytes();

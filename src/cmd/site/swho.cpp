@@ -52,7 +52,6 @@ void SWHOCommand::Execute()
 
   for (auto& whoUser : whoUsers)
   {
-    body.Reset();
     body.RegisterValue("user", acl::UserCache::UIDToName(whoUser.uid));
     body.RegisterValue("ident_address", whoUser.ident + "@" + whoUser.address);
     body.RegisterValue("action", whoUser.Action());

@@ -14,25 +14,17 @@ class TemplateSection
 {
   std::string buffer;
   std::vector<Tag> tags;
-  std::vector<std::string> values;
 
-  void CheckValueExists(const std::string& key);
 public:
-  TemplateSection() {}
-
   void RegisterBuffer(const std::string& buffer) { this->buffer = buffer; }
-  std::string RegisterTag(std::string var);
+  std::string RegisterTag(std::string tagStr);
 
-  void RegisterValue(std::string key, const std::string& value);
-  void RegisterValue(std::string key, int value);
+  void RegisterValue(std::string tagName, const std::string& value);
+  void RegisterValue(std::string tagName, int value);
 
-  void RegisterSize(std::string key, long long kBytes);
-  void RegisterSpeed(std::string key, long long bytes, long long xfertime);
-  void RegisterSpeed(std::string key, double speed);
-
-  void Reset() { values.clear(); }
-
-  const std::string& Buffer() const { return buffer; }
+  void RegisterSize(std::string tagName, long long kBytes);
+  void RegisterSpeed(std::string tagName, long long bytes, long long xfertime);
+  void RegisterSpeed(std::string tagName, double speed);
 
   std::string Compile();
 };

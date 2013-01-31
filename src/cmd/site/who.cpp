@@ -84,7 +84,6 @@ void WHOCommand::Execute()
     body.RegisterValue("tagline", tagline);
     body.RegisterValue("action", whoUser.Action());
     os << body.Compile();
-    body.Reset();
   }
 
   foot.RegisterValue("users", count);

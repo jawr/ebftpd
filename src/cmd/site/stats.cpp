@@ -68,7 +68,6 @@ void STATSCommand::Execute()
     }
 
     os << body.Compile();
-    body.Reset();
   }
   
   text::TemplateSection& foot = templ->Foot();

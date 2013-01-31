@@ -106,7 +106,6 @@ void HELPCommand::List()
     body.RegisterValue("command", command.first);
     body.RegisterValue("descr", command.second);
     os << body.Compile();
-    body.Reset();
   }
   
   os << foot.Compile();

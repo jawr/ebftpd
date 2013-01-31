@@ -59,7 +59,6 @@ void USERSCommand::Execute()
       ::stats::Stat dnStat = db::stats::CalculateSingleUser(user.UID(), "", 
                             ::stats::Timeframe::Alltime, ::stats::Direction::Download);
 
-      body.Reset();
       body.RegisterValue("user", user.Name());
       body.RegisterValue("group", acl::GroupCache::GIDToName(user.PrimaryGID()));
       body.RegisterSize("upload", upStat.KBytes());

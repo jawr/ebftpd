@@ -57,7 +57,6 @@ void GROUPSCommand::Execute()
     body.RegisterValue("group", group.Name());
     body.RegisterValue("descr", description);
     os << body.Compile();
-    body.Reset();
   }
 
   text::TemplateSection& foot = templ->Foot();

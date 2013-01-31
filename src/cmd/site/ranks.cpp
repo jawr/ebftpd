@@ -150,7 +150,6 @@ void RANKSCommand::Execute()
       body.RegisterSize("size", u.KBytes());
       body.RegisterSpeed("speed", u.Speed());
       os << body.Compile();
-      body.Reset();
     }
     
     totalBytes += u.KBytes();

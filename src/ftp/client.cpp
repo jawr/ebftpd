@@ -513,10 +513,10 @@ void Client::Run()
     logs::debug << "Client from " << control.RemoteEndpoint()
                 << " lost connection: " << e.Message() << logs::endl;
   }
-  catch (const std::exception& e)
-  {
-    logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
-  }
+//  catch (const std::exception& e)
+ // {
+//    logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
+ // }
 /*  catch (...)
   {
     throw;

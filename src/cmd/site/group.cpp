@@ -112,7 +112,6 @@ void GROUPCommand::Execute()
     body.RegisterValue("ratio", profiles[user.UID()].Ratio(""));
     body.RegisterValue("weekly_allot", profiles[user.UID()].WeeklyAllotment());
     os << body.Compile();
-    body.Reset();
   }
   
   os << foot.Compile();

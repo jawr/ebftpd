@@ -3,16 +3,10 @@
 
 #include <string>
 #include <vector>
+#include <boost/variant.hpp>
 
 namespace text
 {
-
-enum class TagType
-{
-  String,
-  Float,
-  Decimal
-};
 
 enum class Alignment
 {
@@ -21,13 +15,12 @@ enum class Alignment
   Center
 };
 
-enum class Measurement
+enum class UnitConversion
 {
   Kbyte,
   Mbyte,
   Gbyte,
-  Auto,
-  None
+  Auto
 };
 
 enum class CaseConversion
@@ -40,34 +33,46 @@ enum class CaseConversion
 
 class Tag
 {
+private:
   std::string name;
-  std::string value;
-  std::string width;
-  std::string precision;
+  boost::variant<std::string, long long, double> value;
   Alignment alignment;
-  Measurement measurement;
+  UnitConversion unitConv;
   CaseConversion caseConv;
   std::string format;
-  TagType type;
   bool pretty;
+  
+  std::string AlignmentStr() const
+  {
+    switch (alignment)
+    {
+      case Alignment::Left    : return std::string("-");
+      case Alignment::Center  : return std::string("=");
+      case Alignment::Right   : break;
+    }
+    
+    return std::string("");
+ }
+  
+  void CaseConvert(std::string& s) const;
+  template <typename T> std::string Format(const std::string& format, const T& value) const;
+  
+  std::string CompileString() const;
+  std::string CompileInteger() const;
+  std::string CompileDouble() const;
+  
 public:
-  // oportuinity to set defaults from cofig here
   Tag(const std::string& name);
 
-  template <typename T> std::string Format(T value);
-  void Register(const std::string& filter);
-  void Compile();
+  void SetFilter(std::string filter);
+  std::string Compile() const;
   
-  void Parse(std::string value);
-  void ParseSize(long long kBytes);
-  void ParseSpeed(double speed);
+  void RegisterValue(std::string value) { this->value = value; }
+  void RegisterValue(long long value) { this->value = value; }
+  void RegisterSize(long long kBytes) { this->value = static_cast<double>(kBytes); }
+  void RegisterSpeed(double speed) { this->value = speed; }
 
   const std::string& Name() const { return name; }
-  const std::string& Format() const { return format; }
-  const std::string& Value() const { return value; }
-  const Measurement& Unit() const { return measurement; } // rename all to unit?
- 
-  void SetType(TagType type) { this->type = type; }
 };
 
 // end

@@ -272,7 +272,6 @@ int main()
     text::TemplateSection& body = groups.Body();
     for (int i = 0; i < 5; ++i)
     {
-      body.Reset();
       body.RegisterValue("users", i);
       body.RegisterValue("group", i);
       body.RegisterValue("description", "HELLO THIS IS A DESCR");

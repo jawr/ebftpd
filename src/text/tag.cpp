@@ -2,6 +2,7 @@
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 #include "text/tag.hpp"
 #include "text/error.hpp"
 #include "logs/logs.hpp"
@@ -10,17 +11,35 @@
 namespace text
 {
 
+namespace 
+{
+
+boost::regex formatPattern("\\d*(?:\\.\\d+)?");
+
+class comma_numpunct : public std::numpunct<char>
+{
+  protected:
+    virtual char do_thousands_sep() const { return ','; }
+    virtual std::string do_grouping() const { return "\03"; }
+};
+
+std::locale prettyLocale(std::locale(), new comma_numpunct());
+
+}
+
 Tag::Tag(const std::string& name) : 
   name(boost::to_lower_copy(name)),
+  value(""),
   alignment(Alignment::Right), 
-  measurement(Measurement::None), 
+  unitConv(UnitConversion::Kbyte), 
   caseConv(CaseConversion::None),
-  type(TagType::String),
   pretty(false)
 { }
 
- void Tag::Register(const std::string& filter)
+void Tag::SetFilter(std::string filter)
 {
+  boost::to_lower(filter);
+
   if (filter == "left")
     alignment = Alignment::Left;
 
@@ -34,159 +53,124 @@ Tag::Tag(const std::string& name) :
     pretty = true;
 
   else if (filter == "kb")
-  {
-    SetType(TagType::Decimal);
-    measurement = Measurement::Kbyte;
-  }
+    unitConv = UnitConversion::Kbyte;
+    
   else if (filter == "mb")
-  {
-    SetType(TagType::Decimal);
-    measurement = Measurement::Mbyte;
-  }
+    unitConv = UnitConversion::Mbyte;
+    
   else if (filter == "gb")
-  {
-    SetType(TagType::Decimal);
-    measurement = Measurement::Gbyte;
-  }
+    unitConv = UnitConversion::Gbyte;
+    
   else if (filter == "auto")
-  {
-    SetType(TagType::Decimal);
-    measurement = Measurement::Auto;
-  }
+    unitConv = UnitConversion::Auto;
+
   else if (filter == "upper")
     caseConv = CaseConversion::Upper;
+    
   else if (filter == "lower")
     caseConv = CaseConversion::Lower;
+    
   else if (filter == "title")
     caseConv = CaseConversion::Title;
+    
+  else if (boost::regex_match(filter, formatPattern))
+    format = filter;
+
   else
   {
-    std::vector<std::string> args;
-    boost::split(args, filter, boost::is_any_of(".")); 
-    if (args.size() > 2) throw TemplateFilterMalform("Error parsing filter, should be '^\\d+(\\.\\d+)?$': " + filter);
-  
-    for (auto& c: args.front())
-      if (!std::isdigit(c)) throw TemplateFilterMalform("Error parsing filter, should be an integer: " + args.front());
-    width = args.front();
-  
-    if (args.size() == 2)
-    {
-      for (auto& c: args.back())
-        if (!std::isdigit(c)) 
-          throw TemplateFilterMalform("Error parsing filter, should be an integer: " + args.back());
-      precision = args.back();
-      SetType(TagType::Float);
-    }
+    throw TemplateFilterMalform("Invalid filter: " + filter);
   }
-
 }
 
-void Tag::Compile()
-{ 
-  std::ostringstream os;
-  os << "%";
-
-  if (alignment == Alignment::Left)
-    os << "-";
-  else if (alignment == Alignment::Center)
-    os << "=";
-
-  if (!width.empty()) os << width;
-
-  if (type == TagType::String) os << "s";
-  else if (type == TagType::Float)
-  {
-    if (!precision.empty()) os << "." << precision;
-    else os << ".2";
-    os << "f";
-  }
-  else if (type == TagType::Decimal) os << "d";
-  else assert(false); // should never get here
-
-  format = os.str();
-}
-
-void Tag::Parse(std::string value)
+void Tag::CaseConvert(std::string& s) const
 {
   switch (caseConv)
   {
-    case CaseConversion::Upper  :
-      boost::to_upper(value);
-      break;
-    case CaseConversion::Lower  :
-      boost::to_lower(value);
-      break;
-    case CaseConversion::Title  :
-      value = util::string::TitleCase(value);
-      break;
     case CaseConversion::None   :
       break;
+    case CaseConversion::Upper  :
+      boost::to_upper(s);
+      break;
+    case CaseConversion::Lower  :
+      boost::to_lower(s);
+      break;
+    case CaseConversion::Title  :
+      s = util::string::TitleCase(s);
+      break;
+  }
+}
+
+template <typename T>
+std::string Tag::Format(const std::string& format, const T& value) const
+{
+  if (pretty)
+    return (boost::format("%" + AlignmentStr() + format, prettyLocale) % value).str();
+  else
+    return (boost::format("%" + AlignmentStr() + format) % value).str();
+}
+
+std::string Tag::CompileString() const
+{
+  std::string value;
+  try
+  {
+    value = boost::get<std::string>(this->value);
+  }
+  catch (const boost::bad_get&)
+  {
+    // no value registered for tag, continue with empty string
   }
   
-  std::ostringstream os;
-  os << boost::format(format) % value;
-  this->value = os.str();
+  return Format(format + "s", value);
 }
 
-void Tag::ParseSize(long long kBytes)
+std::string Tag::CompileInteger() const
 {
-  if (!precision.empty()) 
-  {
-    SetType(TagType::Float);
-    Compile();
-  }
-
-  double value;
-  if (measurement == Measurement::Mbyte)
-    value = kBytes / 1024.0;
-  else if (measurement == Measurement::Gbyte)
-    value = kBytes / 1024.0 / 1024.0 ;
-  else
-    value = kBytes;
-    
-  std::ostringstream os;
-  os << boost::format(format) % value;
-
-  if (pretty)
-  {
-    std::string number = os.str();
-    os.str(std::string());
-    os.imbue(std::locale("")); // portability issues?
-    try
-    {
-      os << boost::lexical_cast<long double>(number);
-    }
-    catch (const boost::bad_lexical_cast& e)
-    {
-      // doesn't handle spaces/width very well.. also seems to get rid of .00
-      this->value = number;
-      return;
-    }
-  }
-  this->value = os.str();
+  return Format(format + "li", boost::get<long long>(this->value));
 }
 
-void Tag::ParseSpeed(double speed)
+std::string Tag::CompileDouble() const
 {
-  if (!precision.empty())
+  double value = boost::get<double>(this->value);
+  switch (unitConv)
   {
-    SetType(TagType::Float);
-    Compile();
+    case UnitConversion::Gbyte  :
+      value /= 1024;
+    case UnitConversion::Mbyte  :
+      value /= 1024;
+    case UnitConversion::Kbyte  :
+    case UnitConversion::Auto   :
+      break;
   }
 
-  double value;
-  if (measurement == Measurement::Mbyte)
-    value = speed / 1024.0;
-  else if (measurement == Measurement::Gbyte)
-    value = speed / 1024.0 / 1024.0;
-  else
-    value = speed;
-
-  std::ostringstream os;
-  os << boost::format(format) % value;
-
-  this->value = os.str();
+  std::string format(this->format.empty() ? ".2" : this->format);
+  return Format(format + "f", value);
 }
 
-// end
+std::string Tag::Compile() const
+{ 
+  std::string compiled;
+  switch (value.which())
+  {
+    case 0  :
+    {
+      compiled = CompileString();
+      break;
+    }
+    case 1  :
+    {
+      compiled = CompileInteger();
+      break;
+    }
+    case 2  :
+    {
+      compiled = CompileDouble();
+      break;
+    }
+  }
+  
+  CaseConvert(compiled);
+  return compiled;
+}
+
 }
