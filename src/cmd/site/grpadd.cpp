@@ -35,7 +35,6 @@ void GRPADDCommand::Execute()
   {
     if (args.size() > 2) 
     {
-      std::cout << "NFO" << std::endl;
       auto gid = acl::GroupCache::NameToGID(args[1]);
       db::groupprofile::SetDescription(gid, argStr);
     }

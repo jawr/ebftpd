@@ -273,7 +273,6 @@ void SetRatio(acl::UserID uid, const std::string& section, int ratio)
 {
   auto query = QUERY("uid" << uid << "ratio.section" << section);
   auto obj = BSON("$set" << BSON("ratio.$.value" << ratio));
-        std::cout << obj.toString() << std::endl;
   boost::unique_future<int> future;
   Pool::Queue(std::make_shared<db::Update>("userprofiles", query, obj, future));
   

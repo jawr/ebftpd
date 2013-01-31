@@ -59,7 +59,6 @@ void CHGRPCommand::Execute()
       ok = acl::UserCache::DelGID(args[1], gid);
     else if (method == Method::Toggle)
     {
-      std::cout << "toggle?" << std::endl;
       if (acl::UserCache::CheckGID(args[1], gid))
       {
         ok = acl::UserCache::DelGID(args[1], gid);
