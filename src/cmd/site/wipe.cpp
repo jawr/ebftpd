@@ -8,6 +8,8 @@
 #include "fs/directory.hpp"
 #include "fs/file.hpp"
 #include "cmd/error.hpp"
+#include "db/index/index.hpp"
+#include "acl/path.hpp"
 
 namespace cmd { namespace site
 {
@@ -39,7 +41,11 @@ void WIPECommand::Process(fs::VirtualPath pathmask, int depth)
             ++failed;
           }
           else
+          {
+            if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), entryPath))
+              db::index::Delete(entryPath.ToString());
             ++dirs;
+          }
         }
         else
         {
