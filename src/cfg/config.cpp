@@ -737,6 +737,7 @@ bool Config::CheckSetting(const std::string& name)
 void Config::SanityCheck()
 {
   if (!CheckSetting("sitepath")) throw RequiredSetting("sitepath");
+  if (!CheckSetting("datapath")) throw RequiredSetting("datapath");
   else if (!CheckSetting("port")) throw RequiredSetting("port");
   else if (!CheckSetting("valid_ip")) throw RequiredSetting("valid_ip");
   

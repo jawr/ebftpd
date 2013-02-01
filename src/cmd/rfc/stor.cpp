@@ -176,7 +176,8 @@ void STORCommand::Execute()
   }
 
   bool fileOkay = data.RestartOffset() > 0;
-  scope_guard fileGuard = make_guard([&]{
+  scope_guard fileGuard = make_guard([&]
+  {
     if (!fileOkay)
     {
       try
