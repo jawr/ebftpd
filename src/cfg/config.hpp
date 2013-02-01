@@ -60,7 +60,8 @@ class Config
   fs::Path datapath;
   std::vector<std::string> bouncerIp;
   bool bouncerOnly;
-  std::vector<setting::SpeedLimit> speedLimit;
+  std::vector<setting::SpeedLimit> maximumSpeed;
+  std::vector<setting::SpeedLimit> minimumSpeed;
   setting::SimXfers simXfers;
   std::vector<std::string> calcCrc;
   std::vector<std::string> xdupe;
@@ -187,7 +188,8 @@ public:
   //const std::vector<std::string>& BouncerIp() const { return bouncerIp; }
   bool IsBouncer(const std::string& ip) const;
   bool BouncerOnly() const { return bouncerOnly; }
-  const std::vector<setting::SpeedLimit>& SpeedLimit() const { return speedLimit; }
+  const std::vector<setting::SpeedLimit>& MaximumSpeed() const { return maximumSpeed; }
+  const std::vector<setting::SpeedLimit>& MinimumSpeed() const { return minimumSpeed; }
   const setting::SimXfers& SimXfers() const { return simXfers; }
   const std::vector<std::string>& CalcCrc() const { return calcCrc; }
   const std::vector<std::string>& Xdupe() const { return xdupe; }

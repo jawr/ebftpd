@@ -25,6 +25,7 @@
 #include "ftp/error.hpp"
 #include "db/user/userprofile.hpp"
 #include "acl/misc.hpp"
+#include "ftp/speedcontrol.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -234,15 +235,10 @@ void STORCommand::Execute()
   
   try
   {
-    ftp::SpeedInfoOpt lastSpeed;
-    auto speedLimit = acl::speed::UploadLimit(client.User(), path);
-    scope_guard speedLimitGuard = make_guard([&]
-    {
-      ftp::Counter::UploadSpeeds().Clear(lastSpeed, speedLimit);
-    });
-
+    ftp::UploadSpeedControl speedControl(client, path);
     std::vector<char> asciiBuf;
     char buffer[16384];
+    
     while (true)
     {
       size_t len = data.Read(buffer, sizeof(buffer));
@@ -260,24 +256,8 @@ void STORCommand::Execute()
       fout->write(bufp, len);
       
       if (calcCrc) crc32.Update(bufp, len);
-      
-      if (client.Profile().MaxUlSpeed() > 0 || !speedLimit.empty())
-      {
-        auto speed = ftp::SpeedInfo(data.State().Duration(), data.State().Bytes());
-        auto sleep = client.Profile().MaxUlSpeed() > 0 ?
-                     stats::SpeedLimitSleep(speed.xfertime, speed.bytes, client.Profile().MaxUlSpeed() * 1024) : 
-                     pt::microseconds(0);
-        if (!speedLimit.empty())
-        {
-          sleep = std::max(sleep, ftp::Counter::UploadSpeeds().Update(lastSpeed, speed, speedLimit));
-          lastSpeed = speed;
-        }
-        
-        boost::this_thread::sleep(sleep);
-      }
+      speedControl.Apply();
     }
-    
-    (void) speedLimitGuard;
   }
   catch (const util::net::EndOfStream&) { }
   catch (const ftp::TransferAborted&) { aborted = true; }
@@ -297,6 +277,13 @@ void STORCommand::Execute()
   {
     e.Rethrow();
   }
+  catch (const ftp::MinimumSpeedError& e)
+  {
+    logs::debug << "Aborted slow upload by " << client.User().Name() << ". "
+                << stats::AutoUnitSpeedString(e.Speed()) << " lower than " 
+                << stats::AutoUnitSpeedString(e.Limit()) << logs::endl;
+    aborted = true;
+  }
 
   fout->close();
   data.Close();
@@ -306,11 +293,18 @@ void STORCommand::Execute()
 
   auto duration = data.State().Duration();
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
+
+  if (aborted)
+  {
+    control.Reply(ftp::DataClosedOkay, "Transfer aborted @ " + stats::AutoUnitSpeedString(speed / 1024)); 
+    throw cmd::NoPostScriptError();
+  }
+
   auto section = cfg::Get().SectionMatch(path);
 
   if (exec::PostCheck(client, path, 
-                       calcCrc ? crc32.HexString() : "000000", speed, 
-                       section ? section->Name() : ""))
+                      calcCrc ? crc32.HexString() : "000000", speed, 
+                      section ? section->Name() : ""))
   {
     fileOkay = true;
     bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
@@ -323,10 +317,7 @@ void STORCommand::Execute()
             section && section->SeparateCredits() ? section->Name() : "");
   }
 
-  if (aborted)
-    control.Reply(ftp::DataClosedOkay, "Transfer aborted @ " + stats::AutoUnitSpeedString(speed / 1024)); 
-  else
-    control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed / 1024)); 
+  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed / 1024)); 
   
   (void) countGuard;
   (void) fileGuard;

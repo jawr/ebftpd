@@ -318,10 +318,15 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1, -1);
     noretrieve.insert(noretrieve.end(), toks.begin(), toks.end());
   }
-  else if (opt == "speed_limit")
+  else if (opt == "maximum_speed")
   {
     ParameterCheck(opt, toks, 3, -1);
-    speedLimit.emplace_back(toks);
+    maximumSpeed.emplace_back(toks);
+  }
+  else if (opt == "minimum_speed")
+  {
+    ParameterCheck(opt, toks, 3, -1);
+    minimumSpeed.emplace_back(toks);
   }
   else if (opt == "sim_xfers")
   {

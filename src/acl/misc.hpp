@@ -36,10 +36,14 @@ namespace speed
 {
 
 std::vector<const cfg::setting::SpeedLimit*>
-UploadLimit(const User& user, const fs::Path& path);
+UploadMaximum(const User& user, const fs::Path& path);
 
 std::vector<const cfg::setting::SpeedLimit*>
-DownloadLimit(const User& user, const fs::Path& path);
+DownloadMaximum(const User& user, const fs::Path& path);
+
+int UploadMinimum(const User& user, const fs::Path& path);
+
+int DownloadMinimum(const User& user, const fs::Path& path);
 
 } /* speed namespace */
 } /* acl namespace */

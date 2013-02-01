@@ -19,13 +19,7 @@
 namespace cfg { namespace setting
 {
 
-class Setting
-{
-public:
-  virtual ~Setting() {}
-};
-
-class Database : Setting
+class Database
 {
   std::string name;
   std::string address;
@@ -44,7 +38,7 @@ public:
   const std::string& Password() const { return password; }
 };
 
-class Right : public Setting
+class Right
 {
   fs::Path path;
   // includes wildcards and possibley regex so can't be fs::Path path;
@@ -58,7 +52,7 @@ public:
   bool SpecialVar() const { return specialVar; }
 };
 
-class ACLInt : public Setting
+class ACLInt
 {
   int arg;
   acl::ACL acl;
@@ -69,7 +63,7 @@ public:
   int Arg() const { return arg; }
 };
 
-class AsciiDownloads : public Setting
+class AsciiDownloads
 {
   off_t size;
   std::vector<std::string> masks;
@@ -80,7 +74,7 @@ public:
   bool Allowed(off_t size, const std::string& path) const;
 };
 
-class AsciiUploads : public Setting
+class AsciiUploads
 {
   std::vector<std::string> masks;
   
@@ -90,7 +84,7 @@ public:
   bool Allowed(const std::string& path) const;
 };
 
-class SecureIp : public Setting
+class SecureIp
 {
   acl::IPStrength strength;
   acl::ACL acl;
@@ -101,7 +95,7 @@ public:
   const acl::ACL& ACL() const { return acl; }
 };
 
-class SecurePass : public Setting
+class SecurePass
 {
   acl::PasswdStrength strength;
   acl::ACL acl;
@@ -111,7 +105,7 @@ public:
   const acl::PasswdStrength& Strength() const { return strength; }
 };
 
-class BouncerIp : public Setting
+class BouncerIp
 {
   std::vector<std::string> addrs;
 public:
@@ -119,7 +113,7 @@ public:
   const std::vector<std::string>& Addrs() const { return addrs; }
 };
 
-class SpeedLimit : public Setting
+class SpeedLimit
 {
   fs::Path path;
   long dlLimit;
@@ -133,7 +127,7 @@ public:
   const acl::ACL& ACL() const { return acl; }
 };
 
-class SimXfers : public Setting
+class SimXfers
 {
   int maxDownloads;
   int maxUploads;
@@ -145,7 +139,7 @@ public:
   int MaxUploads() const { return maxUploads; }
 };
 
-class PasvAddr : public Setting
+class PasvAddr
 {
   std::string addr;
 public:
@@ -163,7 +157,7 @@ public:
   int To() const { return to; }
 };
  
-class Ports : public Setting
+class Ports
 {
   std::vector<PortRange> ranges;
 public:
@@ -172,7 +166,7 @@ public:
   const std::vector<PortRange>& Ranges() const { return ranges; }
 };
 
-class AllowFxp : public Setting
+class AllowFxp
 {
   bool downloads;
   bool uploads;
@@ -191,7 +185,7 @@ public:
   const acl::ACL& ACL() const { return acl; }  
 };
 
-class Alias : public Setting
+class Alias
 {
   std::string name;
   fs::Path path;
@@ -201,7 +195,7 @@ public:
   const fs::Path& Path() const { return path; }
 };
 
-class PathFilter : public Setting
+class PathFilter
 {
   fs::Path messagePath;
   boost::regex regex;
@@ -215,7 +209,7 @@ public:
   
 };
 
-class MaxUsers : public Setting
+class MaxUsers
 {
   int users;
   int exemptUsers;
@@ -226,7 +220,7 @@ public:
   int ExemptUsers() const { return exemptUsers; }
 };
 
-class ShowTotals : public Setting
+class ShowTotals
 {
   int maxLines;
   std::vector<std::string> paths;
@@ -235,7 +229,7 @@ public:
   int MaxLines() const { return maxLines; }
 };
 
-class Lslong : public Setting
+class Lslong
 {
   fs::Path bin;
   std::string options;
@@ -248,7 +242,7 @@ public:
   int MaxRecursion() const { return maxRecursion; }
 };
 
-class HiddenFiles : public Setting
+class HiddenFiles
 {
   fs::Path path;
   std::vector<std::string> masks;
@@ -258,7 +252,7 @@ public:
   const std::vector<std::string>& Masks() const { return masks; }
 };
 
-class Requests : public Setting
+class Requests
 {
   fs::Path path;
   int max;
@@ -269,7 +263,7 @@ public:
   int Max() const { return max; }
 };
 
-class Lastonline : public Setting
+class Lastonline
 {
 public:
   enum Type { ALL, TIMEOUT, ALL_WITH_ACTIVITY };
@@ -285,7 +279,7 @@ public:
   int Max() const { return max; }
 };
 
-class Creditcheck : public Setting
+class Creditcheck
 {
   fs::Path path;
   int ratio;
@@ -298,7 +292,7 @@ public:
   const acl::ACL& ACL() const { return acl; }
 };
 
-class Creditloss : public Setting
+class Creditloss
 {
   int ratio;
   bool allowLeechers;
@@ -313,7 +307,7 @@ public:
   const fs::Path& Path() const { return path; }
 };
 
-class NukedirStyle : public Setting
+class NukedirStyle
 {
 public:
   enum Type { DELETE_ALL, DELETE_FILES, KEEP };
@@ -331,7 +325,7 @@ public:
   Type GetType() const { return type; }
 };
 
-class Msgpath : public Setting
+class Msgpath
 {
   std::string path;
   fs::Path file;
@@ -344,7 +338,7 @@ public:
   const fs::Path& File() const { return file; }
 };
 
-class Privpath : public Setting
+class Privpath
 {
   fs::Path path; // no wildcards to avoid slowing down listing
   acl::ACL acl;
@@ -355,7 +349,7 @@ public:
   const acl::ACL& ACL() const { return acl; }
 };
 
-class SiteCmd : public Setting
+class SiteCmd
 {
 public:
   enum class Type { EXEC, TEXT, ALIAS };
@@ -376,7 +370,7 @@ public:
   const std::string& Target() const { return target; }
 };
 
-class Cscript : public Setting
+class Cscript
 {
 public:
   enum class Type { PRE, POST };
@@ -393,7 +387,7 @@ public:
   Type GetType() const { return type; }
 };
 
-class IdleTimeout : public Setting
+class IdleTimeout
 {
   boost::posix_time::seconds maximum;
   boost::posix_time::seconds minimum;
@@ -415,7 +409,7 @@ public:
   boost::posix_time::seconds Timeout() const { return timeout; }
 };
 
-class CheckScript : public Setting
+class CheckScript
 {
   fs::Path path;
   fs::Path mask;

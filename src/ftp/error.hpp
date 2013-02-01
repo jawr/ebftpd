@@ -34,6 +34,20 @@ public:
     std::rethrow_exception(eptr);
   }
 };
+
+class MinimumSpeedError : public util::RuntimeError
+{
+  int limit;
+  double speed;
+  
+public:
+  MinimumSpeedError(int limit, double speed) :
+    std::runtime_error("Minimum speed error"),
+    limit(limit), speed(speed) { }
+    
+  int Limit() const { return limit; }
+  double Speed() const { return speed; }
+};
  
 } /* ftp namespace */
 

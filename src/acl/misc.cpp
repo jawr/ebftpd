@@ -79,12 +79,12 @@ namespace speed
 {
 
 std::vector<const cfg::setting::SpeedLimit*>
-UploadLimit(const User& user, const fs::Path& path)
+UploadMaximum(const User& user, const fs::Path& path)
 {
   std::vector<const cfg::setting::SpeedLimit*> matches;
   if (!user.CheckFlag(acl::Flag::Exempt))
   {
-    for (const auto& limit : cfg::Get().SpeedLimit())
+    for (const auto& limit : cfg::Get().MaximumSpeed())
     {
       if (limit.UlLimit() > 0 && limit.ACL().Evaluate(user) &&
           util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
@@ -97,12 +97,12 @@ UploadLimit(const User& user, const fs::Path& path)
 }
 
 std::vector<const cfg::setting::SpeedLimit*>
-DownloadLimit(const User& user, const fs::Path& path)
+DownloadMaximum(const User& user, const fs::Path& path)
 {
   std::vector<const cfg::setting::SpeedLimit*> matches;
   if (!user.CheckFlag(acl::Flag::Exempt))
   {
-    for (const auto& limit : cfg::Get().SpeedLimit())
+    for (const auto& limit : cfg::Get().MaximumSpeed())
     {
       if (limit.DlLimit() > 0 && limit.ACL().Evaluate(user) &&
           util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
@@ -112,6 +112,32 @@ DownloadLimit(const User& user, const fs::Path& path)
     }
   }
   return matches;
+}
+
+int UploadMinimum(const User& user, const fs::Path& path)
+{
+  for (const auto& limit : cfg::Get().MinimumSpeed())
+  {
+    if (limit.ACL().Evaluate(user) &&
+        util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
+    {
+      return limit.UlLimit();
+    }
+  }
+  return 0;
+}
+
+int DownloadMinimum(const User& user, const fs::Path& path)
+{
+  for (const auto& limit : cfg::Get().MinimumSpeed())
+  {
+    if (limit.ACL().Evaluate(user) &&
+        util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
+    {
+      return limit.DlLimit();
+    }
+  }
+  return 0;
 }
 
 } /* speed namespace */

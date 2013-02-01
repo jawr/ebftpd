@@ -51,6 +51,14 @@ struct SpeedInfo
     
     return *this;
   }
+  
+  double Speed() const 
+  {
+    if (xfertime.total_microseconds() == 0)
+      return bytes;
+    else
+      return bytes / xfertime.total_microseconds() / 1000000.0;
+  }
 };
 
 typedef boost::optional<SpeedInfo> SpeedInfoOpt;

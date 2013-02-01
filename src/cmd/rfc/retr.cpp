@@ -16,6 +16,7 @@
 #include "ftp/error.hpp"
 #include "db/user/userprofile.hpp"
 #include "acl/misc.hpp"
+#include "ftp/speedcontrol.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -163,17 +164,12 @@ void RETRCommand::Execute()
   
   bool aborted = false;
   try
-  {    
-    ftp::SpeedInfoOpt lastSpeed;
-    auto speedLimit = acl::speed::DownloadLimit(client.User(), path);
-    scope_guard speedLimitGuard = make_guard([&]
-    {
-      ftp::Counter::DownloadSpeeds().Clear(lastSpeed, speedLimit);
-    });
-
+  {
+    ftp::DownloadSpeedControl speedControl(client, path);
     bool dlIncomplete = cfg::Get().DlIncomplete();
     std::vector<char> asciiBuf;
     char buffer[16384];
+    
     while (true)
     {
       std::streamsize len = fin->read(buffer, sizeof(buffer));
@@ -195,24 +191,8 @@ void RETRCommand::Execute()
       }
       
       data.Write(bufp, len);
-
-      if (client.Profile().MaxDlSpeed() > 0 || !speedLimit.empty())
-      {
-        auto speed = ftp::SpeedInfo(data.State().Duration(), data.State().Bytes());
-        auto sleep = client.Profile().MaxDlSpeed() > 0 ?
-                     stats::SpeedLimitSleep(speed.xfertime, speed.bytes, client.Profile().MaxDlSpeed() * 1024) : 
-                     pt::microseconds(0);
-        if (!speedLimit.empty())
-        {
-          sleep = std::max(sleep, ftp::Counter::DownloadSpeeds().Update(lastSpeed, speed, speedLimit));
-          lastSpeed = speed;
-        }
-        
-        boost::this_thread::sleep(sleep);
-      }
+      speedControl.Apply();
     }
-    
-    (void) speedLimitGuard;
   }
   catch (const ftp::TransferAborted&) { aborted = true; }
   catch (const std::ios_base::failure& e)
@@ -234,6 +214,13 @@ void RETRCommand::Execute()
   {
     e.Rethrow();
   }
+  catch (const ftp::MinimumSpeedError& e)
+  {
+    logs::debug << "Aborted slow download by " << client.User().Name() << ". "
+                << stats::AutoUnitSpeedString(e.Speed()) << " lower than " 
+                << stats::AutoUnitSpeedString(e.Limit()) << logs::endl;
+    aborted = true;
+  }
   
   fin->close();
   data.Close();
@@ -246,9 +233,12 @@ void RETRCommand::Execute()
   double speed = stats::CalculateSpeed(data.State().Bytes(), duration);
   
   if (aborted)
+  {
     control.Reply(ftp::DataClosedOkay, "Transfer aborted @ " + stats::AutoUnitSpeedString(speed / 1024)); 
-  else
-    control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed / 1024)); 
+    throw cmd::NoPostScriptError();
+  }
+
+  control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed / 1024)); 
   
   (void) countGuard;
   (void) dataGuard;
