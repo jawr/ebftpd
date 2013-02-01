@@ -49,6 +49,7 @@ Config::Config(const std::string& configFile) :
   epsvFxp(::cfg::EPSVFxp::Allow),
   maximumRatio(10),
   cacheReplicate(0),
+  dirSizeDepth(2),
   tlsControl(acl::ACL::FromString("*")),
   tlsListing(acl::ACL::FromString("*")),
   tlsData(acl::ACL::FromString("!*")),
@@ -614,6 +615,19 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     catch (const boost::bad_lexical_cast&)
     {
       throw ConfigError("cache_replicate must be zero or larger");
+    }
+  }
+  else if (opt == "dir_size_depth")
+  {
+    ParameterCheck(opt, toks, 1);
+    try
+    {
+      dirSizeDepth = boost::lexical_cast<int>(toks[0]);
+      if (dirSizeDepth < 0) throw boost::bad_lexical_cast();
+    }
+    catch (const boost::bad_lexical_cast&)
+    {
+      throw ConfigError("dir_size_depth must be zero or larger");
     }
   }
   else if (opt == "tls_control")

@@ -5,6 +5,7 @@
 #include <ctime>
 #include <cmath>
 #include <string>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace util
 {
@@ -20,10 +21,16 @@ public:
 		pair.tv_usec = microseconds;
 	}
   
-  TimePair(double duration)
+  explicit TimePair(double duration)
   {
     pair.tv_sec = round(duration);
     pair.tv_usec = (duration - pair.tv_sec) * 1000000;
+  }
+  
+  TimePair(const boost::posix_time::time_duration& duration)
+  {
+    pair.tv_usec = duration.total_microseconds() % 1000000;
+    pair.tv_sec = duration.total_microseconds() / 1000000;
   }
   
   time_t Seconds() const { return pair.tv_sec; }

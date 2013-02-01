@@ -26,7 +26,7 @@ std::string EscapeSearchTerm(const std::string& term)
   return boost::regex_replace(term, esc, rep, boost::match_default | boost::format_sed);
 }
 
-std::vector<SearchResult> Search(const std::vector<std::string>& terms)
+std::vector<SearchResult> Search(const std::vector<std::string>& terms, int limit)
 {
   mongo::BSONObjBuilder bob;
   for (const std::string& term : terms)
@@ -38,7 +38,8 @@ std::vector<SearchResult> Search(const std::vector<std::string>& terms)
   QueryResults queryResults;
   boost::unique_future<bool> future;
 
-  Pool::Queue(std::make_shared<db::Select>("index", query, queryResults, future));
+  Pool::Queue(std::make_shared<db::Select>("index", query.sort("_id", -1),        
+                    queryResults, future, limit));
   
   future.wait();
   
@@ -56,6 +57,11 @@ std::vector<SearchResult> Search(const std::vector<std::string>& terms)
   }
   
   return results;
+}
+
+std::vector<SearchResult> Newest(int limit)
+{
+  return Search(std::vector<std::string>(), limit);
 }
 
 } /* index namespace */

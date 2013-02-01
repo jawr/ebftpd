@@ -134,6 +134,7 @@ class Config
   ::cfg::EPSVFxp epsvFxp;
   int maximumRatio;
   int cacheReplicate;
+  int dirSizeDepth;
   
   acl::ACL tlsControl;
   acl::ACL tlsListing;
@@ -263,6 +264,7 @@ public:
   const acl::ACL& TLSData() const { return tlsData; }
   const acl::ACL& TLSFxp() const { return tlsFxp; }
   int CacheReplicate() const { return cacheReplicate; }
+  int DirSizeDepth() const { return dirSizeDepth; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

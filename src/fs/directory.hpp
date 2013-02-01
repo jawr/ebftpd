@@ -31,6 +31,8 @@ util::Error ChangeMatch(ftp::Client& client, const VirtualPath& path, VirtualPat
 util::Error ChangeCdpath(ftp::Client& client, const Path& path, VirtualPath& match);
 util::Error ChangeDirectory(ftp::Client& client, const VirtualPath& path);
 
+util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes);
+
 const VirtualPath& WorkDirectory();
 void SetWorkDirectory(const VirtualPath& path);
 

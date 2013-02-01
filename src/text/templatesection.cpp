@@ -69,12 +69,9 @@ void TemplateSection::RegisterSpeed(const std::string& tagName, long long kBytes
 
 std::string TemplateSection::Compile()
 {
-  std::cout << tags.size() << std::endl;
   std::string compiled = buffer;
-  std::cout << compiled << std::endl;
   for (auto& tag : tags)
   {
-    std::cout << tag.Name() << " " << tag.Compile() << std::endl;
     boost::replace_first(compiled, "{{" + tag.Name() + "}}", tag.Compile());
   }
   return compiled;

@@ -3,6 +3,9 @@
 namespace util
 {
 
+const util::TimePair ProcessReader::defaultTermTimeout(2);
+const util::TimePair ProcessReader::defaultKillTimeout(1);
+
 ProcessReader::~ProcessReader()
 {
   if (pid != -1)

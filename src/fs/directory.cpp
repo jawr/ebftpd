@@ -197,6 +197,47 @@ util::Error RenameDirectory(ftp::Client& client, const VirtualPath& oldPath,
   return RenameDirectory(MakeReal(oldPath), MakeReal(newPath));
 }
 
+util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes)
+{
+  kBytes = 0;
+  if (depth < 0) return util::Error::Failure(EINVAL);
+  if (depth == 0) return util::Error::Success();
+  
+  try
+  {
+    for (auto& entry : DirContainer(path))
+    {
+      try
+      {
+        auto entryPath = path / entry;
+        Status status(entryPath);
+        if (status.IsDirectory())
+        {
+          if (!status.IsSymLink())
+          {
+            long long subKBytes;
+            if (DirectorySize(entryPath, depth - 1, subKBytes))
+              kBytes += subKBytes;
+          }
+        }
+        else
+        if (status.IsRegularFile())
+        {
+          kBytes += status.Size() / 1024;
+        }
+      }
+      catch (const util::SystemError& e)
+      { std::cout << (path / entry) << " " << e.Message() << std::endl; }
+    }
+  }
+  catch (const util::SystemError& e)
+  {
+    return util::Error::Failure(e.Errno());
+  }
+  
+  return util::Error::Success();
+}
+
 } /* fs namespace */
 
 #ifdef FS_DIRECTORY_TEST

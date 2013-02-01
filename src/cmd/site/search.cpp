@@ -4,13 +4,36 @@
 #include "db/index/index.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
+#include "fs/directory.hpp"
+#include "cfg/get.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
 void SEARCHCommand::Execute()
 {
-  auto results = db::index::Search(std::vector<std::string>(args.begin() + 1, args.end()));
+  int number = 10;
+  unsigned termsOffset = 1;
+  if (boost::to_lower_copy(args[1]) == "-max")
+  {
+    if (args.size() < 4) throw cmd::SyntaxError();
+    
+    try
+    {
+      number = boost::lexical_cast<int>(args[2]);
+      if (number <= 0) throw boost::bad_lexical_cast();
+    }
+    catch (const boost::bad_lexical_cast&)
+    {
+      throw cmd::SyntaxError();
+    }
+    
+    termsOffset += 2;
+  }
+
+  std::vector<std::string> terms(args.begin() + termsOffset, args.end());
+  auto results = db::index::Search(terms, number);
   if (results.empty()) control.Reply(ftp::CommandOkay, "No search results.");
   else
   {
@@ -33,10 +56,14 @@ void SEARCHCommand::Execute()
     unsigned index = 0;
     for (const auto& result : results)
     {
+      long long kBytes;
+      auto sizeOk = fs::DirectorySize(fs::MakeReal(fs::VirtualPath(result.path)),
+                                      cfg::Get().DirSizeDepth(), kBytes);
       body.RegisterValue("index", ++index);
       body.RegisterValue("datetime", boost::lexical_cast<std::string>(result.dateTime));
       body.RegisterValue("path", result.path);
       body.RegisterValue("section", result.section);
+      body.RegisterSize("size", sizeOk ? kBytes : -1);
       os << body.Compile();
     }
 

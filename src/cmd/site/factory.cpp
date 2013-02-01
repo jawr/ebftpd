@@ -56,6 +56,7 @@
 #include "cmd/site/diskfree.hpp"
 #include "cmd/site/search.hpp"
 #include "cmd/site/update.hpp"
+#include "cmd/site/new.hpp"
 
 namespace cmd { namespace site
 {
@@ -218,9 +219,9 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE FDUPE [-MAX <number>] [-FROM <mmddyy>] [-TO <mmddyy>] <string> [<string> .. ]",
                       "Search the dupe database for files" }, },*/
-    { "NEW",        { 0,  -1,  "new",
-                      nullptr,
-                      "Syntax: SITE NEW [<number>] [<path>|<section>]",
+    { "NEW",        { 0,  1,  "new",
+                      CreatorBasePtr(new Creator<site::NEWCommand>()),
+                      "Syntax: SITE NEW [<number>]",
                       "Display latest directories" }, },
     { "CHOWN",      { 2,  -1,  "chown",
                       CreatorBasePtr(new Creator<site::CHOWNCommand>()),

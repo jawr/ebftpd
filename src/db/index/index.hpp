@@ -21,7 +21,8 @@ struct SearchResult
   { }
 };
 
-std::vector<SearchResult> Search(const std::vector<std::string>& terms);
+std::vector<SearchResult> Search(const std::vector<std::string>& terms, int limit);
+std::vector<SearchResult> Newest(int limit);
 
 } /* index namespace */
 } /* db namespace */

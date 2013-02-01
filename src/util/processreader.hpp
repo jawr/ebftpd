@@ -20,8 +20,8 @@ public:
 
 private:
   static const size_t defaultBufferSize = BUFSIZ;
-  static const time_t defaultTermTimeout = 2;
-  static const time_t defaultKillTimeout = 1;
+  static const util::TimePair defaultTermTimeout;
+  static const util::TimePair defaultKillTimeout;
 
   std::string file;
   ArgvType argv;
