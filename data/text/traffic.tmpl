@@ -1,0 +1,33 @@
+{% head %}
+.-----------.-----------.------------.------------.
+| Timeframe | Section   |   Incoming |   Outgoing |
++-----------`-----------`------------`------------+
+| Data only:                                      |
++-----------.-----------.------------.------------+
+{% endblock %}
+{% body %}
+| Day       | {{ section|9 }} | {{ day_receive|8.2|auto }} | {{ day_send|8.2|auto }} |
+| Week      | {{ section|9 }} | {{ week_receive|8.2|auto }} | {{ week_send|8.2|auto }} |
+| Month     | {{ section|9 }} | {{ month_receive|8.2|auto }} | {{ month_send|8.2|auto }} |
+| Year      | {{ section|9 }} | {{ year_receive|8.2|auto }} | {{ year_send|8.2|auto }} |
+| Alltime   | {{ section|9 }} | {{ alltime_receive|8.2|auto }} | {{ alltime_send|8.2|auto }} |
+{% endblock %}
+{% foot %}
+|-----------'-----------'------------'------------+
+| Control only:                                   |
+|-----------.-----------.------------.------------|
+| Day       |           | {{ protocol_day_receive|8.2|auto }} | {{ protocol_day_send|8.2|auto }} |
+| Week      |           | {{ protocol_week_receive|8.2|auto }} | {{ protocol_week_send|8.2|auto }} |
+| Month     |           | {{ protocol_month_receive|8.2|auto }} | {{ protocol_month_send|8.2|auto }} |
+| Year      |           | {{ protocol_year_receive|8.2|auto }} | {{ protocol_year_send|8.2|auto }} |
+| Alltime   |           | {{ protocol_alltime_receive|8.2|auto }} | {{ protocol_alltime_send|8.2|auto }} |
+|-----------'-----------'------------'------------+
+| Combined (data + control):                      |
+|-----------.-----------.------------.------------|
+| Day       |           | {{ total_day_receive|8.2|auto }} | {{ total_day_send|8.2|auto }} |
+| Week      |           | {{ total_week_receive|8.2|auto }} | {{ total_week_send|8.2|auto }} |
+| Month     |           | {{ total_month_receive|8.2|auto }} | {{ total_month_send|8.2|auto }} |
+| Year      |           | {{ total_year_receive|8.2|auto }} | {{ total_year_send|8.2|auto }} |
+| Alltime   |           | {{ total_alltime_receive|8.2|auto }} | {{ total_alltime_send|8.2|auto }} |
+`-----------'-----------'------------'------------'
+{% endblock %}
