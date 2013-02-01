@@ -85,7 +85,7 @@ void ReloadConfig::Execute(Listener&)
   }
   catch (const text::TemplateError& e)
   {
-    logs::error << "Templates failed to initalise: " << e.Message() << logs::endl;
+    logs::error << "Templates failed to initialise: " << e.Message() << logs::endl;
     templatesResult = Result::Fail;
   }
 

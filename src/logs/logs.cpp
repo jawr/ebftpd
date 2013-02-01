@@ -12,14 +12,14 @@ util::logger::Logger error;
 util::logger::Logger debug;
 util::logger::Logger db;
 
-void Initialise(const fs::Path& dataPath)
+void Initialise(const fs::Path& logsPath)
 {
-  events.SetPath((dataPath & "/ftpd.log").ToString(), true);
-  security.SetPath((dataPath & "/access.log").ToString(), true);
-  sysop.SetPath((dataPath & "/siteop.log").ToString(), true);
-  error.SetPath((dataPath & "/error.log").ToString(), true);
-  debug.SetPath((dataPath & "/debug.log").ToString(), true);
-  db.SetPath((dataPath & "/db.log").ToString(), true);
+  events.SetPath((logsPath & "/ftpd.log").ToString(), true);
+  security.SetPath((logsPath & "/access.log").ToString(), true);
+  sysop.SetPath((logsPath & "/siteop.log").ToString(), true);
+  error.SetPath((logsPath & "/error.log").ToString(), true);
+  debug.SetPath((logsPath & "/debug.log").ToString(), true);
+  db.SetPath((logsPath & "/db.log").ToString(), true);
 }
 
 void NoStdout()

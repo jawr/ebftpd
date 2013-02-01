@@ -44,6 +44,7 @@ util::Error Factory::Initalize()
         ++errors;
       }
     }
+    
     if (errors > 0)
     {
       std::ostringstream os;
@@ -53,7 +54,7 @@ util::Error Factory::Initalize()
   }
   catch (const util::SystemError& e)
   {
-    logs::error << e.Message() << logs::endl;
+    logs::error << "Unable to open template directory: " << e.Message() << logs::endl;
     return util::Error::Failure(e.Message());
   }
 
@@ -67,7 +68,7 @@ Template Factory::GetTemplate(const std::string& templ)
   std::string name = boost::to_lower_copy(templ);
   
   boost::lock_guard<boost::mutex> lock(mutex);
-  if (instance->templates.find(name) == instance->templates.end())
+  if (!instance.get() || instance->templates.find(name) == instance->templates.end())
     throw TemplateError("No such template (" + templ + ")");
   return instance->templates.at(name);
 }

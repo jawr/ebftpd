@@ -28,58 +28,39 @@ std::string TemplateSection::RegisterTag(std::string tagStr)
   return name;
 }
 
-/*void TemplateSection::CheckAlreadyRegistered(const std::string& tagName)
-{
-  int i = 0;
-  for (auto& value: values)
-    if (key == value) ++i;
-  if (i > 0)
-    throw TemplateDuplicateValue("Already registered " + tagName);
-}*/
-  
-void TemplateSection::RegisterValue(std::string tagName, const std::string& value)
+void TemplateSection::DoRegisterValue(std::string tagName, 
+    const std::function<void(Tag&)>& doRegister)
 {
   boost::to_lower(tagName);
+  for (auto& tag : tags)
+  {
+    if (tag.Name() == tagName)
+      doRegister(tag);
+  }
+}
   
-  auto it = std::find_if(tags.begin(), tags.end(),
-    [tagName](const Tag& tag) { return tag.Name() == tagName; });
-
-  if (it != tags.end()) it->RegisterValue(value);
+void TemplateSection::RegisterValue(const std::string& tagName, const std::string& value)
+{
+  DoRegisterValue(tagName, [&value](Tag& tag) { tag.RegisterValue(value); });
 }
 
-void TemplateSection::RegisterValue(std::string tagName, int value)
+void TemplateSection::RegisterValue(const std::string& tagName, int value)
 {
-  boost::to_lower(tagName);
-  
-  auto it = std::find_if(tags.begin(), tags.end(),
-    [tagName](const Tag& tag) { return tag.Name() == tagName; });
+  DoRegisterValue(tagName, [value](Tag& tag) { tag.RegisterValue(value); });
+}
 
-  if (it != tags.end()) it->RegisterValue(value);
+void TemplateSection::RegisterSize(const std::string& tagName, long long kBytes)
+{
+  DoRegisterValue(tagName, [kBytes](Tag& tag) { tag.RegisterSize(kBytes); });
 }
 
 
-void TemplateSection::RegisterSize(std::string tagName, long long kBytes)
+void TemplateSection::RegisterSpeed(const std::string& tagName, double speed)
 {
-  boost::to_lower(tagName);
-  
-  auto it = std::find_if(tags.begin(), tags.end(),
-    [tagName](const Tag& tag) { return tag.Name() == tagName; });
-
-  if (it != tags.end()) it->RegisterSize(kBytes);
+  DoRegisterValue(tagName, [speed](Tag& tag) { tag.RegisterSpeed(speed); });
 }
 
-
-void TemplateSection::RegisterSpeed(std::string tagName, double speed)
-{
-  boost::to_lower(tagName);
-  
-  auto it = std::find_if(tags.begin(), tags.end(),
-    [tagName](const Tag& tag) { return tag.Name() == tagName; });
-
-  if (it != tags.end()) it->RegisterSpeed(speed);
-}
-
-void TemplateSection::RegisterSpeed(std::string tagName, long long kBytes, 
+void TemplateSection::RegisterSpeed(const std::string& tagName, long long kBytes, 
   long long xfertime)
 {
   if (xfertime == 0) RegisterSpeed(tagName, kBytes);
@@ -88,9 +69,12 @@ void TemplateSection::RegisterSpeed(std::string tagName, long long kBytes,
 
 std::string TemplateSection::Compile()
 {
+  std::cout << tags.size() << std::endl;
   std::string compiled = buffer;
-  for (auto& tag: tags)
+  std::cout << compiled << std::endl;
+  for (auto& tag : tags)
   {
+    std::cout << tag.Name() << " " << tag.Compile() << std::endl;
     boost::replace_first(compiled, "{{" + tag.Name() + "}}", tag.Compile());
   }
   return compiled;

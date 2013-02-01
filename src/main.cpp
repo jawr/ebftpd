@@ -190,7 +190,7 @@ int main(int argc, char** argv)
   
   if (cfg::Get().TlsCertificate().IsEmpty())
   {
-    logs::debug << "No TLS certificate set in config, TLS disabed." << logs::endl;
+    logs::debug << "No TLS certificate set in config, TLS disabled." << logs::endl;
   }
   else
   {
@@ -216,7 +216,7 @@ int main(int argc, char** argv)
   }
   catch (const text::TemplateError& e)
   {
-    logs::error << "Templates failed to initalise: " << e.Message() << logs::endl;
+    logs::error << "Templates failed to initialise: " << e.Message() << logs::endl;
     return 1;
   }
   

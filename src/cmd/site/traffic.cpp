@@ -8,80 +8,86 @@
 #include "stats/util.hpp"
 #include "util/string.hpp"
 #include "cfg/get.hpp"
+#include "text/error.hpp"
+#include "text/factory.hpp"
 
 namespace cmd { namespace site
 {
-
-std::string TRAFFICCommand::Format(const std::string& timeframe, 
-    long long sendKBytes, long long receiveKBytes, const std::string& section)
-{
-  using namespace stats;
-
-  std::ostringstream os;
-  os << "| " << std::setw(9) << std::left << timeframe 
-     << " | " << std::setw(9) << section.substr(0, 9) 
-     << " | " << std::setw(10) << std::right
-     << AutoUnitString(receiveKBytes).substr(0,10) 
-     << "| " << std::setw(10) 
-     << AutoUnitString(sendKBytes).substr(0,10) << " " 
-     << " |";
-  return os.str();
-}
 
 void TRAFFICCommand::Execute()
 {
   std::map<stats::Timeframe, std::pair<long long, long long>> combined;
     
-  std::ostringstream os;
-  os << ".-------------------------------------------------.\n"
-     << "| Transfer traffic:                               |\n"
-     << "+-----------.-----------.------------.------------+\n"
-     << "| Timeframe | Section   |   Incoming |   Outgoing |\n"
-     << "+-----------.-----------+------------+------------+\n";
+  boost::optional<text::Template> tmpl;
+  try
+  {
+    tmpl.reset(text::Factory::GetTemplate("traffic"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
+  }
      
   std::vector<std::string> sections;
-  for (auto& kv : cfg::Get().Sections()) sections.push_back(kv.first);
+  for (auto& kv : cfg::Get().Sections())
+  {
+    sections.push_back(kv.first);
+  }
+  
   sections.push_back("");
 
+  auto& body = tmpl->Body();
+  
+  std::ostringstream tos;
   for (auto& section : sections)
   {
+    body.RegisterValue("section", section);
     for (auto tf : ::stats::timeframes)
     {
       db::stats::Traffic t(db::stats::TransfersTotal(tf, section));
-      os << Format(util::string::TitleSimpleCopy(
-              ::util::EnumToString(tf)),
-              t.SendKBytes(), t.ReceiveKBytes(), section) << "\n";
+
+      std::string prefix = util::EnumToString(tf) + "_";
+      body.RegisterSize(prefix + "send", t.SendKBytes());
+      body.RegisterSize(prefix + "receive", t.ReceiveKBytes());
       combined[tf].first += t.SendKBytes();
       combined[tf].second += t.ReceiveKBytes();    
     }
+    tos << body.Compile();
   }
      
-  os << "|-----------'-----------'------------'------------+\n"
-     << "| Protocol traffic:                               |\n"
-     << "|-----------.-----------.------------.------------|\n";
+  auto& head = tmpl->Head();
+  auto& foot = tmpl->Foot();
 
   for (auto tf : ::stats::timeframes)
   {
     db::stats::Traffic t(db::stats::ProtocolTotal(tf));
-    os << Format(util::string::TitleSimpleCopy(
-            ::util::EnumToString(tf)), 
-            t.SendKBytes(), t.ReceiveKBytes()) << "\n";
+
+    std::string prefix = "protocol_" + util::EnumToString(tf) + "_";
+    head.RegisterSize(prefix + "send", t.SendKBytes());
+    head.RegisterSize(prefix + "receive", t.ReceiveKBytes());
+    foot.RegisterSize(prefix + "send", t.SendKBytes());
+    foot.RegisterSize(prefix + "receive", t.ReceiveKBytes());
+
     combined[tf].first += t.SendKBytes();
     combined[tf].second += t.ReceiveKBytes();
   }
   
-  os << "|-----------'-----------'------------'------------+\n"
-     << "| Combined traffic:                               |\n"
-     << "|-----------.-----------.------------.------------|\n";
-
-   for (auto tf : ::stats::timeframes)
+  for (auto tf : ::stats::timeframes)
   {
-    os << Format(util::string::TitleSimpleCopy(
-            ::util::EnumToString(tf)), combined[tf].first, 
-        combined[tf].second) << "\n";
+    std::string prefix = "total_" + util::EnumToString(tf) + "_";
+    head.RegisterSize(prefix + "send", combined[tf].first);
+    head.RegisterSize(prefix + "receive", combined[tf].second);
+    foot.RegisterSize(prefix + "send", combined[tf].first);
+    foot.RegisterSize(prefix + "receive", combined[tf].second);
   }
+  
+  std::ostringstream os;
+  os << head.Compile();
+  os << tos.str();
+  os << foot.Compile();
      
-  os << "`-----------'-----------'------------'------------'\n";
+  //os << "`-----------'-----------'------------'------------'\n";
   
   control.Reply(ftp::CommandOkay, os.str());
 }

@@ -114,9 +114,11 @@ util::Error GenericTemplate(const ftp::Client& client, Template& tmpl, std::stri
 {
   try
   {
+    // need to work out an efficient way to
+    // duplicate the globals across head / body / foot
     RegisterGlobals(client, tmpl.Head());
-    tmpl.Head().DuplicateTags(tmpl.Body());
-    tmpl.Head().DuplicateTags(tmpl.Foot());
+    RegisterGlobals(client, tmpl.Body());
+    RegisterGlobals(client, tmpl.Foot());
     
     std::ostringstream os;
     os << tmpl.Head().Compile();

@@ -12,17 +12,19 @@ class Path;
 namespace logs
 {
 
-void Initialise(const fs::Path& dataPath);
+void Initialise(const fs::Path& logsPath);
 
 void NoStdout();
 
 /*
  * log types:
  *
- * ftpd   - for user events, mkdir, rmdir, login, logout 
- * access - bad password, connect from unknown host and other access / security errors
- * siteop - user and group management events
- * error  - any kind of exceptional failure, config parse error, unable to write owner file, etc
+ * events   - for user events, mkdir, rmdir, login, logout 
+ * security - bad password, connect from unknown host and other access / security errors
+ * sysop    - user and group management events
+ * error    - any kind of exceptional failure, config parse error, unable to write owner file, etc
+ * db       - any database related event or failure
+ * debug    - miscellaneous debugging output
  */
 
 #ifndef __LOGGER_LOGGER_CPP

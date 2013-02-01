@@ -62,7 +62,7 @@ private:
   std::string CompileDouble() const;
   
 public:
-  Tag(const std::string& name);
+  explicit Tag(const std::string& name);
 
   void SetFilter(std::string filter);
   std::string Compile() const;
