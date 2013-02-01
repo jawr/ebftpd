@@ -57,6 +57,7 @@
 #include "cmd/site/search.hpp"
 #include "cmd/site/update.hpp"
 #include "cmd/site/new.hpp"
+#include "cmd/site/dupe.hpp"
 
 namespace cmd { namespace site
 {
@@ -199,10 +200,6 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE UNNUKES [<number>] [<section>]",
                       "Display unnuke history" }, },
-/*    { "UNDUPE",     { 1,  1,  "undupe",
-                      nullptr,
-                      "Syntax: SITE UNDUPE <filemask>",
-                      "Undupe files matching a mask" }, },*/
     { "PREDUPE",    { 1,  1,  "predupe",
                       nullptr,
                       "Syntax: SITE PREDUPE <filemask>",
@@ -212,13 +209,9 @@ Factory::Factory()
                       "Syntax: SITE UPDATE <pathmask>",
                       "Add all directories matching a path mask to the site index" }, },
     { "DUPE",       { 1,  -1, "dupe",
-                      nullptr,
+                      CreatorBasePtr(new Creator<site::DUPECommand>()),
                       "Syntax: SITE DUPE [-MAX <number>] [-FROM <mmddyy>] [-TO <mmddyy>] <string> [<string> .. ]",
                       "Search the dupe database for directories" }, },
-/*    { "FDUPE",      { 1,  -1, "fdupe",
-                      nullptr,
-                      "Syntax: SITE FDUPE [-MAX <number>] [-FROM <mmddyy>] [-TO <mmddyy>] <string> [<string> .. ]",
-                      "Search the dupe database for files" }, },*/
     { "NEW",        { 0,  1,  "new",
                       CreatorBasePtr(new Creator<site::NEWCommand>()),
                       "Syntax: SITE NEW [<number>]",

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <fstream>
+#include <boost/regex.hpp>
 
 namespace util
 {
@@ -48,6 +49,13 @@ inline bool ReadFileToString(const std::string& path, std::string& buffer)
   std::ifstream fin(path.c_str());
   if (!fin) return false;
   return ReadFileToString(fin, buffer);
+}
+
+inline std::string EscapeRegex(const std::string& term)
+{
+  boost::regex esc("[\\^\\.\\$\\|\\(\\)\\[\\]\\*\\+\\?\\/\\\\]");
+  std::string rep("\\\\\\1");
+  return boost::regex_replace(term, esc, rep, boost::match_default | boost::format_sed);
 }
                          
 } /* util namespace */

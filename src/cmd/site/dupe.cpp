@@ -1,17 +1,15 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
-#include "cmd/site/search.hpp"
-#include "db/index/index.hpp"
+#include "cmd/site/dupe.hpp"
+#include "db/dupe/dupe.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
-#include "fs/directory.hpp"
-#include "cfg/get.hpp"
 #include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
-void SEARCHCommand::Execute()
+void DUPECommand::Execute()
 {
   int number = 10;
   unsigned termsOffset = 1;
@@ -33,14 +31,14 @@ void SEARCHCommand::Execute()
   }
 
   std::vector<std::string> terms(args.begin() + termsOffset, args.end());
-  auto results = db::index::Search(terms, number);
-  if (results.empty()) control.Reply(ftp::CommandOkay, "No search results.");
+  auto results = db::dupe::Search(terms, number);
+  if (results.empty()) control.Reply(ftp::CommandOkay, "No dupe results.");
   else
   {
     boost::optional<text::Template> templ;
     try
     {
-      templ.reset(text::Factory::GetTemplate("search"));
+      templ.reset(text::Factory::GetTemplate("dupe"));
     }
     catch (const text::TemplateError& e)
     {
@@ -56,20 +54,10 @@ void SEARCHCommand::Execute()
     unsigned index = 0;
     for (const auto& result : results)
     {
-      long long kBytes;
-      auto e = fs::DirectorySize(fs::MakeReal(fs::VirtualPath(result.path)),
-                                 cfg::Get().DirSizeDepth(), kBytes);
-      if (e.Errno() == ENOENT)
-      {
-        db::index::Delete(result.path);
-        continue;
-      }
-
       body.RegisterValue("index", ++index);
-      body.RegisterValue("datetime", boost::lexical_cast<std::string>(result.dateTime));
-      body.RegisterValue("path", result.path);
+      body.RegisterValue("date", boost::posix_time::to_iso_string(result.dateTime).substr(0, 8));
+      body.RegisterValue("directory", result.directory);
       body.RegisterValue("section", result.section);
-      body.RegisterSize("size", e ? kBytes : -1);
       os << body.Compile();
     }
 

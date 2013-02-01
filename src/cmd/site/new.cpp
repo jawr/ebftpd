@@ -91,17 +91,23 @@ void NEWCommand::Execute()
   {
     long long kBytes;
     std::cout << fs::MakeReal(fs::VirtualPath(result.path)) << std::endl;
-    auto sizeOk = fs::DirectorySize(fs::MakeReal(fs::VirtualPath(result.path)),
-                                    cfg::Get().DirSizeDepth(), kBytes);
+    auto e = fs::DirectorySize(fs::MakeReal(fs::VirtualPath(result.path)),
+                               cfg::Get().DirSizeDepth(), kBytes);
+    if (e.Errno() == ENOENT)
+    {
+      db::index::Delete(result.path);
+      continue;
+    }
+    
     body.RegisterValue("index", ++index);
     body.RegisterValue("datetime", boost::lexical_cast<std::string>(result.dateTime));
     body.RegisterValue("age", Age(now - result.dateTime));
     body.RegisterValue("path", fs::Path(result.path).Basename().ToString());
     body.RegisterValue("section", result.section);
-    body.RegisterSize("size", sizeOk ? kBytes : -1);
+    body.RegisterSize("size", e ? kBytes : -1);
     os << body.Compile();
   }
-//
+
   text::TemplateSection& foot = templ->Foot();
   foot.RegisterValue("count", results.size());
   os << foot.Compile();
