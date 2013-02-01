@@ -209,10 +209,10 @@ int main(int argc, char** argv)
     }
   }
 
-  logs::debug << "Initalising Templates.." << logs::endl;
+  logs::debug << "Initialising Templates.." << logs::endl;
   try
   {
-    text::Factory::Initalize();
+    text::Factory::Initialize();
   }
   catch (const text::TemplateError& e)
   {

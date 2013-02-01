@@ -81,7 +81,7 @@ void ReloadConfig::Execute(Listener&)
   
   try
   {
-    text::Factory::Initalize();
+    text::Factory::Initialize();
   }
   catch (const text::TemplateError& e)
   {

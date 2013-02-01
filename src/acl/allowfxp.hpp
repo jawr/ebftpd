@@ -1,21 +1,13 @@
 #ifndef __ACL_ALLOWFXP_HPP
 #define __ACL_ALLOWFXP_HPP
 
-#include <cstdint>
-#include "ftp/data.hpp"
-
-namespace ftp
-{
-enum class TransferType;
-}
-
 namespace acl
 {
 
 class User;
 
-bool AllowFxp(ftp::TransferType transferType,
-              const User& user, bool& logging);
+bool AllowFxpSend(const User& user, bool& logging);
+bool AllowFxpReceive(const User& user, bool& logging);
 
 } /* acl namespace */
 

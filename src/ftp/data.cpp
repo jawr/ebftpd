@@ -163,7 +163,10 @@ void Data::Open(TransferType transferType)
   if (transferType != TransferType::List && IsFXP())
   {
     bool logging;
-    if (!acl::AllowFxp(transferType, client.User(), logging))
+    
+    if (transferType == TransferType::Upload ?
+        acl::AllowFxpReceive(client.User(), logging) :
+        acl::AllowFxpSend(client.User(), logging))
     {
       socket.Close();
       std::string type = transferType == TransferType::Upload ? "upload" : "download";

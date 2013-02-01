@@ -24,7 +24,7 @@ class Factory
 
 public:
   
-  static util::Error Initalize();
+  static util::Error Initialize();
   static int Size()
   {
     boost::lock_guard<boost::mutex> lock(mutex);

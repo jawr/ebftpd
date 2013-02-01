@@ -55,7 +55,7 @@ void Handler::Run()
         }
         try
         {
-          text::Factory::Initalize();
+          text::Factory::Initialize();
         }
         catch (const text::TemplateError& e)
         {

@@ -350,7 +350,7 @@ bool Client::PostCheckAddress()
 
 bool Client::PreCheckAddress()
 {
-  if (!acl::UserCache::IPAllowed(IP()) ||
+  if (!acl::UserCache::IPAllowed(IP()) &&
         (IP() != Hostname() && acl::UserCache::IPAllowed(Hostname())))
   {
     logs::security << "Refused connection from unknown address: " 
@@ -470,9 +470,10 @@ void Client::InnerRun()
     }
   }
 
+  HostnameLookup();
+
   if (!PreCheckAddress()) return;
   
-  HostnameLookup();
   LookupIdent();
   
   logs::debug << "Servicing client connected from "

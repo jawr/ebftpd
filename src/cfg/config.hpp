@@ -144,6 +144,7 @@ class Config
   
   static std::unordered_set<std::string> aclKeywords;
   static int latestVersion;
+  static const std::vector<std::string> requiredSettings;
   
   Config(const Config&) = default;
   Config& operator=(const Config&) = default;

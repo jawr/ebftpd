@@ -1,29 +1,37 @@
 #include <cassert>
+#include <functional>
 #include "acl/allowfxp.hpp"
 #include "cfg/get.hpp"
 
 namespace acl
 {
 
-bool AllowFxp(ftp::TransferType transferType,
-              const User& user, bool& logging)
+bool AllowFxp(const User& user, bool& logging, 
+  const std::function<bool(const cfg::setting::AllowFxp&)>& isAllowed)
 {
-  assert(transferType != ftp::TransferType::List);
-
   const cfg::Config& config = cfg::Get();
   for (const auto& af : config.AllowFxp())
   {
     if (af.ACL().Evaluate(user))
     {
       logging = af.Logging();
-      if (transferType == ftp::TransferType::Download)
-        return af.Downloads();
-      else
-        return af.Uploads();
+      return isAllowed(af);
     }
   }
   
   return false;
+}
+
+bool AllowFxpSend(const User& user, bool& logging)
+{
+  return AllowFxp(user, logging, 
+      [](const cfg::setting::AllowFxp& af) { return af.Uploads(); });
+}
+
+bool AllowFxpReceive(const User& user, bool& logging)
+{
+  return AllowFxp(user, logging, 
+      [](const cfg::setting::AllowFxp& af) { return af.Downloads(); });
 }
 
 } /* acl namespace */

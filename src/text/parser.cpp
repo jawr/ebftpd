@@ -261,7 +261,7 @@ void TemplateBuffer::ParseFilter()
 int main()
 {
   cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config("ftpd.conf"))); 
-  text::Factory::Initalize();
+  text::Factory::Initialize();
 
   try
   {

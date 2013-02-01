@@ -12,10 +12,10 @@ struct ConfigError : public util::RuntimeError
   ConfigError(const std::string& message) : std::runtime_error(message) {}
 };
 
-struct RequiredSetting : public ConfigError
+struct RequiredSettingError : public ConfigError
 {
-  RequiredSetting() : std::runtime_error("Missing required setting.") {}
-  RequiredSetting(const std::string& setting) : std::runtime_error("Missing required setting: " + setting) {}
+  RequiredSettingError() : std::runtime_error("Missing required setting.") {}
+  RequiredSettingError(const std::string& setting) : std::runtime_error("Missing required setting: " + setting) {}
 };
 
 }

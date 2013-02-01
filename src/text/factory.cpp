@@ -11,7 +11,7 @@ namespace text
 boost::mutex Factory::mutex;
 std::unique_ptr<Factory> Factory::instance;
 
-util::Error Factory::Initalize()
+util::Error Factory::Initialize()
 {
   std::unique_ptr<Factory> factory(new Factory());
   
@@ -40,7 +40,7 @@ util::Error Factory::Initalize()
       }
       catch (const text::TemplateError& e)
       {
-        logs::error << "Template Initalize error (" << *it << "): " << e.Message() << logs::endl;
+        logs::error << "Template Initialize error (" << *it << "): " << e.Message() << logs::endl;
         ++errors;
       }
     }
