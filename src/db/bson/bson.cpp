@@ -29,26 +29,3 @@ ptime ToPosixTime(const mongo::Date_t& dt)
 
 } /* bson namespace */
 } /* db namespace */
-
-
-#ifdef DB_BSON_BSON_TEST
-
-int main()
-{
-  using namespace db::bson;
-
-  boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
-  std::cout << now << std::endl;
-  std::cout << UTCOffset() << std::endl;
-  
-  mongo::Date_t mdt = ToDateT(now);
-  
-  struct tm tm;
-  mdt.toTm(&tm);
-  std::cout << asctime(&tm) << std::endl;
-  
-  now = ToPosixTime(mdt);
-  std::cout << now << std::endl;
-}
-
-#endif

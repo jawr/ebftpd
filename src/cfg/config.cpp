@@ -776,22 +776,3 @@ boost::optional<const Section&> Config::SectionMatch(const fs::Path& path) const
 
 // end namespace
 }
-
-#ifdef CFG_CONFIG_TEST
-int main()
-{
-  try
-  {
-    cfg::Config config("ftpd.conf");
-    logs::debug << "Config loaded." << logs::endl;
-    logs::debug << "Download: " << config.Download().size() << logs::endl;
-  }
-  catch(const cfg::ConfigError& e)
-  {
-    logs::debug << e.Message() << logs::endl;
-    return 1;
-  }
-  return 0;
-}
-#endif
-  

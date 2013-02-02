@@ -166,26 +166,3 @@ CommandDefOptRef Factory::Lookup(const std::string& command)
 
 } /* rfc namespace */
 } /* cmd namespace */
-
-#ifdef CMD_RFC_FACTORY_TEST
-
-#include <iostream>
-#include <memory>
-#include "ftp/client.hpp"
-
-int main()
-{
-  using namespace cmd;
-  
-  ftp::ClientState::Client client;
-  Args args;
-  args.push_back("USER");
-  std::unique_ptr<Command> cmd(Factory::Create(client, args));
-  cmd->Execute();
-  args.clear();
-  args.push_back("PASS");
-  cmd.reset(Factory::Create(client, args));
-  cmd->Execute();
-}
-
-#endif

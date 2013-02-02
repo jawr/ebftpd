@@ -3,10 +3,6 @@
 #include "fs/mode.hpp"
 #include "util/error.hpp"
 
-#ifdef FS_MODE_TEST
-#include <iostream>
-#endif
-
 // this is based on chmod in the gnu coreutils package
 
 namespace fs
@@ -127,53 +123,4 @@ void Mode::Apply(mode_t oldMode, mode_t umask, mode_t& newMode) const
   }
 }
 
-#ifdef FS_MODE_TEST
-void Mode::Display() const
-{
-  unsigned i = 0;
-  for (auto& c : changes)
-  {
-    std::cout << ++i << " " 
-              << static_cast<char>(c.Op()) << " " 
-              << (c.Type() == fs::Mode::Type::Copy? "copy" : "normal") << " "
-              << std::oct << c.Affected() << " "
-              << std::oct << c.Value() << std::endl;
-  }
-}
-#endif
-
 } /* fs namespace */
-
-#ifdef FS_MODE_TEST
-
-#include <iostream>
-
-int main(int argc, char** argv)
-{
-  using namespace fs;
-  
-  if (argc != 3)
-  {
-    std::cout << "invalid args" << std::endl;
-    return 1;
-  }
-  
-  struct stat st;
-  if (lstat(argv[2], &st))
-  {
-    std::cout << "unable to stat file" << std::endl;
-    return 1;
-  }
-  
-  Mode mode(argv[1]);
-  mode.Display();
-  mode_t newMode;
-  mode.Apply(st.st_mode, 0022, newMode);
-  
-  std::cout << argv[2] << " " << std::oct << newMode << std::endl;
-  
-  if (chmod(argv[2], newMode) < 0) std::cout << "chmod failed" << std::endl;
-}
-
-#endif
-

@@ -106,21 +106,3 @@ std::string ReverseResolve(const IPAddress& ip)
 
 } /* net namespace */
 } /* util namespace */
-
-#ifdef UTIL_NET_RESOLVER_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace util::net;
-  
-  Resolver r(SockStream, "0.0.0.0", 21);
-  for (Resolver::const_iterator it = r.begin();  it != r.end(); ++it)
-  {
-    std::cout << *it << std::endl;
-  }
-       
-}
-
-#endif

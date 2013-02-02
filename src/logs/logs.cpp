@@ -33,19 +33,3 @@ void NoStdout()
 }
 
 } /* logger namespace */
-
-#ifdef LOGGER_LOGGER_TEST
-
-int main()
-{
-  using namespace logger;
-  
-  
-  logs::Initialise("/tmp");
-  logs::debug << "test" << logs::endl;
-  logs::security << "test" << logs::endl;
-  logs::siteop << "test" << logs::endl;
-  logs::error << "test" << logs::endl;
-}
-
-#endif

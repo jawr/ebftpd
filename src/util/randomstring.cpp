@@ -52,17 +52,3 @@ void RandomString::GenerateASCIIRange(size_t length,
 }
 
 } /* util namespace */
-
-#ifdef UTIL_RANDOMSTRING_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace util;
-
-  std::cout << RandomString(100, "1234567890").ToString() << std::endl;
-  std::cout << RandomString(100).ToString() << std::endl;
-}
-
-#endif

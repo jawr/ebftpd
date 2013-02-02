@@ -3,7 +3,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/locks.hpp>
 #include <sys/select.h>
-#include "ftp/listener.hpp"
+#include "ftp/server.hpp"
 #include "ftp/client.hpp"
 #include "logs/logs.hpp"
 #include "util/net/tlscontext.hpp"
@@ -11,26 +11,26 @@
 namespace ftp
 {
 
-Listener Listener::instance;
+Server Server::instance;
 
-void Listener::StartThread()
+void Server::StartThread()
 {
   logs::debug << "Starting listener thread.." << logs::endl;
   instance.Start();
 }
 
-void Listener::JoinThread()
+void Server::JoinThread()
 {
   instance.Join();
 }
 
-void Listener::SetShutdown()
+void Server::SetShutdown()
 {   
   logs::debug << "Stopping listener thread.." << logs::endl;
   instance.InnerSetShutdown();
 }
 
-void Listener::HandleTasks()
+void Server::HandleTasks()
 {
   //logs::debug << "Handling listener tasks.." << logs::endl;
   TaskPtr task;
@@ -47,7 +47,7 @@ void Listener::HandleTasks()
   }
 }
 
-bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port)
+bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
 {
   assert(!validIPs.empty());
   util::net::Endpoint ep;
@@ -70,7 +70,7 @@ bool Listener::Initialise(const std::vector<std::string>& validIPs, int32_t port
   return true;
 }
 
-void Listener::HandleClients()
+void Server::HandleClients()
 {
   boost::lock_guard<boost::mutex> lock(clientMtx);
   for (ClientList::iterator it = clients.begin();
@@ -93,7 +93,7 @@ void Listener::HandleClients()
   }
 }
 
-void Listener::StopClients()
+void Server::StopClients()
 {
   logs::debug << "Stopping all connected clients.." << logs::endl;
   for (auto& client : clients)
@@ -105,7 +105,7 @@ void Listener::StopClients()
   clients.clear();
 }
 
-void Listener::AcceptClient(util::net::TCPListener& server)
+void Server::AcceptClient(util::net::TCPListener& server)
 {
   std::unique_ptr<ftp::Client> client(new ftp::Client());
   if (client->Accept(server)) 
@@ -116,7 +116,7 @@ void Listener::AcceptClient(util::net::TCPListener& server)
   }
 }
 
-void Listener::AcceptClients()
+void Server::AcceptClients()
 {
   fd_set readSet;
   FD_ZERO(&readSet);
@@ -137,7 +137,7 @@ void Listener::AcceptClients()
   int n = select(max + 1, &readSet, nullptr, nullptr, &tv);
   if (n < 0)
   {
-    logs::error << "Listener select failed: " << util::Error::Failure(errno).Message() << logs::endl;
+    logs::error << "Server select failed: " << util::Error::Failure(errno).Message() << logs::endl;
     // ensure we don't poll rapidly on repeated select failures
     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
   }
@@ -154,7 +154,7 @@ void Listener::AcceptClients()
   }
 }
 
-void Listener::Run()
+void Server::Run()
 {
   while (!isShutdown)
   {
@@ -166,19 +166,3 @@ void Listener::Run()
 }
 
 } // end ftp namespace
-
-#ifdef FTP_LISTENER_TEST
-
-#include <iostream>
-
-int main()
-{
-  util::net::TLSServerContext::Initialise("server.pem");
-  ftp::Listener l("127.0.0.1", 1234);
-  if (!l.Initialise()) return 1;
-  l.Start();
-  l.Join();
-  return 0;
-}
-
-#endif

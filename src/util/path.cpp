@@ -187,37 +187,3 @@ std::string Relative(const std::string& workPath, const std::string& path)
 
 } /* path namespace */
 } /* util namespace */
-
-#ifdef UTIL_PATH_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace util::path;
-  
-  std::cout << "trim trailing slash: " << TrimTrailingSlashCopy("/has/trailing/slash/") << std::endl;
-  std::cout << "trim trailing slash: " << TrimTrailingSlashCopy("/no/trialing/slash") << std::endl;
-  std::cout << "trim trailing slash, keep root: " << TrimTrailingSlashCopy("/", true) << std::endl;
-  std::cout << "join: " << Join("/first/path", "second/path") << std::endl;
-  std::cout << "join: " << Join("/first/path", "/second/path") << std::endl;
-  std::cout << "append: " << Append("/first/path", "second/path") << std::endl;
-  std::cout << "append: " << Append("/first/path", "/second/path") << std::endl;
-  std::cout << "dirname: " << Dirname("/") << std::endl;
-  std::cout << "dirname: " << Dirname("/this/is/a/path") << std::endl;
-  std::cout << "dirname: " << Dirname("this_is_also_a_path") << std::endl;
-  std::cout << "basename: " << Basename("/this/is/a/path") << std::endl;
-  std::cout << "basename, trailing slash: " << Basename("/this/is/a/path/") << std::endl;
-  std::cout << "basename: " << Basename("another_path") << std::endl;
-  std::cout << "extension: " << Extension("/some/path/file.ext") << std::endl;
-  std::cout << "extension: " << Extension("/some/path/file_no_exit") << std::endl;
-  std::cout << "expand: " << Resolve("/test/./two/three/four/../../wow") << std::endl;
-  std::cout << "expand: " << Resolve("/..") << std::endl;
-  std::cout << "expand: " << Resolve("/../somewhere///multiple//slashes///") << std::endl;
-  
-  
-  std::cout << "relative: " << Relative("/tmp/some/work/dir", "/some/other/dir") << std::endl;
-  std::cout << "relative: " << Relative("/tmp/some", "/tmp/some/other/dir") << std::endl;
-}
-
-#endif

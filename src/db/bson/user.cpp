@@ -70,23 +70,3 @@ acl::User User::Unserialize(const mongo::BSONObj& bo)
 } /* bson namespace */
 } /* db namespace */
 
-
-#ifdef DB_BSON_USER_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace db::bson;
-  using namespace mongo;
-  
-  acl::User user("someone", 123, "password", "1");
-  
-  BSONObj bo = User::Serialize(user);
-  std::cout << bo["name"].String() << " " << bo["uid"].Int() << std::endl;
-  user = User::Unserialize(bo);
-  std::cout << user.Name() << " " << user.UID() << std::endl;
-  
-}
-
-#endif

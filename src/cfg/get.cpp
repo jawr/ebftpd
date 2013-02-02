@@ -86,14 +86,3 @@ bool RequireStopStart()
 }
 
 }
-
-#ifdef CFG_GET_TEST
-
-#include <iostream>
-
-int main()
-{
-  
-}
-
-#endif

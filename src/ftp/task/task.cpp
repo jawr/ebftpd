@@ -1,6 +1,6 @@
 #include <sstream>
 #include "ftp/task/task.hpp"
-#include "ftp/listener.hpp"
+#include "ftp/server.hpp"
 #include "logs/logs.hpp"
 #include "cfg/get.hpp"
 #include "main.hpp"
@@ -13,13 +13,13 @@ namespace ftp { namespace task
 
 void Task::Push()
 {
-  ftp::Listener::PushTask(shared_from_this());
+  ftp::Server::PushTask(shared_from_this());
 }
 
-void KickUser::Execute(Listener& listener)
+void KickUser::Execute(Server& server)
 {
   unsigned kicked = 0;
-  for (auto& client: listener.clients)
+  for (auto& client: server.clients)
   {
     if (client.User().UID() == uid)
     {
@@ -31,10 +31,10 @@ void KickUser::Execute(Listener& listener)
   promise.set_value(kicked);
 }
 
-void LoginKickUser::Execute(Listener& listener)
+void LoginKickUser::Execute(Server& server)
 {
   Result result;
-  for (auto& client: listener.clients)
+  for (auto& client: server.clients)
   {
     if (client.User().UID() == uid && client.State() == ftp::ClientState::LoggedIn)
     {
@@ -52,19 +52,19 @@ void LoginKickUser::Execute(Listener& listener)
   promise.set_value(result);
 }
 
-void GetOnlineUsers::Execute(Listener& listener)
+void GetOnlineUsers::Execute(Server& server)
 {
-  for (auto& client: listener.clients)
+  for (auto& client: server.clients)
   {
     if (client.State() != ClientState::LoggedIn) continue;
-    users.emplace_back(WhoUser(client.User().UID(), client.Data().State(), client.IdleTime(), 
-                       client.CurrentCommand(), client.Ident(), client.Hostname()));
+    users.emplace_back(client.User().UID(), client.Data().State(), client.IdleTime(), 
+                       client.CurrentCommand(), client.Ident(), client.Hostname());
   }
   
   promise.set_value(true);
 }
 
-void ReloadConfig::Execute(Listener&)
+void ReloadConfig::Execute(Server&)
 {
   Result configResult = Result::Okay;
   try
@@ -93,22 +93,22 @@ void ReloadConfig::Execute(Listener&)
   promise.set_value(std::make_pair(configResult, templatesResult));
 }
 
-void Exit::Execute(Listener&)
+void Exit::Execute(Server&)
 {
-  ftp::Listener::SetShutdown();
+  ftp::Server::SetShutdown();
 }
 
-void UserUpdate::Execute(Listener& listener)
+void UserUpdate::Execute(Server& server)
 {
-  for (auto& client: listener.clients)
+  for (auto& client: server.clients)
   {
     if (client.User().UID() == uid) client.SetUserUpdated();
   }
 }
 
-void OnlineUserCount::Execute(Listener& listener)
+void OnlineUserCount::Execute(Server& server)
 {
-  for (const auto& client: listener.clients)
+  for (const auto& client: server.clients)
   {
     if (client.State() != ClientState::LoggedIn) continue;
     ++count;

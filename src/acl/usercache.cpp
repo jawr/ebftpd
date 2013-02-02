@@ -609,31 +609,3 @@ util::Error UserCache::ListIPMasks(const std::string& name, std::vector<std::str
 }
 
 } /* acl namespace */
-
-
-#ifdef ACL_USERCACHE_TEST
-
-int main()
-{
-  using namespace acl;
-  
-  std::cout << "exists: " << UserCache::Exists("someone") << std::endl;
-  std::cout << "exists: " << UserCache::Exists(123) << std::endl;
-  
-  std::cout << "create: " << UserCache::Create("someone", "somepass", "1") << std::endl;
-  std::cout << "exists: " << UserCache::Exists("someone") << std::endl;
-  
-  User user = UserCache::User("someone");
-  std::cout << "exists: " << UserCache::Exists(user.UID()) << std::endl;
-  std::cout << "rename: " << UserCache::Rename("someone" ,"someoneelse") << std::endl;
-  std::cout << "exists: " << UserCache::Exists("someoneelse") << std::endl;
-  std::cout << "exists: " << UserCache::Exists(user.UID()) << std::endl;
-  std::cout << "exists: " << UserCache::Exists("someone") << std::endl;
-  UserCache::Delete("someoneelse");
-  std::cout << "exists: " << UserCache::Exists("someoneelse") << std::endl;
-  std::cout << "exists: " << UserCache::Exists(user.UID()) << std::endl;
-  
-  
-}
-
-#endif

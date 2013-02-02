@@ -103,36 +103,3 @@ Logger& endl(Logger& logger)
 
 } /* logger namespace */
 } /* util namespace */
-
-#ifdef LOGGER_TEST
-
-using namesapce util;
-
-#include <boost/thread/thread.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-logger::Logger test;
-
-void Test()
-{
-  for (int i = 0; i < 1000; ++i)
-  {
-    text << i << logger::endl;
-  }
-}
-
-int main()
-{
-  
-  test.SetPath("/home/bioboy/ftpd/tmp/logs/test.log");
-  text << "test" << logger::endl;
-  text << std::fixed << std::setprecision(0) << 69.59 << logger::endl;
-  
-  boost::thread t1(&Test);
-  boost::thread t2(&Test);
-  
-  t1.join();
-  t2.join();
-}
-
-#endif

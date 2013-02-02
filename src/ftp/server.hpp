@@ -1,5 +1,5 @@
-#ifndef __FTP_LISTENER_HPP
-#define __FTP_LISTENER_HPP
+#ifndef __FTP_SERVER_HPP
+#define __FTP_SERVER_HPP
 
 #include <ostream>
 #include <vector>
@@ -20,7 +20,7 @@
 namespace ftp
 {
 
-class Listener : public util::Thread
+class Server : public util::Thread
 {
   typedef boost::ptr_list<Client> ClientList;
 
@@ -50,7 +50,7 @@ class Listener : public util::Thread
     instance.interruptPipe.Interrupt();
   }
 
-  Listener() : port(-1), isShutdown(false) { }
+  Server() : port(-1), isShutdown(false) { }
 
   static void PushTask(const TaskPtr& task)
   {
@@ -61,7 +61,7 @@ class Listener : public util::Thread
     instance.interruptPipe.Interrupt();
   }
   
-  static Listener instance;
+  static Server instance;
   
 public:
   

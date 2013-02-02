@@ -64,17 +64,3 @@ std::string HexDecode(const std::string& s)
 } /* passwd namespace */
 } /* util namespace */
 
-
-#ifdef __UTIL_PASSWD_TEST
-
-#include <iostream>
-
-int main()
-{  
-  std::cout << util::passwd::HexDecode(util::passwd::HexEncode("Hello")) << std::endl;
-  std::string salt = util::passwd::GenerateSalt();
-  std::cout << salt.length() << std::endl;
-  std::cout << util::passwd::HexEncode(salt) << std::endl;
-}
-
-#endif

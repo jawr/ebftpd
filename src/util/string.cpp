@@ -115,22 +115,3 @@ std::string TitleSimpleCopy(const std::string& s)
 
 } /* string namespace */
 } /* util namespace */
-
-#ifdef UTIL_STRING_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace util::string;
-
-  std::string s = "    hello how   are you   today !";
-  
-  std::cout << CompressWhitespace(s) << std::endl;
-
-  while (!s.empty())
-    std::cout << WordWrap(s, 10) << std::endl;
-  
-}
-
-#endif

@@ -131,22 +131,3 @@ std::ostream& operator<<(std::ostream& os, const Endpoint& ep)
 
 } /* net namespace */
 } /* util namespace */
-
-#ifdef UTIL_NET_ENDPOINT_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace util::net;
-  
-  Endpoint ep("127.0.0.1", 1337);
-  
-  std::cout << ep.IP() << " " << ep.Port() << std::endl;
-  std::cout << ep << std::endl;
-  std::cout << (ep == Endpoint("127.0.0.1", 1337)) << std::endl;
-  std::cout << (ep == Endpoint("127.0.0.1", 1234)) << std::endl;
-  std::cout << Endpoint("::", 1313) << std::endl;
-}
-
-#endif

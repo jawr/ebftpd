@@ -50,21 +50,3 @@ ACL ACL::FromString(const std::string& str)
 }
 
 } /* acl namespace */
-
-
-#ifdef ACL_ACL_TEST
-
-#include <iostream>
-
-int main()
-{
-  acl::User u("bioboy", "password", "12");
-  acl::ACL acl = acl::ACL::FromString("!61 =test -test");
-  std::cout << acl.Evaluate(u) << std::endl;
-  acl = acl::ACL::FromString("!6 =test -someone");
-  std::cout << acl.Evaluate(u) << std::endl;
-  acl = acl::ACL::FromString("!6 =test -bioboy");
-  std::cout << acl.Evaluate(u) << std::endl;
-}
-
-#endif

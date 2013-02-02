@@ -35,31 +35,3 @@ FileLockPtr FileLock::Create(const std::string& path)
 }
 
 } /* fs namespace */
-
-
-#ifdef FS_FILELOCK_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace fs;
-  
-  {
-    std::cout << "creating and releasing first lock" << std::endl;
-    FileLockPtr lock1 = FileLock::Create("/tmp/somefile.txt");
-  }
-  
-  {
-    std::cout << "creating and releasing second lock" << std::endl;
-    FileLockPtr lock1 = FileLock::Create("/tmp/somefile.txt");
-  }
-  
-  std::cout << "creating and holding third lock" << std::endl;
-  FileLockPtr lock1 = FileLock::Create("/tmp/somefile.txt");
-
-  std::cout << "creating fourth lock, this should block forever" << std::endl;
-  FileLockPtr lock2 = FileLock::Create("/tmp/somefile.txt"); 
-}
-
-#endif

@@ -13,7 +13,7 @@
 namespace ftp 
 { 
 
-class Listener;
+class Server;
 
 namespace task
 {
@@ -22,7 +22,7 @@ class Task : public std::enable_shared_from_this<Task>
 {
 public:
   virtual ~Task() { }
-  virtual void Execute(Listener& listener) = 0;
+  virtual void Execute(Server& server) = 0;
   void Push();
 };
 
@@ -35,7 +35,7 @@ class KickUser : public Task
 public:
   KickUser(acl::UserID uid, boost::unique_future<unsigned>& future, bool oneOnly = false) : 
     uid(uid), oneOnly(oneOnly) { future = promise.get_future(); }
-  void Execute(Listener& listener);
+  void Execute(Server& server);
 };
 
 class LoginKickUser : public Task
@@ -56,7 +56,7 @@ private:
 public:
   LoginKickUser(acl::UserID uid, boost::unique_future<Result>& future) : uid(uid)
   { future = promise.get_future(); }
-  void Execute(Listener& listener);
+  void Execute(Server& server);
 };
 
 class GetOnlineUsers : public Task
@@ -68,7 +68,7 @@ public:
   GetOnlineUsers(std::vector<ftp::task::WhoUser>& users, boost::unique_future<bool>& future) : 
     users(users) { future = promise.get_future(); }
     
-  void Execute(Listener& listener);
+  void Execute(Server& server);
 };
 
 class OnlineUserCount : public Task
@@ -84,7 +84,7 @@ public:
     future = promise.get_future();
   }
   
-  void Execute(Listener& listener);
+  void Execute(Server& server);
   
   int Count() const { return count; }
   int AllCount() const { return allCount; }
@@ -105,13 +105,13 @@ public:
   ReloadConfig(boost::unique_future<std::pair<Result, Result>>& future) : future(future)
   { future = promise.get_future(); }
   
-  void Execute(Listener& listener);
+  void Execute(Server& server);
 };
 
 class Exit : public Task
 {
 public:
-  void Execute(Listener& listener);
+  void Execute(Server& server);
 };
 
 class UserUpdate : public Task
@@ -120,7 +120,7 @@ class UserUpdate : public Task
   
 public:
   UserUpdate(acl::UserID uid) : uid(uid) { }
-  void Execute(Listener& listener);
+  void Execute(Server& server);
 };
 
 // end

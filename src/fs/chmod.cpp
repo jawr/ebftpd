@@ -61,18 +61,3 @@ util::Error Chmod(const acl::User& user, const VirtualPath& path, const Mode& mo
 }
 
 } /* fs namespace */
-
-#ifndef __FS_CHMOD_TEST
-
-#include <iostream>
-/*
-int main()
-{
-  using namespace fs;
-  mode_t mode;
-  util::Error e = ModeFromString("0655", mode);
-  if (!e) std::cout << "error: " << e.Message() << std::endl;
-  else std::cout << mode << std::endl;
-}*/
-
-#endif

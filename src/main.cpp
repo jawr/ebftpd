@@ -4,7 +4,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <unistd.h>
-#include "ftp/listener.hpp"
+#include "ftp/server.hpp"
 #include "util/net/tlscontext.hpp"
 #include "util/net/error.hpp"
 #include "logs/logs.hpp"
@@ -239,7 +239,7 @@ int main(int argc, char** argv)
   fs::OwnerCache::Start();
     
   int exitStatus = 0;
-  if (!ftp::Listener::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
+  if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
     logs::error << "Listener failed to initialise!" << logs::endl;
     exitStatus = 1;
@@ -247,8 +247,8 @@ int main(int argc, char** argv)
   else
   { 
     signals::Handler::StartThread();
-    ftp::Listener::StartThread();
-    ftp::Listener::JoinThread();
+    ftp::Server::StartThread();
+    ftp::Server::JoinThread();
     signals::Handler::StopThread();
   }
 

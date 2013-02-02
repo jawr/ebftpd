@@ -69,28 +69,3 @@ bool FindPartnerIP(const IPAddress& ip, IPAddress& partner)
 
 } /* net namespace */
 } /* util namespace */
-
-
-#ifdef UTIL_NET_INTERFACES_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace util::net;
-  
-  Interfaces interfaces;
-  
-  for (Interfaces::const_iterator it1 = interfaces.begin();
-       it1 != interfaces.end(); ++it1)
-  {
-    std::cout << it1->first << std::endl;
-    for (Interface::const_iterator it2 = it1->second.begin();
-         it2 != it1->second.end(); ++it2)
-    {
-      std::cout << "\t" << *it2 << std::endl;
-    }
-  }
-}
-
-#endif

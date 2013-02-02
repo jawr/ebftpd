@@ -175,31 +175,3 @@ void User::DelAllIPMasks(std::vector<std::string>& deleted)
 }
 
 } /* acl namespace */
-
-#ifdef ACL_USER_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace acl;
-  
-  User u("bioboy", acl::UserID(1), "password", "1");
-  
-  std::cout << u.VerifyPassword("test1234") << std::endl;
-  std::cout << u.VerifyPassword("password") << std::endl;
-  u.SetPassword("wowsers");
-  std::cout << "pass changed" << std::endl;
-  std::cout << u.VerifyPassword("wowsers") << std::endl;
-  std::cout << u.VerifyPassword("w0000000000t") << std::endl;
-  
-  
-  std::cout << u.Flags() << std::endl;
-  u.AddFlags("789");
-  std::cout << u.Flags() << std::endl;
-  u.DelFlags("17");
-  std::cout << u.Flags() << std::endl;
-
-}
-
-#endif

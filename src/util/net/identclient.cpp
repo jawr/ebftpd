@@ -75,28 +75,3 @@ void IdentClient::Request()
 
 } /* net namespace */
 } /* util namespace */
-
-#ifdef UTIL_NET_IDENTCLIENT_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace util::net;
-
-  IdentClient ident;
-  try
-  {
-    ident.Request(Endpoint("127.0.0.1", 3456), Endpoint("127.0.0.1", 543));
-  }
-  catch (const NetworkError& e)
-  {
-    std::cout << e.Message() << std::endl;
-    return 0;
-  }
-
-  
-  std::cout << ident.Ident() << " " << ident.OS() << std::endl;
-}
-
-#endif

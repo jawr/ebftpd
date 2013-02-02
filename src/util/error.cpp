@@ -28,27 +28,3 @@ SystemError::SystemError(int errno_) :
 }
 
 } /* fs namespace */
-
-
-#ifdef UTIL_ERROR_TEST
-
-#include <cerrno>
-#include <iostream>
-
-int main()
-{
-  using namespace util;
-  
-  Error e = Error::Success();
-  
-  std::cout << "success: " << (e ? "true" : "false" )  << " " << e.Message() << " " << e.Errno() << std::endl;
-  e = Error::Failure(ENOENT);
-  
-  std::cout << "fail: " << (e ? "true" : "false" ) << " " << e.Message() << " " << e.Errno() << std::endl;
-  
-  e = Error::Failure();
-  std::cout << "fail: " << (e ? "true" : "false" ) << " " << e.Message() << " " << e.Errno() << std::endl;
-  
-}
-
-#endif

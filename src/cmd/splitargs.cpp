@@ -33,20 +33,3 @@ bool SplitArgs(const std::string& command, std::vector<std::string>& args)
 }
 
 } /* cmd namespace */
-
-#ifdef CMD_SPLITARGS_TEST
-
-#include <cassert>
-
-int main(int argc, char** argv)
-{
-	using namespace cmd;
-  
-  std::string cmd = "help";
-  std::vector<std::string> args;
-  assert(SplitArgs(argv[1], args));
-  std::cout << "hello" << std::endl;
-  for (auto& arg : args) std::cout << arg << std::endl;
-}
-
-#endif

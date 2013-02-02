@@ -48,9 +48,6 @@ public:
   Mode(const std::string& str) { Compile(str); }
   
   void Apply(mode_t oldMode, mode_t umask, mode_t& newMode) const;
-#ifdef FS_MODE_TEST
-  void Display() const;
-#endif  
 };
 
 } /* fs namespace */

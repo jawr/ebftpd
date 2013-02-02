@@ -15,10 +15,6 @@
 #include "acl/groupcache.hpp"
 #include "logs/logs.hpp"
 
-#ifdef CMD_DIRLIST_TEST
-#include <iostream>
-#endif
-
 namespace cmd
 {
 namespace
@@ -181,11 +177,7 @@ void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
 
 void DirectoryList::Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirEnum) const
 {
-#ifdef CMD_DIRLIST_TEST
-  dirEnum.Readdir(path, !options.NoOwners() && !options.SizeName());
-#else
   dirEnum.Readdir(client.User(), path, !options.NoOwners() && !options.SizeName());
-#endif
 
   if (options.SizeSort())
   {
@@ -212,11 +204,7 @@ void DirectoryList::Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirE
 
 void DirectoryList::Output(const std::string& message) const
 {
-#ifdef CMD_DIRLIST_TEST
-  std::cout << message;
-#else
   socket.Write(message.c_str(), message.length());
-#endif
 }
 
 void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks, int depth) const
@@ -378,37 +366,3 @@ const std::string& DirectoryList::GIDToName(acl::GroupID gid) const
 }
 
 } /* cmd namespace */
-
-#ifdef CMD_DIRLIST_TEST
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-int main(int argc, char** argv)
-{
-  using namespace cmd;
-  
-  if (argc != 3)
-  {
-    std::cerr << "usage: " << argv[0] << " -aAdlprRst <pathmask>" << std::endl;
-    return 1;
-  }
-  
-  ftp::Client client;
-  {
-    boost::posix_time::ptime start(boost::posix_time::microsec_clock::local_time());
-    DirectoryList dl(client, std::string(argv[2]), ListOptions("", argv[1]), false);
-    dl.Execute();
-    boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
-    std::cout << (end - start).total_microseconds() << std::endl;
-  }
-  
-  {
-    boost::posix_time::ptime start(boost::posix_time::microsec_clock::local_time());
-    DirectoryList dl(client, std::string(argv[2]), ListOptions("", argv[1]), false);
-    dl.Execute();
-    boost::posix_time::ptime end(boost::posix_time::microsec_clock::local_time());
-    std::cout << (end - start).total_microseconds() << std::endl;
-  }
-}
-
-#endif

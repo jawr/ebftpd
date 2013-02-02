@@ -175,24 +175,3 @@ std::ostream& operator<<(std::ostream& os, const IPAddress& ip)
 
 } /* net namespace */
 } /* util namespace */
-
-#ifdef UTIL_NET_IPADDRESS_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace util::net;
-  
-  IPAddress ip("127.0.0.1");
-  
-  std::cout << ip.ToString() << std::endl; 
-  std::cout << ip << std::endl;
-  std::cout << IPAddress::Valid("127.0.0.1") << std::endl;
-  std::cout << IPAddress::Validv4("127.0.0.1") << std::endl;
-  std::cout << IPAddress::Validv6("::") << std::endl;
-  std::cout << (IPAddress("127.0.0.1") == IPAddress("127.0.0.1")) << std::endl;
-  std::cout << (IPAddress("192.168.1.1") == IPAddress("127.0.0.1")) << std::endl;
-}
-
-#endif

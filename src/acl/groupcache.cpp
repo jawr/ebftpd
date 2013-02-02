@@ -200,31 +200,3 @@ std::string GroupCache::GIDToName(GroupID gid)
 }
 
 } /* acl namespace */
-
-
-#ifdef ACL_GROUPCACHE_TEST
-
-int main()
-{
-  using namespace acl;
-  
-  std::cout << "exists: " << GroupCache::Exists("somegroup") << std::endl;
-  std::cout << "exists: " << GroupCache::Exists(123) << std::endl;
-  
-  std::cout << "create: " << GroupCache::Create("somegroup") << std::endl;
-  std::cout << "exists: " << GroupCache::Exists("somegroup") << std::endl;
-  
-  Group group = GroupCache::Group("somegroup");
-  std::cout << "exists: " << GroupCache::Exists(group.GID()) << std::endl;
-  std::cout << "rename: " << GroupCache::Rename("somegroup" ,"othergroup") << std::endl;
-  std::cout << "exists: " << GroupCache::Exists("othergroup") << std::endl;
-  std::cout << "exists: " << GroupCache::Exists(group.GID()) << std::endl;
-  std::cout << "exists: " << GroupCache::Exists("somegroup") << std::endl;
-  GroupCache::Delete("othergroup");
-  std::cout << "exists: " << GroupCache::Exists("othergroup") << std::endl;
-  std::cout << "exists: " << GroupCache::Exists(group.GID()) << std::endl;
-  
-  
-}
-
-#endif
