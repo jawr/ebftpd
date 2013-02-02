@@ -6,7 +6,6 @@
 #include <unordered_set>
 #include <queue>
 #include <atomic>
-#include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>

@@ -1,5 +1,4 @@
 #include <iomanip>
-#include <boost/thread.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
