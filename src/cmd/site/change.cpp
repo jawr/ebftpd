@@ -1,6 +1,8 @@
 #include <sstream>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include "cmd/site/change.hpp"
 #include "acl/usercache.hpp"
 #include "db/user/user.hpp"

@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/chown.hpp"
 #include "fs/dircontainer.hpp"

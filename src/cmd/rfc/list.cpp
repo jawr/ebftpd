@@ -1,3 +1,4 @@
+#include <boost/algorithm/string/trim.hpp>
 #include "cmd/rfc/list.hpp"
 #include "cfg/get.hpp"
 #include "stats/util.hpp"

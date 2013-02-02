@@ -1,4 +1,7 @@
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include "text/templatesection.hpp"
 #include "text/error.hpp"
 #include "text/tag.hpp"

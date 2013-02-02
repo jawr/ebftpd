@@ -1,7 +1,10 @@
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include <fstream>
 #include <memory>
 #include <sstream>
-#include <boost/algorithm/string.hpp>
 #include "text/template.hpp"
 #include "text/parser.hpp"
 #include "text/templatesection.hpp"

@@ -1,7 +1,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "cmd/site/grpchange.hpp"
 #include "acl/group.hpp"

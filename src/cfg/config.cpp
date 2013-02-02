@@ -2,11 +2,12 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/function.hpp>                                   
-#include <boost/numeric/conversion/cast.hpp>
 #include "cfg/config.hpp"
 #include "cfg/error.hpp"
 #include "cfg/setting.hpp"
@@ -205,7 +206,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "total_users")
   {
     ParameterCheck(opt, toks, 1);
-    totalUsers = boost::numeric_cast<unsigned>(boost::lexical_cast<int>(toks[0]));
+    totalUsers = boost::lexical_cast<int>(toks[0]);
   }
   else if (opt == "multiplier_max")
   {

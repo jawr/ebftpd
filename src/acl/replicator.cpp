@@ -1,3 +1,4 @@
+#include <list>
 #include <csignal>
 #include "acl/replicator.hpp"
 

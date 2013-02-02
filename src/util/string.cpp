@@ -1,5 +1,6 @@
 #include <cctype>
 #include <fnmatch.h>
+#include <boost/algorithm/string/case_conv.hpp>
 #include "util/string.hpp"
 
 namespace util { namespace string
@@ -7,7 +8,7 @@ namespace util { namespace string
 
 bool BoolLexicalCast(std::string arg)
 {
-  boost::algorithm::to_lower(arg);
+  boost::to_lower(arg);
   if (arg == "yes") return true;
   else if (arg == "no") return false;
   return boost::lexical_cast<bool>(arg);

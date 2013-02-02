@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include "acl/types.hpp"
 #include "util/error.hpp"

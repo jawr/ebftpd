@@ -1,3 +1,5 @@
+#include <fcntl.h>
+#include <boost/thread/thread.hpp>
 #include "util/processreader.hpp"
 
 namespace util

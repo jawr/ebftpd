@@ -1,7 +1,6 @@
 #include <ctype.h>
 #include <ostream>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 #include "cmd/site/give.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"

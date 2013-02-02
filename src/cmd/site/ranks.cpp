@@ -1,4 +1,5 @@
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include "cmd/site/ranks.hpp"
 #include "db/stats/stat.hpp"
 #include "stats/types.hpp"

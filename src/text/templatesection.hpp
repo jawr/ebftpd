@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <functional>
+#include <algorithm>
 #include "text/tag.hpp"
 #include "util/error.hpp"
 

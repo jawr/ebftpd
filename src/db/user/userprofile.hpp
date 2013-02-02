@@ -4,7 +4,6 @@
 #include <vector>
 #include <unordered_map>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <mongo/client/dbclient.h>
 #include "acl/userprofile.hpp"
 #include "acl/user.hpp"
 #include "acl/types.hpp"
@@ -26,9 +25,6 @@ bool DecrCredits(acl::UserID uid, long long kBytes,
         const std::string& section, bool negativeOkay);
 void IncrCredits(acl::UserID uid, long long kBytes,
         const std::string& section);
-
-// setters
-void Set(acl::UserID uid, mongo::BSONObj obj);
 
 util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value);
 util::Error SetHomeDir(acl::UserID uid, const std::string& value);

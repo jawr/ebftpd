@@ -2,6 +2,7 @@
 #define __CFG_SECTION_HPP
 
 #include <string>
+#include <vector>
 
 namespace fs
 {

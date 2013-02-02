@@ -1,6 +1,6 @@
 #include <cctype>
 #include <boost/format.hpp>
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include "text/tag.hpp"

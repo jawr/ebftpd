@@ -1,4 +1,5 @@
 #include <boost/thread/future.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include "db/task.hpp"
 #include "db/worker.hpp"
 #include "db/error.hpp"

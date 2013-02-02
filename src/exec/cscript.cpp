@@ -1,4 +1,5 @@
 #include <boost/optional.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include "exec/cscript.hpp"
 #include "ftp/client.hpp"
 #include "exec/util.hpp"

@@ -1,7 +1,10 @@
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/file_descriptor.hpp>
 #include <cassert>
 #include <unistd.h>
 #include <csignal>
 #include <fstream>
+#include <sys/file.h>
 #include "util/daemonise.hpp"
 
 namespace util { namespace daemonise

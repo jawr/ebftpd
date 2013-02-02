@@ -1,7 +1,8 @@
 #include <iomanip>
-#include <boost/algorithm/string.hpp>
 #include <boost/thread.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include "ftp/control.hpp"
 #include "util/verify.hpp"
 #include "util/net/tcplistener.hpp"

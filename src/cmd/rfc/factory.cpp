@@ -1,4 +1,3 @@
-#include <boost/algorithm/string.hpp>
 #include "cmd/rfc/factory.hpp"
 #include "cmd/rfc/abor.hpp"
 #include "cmd/rfc/auth.hpp"

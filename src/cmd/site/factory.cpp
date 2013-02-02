@@ -1,4 +1,5 @@
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include "cmd/site/factory.hpp"
 #include "cmd/site/idle.hpp"
 #include "cmd/site/vers.hpp"

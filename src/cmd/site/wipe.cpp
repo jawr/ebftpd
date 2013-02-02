@@ -1,6 +1,6 @@
 #include <sstream>
 #include <string>
-#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/wipe.hpp"
 #include "fs/dircontainer.hpp"

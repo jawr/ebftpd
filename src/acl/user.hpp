@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <sys/types.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/flags.hpp"
 #include "acl/types.hpp"
 #include "util/error.hpp"

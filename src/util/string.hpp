@@ -2,7 +2,6 @@
 #define __UTIL_STRING_HPP
 
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 #include "util/error.hpp"
 
 namespace util { namespace string

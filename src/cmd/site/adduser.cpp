@@ -1,4 +1,6 @@
 #include <sstream>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include "cmd/site/adduser.hpp"
 #include "acl/usercache.hpp"
 #include "util/error.hpp"
