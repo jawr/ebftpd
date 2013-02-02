@@ -21,6 +21,7 @@
 #include "acl/path.hpp"
 #include "fs/owner.hpp"
 #include "acl/credits.hpp"
+#include "util/asynccrc32.hpp"
 #include "util/crc32.hpp"
 #include "ftp/error.hpp"
 #include "db/user/userprofile.hpp"
@@ -230,7 +231,7 @@ void STORCommand::Execute()
   }
 
   bool calcCrc = CalcCRC(path);
-  util::CRC32 crc32;
+  util::AsyncCRC32<16384, 10> crc32;
   bool aborted = false;
   fileOkay = false;
   
@@ -302,7 +303,7 @@ void STORCommand::Execute()
   }
 
   auto section = cfg::Get().SectionMatch(path);
-
+  
   if (exec::PostCheck(client, path, 
                       calcCrc ? crc32.HexString() : "000000", speed, 
                       section ? section->Name() : ""))
