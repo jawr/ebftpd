@@ -75,7 +75,7 @@ class AsciiUploads
   std::vector<std::string> masks;
   
 public:
-  AsciiUploads() { } 
+  AsciiUploads() = default;
   AsciiUploads(const std::vector<std::string>& toks);
   bool Allowed(const std::string& path) const;
 };
@@ -148,7 +148,7 @@ class PortRange
   int from;
   int to;
 public:
-  PortRange(int from, int to) : from(from), to(to) {}
+  PortRange(int from, int to) : from(from), to(to) { }
   int From() const { return from; }
   int To() const { return to; }
 };
@@ -157,7 +157,7 @@ class Ports
 {
   std::vector<PortRange> ranges;
 public:
-  Ports() {}
+  Ports() = default;
   Ports(const std::vector<std::string>& toks);
   const std::vector<PortRange>& Ranges() const { return ranges; }
 };
@@ -210,7 +210,7 @@ class MaxUsers
   int users;
   int exemptUsers;
 public:
-  MaxUsers() : users(50), exemptUsers(5) {}
+  MaxUsers() : users(50), exemptUsers(5) { }
   MaxUsers(const std::vector<std::string>& toks);
   int Users() const { return users; }
   int ExemptUsers() const { return exemptUsers; }
@@ -269,7 +269,7 @@ private:
   int max;
 
 public:
-  Lastonline() : type(ALL), max(10) {}
+  Lastonline() : type(ALL), max(10) { }
   Lastonline(const std::vector<std::string>& toks);
   Type GetType() const { return type; }
   int Max() const { return max; }

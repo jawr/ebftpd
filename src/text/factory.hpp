@@ -20,7 +20,7 @@ class Factory
   static boost::mutex mutex;
   static std::unique_ptr<Factory> instance;
 
-  Factory() {}
+  Factory() = default;
 
 public:
   

@@ -31,7 +31,7 @@ class Group
   GroupID gid;
   
 public:
-  Group() : modified(boost::posix_time::microsec_clock::local_time()), gid(-1) {}
+  Group() : modified(boost::posix_time::microsec_clock::local_time()), gid(-1) { }
   Group(const std::string& name) : 
     modified(boost::posix_time::microsec_clock::local_time()), 
     name(name), gid(-1)

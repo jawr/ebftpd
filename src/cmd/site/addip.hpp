@@ -10,7 +10,7 @@ class ADDIPCommand : public Command
 {
 public:
   ADDIPCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) {}
+    Command(client, client.Control(), client.Data(), argStr, args) { }
 
   void Execute();
 };

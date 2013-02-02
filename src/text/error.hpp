@@ -9,23 +9,23 @@ namespace text
 
 struct TemplateError : public util::RuntimeError
 {
-  TemplateError() : std::runtime_error("Template Error.") {}
-  TemplateError(const std::string& message) : std::runtime_error(message) {}
+  TemplateError() : std::runtime_error("Template Error.") { }
+  TemplateError(const std::string& message) : std::runtime_error(message) { }
 };
 
 struct TemplateDuplicateValue : public TemplateError
 {
-  TemplateDuplicateValue(const std::string& message) : std::runtime_error(message) {}
+  TemplateDuplicateValue(const std::string& message) : std::runtime_error(message) { }
 };
 
 struct TemplateFilterMalform : public TemplateError
 {
-  TemplateFilterMalform(const std::string& message) : std::runtime_error(message) {}
+  TemplateFilterMalform(const std::string& message) : std::runtime_error(message) { }
 };
 
 struct TemplateNoTag : public TemplateError
 {
-  TemplateNoTag(const std::string& message) : std::runtime_error(message) {}
+  TemplateNoTag(const std::string& message) : std::runtime_error(message) { }
 };
 
 class TemplateMalform : public TemplateError

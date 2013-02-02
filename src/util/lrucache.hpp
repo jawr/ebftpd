@@ -70,7 +70,6 @@ public:
   public:
     iterator(Entry* entry) : entry(entry) { }
     iterator(const iterator& iter) : entry(iter.entry) { }
-   ~iterator() { }
 
     iterator& operator=(const iterator& rhs)
     {
@@ -107,7 +106,6 @@ public:
     const_iterator(Entry* entry) : entry(entry) { }
     const_iterator(const const_iterator& iter) : entry(iter.entry) { }
     const_iterator(const iterator& iter) : entry(iter.entry) { }
-   ~const_iterator() { }
 
     const_iterator& operator=(const const_iterator& rhs)
     {

@@ -15,7 +15,7 @@ protected:
   
 public:
   Task();
-  virtual ~Task() {}
+  virtual ~Task() { }
   virtual void Execute(mongo::DBClientConnection& conn) = 0;
 };
 
@@ -26,7 +26,7 @@ class EnsureIndex : public Task
 
 public:
   EnsureIndex(const std::string& collection, const mongo::BSONObj& obj) :
-      collection(collection), obj(obj) {}
+      collection(collection), obj(obj) { }
   void Execute(mongo::DBClientConnection& conn);
 };
 
@@ -100,7 +100,7 @@ class Insert : public Task
   
 public:
   Insert(const std::string& collection, const mongo::BSONObj& obj, bool failOkay = false) :
-    collection(collection), obj(obj), failOkay(failOkay) {}
+    collection(collection), obj(obj), failOkay(failOkay) { }
   void Execute(mongo::DBClientConnection& conn);
 };
 

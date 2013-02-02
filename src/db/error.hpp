@@ -9,8 +9,8 @@ namespace db
 
 struct DBError : public util::RuntimeError
 {
-  DBError() : std::runtime_error("Unknown DB error.") {}
-  DBError(const std::string& message) : std::runtime_error(message) {}
+  DBError() : std::runtime_error("Unknown DB error.") { }
+  DBError(const std::string& message) : std::runtime_error(message) { }
 };
 
 void IDGenerationFailure(const std::string& type, const mongo::DBException& e);

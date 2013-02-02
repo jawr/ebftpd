@@ -13,7 +13,6 @@ template <class BaseT>
 class CreatorBase
 {
 public:  
-  CreatorBase() { }
   virtual ~CreatorBase() { }
   
   virtual BaseT* Create(ftp::Client& client, const std::string& argStr, const Args& args) = 0;
@@ -23,7 +22,6 @@ template <class CommandT>
 class Creator : public CreatorBase<cmd::Command>
 {
 public:
-  Creator() { }
   CommandT* Create(ftp::Client& client, const std::string& argStr, const Args& args)
   {
     return new CommandT(client, argStr, args);

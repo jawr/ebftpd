@@ -100,7 +100,7 @@ protected:
   }
     
 public:
-  Path() { }
+  Path() = default;
   explicit Path(const std::string& path) : path(path) { }    
   explicit Path(const char* path) : path(path) { }  
 
@@ -156,12 +156,11 @@ public:
 class VirtualPath : public Path
 {
 public:
-  VirtualPath() { }
+  VirtualPath() = default;
   explicit VirtualPath(const std::string& path) : Path(path) { }
   explicit VirtualPath(const char* path) : Path(path) { }
   explicit VirtualPath(const RealPath&) = delete;
   explicit VirtualPath(const Path& path) : Path(path) { }
-  ~VirtualPath() { }
   
   const VirtualPath& Dirname() const { return Path::Dirname(*this); }  
   
@@ -182,13 +181,11 @@ public:
 class RealPath : public Path
 {
 public:
-  RealPath() { }
+  RealPath() = default;
   explicit RealPath(const std::string& path) : Path(path) { }
   explicit RealPath(const char* path) : Path(path) { }
   explicit RealPath(const VirtualPath&) = delete;
   explicit RealPath(const Path& path) : Path(path) { }
-  
-  ~RealPath() { }
   
   const RealPath& Dirname() const { return Path::Dirname(*this); }  
 

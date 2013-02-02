@@ -10,7 +10,7 @@ class GADDUSERCommand : public Command
 {
 public:
   GADDUSERCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) {}
+    Command(client, client.Control(), client.Data(), argStr, args) { }
 
   void Execute();
 };

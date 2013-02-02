@@ -19,7 +19,6 @@ class ACL
   void FromStringArg(const std::string& arg);
   
 public:
-  ACL() { }   
   bool Evaluate(const User& user) const;
   static ACL FromString(const std::string& str);
 };

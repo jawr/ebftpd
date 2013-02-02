@@ -160,7 +160,6 @@ class Config
 
 public:
   Config(const std::string& configFile);
-  ~Config() {}  
 
   int Version() const { return version; }
 

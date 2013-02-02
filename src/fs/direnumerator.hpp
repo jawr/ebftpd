@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <cstdint>
 #include "fs/path.hpp"
 #include "fs/status.hpp"
 #include "fs/owner.hpp"
@@ -36,7 +35,7 @@ class DirEnumerator
 {
   const acl::User* user;
   fs::RealPath path;
-  uintmax_t totalBytes;
+  unsigned long long totalBytes;
   bool loadOwners;
   
   std::vector<DirEntry> entries;

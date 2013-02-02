@@ -28,7 +28,7 @@ class AddrAllocatorImpl
   std::vector<std::string> addresses;
   std::vector<std::string>::const_iterator it;
   
-  AddrAllocatorImpl() { }
+  AddrAllocatorImpl() = default;
   
 public:
   void SetAddrs(const std::vector<std::string>& addresses)

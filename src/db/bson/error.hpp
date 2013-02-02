@@ -11,7 +11,7 @@ namespace db { namespace bson
 struct DBUnserializeError : public DBError
 {
   DBUnserializeError(const std::string& objectName) :
-    std::runtime_error("Unable to unserialize " + objectName + " from database.") {}
+    std::runtime_error("Unable to unserialize " + objectName + " from database.") { }
 };
 
 void UnserializeFailure(const std::string& objectName, const std::exception& e, 

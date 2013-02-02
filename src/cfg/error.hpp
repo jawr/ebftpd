@@ -8,14 +8,14 @@ namespace cfg
 
 struct ConfigError : public util::RuntimeError
 {
-  ConfigError() : std::runtime_error("Config error.") {}
-  ConfigError(const std::string& message) : std::runtime_error(message) {}
+  ConfigError() : std::runtime_error("Config error.") { }
+  ConfigError(const std::string& message) : std::runtime_error(message) { }
 };
 
 struct RequiredSettingError : public ConfigError
 {
-  RequiredSettingError() : std::runtime_error("Missing required setting.") {}
-  RequiredSettingError(const std::string& setting) : std::runtime_error("Missing required setting: " + setting) {}
+  RequiredSettingError() : std::runtime_error("Missing required setting.") { }
+  RequiredSettingError(const std::string& setting) : std::runtime_error("Missing required setting: " + setting) { }
 };
 
 }

@@ -12,7 +12,6 @@ class Template
   TemplateSection body;
   TemplateSection foot;
 public:
-  Template() {}
 
   TemplateSection& Head() { return head; }
   TemplateSection& Body() { return body; }

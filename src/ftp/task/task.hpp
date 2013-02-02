@@ -21,7 +21,7 @@ namespace task
 class Task : public std::enable_shared_from_this<Task>
 {
 public:
-  virtual ~Task() {}
+  virtual ~Task() { }
   virtual void Execute(Listener& listener) = 0;
   void Push();
 };

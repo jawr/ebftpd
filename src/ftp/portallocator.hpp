@@ -8,8 +8,6 @@
 #include "util/net/endpoint.hpp"
 #include "cfg/setting.hpp"
 
-#include <iostream>
-
 namespace ftp
 {
 
@@ -29,7 +27,7 @@ class PortAllocatorImpl
   std::vector<cfg::setting::PortRange>::const_iterator it;
   uint16_t nextPort;
   
-  PortAllocatorImpl() : nextPort(0) {}
+  PortAllocatorImpl() : nextPort(0) { }
   
 public:
   void SetPorts(const cfg::setting::Ports& ports)

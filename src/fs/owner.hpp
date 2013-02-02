@@ -88,7 +88,7 @@ class Owners
   std::unordered_map<std::string, OwnerEntry> entries;
   
 public:
-  explicit Owners() { }
+  Owners() = default;
   explicit Owners(const std::unordered_map<std::string, OwnerEntry>& entries) : 
     entries(entries) { }
     
