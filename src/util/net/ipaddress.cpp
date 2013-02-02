@@ -21,7 +21,7 @@ IPAddress::IPAddress(const IPAddress& addr) :
   dataLen(addr.dataLen),
   family(addr.family)
 {
-  memcpy(data, addr.data, addr.dataLen);
+  memcpy(&data, &addr.data, addr.dataLen);
 }
 
 IPAddress::IPAddress(const std::string& addr) :
@@ -33,7 +33,7 @@ IPAddress::IPAddress(const std::string& addr) :
 IPAddress::IPAddress(const void *addr, socklen_t addrLen) :
   dataLen(addrLen)
 {
-  memcpy(data, addr, addrLen);
+  memcpy(&data, addr, addrLen);
   if (addrLen == sizeof(in_addr)) family = IPFamily::IPv4;
   else if (addrLen == sizeof(in6_addr)) family = IPFamily::IPv6;
   else throw InvalidIPAddressError();
@@ -41,15 +41,13 @@ IPAddress::IPAddress(const void *addr, socklen_t addrLen) :
 
 void IPAddress::FromString(const std::string& addr)
 {
-  memset(data, 0, sizeof(data));
-  if (inet_pton(static_cast<int>(IPFamily::IPv4), 
-                addr.c_str(), reinterpret_cast<struct in_addr*>(data)))
+  memset(&data, 0, sizeof(data));
+  if (inet_pton(static_cast<int>(IPFamily::IPv4), addr.c_str(), &data.in4))
   {
     family = IPFamily::IPv4;
     dataLen = sizeof(struct in_addr);
   }
-  else if (inet_pton(static_cast<int>(IPFamily::IPv6), 
-                     addr.c_str(), reinterpret_cast<struct in6_addr*>(data)))
+  else if (inet_pton(static_cast<int>(IPFamily::IPv6), addr.c_str(), &data.in6))
   {
     family = IPFamily::IPv6;
     dataLen = sizeof(struct in6_addr);
@@ -66,7 +64,7 @@ void IPAddress::ToStringv4() const
 {
   char str[INET_ADDRSTRLEN];
   if (!inet_ntop(static_cast<int>(IPFamily::IPv4),
-                 data, str, sizeof(str))) 
+                 &data, str, sizeof(str))) 
     throw NetworkSystemError(errno);
   asString = str;
 }
@@ -75,7 +73,7 @@ void IPAddress::ToStringv6() const
 {
   char str[INET6_ADDRSTRLEN];
   if (!inet_ntop(static_cast<int>(IPFamily::IPv6),
-                 data, str, sizeof(str)))
+                 &data, str, sizeof(str)))
     throw NetworkSystemError(errno);
   asString = str;
 }
@@ -92,7 +90,7 @@ bool IPAddress::IsLoopback() const
 {
   if (family == IPFamily::IPv4)
   {
-    return *reinterpret_cast<const in_addr_t*>(data) == htonl(INADDR_LOOPBACK);
+    return data.in4.s_addr == htonl(INADDR_LOOPBACK);
   }
   else
   if (IsMappedv4())
@@ -101,22 +99,19 @@ bool IPAddress::IsLoopback() const
   }
   else
   {
-    return IN6_IS_ADDR_LOOPBACK(data);
+    return IN6_IS_ADDR_LOOPBACK(&data);
   }
 }
 
 bool IPAddress::IsMappedv4() const
 {
   if (family != IPFamily::IPv6) return false;
-  return IN6_IS_ADDR_V4MAPPED(data);
+  return IN6_IS_ADDR_V4MAPPED(&data);
 }
 
 IPAddress IPAddress::ToUnmappedv4() const
 {
-  struct in_addr addr;
-  socklen_t len = sizeof(addr);
-  memcpy(&addr, data + (sizeof(in6_addr) - len), len);
-  return IPAddress(&addr, len);
+  return IPAddress(&data.unmapped.in4, sizeof(data.unmapped.in4));
 }
 
 bool IPAddress::Validv6(const std::string& addr)
@@ -165,7 +160,7 @@ bool IPAddress::Equals(const IPAddress& addr) const
   if (IsMappedv4()) return ToUnmappedv4().Equals(addr);
   if (addr.IsMappedv4()) return Equals(addr.ToUnmappedv4());
   if (dataLen != addr.dataLen) return false;
-  return !memcmp(data, addr.data, dataLen);
+  return !memcmp(&data, &addr.data, dataLen);
 }
 
 std::ostream& operator<<(std::ostream& os, const IPAddress& ip)

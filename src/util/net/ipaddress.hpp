@@ -27,7 +27,18 @@ enum class IPFamily : int
 class IPAddress
 {
 private:
-  char data[sizeof(in6_addr)];
+  union Data
+  {
+    struct in6_addr in6;
+    struct in_addr in4;
+    struct
+    {
+      unsigned char padding[12];
+      struct in_addr in4;
+    } unmapped;
+  };
+
+  Data data;
   socklen_t dataLen;
   IPFamily family;
   mutable std::string asString;
@@ -49,37 +60,37 @@ public:
   
   IPAddress(const void *addr, socklen_t addrLen);
   /* Throws InvalidIPAddressError */
-  
+
   IPFamily Family() const { return family; }
   /* No exceptions */
-  
+
   const std::string& ToString() const;
   /* Throws util::NetworkSystemError */
-  
+
   bool IsLoopback() const;
 
   bool IsMappedv4() const;
   
   IPAddress ToUnmappedv4() const;
   
-  const void* Addr() const { return static_cast<const void*>(data); }
+  const void* Addr() const { return static_cast<const void*>(&data); }
   /* No exceptions */
 
   socklen_t Length() const { return dataLen; }
   /* No exceptions */
-  
+
   static IPAddress Any(IPFamily family) { return IPAddress(family); }
   /* No exceptions */
 
   static bool Validv6(const std::string& addr);
   /* No exceptions */
-  
+
   static bool Validv4(const std::string& addr);
   /* No exceptions */
 
   static bool Valid(const std::string& addr);
   /* No exceptions */
-  
+
   bool operator==(const IPAddress& lhs) const { return Equals(lhs); }
   /* No exceptions */
 

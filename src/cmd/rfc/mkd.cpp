@@ -32,16 +32,15 @@ void MKDCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  boost::optional<const cfg::Section&> section;
   if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
   {
-    section = cfg::Get().SectionMatch(path);
+    auto section = cfg::Get().SectionMatch(path);
     db::index::Add(path.ToString(), section ? section->Name() : "");
   }
   
   if (acl::path::DirAllowed<acl::path::Dupelog>(client.User(), path))
   {
-    if (!section) section = cfg::Get().SectionMatch(path);
+    auto section = cfg::Get().SectionMatch(path);
     db::dupe::Add(path.Basename().ToString(), section ? section->Name() : "");    
   }
   
