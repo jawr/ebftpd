@@ -2,11 +2,15 @@
 #include <cerrno>
 #include <stdexcept>
 #include <exception>
+#if !defined(__CYGWIN__)
 #include <sys/ptrace.h>
+#endif
 #include "ftp/task/task.hpp"
 #include "signals/signal.hpp"
 #include "logs/logs.hpp"
+#if !defined(__CYGWIN__)
 #include "util/debug.hpp"
+#endif
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "cfg/error.hpp"
@@ -92,6 +96,8 @@ void PropogateSignal(int signo)
   }
 }
 
+
+#if !defined(__CYGWIN__)
 void CrashHandler(int signo)
 {
   std::stringstream ss;
@@ -142,12 +148,14 @@ void TerminateHandler()
   PropogateSignal(SIGABRT);
 }
 
+#endif
+
 util::Error Initialise()
 {
-  std::set_terminate(TerminateHandler);
-
   sigset_t set;
   sigfillset(&set);
+
+#if !defined(__CYGWIN__)
   sigdelset(&set, SIGSEGV);
   sigdelset(&set, SIGABRT);
   
@@ -161,6 +169,9 @@ util::Error Initialise()
   // allow interruption inside gdb
   if (ptrace(PTRACE_TRACEME, 0, nullptr, 0) < 0 && errno == EPERM)
     sigdelset(&set, SIGINT);
+
+ std::set_terminate(TerminateHandler);
+#endif
 
   if (pthread_sigmask(SIG_BLOCK, &set, nullptr) < 0)
     return util::Error::Failure(errno);  

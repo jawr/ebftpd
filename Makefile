@@ -1,6 +1,5 @@
-CXX := g++
-CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic -rdynamic
-CXXFLAGS += -Winit-self -pthread
+CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic
+CXXFLAGS += -Winit-self
 LIBS := -lmongoclient -lcrypto -lboost_thread -lboost_regex -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lssl -lboost_filesystem
 LIBS += -lboost_date_time -lboost_program_options -lz
@@ -55,6 +54,12 @@ ifneq ($(shell cat .state 2>/dev/null),normal)
 $(error You must run make clean before changing build states)
 endif
 endif
+endif
+
+ifeq ($(shell uname -o),Cygwin)
+LIBS += -lpthread
+else
+CXXFLAGS += -rdynamic -pthread
 endif
 
 VERSION := $(shell ./scripts/version.sh)
