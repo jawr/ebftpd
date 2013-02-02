@@ -3,7 +3,7 @@
 #include <bitset>
 #include <sys/stat.h>
 #include "fs/chmod.hpp"
-#include "ftp/client.hpp"
+#include "acl/user.hpp"
 #include "fs/mode.hpp"
 #include "fs/status.hpp"
 #include "acl/path.hpp"
@@ -28,11 +28,11 @@ util::Error Chmod(const RealPath& path, const Mode& mode)
   return util::Error::Success();
 }
 
-util::Error Chmod(ftp::Client& client, const VirtualPath& path, const Mode& mode)
+util::Error Chmod(const acl::User& user, const VirtualPath& path, const Mode& mode)
 {
   namespace PP = acl::path;
 
-  util::Error e = PP::FileAllowed<PP::View>(client.User(), path);
+  util::Error e = PP::FileAllowed<PP::View>(user, path);
   if (!e) return e;
   
   mode_t userMask = umask(0);
@@ -42,7 +42,7 @@ util::Error Chmod(ftp::Client& client, const VirtualPath& path, const Mode& mode
     Status status(MakeReal(path));
     if (status.IsDirectory())
     {
-      util::Error e = PP::DirAllowed<PP::View>(client.User(), path);
+      util::Error e = PP::DirAllowed<PP::View>(user, path);
       if (!e) return e;
     }
     

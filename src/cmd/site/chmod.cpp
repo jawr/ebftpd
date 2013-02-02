@@ -18,7 +18,7 @@ void CHMODCommand::Process(fs::VirtualPath pathmask)
   
   try
   {  
-    for (auto& entry : fs::DirContainer(client, pathmask.Dirname()))
+    for (auto& entry : fs::DirContainer(client.User(), pathmask.Dirname()))
     {
       if (!WildcardMatch(pathmask.Basename().ToString(), entry.ToString()))
         continue;
@@ -27,7 +27,7 @@ void CHMODCommand::Process(fs::VirtualPath pathmask)
       try
       {
         fs::Status status(fs::MakeReal(entryPath));          
-        util::Error e = fs::Chmod(client, entryPath, *mode);
+        util::Error e = fs::Chmod(client.User(), entryPath, *mode);
         if (!e)
         {
           ++failed;

@@ -5,7 +5,6 @@
 #include "fs/file.hpp"
 #include "acl/user.hpp"
 #include "fs/path.hpp"
-#include "ftp/client.hpp"
 #include "fs/owner.hpp"
 #include "util/misc.hpp"
 #include "acl/path.hpp"
@@ -28,10 +27,10 @@ util::Error DeleteFile(const RealPath& path)
   return util::Error::Success();
 }
 
-util::Error DeleteFile(ftp::Client& client, const VirtualPath& path, 
+util::Error DeleteFile(const acl::User& user, const VirtualPath& path, 
       off_t* size, time_t* modTime)
 {
-  util::Error e = PP::FileAllowed<PP::Delete>(client.User(), path);
+  util::Error e = PP::FileAllowed<PP::Delete>(user, path);
   if (!e) return e;
   
   if (size)
@@ -64,21 +63,21 @@ util::Error RenameFile(const RealPath& oldPath, const RealPath& newPath)
   return util::Error::Success();
 }
 
-util::Error RenameFile(ftp::Client& client, const VirtualPath& oldPath,
+util::Error RenameFile(const acl::User& user, const VirtualPath& oldPath,
                  const VirtualPath& newPath)                 
 {
-  util::Error e = PP::FileAllowed<PP::Rename>(client.User(), oldPath);
+  util::Error e = PP::FileAllowed<PP::Rename>(user, oldPath);
   if (!e) return e;
 
-  e = PP::FileAllowed<PP::Upload>(client.User(), newPath);
+  e = PP::FileAllowed<PP::Upload>(user, newPath);
   if (!e) return e;
   
   return RenameFile(MakeReal(oldPath), MakeReal(newPath));
 }
 
-FileSinkPtr CreateFile(ftp::Client& client, const VirtualPath& path)
+FileSinkPtr CreateFile(const acl::User& user, const VirtualPath& path)
 {
-  util::Error e(PP::FileAllowed<PP::Upload>(client.User(), path));
+  util::Error e(PP::FileAllowed<PP::Upload>(user, path));
   if (!e) throw util::SystemError(e.Errno());
   
   unsigned long long freeBytes;
@@ -95,22 +94,22 @@ FileSinkPtr CreateFile(ftp::Client& client, const VirtualPath& path)
   {
     if (errno != EEXIST) throw util::SystemError(errno);
 
-    e = PP::FileAllowed<PP::Overwrite>(client.User(), path);
+    e = PP::FileAllowed<PP::Overwrite>(user, path);
     if (!e) throw util::SystemError(EEXIST);
     
     fd = open(MakeReal(path).CString(), O_WRONLY | O_TRUNC);
     if (fd < 0) throw util::SystemError(errno);
   }
 
-  OwnerCache::Chown(MakeReal(path), Owner(client.User().UID(), 
-      client.User().PrimaryGID()));
+  OwnerCache::Chown(MakeReal(path), Owner(user.UID(), 
+      user.PrimaryGID()));
 
   return FileSinkPtr(new FileSink(fd, boost::iostreams::close_handle));
 }
 
-FileSinkPtr AppendFile(ftp::Client& client, const VirtualPath& path, off_t offset)
+FileSinkPtr AppendFile(const acl::User& user, const VirtualPath& path, off_t offset)
 {
-  util::Error e = PP::FileAllowed<PP::Resume>(client.User(), path);
+  util::Error e = PP::FileAllowed<PP::Resume>(user, path);
   if (!e) throw util::SystemError(e.Errno());
 
   unsigned long long freeBytes;
@@ -140,9 +139,9 @@ FileSinkPtr AppendFile(ftp::Client& client, const VirtualPath& path, off_t offse
   return fout;
 }
 
-FileSourcePtr OpenFile(ftp::Client& client, const VirtualPath& path)
+FileSourcePtr OpenFile(const acl::User& user, const VirtualPath& path)
 {
-  util::Error e = PP::FileAllowed<PP::Download>(client.User(), path);
+  util::Error e = PP::FileAllowed<PP::Download>(user, path);
   if (!e) throw util::SystemError(e.Errno());
 
   int fd = open(MakeReal(path).CString(), O_RDONLY);
@@ -150,10 +149,10 @@ FileSourcePtr OpenFile(ftp::Client& client, const VirtualPath& path)
   return FileSourcePtr(new FileSource(fd, boost::iostreams::close_handle));
 }
 
-util::Error UniqueFile(ftp::Client& client, const VirtualPath& path, 
+util::Error UniqueFile(const acl::User& user, const VirtualPath& path, 
                        size_t filenameLength, VirtualPath& uniquePath)
 { 
-  util::Error e = PP::FileAllowed<PP::Upload>(client.User(), path / "dummyfile");
+  util::Error e = PP::FileAllowed<PP::Upload>(user, path / "dummyfile");
   if (!e) throw util::SystemError(e.Errno());
 
   for (int i = 0; i < 1000; ++i)

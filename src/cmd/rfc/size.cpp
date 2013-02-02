@@ -15,7 +15,7 @@ void SIZECommand::Execute()
 
   try
   {
-    fs::Status status(client, path);
+    fs::Status status(client.User(), path);
     if (status.IsRegularFile())
       control.Reply(ftp::FileStatus, 
         boost::lexical_cast<std::string>(status.Size())); 

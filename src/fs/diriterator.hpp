@@ -8,9 +8,9 @@
 #include <memory>
 #include "fs/path.hpp"
 
-namespace ftp
+namespace acl
 {
-class Client;
+class User;
 }
 
 namespace fs
@@ -21,7 +21,7 @@ class DirContainer;
 class DirIterator : 
   public std::iterator<std::forward_iterator_tag, std::string>
 {
-  const ftp::Client* client;
+  const acl::User* user;
   RealPath path;
   struct dirent de;
   struct dirent *dep;
@@ -33,9 +33,9 @@ class DirIterator :
   DirIterator& Rewind();
   
 public:
-  explicit DirIterator() : client(nullptr), dep(nullptr) { }
+  explicit DirIterator() : user(nullptr), dep(nullptr) { }
   explicit DirIterator(const Path& path);
-  explicit DirIterator(const ftp::Client& client, const VirtualPath& path);
+  explicit DirIterator(const acl::User& user, const VirtualPath& path);
   
   bool operator==(const DirIterator& rhs)
   { return dep == rhs.dep; }

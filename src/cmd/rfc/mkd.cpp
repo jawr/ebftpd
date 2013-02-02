@@ -25,7 +25,7 @@ void MKDCommand::Execute()
   
   if (!exec::PreDirCheck(client, path)) throw cmd::NoPostScriptError();
 
-  e = fs::CreateDirectory(client,  path);
+  e = fs::CreateDirectory(client.User(),  path);
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());

@@ -20,7 +20,7 @@ void UPDATECommand::Execute()
     using util::string::WildcardMatch;
   
     unsigned addedCount = 0;
-    for (const auto& entry : fs::DirContainer(client, pathMask.Dirname()))
+    for (const auto& entry : fs::DirContainer(client.User(), pathMask.Dirname()))
     {
       if (!WildcardMatch(pathMask.Basename().ToString(), entry.ToString())) continue;
 

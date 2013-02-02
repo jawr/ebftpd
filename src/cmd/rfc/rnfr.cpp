@@ -20,7 +20,7 @@ void RNFRCommand::Execute()
 
   try
   {
-    fs::Status status(client, path);
+    fs::Status status(client.User(), path);
   }
   catch (const util::SystemError& e)
   {

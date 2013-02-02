@@ -35,7 +35,7 @@ void CWDCommand::Execute()
 {
   fs::VirtualPath path(fs::PathFromUser(argStr));
 
-  util::Error e = fs::ChangeDirectory(client,  path);
+  util::Error e = fs::ChangeDirectory(client.User(),  path);
   if (e)
   {
     ShowDiz(path);
@@ -44,7 +44,8 @@ void CWDCommand::Execute()
   }
   
   fs::VirtualPath match;
-  if (e.Errno() == ENOENT && (e = fs::ChangeAlias(client, fs::Path(argStr), match)))
+  if (e.Errno() == ENOENT && 
+     (e = fs::ChangeAlias(client.User(), fs::Path(argStr), match)))
   {
     ShowDiz(path);
     control.Reply(ftp::FileActionOkay, "CWD command successful (Alias: " + 
@@ -52,7 +53,8 @@ void CWDCommand::Execute()
     return;
   }
 
-  if (e.Errno() == ENOENT && (e = fs::ChangeMatch(client, path, match)))
+  if (e.Errno() == ENOENT && 
+      (e = fs::ChangeMatch(client.User(), path, match)))
   {
     ShowDiz(path);
     control.Reply(ftp::FileActionOkay, "CWD command successful (Matched: " + 
@@ -60,7 +62,8 @@ void CWDCommand::Execute()
     return;
   }
 
-  if (e.Errno() == ENOENT && (e = fs::ChangeCdpath(client, fs::Path(argStr), match)))
+  if (e.Errno() == ENOENT && 
+      (e = fs::ChangeCdpath(client.User(), fs::Path(argStr), match)))
   {
     ShowDiz(path);
     control.Reply(ftp::FileActionOkay, "CWD command successful (Matched: " + 

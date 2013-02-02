@@ -8,9 +8,9 @@
 #include "fs/status.hpp"
 #include "fs/owner.hpp"
 
-namespace ftp
+namespace acl
 {
-class Client;
+class User;
 }
 
 namespace fs
@@ -34,7 +34,7 @@ public:
 
 class DirEnumerator
 {
-  ftp::Client* client;
+  const acl::User* user;
   fs::RealPath path;
   uintmax_t totalBytes;
   bool loadOwners;
@@ -50,10 +50,10 @@ public:
 
   explicit DirEnumerator();
   explicit DirEnumerator(const fs::Path& path, bool loadOwners = true);
-  explicit DirEnumerator(ftp::Client& client, const fs::VirtualPath& path, bool loadOwners = true);
+  explicit DirEnumerator(const acl::User& user, const fs::VirtualPath& path, bool loadOwners = true);
   
   void Readdir(const fs::Path& path, bool loadOwners = true);
-  void Readdir(ftp::Client& client, const fs::VirtualPath& path, bool loadOwners = true);
+  void Readdir(const acl::User& user, const fs::VirtualPath& path, bool loadOwners = true);
 
   uintmax_t TotalBytes() const { return totalBytes; }
   

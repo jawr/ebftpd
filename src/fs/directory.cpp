@@ -13,6 +13,7 @@
 #include "cfg/get.hpp"
 #include "fs/dircontainer.hpp"
 #include "fs/path.hpp"
+#include "util/error.hpp"
 
 namespace PP = acl::path;
 
@@ -35,9 +36,9 @@ void SetWorkDirectory(const VirtualPath& path)
   workDir.reset(new VirtualPath(path));
 }
 
-util::Error ChangeDirectory(ftp::Client& client, const VirtualPath& path)
+util::Error ChangeDirectory(const acl::User& user, const VirtualPath& path)
 {
-  util::Error e(PP::DirAllowed<PP::View>(client.User(), path));
+  util::Error e(PP::DirAllowed<PP::View>(user, path));
   if (!e) return e;
 
   try
@@ -55,7 +56,7 @@ util::Error ChangeDirectory(ftp::Client& client, const VirtualPath& path)
   return util::Error::Success();
 }
 
-util::Error ChangeAlias(ftp::Client& client, const Path& path, VirtualPath& match)
+util::Error ChangeAlias(const acl::User& user, const Path& path, VirtualPath& match)
 {
   if (path.Basename() != path) return util::Error::Failure(ENOENT);
   
@@ -65,27 +66,27 @@ util::Error ChangeAlias(ftp::Client& client, const Path& path, VirtualPath& matc
     if (alias.Name() == name)
     {
       match = VirtualPath(alias.Path());
-      return ChangeDirectory(client, match);
+      return ChangeDirectory(user, match);
     }
   }
   
   return util::Error::Failure(ENOENT);
 }
 
-util::Error ChangeMatch(ftp::Client& client, const VirtualPath& path, VirtualPath& match)
+util::Error ChangeMatch(const acl::User& user, const VirtualPath& path, VirtualPath& match)
 {
   std::string lcBasename(boost::to_lower_copy(path.Basename().ToString()));
 
-  util::Error e(PP::DirAllowed<PP::View>(client.User(), path));
+  util::Error e(PP::DirAllowed<PP::View>(user, path));
   if (!e) return e;
 
   try
   {
-    for (auto& entry : DirContainer(client, path.Dirname()))
+    for (auto& entry : DirContainer(user, path.Dirname()))
     {
       if (!boost::starts_with(boost::to_lower_copy(entry.ToString()), lcBasename)) continue;
       match = path.Dirname() / entry;
-      e = ChangeDirectory(client, match);
+      e = ChangeDirectory(user, match);
       if (e || (e.Errno() != ENOENT && e.Errno() != ENOTDIR))
       {
         return e;
@@ -100,13 +101,13 @@ util::Error ChangeMatch(ftp::Client& client, const VirtualPath& path, VirtualPat
   return util::Error::Failure(ENOENT);
 }
 
-util::Error ChangeCdpath(ftp::Client& client, const fs::Path& path, VirtualPath& match)
+util::Error ChangeCdpath(const acl::User& user, const fs::Path& path, VirtualPath& match)
 {
   if (path.Basename() != path)  return util::Error::Failure(ENOENT);
     
   for (auto& cdpath : cfg::Get().Cdpath())
   {
-    util::Error e(ChangeMatch(client, MakeVirtual(cdpath / path), match));
+    util::Error e(ChangeMatch(user, MakeVirtual(cdpath / path), match));
     if (e || e.Errno() != ENOENT) return e;
   }
   
@@ -119,14 +120,14 @@ util::Error CreateDirectory(const RealPath& path)
   return util::Error::Success();
 }
 
-util::Error CreateDirectory(ftp::Client& client, const VirtualPath& path)
+util::Error CreateDirectory(const acl::User& user, const VirtualPath& path)
 {
-  util::Error e(PP::DirAllowed<PP::Makedir>(client.User(), path));
+  util::Error e(PP::DirAllowed<PP::Makedir>(user, path));
   if (!e) return e;
 
   e = CreateDirectory(MakeReal(path));  
-  if (e) OwnerCache::Chown(MakeReal(path), Owner(client.User().UID(), 
-        client.User().PrimaryGID()));
+  if (e) OwnerCache::Chown(MakeReal(path), Owner(user.UID(), 
+        user.PrimaryGID()));
   return e;
 }
 
@@ -137,9 +138,9 @@ util::Error RemoveDirectory(const RealPath& path)
   return util::Error::Success();
 }
 
-util::Error RemoveDirectory(ftp::Client& client, const VirtualPath& path)
+util::Error RemoveDirectory(const acl::User& user, const VirtualPath& path)
 {
-  util::Error e(PP::DirAllowed<PP::Delete>(client.User(), path));
+  util::Error e(PP::DirAllowed<PP::Delete>(user, path));
   if (!e) return e;
   
   try
@@ -185,13 +186,13 @@ util::Error RenameDirectory(const RealPath& oldPath, const RealPath& newPath)
   return util::Error::Success();
 }
 
-util::Error RenameDirectory(ftp::Client& client, const VirtualPath& oldPath,
+util::Error RenameDirectory(const acl::User& user, const VirtualPath& oldPath,
                  const VirtualPath& newPath)                 
 {
-  util::Error e = PP::DirAllowed<PP::Rename>(client.User(), oldPath);
+  util::Error e = PP::DirAllowed<PP::Rename>(user, oldPath);
   if (!e) return e;
 
-  e = PP::DirAllowed<PP::Makedir>(client.User(), newPath);
+  e = PP::DirAllowed<PP::Makedir>(user, newPath);
   if (!e) return e;
   
   return RenameDirectory(MakeReal(oldPath), MakeReal(newPath));
@@ -239,38 +240,3 @@ util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes)
 }
 
 } /* fs namespace */
-
-#ifdef FS_DIRECTORY_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace fs;
-  
-  util::Error e = CreateDirectory("/tmp");
-  if (!e) std::cout << "mkdir failed: " << e.Message() << std::endl;
-  else std::cout << "mkdir okay" << std::endl;
-  
-  e = RemoveDirectory("/tmp/something");
-  if (!e) std::cout << "rmdir failed: " << e.Message() << std::endl;
-  else std::cout << "rmdir okay" << std::endl;
-  
-  e = ChangeDirectory("/tmp");
-  if (!e) std::cout << "chdir failed: " << e.Message() << std::endl;
-  else std::cout << "chdir okay" << std::endl;
-
-  e = ChangeDirectory("/tmp/notexist");
-  if (!e) std::cout << "chdir failed: " << e.Message() << std::endl;
-  else std::cout << "chdir okay" << std::endl;
-
-  ftp::Client client;
-  std::cout << "mkdir: " << CreateDirectory(client, "/w000t").Message() << std::endl;
-  std::cout << "chdir: " << ChangeDirectory(client, "/w000t").Message() << std::endl;
-  std::cout << "chdir: " << ChangeDirectory(client, "/something").Message() << std::endl;
-  std::cout << "rmdir: " << RemoveDirectory(client, "/w000t").Message() << std::endl;
-  std::cout << "mkdir: " << CreateDirectory(client, "wow").Message() << std::endl;
-  std::cout << "rmdir: " << RemoveDirectory(client, "wow").Message() << std::endl;
-}
-
-#endif

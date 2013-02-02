@@ -117,7 +117,7 @@ std::vector<std::string> BuildDupeList(ftp::Client& client, const fs::VirtualPat
   std::vector<std::string> dupes;
   try
   {
-    for (const fs::Path& dupe : fs::DirContainer(client, path.Dirname()))
+    for (const fs::Path& dupe : fs::DirContainer(client.User(), path.Dirname()))
     {
       if (IsXdupe(dupe)) dupes.push_back(dupe.ToString());
     }

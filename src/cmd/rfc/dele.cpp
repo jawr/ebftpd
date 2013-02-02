@@ -23,7 +23,7 @@ void DELECommand::Execute()
   
   off_t bytes;
   time_t modTime;
-  util::Error e = fs::DeleteFile(client,  path, &bytes, &modTime);
+  util::Error e = fs::DeleteFile(client.User(),  path, &bytes, &modTime);
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());

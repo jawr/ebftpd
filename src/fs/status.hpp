@@ -3,11 +3,15 @@
 
 #include <sys/stat.h>
 #include "fs/path.hpp"
-#include "util/error.hpp"
 
-namespace ftp
+namespace acl
 {
-class Client;
+class User;
+}
+
+namespace util
+{
+class Error;
 }
 
 namespace fs
@@ -15,7 +19,7 @@ namespace fs
 
 class Status
 {
-  ftp::Client* client;
+  const acl::User* user;
   RealPath path;
   struct stat native;
   bool linkDirectory;
@@ -26,11 +30,11 @@ class Status
   
 public:
   Status(const Path& path);
-  Status(ftp::Client& client, const VirtualPath& path);
+  Status(const acl::User& user, const VirtualPath& path);
   Status();
   
   Status& Reset(const Path& path);
-  Status& Reset(ftp::Client& client, const VirtualPath& path);  
+  Status& Reset(const acl::User& user, const VirtualPath& path);  
   
   bool IsRegularFile() const;
   bool IsDirectory() const;

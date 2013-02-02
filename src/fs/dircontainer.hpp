@@ -2,15 +2,17 @@
 #define __FS_DIRCONTAINER_HPP
 
 #include "fs/diriterator.hpp"
-#include "fs/path.hpp"
 
-namespace ftp
+namespace acl
 {
-class Client;
+class User;
 }
 
 namespace fs
 {
+
+class Path;
+class VirtualPath;
 
 class DirContainer
 {
@@ -19,8 +21,8 @@ class DirContainer
   
 public:
 	explicit DirContainer(const Path& path) : it(path) { }
-  explicit DirContainer(const ftp::Client& client, const VirtualPath& path) :
-    it(client, path) { }
+  explicit DirContainer(const acl::User& user, const VirtualPath& path) :
+    it(user, path) { }
     
   void Rewind() { it.Rewind(); }
     

@@ -1,22 +1,22 @@
 #include <cassert>
 #include "fs/diriterator.hpp"
-#include "ftp/client.hpp"
+#include "acl/user.hpp"
 #include "fs/path.hpp"
 #include "acl/path.hpp"
-#include "cfg/get.hpp"
 #include "util/error.hpp"
+#include "fs/status.hpp"
 
 namespace fs
 {
 
 DirIterator::DirIterator(const Path& path) :
-  client(nullptr), path(RealPath(path)), dep(nullptr)
+  user(nullptr), path(RealPath(path)), dep(nullptr)
 {
   Opendir();
 }
 
-DirIterator::DirIterator(const ftp::Client& client, const VirtualPath& path) :
-  client(&client), path(MakeReal(path)), dep(nullptr)
+DirIterator::DirIterator(const acl::User& user, const VirtualPath& path) :
+  user(&user), path(MakeReal(path)), dep(nullptr)
 {
   Opendir();
 }
@@ -25,9 +25,9 @@ void DirIterator::Opendir()
 {
   namespace PP = acl::path;
   
-  if (client)
+  if (user)
   {  
-    util::Error e = PP::DirAllowed<PP::View>(client->User(), MakeVirtual(path));
+    util::Error e = PP::DirAllowed<PP::View>(*user, MakeVirtual(path));
     if (!e) throw util::SystemError(e.Errno());
   }
 
@@ -50,19 +50,19 @@ void DirIterator::NextEntry()
         !strcmp(de.d_name, ".."))
         continue;
         
-    if (client)
+    if (user)
     {
       try
       {
         Status status(path / de.d_name);
         if (status.IsDirectory())
         {
-          if (!PP::DirAllowed<PP::View>(client->User(), 
+          if (!PP::DirAllowed<PP::View>(*user, 
               MakeVirtual(path) / de.d_name)) continue;
         }
         else
         {
-          if (!PP::FileAllowed<PP::View>(client->User(), 
+          if (!PP::FileAllowed<PP::View>(*user, 
               MakeVirtual(path) / de.d_name)) continue;          
         }
       }
@@ -89,37 +89,3 @@ DirIterator& DirIterator::Rewind()
 }
 
 } /* fs namespace */
-
-#ifdef FS_DIRITERATOR_TEST
-
-#include <iostream>
-
-int main()
-{
-  using namespace fs;
-  
-  DirIterator end;
-  DirIterator it(".");
-  
-  for (; it != end; ++it)
-  {
-    std::cout << *it << std::endl;
-  }
-  
-  try
-  {
-    DirIterator end;
-    DirIterator it("/some/nonexistent/path");
-    
-    for (; it != end; ++it)
-    {
-      std::cout << *it << std::endl;
-    }    
-  }
-  catch (const util::SystemError& e)
-  {
-    std::cout << e.Message() << std::endl;
-  }
-}
-
-#endif

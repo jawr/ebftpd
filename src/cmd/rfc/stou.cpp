@@ -13,7 +13,7 @@ void STOUCommand::Execute()
   static size_t filenameLength = 10;
 
   fs::VirtualPath uniquePath;
-  if (!fs::UniqueFile(client, fs::WorkDirectory(),
+  if (!fs::UniqueFile(client.User(), fs::WorkDirectory(),
                       filenameLength, uniquePath))
   {
     control.Reply(ftp::ActionNotOkay,

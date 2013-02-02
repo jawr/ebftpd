@@ -4,15 +4,13 @@
 #include "fs/status.hpp"
 #include "util/error.hpp"
 #include "acl/path.hpp"
-#include "ftp/client.hpp"
-
-#include <iostream>
+#include "acl/user.hpp"
 
 namespace fs
 {
 
 Status::Status() :
-  client(nullptr),
+  user(nullptr),
   linkDirectory(false),
   linkRegularFile(false),
   statOkay(false)
@@ -20,7 +18,7 @@ Status::Status() :
 }
 
 Status::Status(const Path& path) :
-  client(nullptr),
+  user(nullptr),
   path(RealPath(path)),
   linkDirectory(false),
   linkRegularFile(false),
@@ -29,8 +27,8 @@ Status::Status(const Path& path) :
   Reset();
 }
 
-Status::Status(ftp::Client& client, const VirtualPath& path) :
-  client(&client),
+Status::Status(const acl::User& user, const VirtualPath& path) :
+  user(&user),
   path(MakeReal(path)),
   linkDirectory(false),
   linkRegularFile(false),
@@ -44,17 +42,17 @@ Status& Status::Reset()
   if (path.IsEmpty()) throw std::logic_error("no path set");
   if (!statOkay)
   {
-    if (client)
+    if (user)
     {
-      util::Error e = acl::path::FileAllowed<acl::path::View>(client->User(), MakeVirtual(path));
+      util::Error e = acl::path::FileAllowed<acl::path::View>(*user, MakeVirtual(path));
       if (!e) throw util::SystemError(e.Errno());
     }
     
     if (lstat(path.CString(), &native) < 0) throw util::SystemError(errno);
     
-    if (client && IsDirectory())
+    if (user && IsDirectory())
     {
-      util::Error e = acl::path::DirAllowed<acl::path::View>(client->User(), MakeVirtual(path));
+      util::Error e = acl::path::DirAllowed<acl::path::View>(*user, MakeVirtual(path));
       if (!e) throw util::SystemError(e.Errno());
     }
     
@@ -78,9 +76,9 @@ Status& Status::Reset(const Path& path)
   return *this;
 }
 
-Status& Status::Reset(ftp::Client& client, const VirtualPath& path)
+Status& Status::Reset(const acl::User& user, const VirtualPath& path)
 {
-  this->client = &client;
+  this->user = &user;
   statOkay = false;
   this->path = MakeReal(path);
   Reset();

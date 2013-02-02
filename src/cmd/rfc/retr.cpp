@@ -63,7 +63,7 @@ void RETRCommand::Execute()
   fs::FileSourcePtr fin;
   try
   {
-    fin = fs::OpenFile(client, path);
+    fin = fs::OpenFile(client.User(), path);
   }
   catch (const util::SystemError& e)
   {

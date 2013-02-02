@@ -3,11 +3,15 @@
 
 #include <string>
 #include <sys/types.h>
-#include "util/error.hpp"
 
-namespace ftp
+namespace acl
 {
-class Client;
+class User;
+}
+
+namespace util
+{
+class Error;
 }
 
 namespace fs
@@ -18,7 +22,7 @@ class VirtualPath;
 class RealPath;
 
 util::Error Chmod(const RealPath& path, const Mode& mode);
-util::Error Chmod(ftp::Client& client, const VirtualPath& path, const Mode& mode);
+util::Error Chmod(const acl::User& user, const VirtualPath& path, const Mode& mode);
 
 } /* fs namespace */
 

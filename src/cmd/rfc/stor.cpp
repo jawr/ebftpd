@@ -155,9 +155,9 @@ void STORCommand::Execute()
   try
   {
     if (data.RestartOffset() > 0)
-      fout = fs::AppendFile(client, path, data.RestartOffset());
+      fout = fs::AppendFile(client.User(), path, data.RestartOffset());
     else
-      fout = fs::CreateFile(client, path);
+      fout = fs::CreateFile(client.User(), path);
   }
   catch (const util::SystemError& e)
   {
@@ -289,7 +289,7 @@ void STORCommand::Execute()
   fout->close();
   data.Close();
   
-  e = fs::Chmod(client, path, completeMode);
+  e = fs::Chmod(fs::MakeReal(path), completeMode);
   if (!e) control.PartReply(ftp::DataClosedOkay, "Failed to chmod upload: " + e.Message());
 
   auto duration = data.State().Duration();

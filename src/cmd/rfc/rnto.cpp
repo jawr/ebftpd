@@ -28,11 +28,11 @@ void RNTOCommand::Execute()
   bool isDirectory;
   try
   {
-    isDirectory = fs::Status(client, client.RenameFrom()).IsDirectory();
+    isDirectory = fs::Status(client.User(), client.RenameFrom()).IsDirectory();
     if (isDirectory)
-      e = fs::RenameDirectory(client, client.RenameFrom(), path);
+      e = fs::RenameDirectory(client.User(), client.RenameFrom(), path);
     else
-      e = fs::RenameFile(client, client.RenameFrom(), path);    
+      e = fs::RenameFile(client.User(), client.RenameFrom(), path);    
       
     if (!e)
     {

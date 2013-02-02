@@ -184,7 +184,7 @@ void DirectoryList::Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirE
 #ifdef CMD_DIRLIST_TEST
   dirEnum.Readdir(path, !options.NoOwners() && !options.SizeName());
 #else
-  dirEnum.Readdir(client, path, !options.NoOwners() && !options.SizeName());
+  dirEnum.Readdir(client.User(), path, !options.NoOwners() && !options.SizeName());
 #endif
 
   if (options.SizeSort())

@@ -20,7 +20,7 @@ void WIPECommand::Process(fs::VirtualPath pathmask, int depth)
 
   try
   {
-    for (auto& entry : fs::DirContainer(client, pathmask.Dirname()))
+    for (auto& entry : fs::DirContainer(client.User(), pathmask.Dirname()))
     {
       if (!WildcardMatch(pathmask.Basename().ToString(), entry.ToString()))
         continue;
@@ -33,7 +33,7 @@ void WIPECommand::Process(fs::VirtualPath pathmask, int depth)
         {
           if ((recursive || depth == 1) && !status.IsSymLink())
             Process(entryPath / "*", depth + 1);
-          util::Error e = fs::RemoveDirectory(client, entryPath);
+          util::Error e = fs::RemoveDirectory(client.User(), entryPath);
           if (!e)
           {
             control.PartReply(ftp::CommandOkay, "WIPE " + 
@@ -49,7 +49,7 @@ void WIPECommand::Process(fs::VirtualPath pathmask, int depth)
         }
         else
         {
-          util::Error e = fs::DeleteFile(client, entryPath);
+          util::Error e = fs::DeleteFile(client.User(), entryPath);
           if (!e)
           {
             control.PartReply(ftp::CommandOkay, "WIPE " +

@@ -21,7 +21,7 @@ void CHOWNCommand::Process(fs::VirtualPath pathmask)
 
   try
   {
-    for (auto& entry : fs::DirContainer(client, pathmask.Dirname()))
+    for (auto& entry : fs::DirContainer(client.User(), pathmask.Dirname()))
     {
       if (!WildcardMatch(pathmask.Basename().ToString(), entry.ToString()))
         continue;
