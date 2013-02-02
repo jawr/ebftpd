@@ -4,11 +4,18 @@
 #include <vector>
 #include <unordered_map>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "acl/userprofile.hpp"
-#include "acl/user.hpp"
 #include "acl/types.hpp"
-#include "util/error.hpp"
-#include "acl/user.hpp"
+
+namespace acl
+{
+class UserProfile;
+class User;
+}
+
+namespace util
+{
+class Error;
+}
 
 namespace db { namespace userprofile
 {

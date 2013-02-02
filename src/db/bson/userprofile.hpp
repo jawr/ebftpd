@@ -1,7 +1,10 @@
 #ifndef __DB_BSON_USERPROFILE_HPP
 #define __DB_BSON_USERPROFILE_HPP
 
-#include <mongo/client/dbclient.h>
+namespace mongo
+{
+class BSONObj;
+}
 
 namespace acl
 {

@@ -1,3 +1,4 @@
+#include <mongo/client/dbclient.h>
 #include <vector>
 #include <memory>
 #include "db/bson/user.hpp"

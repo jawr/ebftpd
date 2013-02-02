@@ -5,24 +5,23 @@
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
-#include "db/types.hpp"
-#include "logs/logs.hpp"
 
 namespace db
 {
 
+class Task;
+typedef std::shared_ptr<Task> TaskPtr;
+
 class TaskQueue
 {
-  std::queue<TaskPtr> queue;
+  std::queue<std::shared_ptr<Task>> queue;
   boost::mutex mutex;
   boost::condition_variable newTask;
   boost::condition_variable changed;
   
 public:
-  typedef std::queue<TaskPtr>::size_type size_type;
+  typedef std::queue<std::shared_ptr<Task>>::size_type size_type;
 
-  TaskQueue() {};
-  
   TaskPtr Pop()
   {
     TaskPtr task;

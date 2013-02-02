@@ -10,6 +10,7 @@
 #include "cfg/get.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
+#include "db/stats/traffic.hpp"
 
 namespace cmd { namespace site
 {

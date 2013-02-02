@@ -8,6 +8,8 @@
 #include "acl/allowsitecmd.hpp"
 #include "cmd/error.hpp"
 #include "acl/usercache.hpp"
+#include "stats/types.hpp"
+#include "stats/stat.hpp"
 
 namespace cmd { namespace site
 {

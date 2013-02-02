@@ -1,17 +1,12 @@
 #ifndef __DB_INTERFACE_HPP
 #define __DB_INTERFACE_HPP
 
-#include <mongo/client/dbclient.h>
-#include <vector>
-#include "acl/types.hpp"
-#include "acl/user.hpp"
-#include "acl/group.hpp"
-
 namespace db 
 {
-  // initialize
-  void Initialize(); // should only be called once by initial thread
-  void Cleanup();
+
+void Initialize();
+void Cleanup();
 // end
 }
+
 #endif

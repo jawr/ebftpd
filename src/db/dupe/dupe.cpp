@@ -6,7 +6,12 @@
 #include "db/bson/bson.hpp"
 #include "util/misc.hpp"
 
-namespace db { namespace dupe
+namespace db
+{
+
+typedef std::vector<mongo::BSONObj> QueryResults;
+
+namespace dupe
 {
 
 void Add(const std::string& directory, const std::string& section)

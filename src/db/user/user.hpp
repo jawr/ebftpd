@@ -3,11 +3,24 @@
 
 #include <vector>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 #include "acl/types.hpp"
-#include "acl/userprofile.hpp"
-#include "util/error.hpp"
-#include "acl/user.hpp"
+
+namespace boost { namespace posix_time
+{
+class ptime;
+}
+}
+
+namespace acl
+{
+class User;
+}
+
+namespace util
+{
+class Error;
+}
 
 namespace db { namespace user
 {

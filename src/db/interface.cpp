@@ -9,7 +9,6 @@
 #include "db/interface.hpp"
 #include "db/task.hpp"
 #include "db/pool.hpp"
-#include "db/types.hpp"
 #include "db/bson/user.hpp"
 #include "db/bson/group.hpp"
 #include "acl/types.hpp"

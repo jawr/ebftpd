@@ -1,14 +1,19 @@
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "db/group/group.hpp"
-#include "db/types.hpp"
 #include "db/pool.hpp"
-#include "db/task.hpp"
 #include "db/bson/group.hpp"
 #include "acl/group.hpp"
-#include "acl/types.hpp"
 #include "db/error.hpp"
 #include "db/bson/bson.hpp"
+#include "db/task.hpp"
 
-namespace db { namespace group
+namespace db
+{
+
+typedef std::shared_ptr<Task> TaskPtr;
+typedef std::vector<mongo::BSONObj> QueryResults;
+
+namespace group
 {
 
 bool Create(acl::Group& group)

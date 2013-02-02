@@ -2,10 +2,17 @@
 #define __DB_STATS_STAT_HPP
 
 #include <ctime>
+#include <string>
 #include <vector>
 #include "acl/user.hpp"
-#include "db/types.hpp"
-#include "stats/stat.hpp"
+
+namespace stats
+{
+class Stat;
+enum class Timeframe : unsigned;
+enum class Direction : unsigned;
+enum class SortField : unsigned;
+}
 
 namespace db { namespace stats
 {

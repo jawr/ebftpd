@@ -3,9 +3,18 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/optional.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/types.hpp"
-#include "acl/group.hpp"
+
+namespace boost { namespace posix_time
+{
+class ptime;
+}
+}
+
+namespace acl
+{
+class Group;
+}
 
 namespace db { namespace group
 {

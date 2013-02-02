@@ -1,9 +1,9 @@
 #ifndef __DB_TASK_HPP
 #define __DB_TASK_HPP
 
+#include <vector>
 #include <mongo/client/dbclient.h>
 #include <boost/thread/future.hpp>
-#include "db/types.hpp"
 
 namespace db
 {
@@ -53,14 +53,15 @@ class Select : public Task
 {
   std::string collection;
   const mongo::Query& query;
-  QueryResults& results;
+  std::vector<mongo::BSONObj>& results;
   boost::promise<bool> promise;
   int limit;
   int skip;
   
 public:
   Select(const std::string& collection, const mongo::Query& query,
-         QueryResults& results, boost::unique_future<bool>& future, 
+         std::vector<mongo::BSONObj>& results, 
+         boost::unique_future<bool>& future, 
          int limit = 0, int skip = 0) : 
     collection(collection), query(query), results(results),
     limit(limit), skip(skip)

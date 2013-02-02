@@ -1,7 +1,9 @@
+#include <mongo/client/dbclient.h>
 #include "db/bson/timeframe.hpp"
 #include "stats/date.hpp"
 #include "cfg/get.hpp"
 #include "util/verify.hpp"
+#include "stats/types.hpp"
 
 namespace db { namespace bson
 {

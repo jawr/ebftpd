@@ -4,6 +4,7 @@
 #include "cmd/site/groups.hpp"
 #include "acl/group.hpp"
 #include "acl/user.hpp"
+#include "acl/groupprofile.hpp"
 #include "db/user/user.hpp"
 #include "db/group/group.hpp"
 #include "text/error.hpp"

@@ -2,7 +2,11 @@
 #define __DB_BSON_GROUP_HPP
 
 #include <memory>
-#include <mongo/client/dbclient.h>
+
+namespace mongo
+{
+class BSONObj;
+}
 
 namespace acl
 {

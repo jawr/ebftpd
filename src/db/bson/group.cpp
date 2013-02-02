@@ -1,3 +1,4 @@
+#include <mongo/client/dbclient.h>
 #include "db/bson/group.hpp"
 #include "acl/group.hpp"
 #include "db/bson/error.hpp"

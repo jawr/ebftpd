@@ -3,11 +3,16 @@
 
 #include <string>
 #include "acl/types.hpp"
-#include "stats/types.hpp"
-#include "db/stats/traffic.hpp"
+
+namespace stats
+{
+enum class Timeframe : unsigned;
+}
 
 namespace db { namespace stats
 {
+
+class Traffic;
 
 Traffic TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe, const std::string& section);
 Traffic TransfersTotal(::stats::Timeframe timeframe, const std::string& section);

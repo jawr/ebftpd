@@ -1,8 +1,10 @@
+#include <mongo/client/dbclient.h>
 #include <vector>
 #include "db/bson/stat.hpp"
 #include "db/bson/bson.hpp"
 #include "stats/stat.hpp"
 #include "db/bson/error.hpp"
+#include "stats/stat.hpp"
 
 namespace db { namespace bson
 {

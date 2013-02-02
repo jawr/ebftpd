@@ -2,17 +2,17 @@
 #define __DB_POOL_HPP
 
 #include <memory>
-#include <memory>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/ptr_container/ptr_deque.hpp>
 #include <boost/logic/tribool.hpp>
-#include "db/task.hpp"
 #include "db/worker.hpp"
 #include "db/taskqueue.hpp"
 #include "util/thread.hpp"
 
 namespace db
 {
+
+class Task;
+typedef std::shared_ptr<Task> TaskPtr;
 
 class Pool : public util::Thread
 {
@@ -38,9 +38,8 @@ class Pool : public util::Thread
 
 public:
   Pool();
-  ~Pool() { }
 
-  static void Queue(TaskPtr task) { instance.queue.Push(task); }
+  static void Queue(const TaskPtr& task) { instance.queue.Push(task); }
   static void StartThread();
   static void StopThread();
 

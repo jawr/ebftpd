@@ -1,8 +1,15 @@
 #ifndef __DB_BSON_TIMEFRAME_HPP
 #define __DB_BSON_TIMEFRAME_HPP
 
-#include <mongo/client/dbclient.h>
-#include "stats/types.hpp"
+namespace mongo
+{
+class BSONObj;
+}
+
+namespace stats
+{
+enum class Timeframe : unsigned;
+}
 
 namespace db { namespace bson
 {

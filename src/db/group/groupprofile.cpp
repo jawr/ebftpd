@@ -1,10 +1,18 @@
+#include <mongo/client/dbclient.h>
 #include "db/pool.hpp"
 #include "db/task.hpp"
-#include "db/types.hpp"
 #include "db/bson/groupprofile.hpp"
 #include "db/group/groupprofile.hpp"
+#include "acl/groupprofile.hpp"
+#include "util/error.hpp"
 
-namespace db { namespace groupprofile
+namespace db
+{
+
+typedef std::shared_ptr<Task> TaskPtr;
+typedef std::vector<mongo::BSONObj> QueryResults;
+
+namespace groupprofile
 {
 
 void Delete(acl::GroupID gid)

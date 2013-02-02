@@ -2,9 +2,22 @@
 #define __DB_GROUP_GROUPPROFILE_HPP
 
 #include <string>
-#include <mongo/client/dbclient.h>
 #include "acl/types.hpp"
-#include "acl/groupprofile.hpp"
+
+namespace mongo
+{
+class BSONObj;
+}
+
+namespace acl
+{
+class GroupProfile;
+}
+
+namespace util
+{
+class Error;
+}
 
 namespace db { namespace groupprofile
 {

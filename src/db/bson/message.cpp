@@ -1,3 +1,4 @@
+#include <mongo/client/dbclient.h>
 #include <cassert>
 #include <boost/optional.hpp>
 #include "db/bson/message.hpp"

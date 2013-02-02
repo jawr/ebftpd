@@ -3,9 +3,14 @@
 #include "db/bson/message.hpp"
 #include "db/pool.hpp"
 #include "db/task.hpp"
-#include "db/types.hpp"
 
-namespace db { namespace mail
+namespace db
+{
+
+typedef std::shared_ptr<Task> TaskPtr;
+typedef std::vector<mongo::BSONObj> QueryResults;
+
+namespace mail
 {
 
 void Send(const Message& message)

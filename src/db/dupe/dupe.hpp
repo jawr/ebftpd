@@ -2,6 +2,8 @@
 #define __DB_DUPE_DUPE_HPP
 
 #include <string>
+#include <vector>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace db { namespace dupe
 {

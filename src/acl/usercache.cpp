@@ -11,6 +11,7 @@
 #include "ftp/task/task.hpp"
 #include "acl/replicator.hpp"
 #include "util/string.hpp"
+#include "acl/userprofile.hpp"
 
 namespace acl
 {

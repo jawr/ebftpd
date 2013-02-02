@@ -5,6 +5,8 @@
 #include "cfg/get.hpp"
 #include "db/bson/error.hpp"
 #include "db/bson/timeframe.hpp"
+#include "db/stats/traffic.hpp"
+#include "stats/types.hpp"
 
 namespace db { namespace stats
 {

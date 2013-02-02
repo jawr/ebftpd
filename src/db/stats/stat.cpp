@@ -6,7 +6,6 @@
 #include "acl/user.hpp"
 #include "db/task.hpp"
 #include "db/pool.hpp"
-#include "db/types.hpp"
 #include "stats/date.hpp"
 #include "cfg/get.hpp"
 #include "util/time.hpp"
@@ -14,6 +13,8 @@
 #include "db/bson/timeframe.hpp"
 #include "db/bson/stat.hpp"
 #include "acl/usercache.hpp"
+#include "logs/logs.hpp"
+#include "stats/stat.hpp"
 
 namespace db { namespace stats
 {

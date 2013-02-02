@@ -1,8 +1,15 @@
 #ifndef __DB_BSON_STAT_HPP
 #define __DB_BSON_STAT_HPP
 
-#include <mongo/client/dbclient.h>
-#include "stats/stat.hpp"
+namespace mongo
+{
+class BSONObj;
+}
+
+namespace stats
+{
+class Stat;
+}
 
 namespace db { namespace bson
 {

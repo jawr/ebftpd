@@ -4,6 +4,7 @@
 #include "logs/logs.hpp"
 #include "db/group/groupprofile.hpp"
 #include "acl/replicator.hpp"
+#include "acl/groupprofile.hpp"
 
 namespace acl
 {

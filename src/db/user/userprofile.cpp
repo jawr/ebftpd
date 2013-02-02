@@ -4,15 +4,23 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "db/user/userprofile.hpp"
 #include "db/task.hpp"
-#include "db/types.hpp"
 #include "db/pool.hpp"
-#include "db/bson/userprofile.hpp"
 #include "db/error.hpp"
 #include "db/bson/bson.hpp"
 #include "cfg/get.hpp"
 #include "ftp/task/task.hpp"
+#include "logs/logs.hpp"
+#include "util/error.hpp"
+#include "acl/userprofile.hpp"
+#include "db/bson/userprofile.hpp"
 
-namespace db { namespace userprofile
+namespace db
+{
+
+typedef std::shared_ptr<Task> TaskPtr;
+typedef std::vector<mongo::BSONObj> QueryResults;
+
+namespace userprofile
 {
 
 void Delete(acl::UserID uid)

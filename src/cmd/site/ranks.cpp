@@ -14,6 +14,7 @@
 #include "acl/allowsitecmd.hpp"
 #include "db/user/userprofile.hpp"
 #include "acl/misc.hpp"
+#include "stats/stat.hpp"
 
 namespace cmd { namespace site
 {

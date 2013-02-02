@@ -4,6 +4,8 @@
 #include "db/bson/error.hpp"
 #include "db/bson/timeframe.hpp"
 #include "cfg/get.hpp"
+#include "stats/types.hpp"
+#include "db/stats/traffic.hpp"
 
 namespace db { namespace stats
 {

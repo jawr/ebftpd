@@ -2,8 +2,6 @@
 #define __UTIL_THREAD_HPP
 
 #include <boost/thread/thread.hpp>
-#include <boost/thread/condition.hpp>
-#include <boost/thread/mutex.hpp>
 
 namespace util
 {
@@ -16,9 +14,8 @@ class Thread
     {
       Run();
     }
-    catch (boost::thread_interrupted& interruption)
+    catch (const boost::thread_interrupted&)
     {
-      // interrupted, expected
     }
   }
 

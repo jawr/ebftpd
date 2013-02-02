@@ -6,7 +6,12 @@
 #include "db/bson/bson.hpp"
 #include "util/misc.hpp"
 
-namespace db { namespace index
+namespace db
+{
+
+typedef std::vector<mongo::BSONObj> QueryResults;
+
+namespace index
 {
 
 void Add(const std::string& path, const std::string& section)

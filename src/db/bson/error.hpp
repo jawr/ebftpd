@@ -5,7 +5,8 @@
 #include <mongo/client/dbclient.h>
 #include "db/error.hpp"
 
-namespace db { namespace bson {
+namespace db { namespace bson
+{
 
 struct DBUnserializeError : public DBError
 {

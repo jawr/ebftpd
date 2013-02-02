@@ -2,14 +2,12 @@
 #define __DB_WORKER_HPP
 
 #include <mongo/client/dbclient.h>
-#include <boost/thread/condition.hpp>
-#include <boost/thread/mutex.hpp>
 #include "util/thread.hpp"
-#include "db/types.hpp"
-#include "db/taskqueue.hpp"
 
 namespace db
 {
+
+class TaskQueue;
 
 class Worker : public util::Thread
 {

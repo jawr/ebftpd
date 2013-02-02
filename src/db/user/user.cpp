@@ -1,16 +1,24 @@
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "db/user/user.hpp"
+#include "acl/user.hpp"
+#include "util/error.hpp"
 #include "db/pool.hpp"
 #include "db/task.hpp"
 #include "db/bson/user.hpp"
 #include "db/bson/userprofile.hpp"
 #include "db/bson/error.hpp"
-#include "db/types.hpp"
 #include "acl/groupcache.hpp"
 #include "acl/group.hpp"
 #include "db/error.hpp"
 #include "db/bson/bson.hpp"
 
-namespace db { namespace user
+namespace db
+{
+
+typedef std::shared_ptr<Task> TaskPtr;
+typedef std::vector<mongo::BSONObj> QueryResults;
+
+namespace user
 {
 
 bool Create(acl::User& user)

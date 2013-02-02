@@ -1,3 +1,4 @@
+#include <mongo/client/dbclient.h>
 #include <boost/optional.hpp>
 #include "db/bson/groupprofile.hpp"
 #include "acl/groupprofile.hpp"
