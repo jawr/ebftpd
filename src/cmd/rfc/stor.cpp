@@ -231,7 +231,8 @@ void STORCommand::Execute()
   }
 
   bool calcCrc = CalcCRC(path);
-  util::AsyncCRC32<16384, 10> crc32;
+  //util::AsyncCRC32<16384, 10> crc32;
+  util::CRC32 crc32;
   bool aborted = false;
   fileOkay = false;
   

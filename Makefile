@@ -1,5 +1,5 @@
 CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic
-CXXFLAGS += -Winit-self
+CXXFLAGS += -Winit-self -msse4.2 -O3
 LIBS := -lmongoclient -lcrypto -lboost_thread -lboost_regex -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lssl -lboost_filesystem
 LIBS += -lboost_date_time -lboost_program_options -lz
