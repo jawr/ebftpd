@@ -102,7 +102,7 @@ void User::SetPrimaryGID(GroupID primaryGid)
 void User::AddSecondaryGID(GroupID gid)
 {
   modified = boost::posix_time::microsec_clock::local_time();
-  secondaryGids.push_back(gid);
+  secondaryGids.emplace_back(gid);
 }
 
 void User::DelSecondaryGID(GroupID gid)
@@ -140,7 +140,7 @@ util::Error User::AddIPMask(const std::string& mask, std::vector<std::string>& r
   {
     if (util::string::WildcardMatch(mask, *it, false))
     {
-      redundant.push_back(*it);
+      redundant.emplace_back(*it);
       it = ipMasks.erase(it);
     }
     else
@@ -153,7 +153,7 @@ util::Error User::AddIPMask(const std::string& mask, std::vector<std::string>& r
   }
   
   modified = boost::posix_time::microsec_clock::local_time();  
-  ipMasks.push_back(mask);
+  ipMasks.emplace_back(mask);
   
   return util::Error::Success();
 }

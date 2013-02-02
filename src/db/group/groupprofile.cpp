@@ -57,7 +57,7 @@ std::vector<acl::GroupProfile> GetAll()
   future.wait();
 
   for (auto& obj: results)
-    profiles.push_back(bson::GroupProfile::Unserialize(obj));
+    profiles.emplace_back(bson::GroupProfile::Unserialize(obj));
 
   return profiles;
 }

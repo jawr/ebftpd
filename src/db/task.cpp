@@ -88,7 +88,7 @@ void Select::Execute(mongo::DBClientConnection& conn)
 
     while (cursor->more())
     {
-      results.push_back(cursor->nextSafe().copy());
+      results.emplace_back(cursor->nextSafe().copy());
     }
     
     LastErrorToException(conn);

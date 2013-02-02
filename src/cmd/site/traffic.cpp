@@ -33,10 +33,10 @@ void TRAFFICCommand::Execute()
   std::vector<std::string> sections;
   for (auto& kv : cfg::Get().Sections())
   {
-    sections.push_back(kv.first);
+    sections.emplace_back(kv.first);
   }
   
-  sections.push_back("");
+  sections.emplace_back("");
 
   auto& body = tmpl->Body();
   

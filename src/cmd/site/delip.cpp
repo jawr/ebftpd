@@ -44,7 +44,7 @@ void DELIPCommand::Execute()
     {
       int index = boost::lexical_cast<int>(*it);
       if (index < 0) throw boost::bad_lexical_cast();
-      indexes.push_back(index);
+      indexes.emplace_back(index);
     }
     catch (const boost::bad_lexical_cast&)
     {

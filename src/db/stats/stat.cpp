@@ -169,7 +169,7 @@ std::vector< ::stats::Stat> RetrieveUsers(
   std::vector< ::stats::Stat> users;
   for (const auto& elem : elems)
   {
-    users.push_back(bson::Stat::Unserialize(elem.Obj()));
+    users.emplace_back(bson::Stat::Unserialize(elem.Obj()));
   }
   
   return users;
@@ -232,7 +232,7 @@ std::vector< ::stats::Stat> RetrieveGroups(
   {
     for (const auto& kv : stats)
     {
-      groups.push_back(kv.second);
+      groups.emplace_back(kv.second);
     }
   }
   

@@ -41,11 +41,11 @@ void SplitSegments(const std::string& path, std::vector<std::string>& segments)
   while ((pos2 = path.find('/', pos1)) != std::string::npos)
   {
     if (pos2 != pos1 || pos1 == 0) 
-      segments.push_back(path.substr(pos1, pos2 - pos1));
+      segments.emplace_back(path.substr(pos1, pos2 - pos1));
     pos1 = pos2 + 1;
   }
 
-  if (pos2 != path.length() - 1) segments.push_back(path.substr(pos1));
+  if (pos2 != path.length() - 1) segments.emplace_back(path.substr(pos1));
 }
 
 std::string JoinSegments(const std::vector<std::string>& segments)
@@ -179,7 +179,7 @@ std::string Relative(const std::string& workPath, const std::string& path)
     if (wpSegments[i] != pSegments[i]) break;
     
   for (size_t j = i; j < wpSegments.size(); ++j)
-    result.push_back("..");
+    result.emplace_back("..");
     
   result.insert(result.end(), pSegments.begin() + i, pSegments.end());
   return JoinSegments(result);

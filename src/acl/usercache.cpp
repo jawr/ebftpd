@@ -528,7 +528,7 @@ util::Error UserCache::AddIPMask(const std::string& name, const std::string& mas
               {
                 return std::find(redundant.begin(), redundant.end(), mask) != redundant.end();
               }), masks.end());
-        masks.push_back(mask);
+        masks.emplace_back(mask);
       }
     }
     

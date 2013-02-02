@@ -38,7 +38,7 @@ void HELPCommand::ListNoTemplate()
   {
     if (acl::AllowSiteCmd(client.User(), kv.second.ACLKeyword()))
     {
-      sorted.push_back(kv.first);
+      sorted.emplace_back(kv.first);
       maxLen = std::max(kv.first.length(), maxLen);
     }
   }
@@ -80,7 +80,7 @@ void HELPCommand::List()
   {
     if (acl::AllowSiteCmd(client.User(), kv.second.ACLKeyword()))
     {
-      sorted.push_back(std::make_pair(kv.first, kv.second.Description()));
+      sorted.emplace_back(kv.first, kv.second.Description());
     }
   }
   
@@ -88,7 +88,7 @@ void HELPCommand::List()
   {
     auto def = Factory::LookupCustom(sc.Command());
     if (def && acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
-      sorted.push_back(std::make_pair(sc.Command(), sc.Description()));
+      sorted.emplace_back(sc.Command(), sc.Description());
   }
 
   std::sort(sorted.begin(), sorted.end(),

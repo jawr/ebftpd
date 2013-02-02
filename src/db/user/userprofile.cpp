@@ -92,7 +92,7 @@ std::vector<acl::UserProfile> GetAll()
   future.wait();
 
   for (auto& obj: results)
-    profiles.push_back(bson::UserProfile::Unserialize(obj));
+    profiles.emplace_back(bson::UserProfile::Unserialize(obj));
 
   return profiles;
 }

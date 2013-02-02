@@ -19,13 +19,13 @@ bool SplitArgs(const std::string& command, std::vector<std::string>& args)
     if (pos2 == std::string::npos)
     {
       if (command[pos1] == '{') return false;
-      args.push_back(command.substr(pos1));
+      args.emplace_back(command.substr(pos1));
       break;
     }
     else
     {
       if (command[pos1] == '{') ++pos1;
-      args.push_back(command.substr(pos1, pos2 - pos1));
+      args.emplace_back(command.substr(pos1, pos2 - pos1));
       pos1 = pos2 + 1;
     }
   }

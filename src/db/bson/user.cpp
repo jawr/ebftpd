@@ -40,11 +40,11 @@ void User::Unserialize(const mongo::BSONObj& bo, acl::User& user)
     
     auto secondaryGids = bo["secondary gids"].Array();
     for (const auto& el: secondaryGids)
-      user.secondaryGids.push_back(el.Int());
+      user.secondaryGids.emplace_back(el.Int());
       
     auto ipMasks = bo["ip masks"].Array();
     for (const auto& el : ipMasks)
-      user.ipMasks.push_back(el.String());
+      user.ipMasks.emplace_back(el.String());
   }
   catch (const mongo::DBException& e)
   {

@@ -670,7 +670,7 @@ void Config::ParseSection(const std::string& opt, std::vector<std::string>& toks
   if (opt == "path")
   {
     ParameterCheck(opt, toks, 1);
-    currentSection->paths.push_back(fs::Path(toks[0]));
+    currentSection->paths.emplace_back(toks[0]);
   }
   else if (opt == "separate_credits")
   {

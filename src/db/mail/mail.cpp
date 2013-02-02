@@ -33,7 +33,7 @@ std::vector<Message> Get(acl::UserID recipient)
   std::vector<Message> mail;
   
   for (auto& obj: results)
-    mail.push_back(bson::Message::Unserialize(obj));
+    mail.emplace_back(bson::Message::Unserialize(obj));
     
   return mail;
 }

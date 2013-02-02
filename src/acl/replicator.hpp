@@ -51,7 +51,7 @@ public:
   
   static void Register(Replicable* cache)
   {
-    if (instance.get()) instance->caches.push_back(cache);
+    if (instance.get()) instance->caches.emplace_back(cache);
   }
   
   static void Replicate()
