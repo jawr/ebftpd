@@ -18,6 +18,7 @@ class CHANGECommand : public Command
   struct SettingDef
   {
     std::string name;
+    int maximumArgs;
     std::string aclKeyword;
     CheckFunction check;
   };

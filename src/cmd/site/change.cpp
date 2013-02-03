@@ -21,20 +21,20 @@ namespace cmd { namespace site
 
 const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
 {
-  { "ratio",          "changeratio",    &CHANGECommand::CheckRatio            },
-  { "sratio",         "changeratio",    &CHANGECommand::CheckSectionRatio     },
-  { "wkly_allotment", "changeallot",    &CHANGECommand::CheckWeeklyAllotment  },
-  { "homedir",        "changehomedir",  &CHANGECommand::CheckHomeDir          },
-  { "flags",          "changeflags",    &CHANGECommand::CheckFlags            },
-  { "idle_time",      "change",         &CHANGECommand::CheckIdleTime         },
-  { "expires",        "change",         &CHANGECommand::CheckExpires          },
-  { "num_logins",     "change",         &CHANGECommand::CheckNumLogins        },
-  { "tagline",        "change",         &CHANGECommand::CheckTagline          },
-  { "comment",        "change",         &CHANGECommand::CheckComment          },
-  { "max_up_speed",   "change",         &CHANGECommand::CheckMaxUpSpeed       },
-  { "max_down_speed", "change",         &CHANGECommand::CheckMaxDownSpeed     },
-  { "max_sim_up",     "change",         &CHANGECommand::CheckMaxSimUp         },
-  { "max_sim_down",   "change",         &CHANGECommand::CheckMaxSimDown       }
+  { "ratio",          1,  "changeratio",    &CHANGECommand::CheckRatio            },
+  { "sratio",         2,  "changeratio",    &CHANGECommand::CheckSectionRatio     },
+  { "wkly_allotment", 2,  "changeallot",    &CHANGECommand::CheckWeeklyAllotment  },
+  { "homedir",        1,  "changehomedir",  &CHANGECommand::CheckHomeDir          },
+  { "flags",          1,  "changeflags",    &CHANGECommand::CheckFlags            },
+  { "idle_time",      1,  "change",         &CHANGECommand::CheckIdleTime         },
+  { "expires",        1,  "change",         &CHANGECommand::CheckExpires          },
+  { "num_logins",     1,  "change",         &CHANGECommand::CheckNumLogins        },
+  { "tagline",        1,  "change",         &CHANGECommand::CheckTagline          },
+  { "comment",        1,  "change",         &CHANGECommand::CheckComment          },
+  { "max_up_speed",   1,  "change",         &CHANGECommand::CheckMaxUpSpeed       },
+  { "max_down_speed", 1,  "change",         &CHANGECommand::CheckMaxDownSpeed     },
+  { "max_sim_up",     1,  "change",         &CHANGECommand::CheckMaxSimUp         },
+  { "max_sim_down",   1,  "change",         &CHANGECommand::CheckMaxSimDown       }
 };
 
 CHANGECommand::SetFunction CHANGECommand::CheckRatio()
@@ -57,6 +57,8 @@ CHANGECommand::SetFunction CHANGECommand::CheckRatio()
 
 CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
 {
+  if (args.size() < 4) throw cmd::SyntaxError();
+  
   const cfg::Config& config = cfg::Get();
   
   boost::to_upper(args[3]);
@@ -87,8 +89,36 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
 
 CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
 {
-  control.Reply(ftp::NotImplemented, "Not implemented.");
-  throw cmd::NoPostScriptError();
+  const cfg::Config& config = cfg::Get();
+  
+  std::string section;
+  if (args.size() == 5)
+  {
+    section = boost::to_upper_copy(args[4]);
+    if (config.Sections().find(args[4]) == config.Sections().end())
+    {
+      control.Reply(ftp::ActionNotOkay, "Section " + args[4] + " doesn't exist.");
+      throw cmd::NoPostScriptError();
+    }
+  }
+  
+  try
+  {
+    int allotment = boost::lexical_cast<int>(args[3]);
+    if (allotment < 0) throw boost::bad_lexical_cast();
+    
+    if (!section.empty()) display = section + "(";
+    if (allotment == 0) display += "Disabled";
+    else display += boost::lexical_cast<std::string>(allotment) + "KB";
+    
+    if (!section.empty()) display += ")";
+    
+    return boost::bind(&db::userprofile::SetWeeklyAllotment, _1, allotment);
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
 }
 
 CHANGECommand::SetFunction CHANGECommand::CheckHomeDir()
@@ -307,6 +337,7 @@ CHANGECommand::SetFunction CHANGECommand::Check()
   if (it == settings.end()) throw cmd::SyntaxError();
 
   if (!acl::AllowSiteCmd(client.User(), it->aclKeyword)) throw cmd::PermissionError();
+  if (static_cast<ssize_t>(args.size()) > it->maximumArgs + 3) throw cmd::SyntaxError();
   
   return it->check(this);
 }
