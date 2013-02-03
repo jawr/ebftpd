@@ -70,18 +70,18 @@ void UploadDecr(const acl::User& user, long long kBytes, time_t modTime, const s
   Pool::Queue(task);
   future.wait();
 
-  result = result["result"].Obj();
+  auto elems = result["result"].Array();
   
   long long xfertime = 0;
-  if (result.nFields() > 0)
+  if (!elems.empty())
   {
     try
     {
-      long long totalXfertime = result[0]["total xfertime"].Long();
+      long long totalXfertime = elems[0]["total xfertime"].Long();
       if (totalXfertime > 0)
-        xfertime = kBytes / result[0]["total kbytes"].Long() / totalXfertime;
+        xfertime = kBytes / elems[0]["total kbytes"].Long() / totalXfertime;
       else
-        xfertime = kBytes / result[0]["total kbytes"].Long();
+        xfertime = kBytes / elems[0]["total kbytes"].Long();
     }
     catch (const mongo::DBException& e)
     {
