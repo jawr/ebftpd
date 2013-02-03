@@ -23,9 +23,9 @@ public:
     checksum = sliceby8::crc32(bytes, len, checksum);
   }
   
-  uint32_t Checksum() const { return checksum; }
+  virtual uint32_t Checksum() const { return checksum; }
   
-  std::string HexString() const
+  virtual std::string HexString() const
   {
     std::ostringstream os;
     os << std::hex << std::uppercase << checksum;

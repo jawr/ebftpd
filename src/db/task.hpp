@@ -4,6 +4,7 @@
 #include <vector>
 #include <mongo/client/dbclient.h>
 #include <boost/thread/future.hpp>
+#include <boost/optional.hpp>
 
 namespace db
 {
@@ -55,6 +56,7 @@ class Select : public Task
   const mongo::Query& query;
   std::vector<mongo::BSONObj>& results;
   boost::promise<bool> promise;
+  boost::optional<mongo::BSONObj> returnFields;
   int limit;
   int skip;
   
@@ -62,8 +64,10 @@ public:
   Select(const std::string& collection, const mongo::Query& query,
          std::vector<mongo::BSONObj>& results, 
          boost::unique_future<bool>& future, 
-         int limit = 0, int skip = 0) : 
+         int limit = 0, int skip = 0,
+         const boost::optional<mongo::BSONObj>& returnFields = boost::none) : 
     collection(collection), query(query), results(results),
+    returnFields(returnFields),
     limit(limit), skip(skip)
   {
     future = promise.get_future();

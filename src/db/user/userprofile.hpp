@@ -33,17 +33,16 @@ bool DecrCredits(acl::UserID uid, long long kBytes,
 void IncrCredits(acl::UserID uid, long long kBytes,
         const std::string& section);
 
-util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value);
-util::Error SetHomeDir(acl::UserID uid, const std::string& value);
-util::Error SetStartupDir(acl::UserID uid, const std::string& value);
-util::Error SetIdleTime(acl::UserID uid, const std::string& value);
-util::Error SetExpires(acl::UserID uid, std::string& value);
-util::Error SetNumLogins(acl::UserID uid, const std::string& value);
-util::Error SetComment(acl::UserID uid, const std::string& value);
-util::Error SetMaxDlSpeed(acl::UserID uid, const std::string& value);
-util::Error SetMaxUlSpeed(acl::UserID uid, const std::string& value);
-util::Error SetMaxSimDl(acl::UserID uid, const std::string& value);
-util::Error SetMaxSimUl(acl::UserID uid, const std::string& value);
+void SetWeeklyAllotment(acl::UserID uid, int allotment);
+void SetHomeDir(acl::UserID uid, const std::string& path);
+void SetIdleTime(acl::UserID uid, int idleTime);
+void SetExpires(acl::UserID uid, const boost::optional<boost::gregorian::date>& date);
+void SetNumLogins(acl::UserID uid, int logins);
+void SetComment(acl::UserID uid, const std::string& comment);
+void SetMaxDownSpeed(acl::UserID uid, int speed);
+void SetMaxUpSpeed(acl::UserID uid, int speed);
+void SetMaxSimDown(acl::UserID uid, int logins);
+void SetMaxSimUp(acl::UserID uid, int logins);
 void SetRatio(acl::UserID uid, const std::string& section, int ratio);
 void SetTagline(acl::UserID uid, const std::string& tagline);
 

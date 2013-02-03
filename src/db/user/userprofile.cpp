@@ -115,156 +115,55 @@ void Unset(acl::UserID uid, const std::string& field)
   std::make_shared<ftp::task::UserUpdate>(uid)->Push();
 }
 
-util::Error SetWeeklyAllotment(acl::UserID uid, const std::string& value)
+void SetWeeklyAllotment(acl::UserID uid, int allotment)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(value);
-    if (i < 0) throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    return util::Error::Failure("Invalid value. Must be a number of 0 or larger.");
-  }
-  Set(uid, BSON("weekly allotment" << i));
-  return util::Error::Success();
+  Set(uid, BSON("weekly allotment" << allotment));
 }
   
-util::Error SetHomeDir(acl::UserID uid, const std::string& value)
+void SetHomeDir(acl::UserID uid, const std::string& path)
 {
-  Set(uid, BSON("home dir" << value));
-  return util::Error::Success();
+  Set(uid, BSON("home dir" << path));
 }
 
-util::Error SetStartupDir(acl::UserID uid, const std::string& value)
+void SetIdleTime(acl::UserID uid, int idleTime)
 {
-  Set(uid, BSON("startup dir" << value));
-  return util::Error::Success();
+  Set(uid, BSON("idle time" << idleTime));
 }
 
-util::Error SetIdleTime(acl::UserID uid, const std::string& value)
+void SetExpires(acl::UserID uid, const boost::optional<boost::gregorian::date>& date)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(value);
-    if (i < -1) throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    return util::Error::Failure("Invalid value. Must be a number of -1 or larger.");
-  }
-  Set(uid, BSON("idle time" << i));
-  return util::Error::Success();
+  if (!date) Unset(uid, "expires");
+  else Set(uid, BSON("expires" << db::bson::ToDateT(*date)));
 }
 
-util::Error SetExpires(acl::UserID uid, std::string& value)
+void SetNumLogins(acl::UserID uid, int logins)
 {
-  boost::to_lower(value);
-  if (value == "never")
-  {
-    Unset(uid, "expires");
-  }
-  else
-  {
-    try
-    {
-      Set(uid, BSON("expires" << db::bson::ToDateT(boost::gregorian::from_simple_string(value))));
-    }
-    catch (const std::exception&)
-    {
-      return util::Error::Failure("Invalid date. Must be in format YYYY-MM-DD or NEVER.");
-    }
-  }
-  return util::Error::Success();
+  Set(uid, BSON("num logins" << logins));
 }
 
-util::Error SetNumLogins(acl::UserID uid, const std::string& value)
+void SetComment(acl::UserID uid, const std::string& comment)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(value);
-    if (i <= 0) throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    return util::Error::Failure("Invalid value. Must be a number larger than 0.");
-  }
-  Set(uid, BSON("num logins" << i));
-  return util::Error::Success();
+  Set(uid, BSON("comment" << comment));
 }
 
-util::Error SetComment(acl::UserID uid, const std::string& value)
+void SetMaxDownSpeed(acl::UserID uid, int speed)
 {
-  
-  Set(uid, BSON("comment" << value));
-  return util::Error::Success();
+  Set(uid, BSON("max dl speed" << speed));
 }
 
-util::Error SetMaxDlSpeed(acl::UserID uid, const std::string& value)
+void SetMaxUpSpeed(acl::UserID uid, int speed)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(value);
-    if (i < 0) throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    return util::Error::Failure("Invalid value. Must be a number of 0 or larger.");
-  }
-  Set(uid, BSON("max dl speed" << i));
-  return util::Error::Success();
+  Set(uid, BSON("max ul speed" << speed));
 }
 
-util::Error SetMaxUlSpeed(acl::UserID uid, const std::string& value)
+void SetMaxSimDown(acl::UserID uid, int logins)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(value);
-    if (i < 0) throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    return util::Error::Failure("Invalid value. Must be a number of 0 or larger.");
-  }
-  Set(uid, BSON("max ul speed" << i));
-  return util::Error::Success();
+  Set(uid, BSON("max sim dl" << logins));
 }
 
-util::Error SetMaxSimDl(acl::UserID uid, const std::string& value)
+void SetMaxSimUp(acl::UserID uid, int logins)
 {
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(value);
-    if (i < -1) throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    return util::Error::Failure("Invalid value. Must be number of -1 or larger.");
-  }
-  Set(uid, BSON("max sim dl" << i));
-  return util::Error::Success();
-}
-
-util::Error SetMaxSimUl(acl::UserID uid, const std::string& value)
-{
-  int i;
-  try
-  {
-    i = boost::lexical_cast<int>(value);
-    if (i < -1) throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    return util::Error::Failure("Invalid value. Must be a number of -1 or larger.");
-  }
-  Set(uid, BSON("max sim ul" << i));
-  return util::Error::Success();
+  Set(uid, BSON("max sim ul" << logins));
 }
 
 void Login(acl::UserID uid)

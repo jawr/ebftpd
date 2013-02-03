@@ -35,6 +35,8 @@ void Login(acl::UserID user);
 std::vector<acl::User> GetByACL(std::string acl); 
 void SaveIPMasks(const acl::User& user);
 
+std::vector<acl::UserID> GetMultiUIDOnly(const std::string& multiStr);
+
 // end
 }
 }

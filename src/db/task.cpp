@@ -84,7 +84,8 @@ void Select::Execute(mongo::DBClientConnection& conn)
   try
   {
     std::unique_ptr<mongo::DBClientCursor> cursor =
-      conn.query(database + "." + collection, query, limit, skip);
+      conn.query(database + "." + collection, query, limit, skip, 
+                returnFields ? &*returnFields : nullptr);
 
     while (cursor->more())
     {

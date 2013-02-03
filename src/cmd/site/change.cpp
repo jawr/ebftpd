@@ -1,8 +1,11 @@
+#include <algorithm>
 #include <sstream>
+#include <boost/bind.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include "cmd/site/change.hpp"
 #include "acl/usercache.hpp"
 #include "db/user/user.hpp"
@@ -11,211 +14,331 @@
 #include "util/error.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
+#include "acl/util.hpp"
 
 namespace cmd { namespace site
 {
 
-void CHANGECommand::Execute()
+const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
 {
-  std::ostringstream os;
-  std::string setting = args[2];
-  std::string value = args[3];
-  
-  if (args[0] != "CHANGE")
+  { "ratio",          "changeratio",    &CHANGECommand::CheckRatio            },
+  { "sratio",         "changeratio",    &CHANGECommand::CheckSectionRatio     },
+  { "wkly_allotment", "changeallot",    &CHANGECommand::CheckWeeklyAllotment  },
+  { "homedir",        "changehomedir",  &CHANGECommand::CheckHomeDir          },
+  { "flags",          "changeflags",    &CHANGECommand::CheckFlags            },
+  { "idle_time",      "change",         &CHANGECommand::CheckIdleTime         },
+  { "expires",        "change",         &CHANGECommand::CheckExpires          },
+  { "num_logins",     "change",         &CHANGECommand::CheckNumLogins        },
+  { "tagline",        "change",         &CHANGECommand::CheckTagline          },
+  { "comment",        "change",         &CHANGECommand::CheckComment          },
+  { "max_up_speed",   "change",         &CHANGECommand::CheckMaxUpSpeed       },
+  { "max_down_speed", "change",         &CHANGECommand::CheckMaxDownSpeed     },
+  { "max_sim_up",     "change",         &CHANGECommand::CheckMaxSimUp         },
+  { "max_sim_down",   "change",         &CHANGECommand::CheckMaxSimDown       }
+};
+
+CHANGECommand::SetFunction CHANGECommand::CheckRatio()
+{
+  try
   {
-    setting = args[0];
-    value = args[2];
+    int ratio = boost::lexical_cast<int>(args[3]);
+    if (ratio < 0 || ratio > cfg::Get().MaximumRatio()) throw boost::bad_lexical_cast();
+
+    if (ratio == 0) display = "Unlimited";
+    else display = "1:" + boost::lexical_cast<std::string>(ratio);
+
+    return boost::bind(&db::userprofile::SetRatio, _1, "", ratio);
   }
-  
-  boost::to_lower(setting);
-  
-  if (setting != "sratio" && args.size() != 4) throw cmd::SyntaxError();
-
-  std::vector<acl::User> users;
-
-  if (args[1] == "*")
-    users = db::user::GetAll();
-  else
+  catch (const boost::bad_lexical_cast&)
   {
-    std::vector<std::string> userToks;
-    boost::trim(args[1]);
-    boost::split(userToks, args[1], boost::is_any_of(" "), boost::token_compress_on);
-
-    if (userToks.empty()) throw cmd::SyntaxError();
-  
-    for (auto& tok: userToks)
-    {
-      // could also check by flag here if need be. glftpd doesn't so for now..
-      if (tok[0] == '=')
-      {
-        std::vector<acl::User> tempUsers = db::user::GetByACL(tok);
-        users.insert(users.end(), tempUsers.begin(), tempUsers.end()); // emplace not working
-      }
-      else
-      { 
-        // user
-        try
-        {
-          users.emplace_back(acl::UserCache::User(tok));
-        }
-        catch (const util::RuntimeError& e)
-        {
-          os << "Error: " << e.Message() << "\n";
-        }
-      }
-    }
+    throw cmd::SyntaxError();
   }
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
+{
+  const cfg::Config& config = cfg::Get();
   
-  if (users.size() > 0)
-    os << "Updating (" << users.size() << ") users:";
-  else
+  boost::to_upper(args[3]);
+  if (config.Sections().find(args[3]) == config.Sections().end())
   {
-    control.Reply(ftp::ActionNotOkay, "Error: No users found.");
+    control.Reply(ftp::ActionNotOkay, "Section " + args[3] + " doesn't exist.");
     throw cmd::NoPostScriptError();
   }
   
-  // shouldn't change permission be checked first and override all these? i.e.
-  // a user hat has access to change has access to * whereas a user who has access
-  // to ratio has access only to ratio...
-  if (setting == "ratio")
+  try
   {
-    if (!acl::AllowSiteCmd(client.User(), "changeratio")) throw cmd::PermissionError();
+    int ratio = boost::lexical_cast<int>(args[4]);
+    if (ratio < 0 || ratio > cfg::Get().MaximumRatio()) throw boost::bad_lexical_cast();
+    
+    display = args[3] + "(";
+    if (ratio == 0) display += "Unlimited";
+    else display += "1:" + boost::lexical_cast<std::string>(ratio);
+    
+    display += ")";
+    
+    return boost::bind(&db::userprofile::SetRatio, _1, args[3], ratio);
   }
-  else
-  if (setting == "wkly_allotment")
+  catch (const boost::bad_lexical_cast&)
   {
-    if (!acl::AllowSiteCmd(client.User(), "changeallot")) throw cmd::PermissionError();
+    throw cmd::SyntaxError();
   }
-  else
-  if (setting == "homedir")
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
+{
+  control.Reply(ftp::NotImplemented, "Not implemented.");
+  throw cmd::NoPostScriptError();
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckHomeDir()
+{
+  std::string path = argStr.substr(args[1].length() + args[2].length() + 2);
+  
+  assert(!path.empty());
+  if (path[0] != '/')
   {
-    if (!acl::AllowSiteCmd(client.User(), "changehomedir")) throw cmd::PermissionError();
+    control.Reply(ftp::ActionNotOkay, "Must be an absolute path.");
+    throw cmd::NoPostScriptError();
   }
-  else
-  if (setting == "flags")
+  
+  display = path;  
+  return boost::bind(&db::userprofile::SetHomeDir,  _1, path);
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckFlags()
+{
+  char action = args[3][0];
+  
+  std::string flags = boost::to_upper_copy(args[3].substr(1));
+  if (flags.empty()) throw cmd::SyntaxError();
+  
+  if (!acl::ValidFlags(flags))
   {
-    if (!acl::AllowSiteCmd(client.User(), "changeflags")) throw cmd::PermissionError();
-    if (!acl::ValidFlags(value.substr(1)))
+    control.Reply(ftp::ActionNotOkay, "One or more invalid flags. See SITE FLAGS for a list.");
+    throw cmd::NoPostScriptError();
+  }
+  
+  if (flags.find(static_cast<char>(acl::Flag::Deleted)) != std::string::npos)
+  {
+    control.Reply(ftp::ActionNotOkay, "Flag 6 (deleted) cannot be changed with SITE CHANGE.");
+    throw cmd::NoPostScriptError();
+  }
+
+  display = args[3];
+  
+  switch (action)
+  {
+    case '+'  : return boost::bind(&CHANGECommand::AddFlags, this, _1, flags);
+    case '-'  : return boost::bind(&CHANGECommand::DelFlags, this, _1, flags);
+    case '='  : return boost::bind(&CHANGECommand::SetFlags, this, _1, flags);
+    default   : throw cmd::SyntaxError();
+  }
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckIdleTime()
+{
+  try
+  {
+    int idleTime = boost::lexical_cast<int>(args[3]);
+    if (idleTime < -1) throw boost::bad_lexical_cast();
+    if (idleTime == -1) display = "Unset";
+    else if (idleTime == 0) display = "Unlimited";
+    else display = boost::lexical_cast<std::string>(idleTime) + " seconds";
+    return boost::bind(&db::userprofile::SetIdleTime, _1, idleTime);
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckExpires()
+{
+  boost::optional<boost::gregorian::date> date;
+  boost::to_lower(args[3]);
+  if (args[3] != "never")
+  {
+    try
     {
-      control.Reply(ftp::ActionNotOkay, "Value contains one or more invalid flags.\n"
-                                        "See SITE FLAGS for a list.");
+      boost::replace_all(args[3], "/", "-");
+      try
+      {
+        date.reset(boost::gregorian::from_simple_string(args[3]));
+      }
+      catch (const std::out_of_range&)
+      {
+        throw boost::bad_lexical_cast();
+      }
+    }
+    catch (const boost::bad_lexical_cast&)
+    {
+      control.Reply(ftp::ActionNotOkay, "Date must be in format YYYY/MM/DD or YYYY-MM-DD.");
       throw cmd::NoPostScriptError();
     }
   }
-  else
-  if (!acl::AllowSiteCmd(client.User(), "change")) throw cmd::PermissionError();
+  
+  display = args[3];
+  return boost::bind(&db::userprofile::SetExpires, _1, date);
+}
 
-  util::Error ok;
-
-  for (auto& user: users)
+CHANGECommand::SetFunction CHANGECommand::CheckNumLogins()
+{
+  try
   {
-    os << "\n";
-
-    if (setting == "ratio")
-    {
-      try
-      {
-        int ratio = boost::lexical_cast<int>(value);
-        if (ratio < 0) throw boost::bad_lexical_cast();
-        db::userprofile::SetRatio(user.UID(), "", ratio);
-        ok = util::Error::Success();
-      }
-      catch (const boost::bad_lexical_cast&)
-      {
-        control.Reply(ftp::ActionNotOkay, "Invalid ratio");
-        return;
-      }
-    }
-    //else if (setting == "wkly_allotment")
-      //ok = db::userprofile::SetWeeklyAllotment(user.UID(), value);
-    //else if (setting == "homedir")
-      //ok = db::userprofile::SetHomeDir(user.UID(), value);
-    //else if (setting == "startup_dir")
-      //ok = db::userprofile::SetStartupDir(user.UID(), value);
-    else if (setting == "idle_time")
-      ok = db::userprofile::SetIdleTime(user.UID(), value);
-    else if (setting == "expires")
-      ok = db::userprofile::SetExpires(user.UID(), value);
-    else if (setting == "num_logins")
-      ok = db::userprofile::SetNumLogins(user.UID(), value);
-    else if (setting == "tagline")
-    {
-      db::userprofile::SetTagline(user.UID(), value);
-      ok = util::Error::Success();
-    }
-    else if (setting == "comment")
-      ok = db::userprofile::SetComment(user.UID(), value);
-    else if (setting == "max_dlspeed")
-      ok = db::userprofile::SetMaxDlSpeed(user.UID(), value);
-    else if (setting == "max_ulspeed")
-      ok = db::userprofile::SetMaxUlSpeed(user.UID(), value);
-    else if (setting == "max_sim_down")
-      ok = db::userprofile::SetMaxSimDl(user.UID(), value);
-    else if (setting == "max_sim_up")
-      ok = db::userprofile::SetMaxSimUl(user.UID(), value);
-    else if (setting == "flags")
-    {
-      ok = util::Error::Failure("You must specify flags and a + or - operator in front.");
-      if (value.length() > 1)
-      {
-        if (value[0] == '+')
-        {
-          value.assign(value.begin()+1, value.end());
-          ok = acl::UserCache::AddFlags(user.Name(), value);
-        }
-        else if (value[0] == '-')
-        {
-          value.assign(value.begin()+1, value.end());
-          ok = acl::UserCache::DelFlags(user.Name(), value);
-        }
-        else if (value[0] == '=')
-        {
-          value.assign(value.begin()+1, value.end());
-          ok = acl::UserCache::SetFlags(user.Name(), value);
-        }
-      }
-    }
-    else if (setting == "sratio")
-    {
-      const cfg::Config& config = cfg::Get();
-      boost::to_upper(args[3]);
-      if (config.Sections().find(args[3]) == config.Sections().end())
-      {
-        control.Reply(ftp::ActionNotOkay, "Section " + args[3] + " doesn't exist.");
-        return;
-      }
-      
-      try
-      {
-        int ratio = boost::lexical_cast<int>(args[4]);
-        if (ratio < -1 || ratio > cfg::Get().MaximumRatio())
-          throw boost::bad_lexical_cast();
-          
-        db::userprofile::SetRatio(user.UID(), args[3], ratio);
-        std::ostringstream vos;
-        vos << args[3] << " " << ratio;
-        value = vos.str();
-      }
-      catch (const boost::bad_lexical_cast&)
-      {
-        control.Reply(ftp::ActionNotOkay, "Invalid ratio");
-        return;
-      }
-      
-      ok = util::Error::Success();
-    }
-    else
-    {
-      control.Reply(ftp::ActionNotOkay, "Invalid setting: " + setting);
-      throw cmd::NoPostScriptError();
-    }
-
-    if (!ok)
-      os << ok.Message();
-    else
-      os << "Updated " << user.Name() << " " << setting << " to: " << value;
+    int logins = boost::lexical_cast<int>(args[3]);
+    if (logins < 0) throw boost::bad_lexical_cast();
+    display = boost::lexical_cast<std::string>(logins);
+    return boost::bind(&db::userprofile::SetNumLogins, _1, logins);
   }
+  catch (const boost::bad_lexical_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
+}
 
+CHANGECommand::SetFunction CHANGECommand::CheckTagline()
+{
+  std::string tagline = argStr.substr(args[1].length() + args[2].length() + 2);
+  if (!acl::Validate(acl::ValidationType::Tagline, tagline))
+  {
+    control.Reply(ftp::ActionNotOkay, "Tagline contains invalid characters.");
+    throw cmd::NoPostScriptError();
+  }
+  
+  display = tagline;
+  return boost::bind(&db::userprofile::SetTagline, _1, tagline);
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckComment()
+{
+  std::string comment = argStr.substr(args[1].length() + args[2].length() + 2);
+  display = comment;
+  return boost::bind(&db::userprofile::SetComment, _1, comment);
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckMaxUpSpeed()
+{
+  try
+  {
+    int speed = boost::lexical_cast<int>(args[3]);
+    if (speed < 0) throw boost::bad_lexical_cast();
+    if (speed == 0) display = "Unlimited";
+    else display = boost::lexical_cast<std::string>(speed) + "KB/s";
+    return boost::bind(&db::userprofile::SetMaxUpSpeed, _1, speed);
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckMaxDownSpeed()
+{
+  try
+  {
+    int speed = boost::lexical_cast<int>(args[3]);
+    if (speed < 0) throw boost::bad_lexical_cast();
+    if (speed == 0) display = "Unlimited";
+    else display = boost::lexical_cast<std::string>(speed) + "KB/s";
+    return boost::bind(&db::userprofile::SetMaxDownSpeed, _1, speed);
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckMaxSimUp()
+{
+  try
+  {
+    int logins = boost::lexical_cast<int>(args[3]);
+    if (logins < -1) throw boost::bad_lexical_cast();
+    if (logins == 0) display = "Disabled";
+    else if (logins == -1) display = "Unlimited";
+    else display = boost::lexical_cast<std::string>(logins);
+    return boost::bind(&db::userprofile::SetMaxSimUp, _1, logins);
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckMaxSimDown()
+{
+  try
+  {
+    int logins = boost::lexical_cast<int>(args[3]);
+    if (logins < -1) throw boost::bad_lexical_cast();
+    if (logins == 0) display = "Disabled";
+    else if (logins == -1) display = "Unlimited";
+    else display = boost::lexical_cast<std::string>(logins);
+    return boost::bind(&db::userprofile::SetMaxSimDown, _1, logins);
+  }
+  catch (const boost::bad_lexical_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
+}
+
+void CHANGECommand::AddFlags(acl::UserID uid, const std::string& flags)
+{
+  acl::UserCache::AddFlags(acl::UserCache::UIDToName(uid), flags);
+}
+
+void CHANGECommand::DelFlags(acl::UserID uid, const std::string& flags)
+{
+  acl::UserCache::DelFlags(acl::UserCache::UIDToName(uid), flags);
+}
+
+void CHANGECommand::SetFlags(acl::UserID uid, const std::string& flags)
+{
+  acl::UserCache::SetFlags(acl::UserCache::UIDToName(uid), flags);
+}
+
+CHANGECommand::SetFunction CHANGECommand::Check()
+{
+  boost::to_lower(args[2]);
+  
+  auto it = std::find_if(settings.begin(), settings.end(),
+            [&](const SettingDef& def) { return def.name == args[2]; });
+  if (it == settings.end()) throw cmd::SyntaxError();
+
+  if (!acl::AllowSiteCmd(client.User(), it->aclKeyword)) throw cmd::PermissionError();
+  
+  return it->check(this);
+}
+
+void CHANGECommand::Execute()
+{
+  SetFunction set = Check();
+  
+  auto uids = db::user::GetMultiUIDOnly(args[1]);  
+  if (uids.empty())
+  {
+    control.Reply(ftp::ActionNotOkay, "No user's exist matching that criteria.");
+    throw cmd::NoPostScriptError();
+  }
+  
+  std::for_each(uids.begin(), uids.end(), set);
+
+  assert(!display.empty());
+  
+  std::ostringstream os;
+  os << "Setting " << args[2] << " changed for ";
+  if (uids.size() == 1)
+  {
+     os << acl::UserCache::UIDToName(uids.front()) << ": ";
+  }
+  else
+  {
+    os << uids.size() << " users: ";
+  }
+  
+  os << display;
+  
   control.Reply(ftp::CommandOkay, os.str());
 }
 

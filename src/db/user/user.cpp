@@ -177,6 +177,57 @@ void SaveIPMasks(const acl::User& user)
   Pool::Queue(std::make_shared<db::Update>("users", query, update, true));
 }
 
+std::vector<acl::UserID> GetMultiUIDOnly(const std::string& multiStr)
+{
+  std::vector<std::string> toks;
+  boost::split(toks, multiStr, boost::is_any_of(" "), boost::token_compress_on);
+  
+  mongo::Query query;
+  if (std::find(toks.begin(), toks.end(), "*") == toks.end())
+  {
+    mongo::BSONArrayBuilder namesBab;
+    mongo::BSONArrayBuilder gidsBab;
+    
+    for (std::string tok : toks)
+    {
+      if (tok[0] == '=')
+      {
+        acl::GroupID gid = acl::GroupCache::NameToGID(tok.substr(1));
+        if (gid != -1)
+        {
+          gidsBab.append(gid);
+        }
+        continue;
+      }
+      
+      if (tok[0] == '-') tok.erase(0, 1);
+      namesBab.append(tok);
+
+    }
+    
+    auto gids = gidsBab.arr();
+    query = QUERY("name" << BSON("$in" << namesBab.arr()) <<
+                 "primary gid" << BSON("$in" << gids) <<
+                 "secondary gids" << BSON("$in" << gids));
+  }
+  
+  QueryResults results;
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("users", query, results, future, 0, 0, BSON("uid" << 1)));
+  Pool::Queue(task);
+
+  future.wait();
+
+  std::vector<acl::UserID> uids;
+  for (auto& result : results)
+  {
+    uids.emplace_back(result["uid"].Int());
+  }
+  
+  return uids;
+}
+
+
 // end
 }
 }
