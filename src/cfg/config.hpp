@@ -136,6 +136,7 @@ class Config
   int maximumRatio;
   int cacheReplicate;
   int dirSizeDepth;
+  bool asyncCRC;
   
   acl::ACL tlsControl;
   acl::ACL tlsListing;
@@ -267,6 +268,7 @@ public:
   const acl::ACL& TLSFxp() const { return tlsFxp; }
   int CacheReplicate() const { return cacheReplicate; }
   int DirSizeDepth() const { return dirSizeDepth; }
+  bool AsyncCRC() const { return asyncCRC; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

@@ -7,7 +7,7 @@
 namespace util { namespace sliceby8
 {
 
-uint32_t crc32(const void* data, size_t length, uint32_t previousCrc32 = 0);
+uint32_t crc32(const uint8_t* data, size_t length, uint32_t crc);
 
 } /* sliceby8 namespace */
 } /* util namespace */

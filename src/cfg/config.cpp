@@ -58,6 +58,7 @@ Config::Config(const std::string& configFile) :
   maximumRatio(10),
   cacheReplicate(0),
   dirSizeDepth(2),
+  asyncCRC(false),
   tlsControl(acl::ACL::FromString("*")),
   tlsListing(acl::ACL::FromString("*")),
   tlsData(acl::ACL::FromString("!*")),
@@ -642,6 +643,11 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     {
       throw ConfigError("dir_size_depth must be zero or larger");
     }
+  }
+  else if (opt == "async_crc")
+  {
+    ParameterCheck(opt, toks, 1);
+    asyncCRC = util::string::BoolLexicalCast(toks[0]);
   }
   else if (opt == "tls_control")
   {

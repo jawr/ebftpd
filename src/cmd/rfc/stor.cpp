@@ -229,10 +229,13 @@ void STORCommand::Execute()
     control.Reply(ftp::ProtocolNotSupported, os.str());
     return;
   }
+  
+  static const size_t bufferSize = 16384;
 
   bool calcCrc = CalcCRC(path);
-  //util::AsyncCRC32<16384, 10> crc32;
-  util::CRC32 crc32;
+  std::unique_ptr<util::CRC32> crc32(cfg::Get().AsyncCRC() ? 
+                                     new util::AsyncCRC32(bufferSize, 3) :
+                                     new util::CRC32());
   bool aborted = false;
   fileOkay = false;
   
@@ -240,7 +243,7 @@ void STORCommand::Execute()
   {
     ftp::UploadSpeedControl speedControl(client, path);
     std::vector<char> asciiBuf;
-    char buffer[16384];
+    char buffer[bufferSize];
     
     while (true)
     {
@@ -258,7 +261,7 @@ void STORCommand::Execute()
       
       fout->write(bufp, len);
       
-      if (calcCrc) crc32.Update(bufp, len);
+      if (calcCrc) crc32->Update(reinterpret_cast<uint8_t*>(bufp), len);
       speedControl.Apply();
     }
   }
@@ -306,7 +309,7 @@ void STORCommand::Execute()
   auto section = cfg::Get().SectionMatch(path);
   
   if (exec::PostCheck(client, path, 
-                      calcCrc ? crc32.HexString() : "000000", speed, 
+                      calcCrc ? crc32->HexString() : "000000", speed, 
                       section ? section->Name() : ""))
   {
     fileOkay = true;

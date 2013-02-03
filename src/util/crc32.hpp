@@ -16,8 +16,9 @@ class CRC32
   
 public:
   CRC32() : checksum(0) { }
+  virtual ~CRC32() { }
   
-  void Update(const void* bytes, unsigned len)
+  virtual void Update(const uint8_t* bytes, unsigned len)
   {
     checksum = sliceby8::crc32(bytes, len, checksum);
   }
