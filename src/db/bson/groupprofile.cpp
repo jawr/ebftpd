@@ -15,7 +15,7 @@ mongo::BSONObj GroupProfile::Serialize(const acl::GroupProfile& profile)
   bob.append("slots", profile.slots);
   bob.append("leech slots", profile.leechSlots);
   bob.append("allotment slots", profile.allotSlots);
-  bob.append("allotment size", profile.allotSize);
+  bob.append("max allotment size", profile.maxAllotSize);
   bob.append("max logins", profile.maxLogins);
   bob.append("comment", profile.comment);
   return bob.obj();
@@ -32,7 +32,7 @@ acl::GroupProfile GroupProfile::Unserialize(const mongo::BSONObj& bo)
     profile.slots = bo["slots"].Int();
     profile.leechSlots = bo["leech slots"].Int();
     profile.allotSlots = bo["allotment slots"].Int();
-    profile.allotSize = bo["allotment size"].Int();
+    profile.maxAllotSize = bo["max allotment size"].Int();
     profile.slots = bo["slots"].Int();
     profile.maxLogins = bo["max logins"].Int();
   }

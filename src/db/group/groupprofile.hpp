@@ -28,15 +28,13 @@ std::vector<acl::GroupProfile> GetAll();
 acl::GroupProfile Get(acl::GroupID gid);
 void Set(acl::GroupID gid, mongo::BSONObj obj); 
 
-util::Error SetSlots(acl::GroupID gid, const std::string& slots); 
-util::Error SetLeechSlots(acl::GroupID gid, const std::string& slots); 
-util::Error SetAllotSlots(acl::GroupID gid, const std::string& slots); 
-util::Error SetMaxAllotSlots(acl::GroupID gid, const std::string& slots); 
-util::Error SetMaxLogins(acl::GroupID gid, const std::string& maxLogins); 
-util::Error SetDescription(acl::GroupID gid, 
-  const std::string& description);
-util::Error SetComment(acl::GroupID gid, 
-  const std::string& comment);
+void SetSlots(acl::GroupID gid, int slots); 
+void SetLeechSlots(acl::GroupID gid, int slots); 
+void SetAllotSlots(acl::GroupID gid, int slots); 
+void SetMaxAllotSize(acl::GroupID gid, long long allotment); 
+void SetMaxLogins(acl::GroupID gid, int logins); 
+void SetDescription(acl::GroupID gid, const std::string& description);
+void SetComment(acl::GroupID gid, const std::string& comment);
 
 }
 }

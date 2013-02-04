@@ -28,7 +28,7 @@ void Control::SendReply(ReplyCode code, bool part, const std::string& message)
   const std::string& str = reply.str();
   Write(str.c_str(), str.length());
   logs::debug << str << logs::endl;
-  
+
   if (lastCode != code && lastCode != CodeNotSet && code != ftp::NoCode)
     throw ProtocolError("Invalid reply code sequence.");
   if (code != ftp::NoCode) lastCode = code;

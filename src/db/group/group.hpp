@@ -26,6 +26,7 @@ boost::ptr_vector<acl::Group>
 GetAllPtr(const boost::optional<boost::posix_time::
           ptime>& modified = boost::none);
 void Delete(const acl::GroupID gid);
+std::vector<acl::GroupID> GetMultiGIDOnly(const std::string& multiStr);
 
 // end
 }

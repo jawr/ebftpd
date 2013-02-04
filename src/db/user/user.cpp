@@ -206,9 +206,10 @@ std::vector<acl::UserID> GetMultiUIDOnly(const std::string& multiStr)
     }
     
     auto gids = gidsBab.arr();
-    query = QUERY("name" << BSON("$in" << namesBab.arr()) <<
-                 "primary gid" << BSON("$in" << gids) <<
-                 "secondary gids" << BSON("$in" << gids));
+    query = QUERY("$or" << 
+      BSON_ARRAY(BSON("name" << BSON("$in" << namesBab.arr())) <<
+                 BSON("primary gid" << BSON("$in" << gids)) <<
+                 BSON("secondary gids" << BSON("$in" << gids))));
   }
   
   QueryResults results;

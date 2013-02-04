@@ -21,6 +21,7 @@ class CHANGECommand : public Command
     int maximumArgs;
     std::string aclKeyword;
     CheckFunction check;
+    std::string description;
   };
   
   std::string display;
@@ -53,6 +54,8 @@ public:
     Command(client, client.Control(), client.Data(), argStr, args) { }
 
   void Execute();
+  
+  static std::string Syntax();
 };
 
 } /* site namespace */

@@ -105,6 +105,41 @@ void Delete(acl::GroupID gid)
   for (auto& task: tasks) Pool::Queue(task);
 }
 
+std::vector<acl::GroupID> GetMultiGIDOnly(const std::string& multiStr)
+{
+  std::vector<std::string> toks;
+  boost::split(toks, multiStr, boost::is_any_of(" "), boost::token_compress_on);
+  
+  mongo::Query query;
+  if (std::find(toks.begin(), toks.end(), "*") == toks.end())
+  {
+    mongo::BSONArrayBuilder namesBab;
+    
+    for (std::string tok : toks)
+    {
+      if (tok[0] == '=') tok.erase(0, 1);
+      namesBab.append(tok);
+
+    }
+    query = QUERY("name" << BSON("$in" << namesBab.arr()));
+  }
+  
+  QueryResults results;
+  boost::unique_future<bool> future;
+  TaskPtr task(new db::Select("groups", query, results, future, 0, 0, BSON("gid" << 1)));
+  Pool::Queue(task);
+
+  future.wait();
+
+  std::vector<acl::GroupID> gids;
+  for (auto& result : results)
+  {
+    gids.emplace_back(result["gid"].Int());
+  }
+  
+  return gids;
+}
+
 }
 }
 

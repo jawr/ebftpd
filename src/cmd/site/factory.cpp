@@ -133,9 +133,7 @@ Factory::Factory()
                       "change|changeallot|changeflags|"
                       "changeratio|changesratio|changehomedir", 
                       CreatorBasePtr(new Creator<site::CHANGECommand>()),  
-                      "Syntax: SITE CHANGE <user> <setting> <value>\n"
-                      "        SITE CHANGE {<user> [<user> ..]} <setting> <value>\n"
-                      "        SITE CHANGE * <setting> <value>",
+                      CHANGECommand::Syntax(),
                       "Change settings for a user or users" }, },
     { "KICK",       { 1,  1,  "kick",
                       CreatorBasePtr(new Creator<site::KICKCommand>()),

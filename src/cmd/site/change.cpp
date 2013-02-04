@@ -21,21 +21,55 @@ namespace cmd { namespace site
 
 const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
 {
-  { "ratio",          1,  "changeratio",    &CHANGECommand::CheckRatio            },
-  { "sratio",         2,  "changeratio",    &CHANGECommand::CheckSectionRatio     },
-  { "wkly_allotment", 2,  "changeallot",    &CHANGECommand::CheckWeeklyAllotment  },
-  { "homedir",        1,  "changehomedir",  &CHANGECommand::CheckHomeDir          },
-  { "flags",          1,  "changeflags",    &CHANGECommand::CheckFlags            },
-  { "idle_time",      1,  "change",         &CHANGECommand::CheckIdleTime         },
-  { "expires",        1,  "change",         &CHANGECommand::CheckExpires          },
-  { "num_logins",     1,  "change",         &CHANGECommand::CheckNumLogins        },
-  { "tagline",        1,  "change",         &CHANGECommand::CheckTagline          },
-  { "comment",        1,  "change",         &CHANGECommand::CheckComment          },
-  { "max_up_speed",   1,  "change",         &CHANGECommand::CheckMaxUpSpeed       },
-  { "max_down_speed", 1,  "change",         &CHANGECommand::CheckMaxDownSpeed     },
-  { "max_sim_up",     1,  "change",         &CHANGECommand::CheckMaxSimUp         },
-  { "max_sim_down",   1,  "change",         &CHANGECommand::CheckMaxSimDown       }
+  { "ratio",          1,  "changeratio",    &CHANGECommand::CheckRatio,
+    "Non section specific ratio (0 is unlimited)"                                 },
+  { "sratio",         2,  "changeratio",    &CHANGECommand::CheckSectionRatio,
+    "Section specific ratio, <section> <ratio> (0 is unlimited)"                  },
+  { "wkly_allotment", 2,  "changeallot",    &CHANGECommand::CheckWeeklyAllotment,
+    "Weekly allotment, optionally for specific section <allotment> [<section>]"   },
+  { "homedir",        1,  "changehomedir",  &CHANGECommand::CheckHomeDir,
+    "Home directory"                                                              },
+  { "flags",          1,  "changeflags",    &CHANGECommand::CheckFlags,
+    "Flags, prefixed with +|-|= to add/delete/set"                                },
+  { "idle_time",      1,  "change",         &CHANGECommand::CheckIdleTime,
+    "Idle time (-1 is disabled, 0 is unlimited)"                                  },
+  { "expires",        1,  "change",         &CHANGECommand::CheckExpires,
+    "Expiration date in format YYYY-MM-DD or YYYY/MM/DD (never to disable)"       },
+  { "num_logins",     1,  "change",         &CHANGECommand::CheckNumLogins,
+    "Maximum number of simultaneous logins"                                       },
+  { "tagline",        1,  "change",         &CHANGECommand::CheckTagline,
+    "Tagline"                                                                     },
+  { "comment",        1,  "change",         &CHANGECommand::CheckComment,
+    "Comment"                                                                     },
+  { "max_up_speed",   1,  "change",         &CHANGECommand::CheckMaxUpSpeed,
+    "Maximum upload speed in kbyte/s (0 is unlimited)"                            },
+  { "max_down_speed", 1,  "change",         &CHANGECommand::CheckMaxDownSpeed,
+    "Maximum download speed in kbyte/s (0 is unlimited)"                          },
+  { "max_sim_up",     1,  "change",         &CHANGECommand::CheckMaxSimUp,
+    "Maximum simultaneous uploads (-1 is unlimited, 0 to disallow)"               },
+  { "max_sim_down",   1,  "change",         &CHANGECommand::CheckMaxSimDown,
+    "Maximum simultaneous downloads (-1 is unlimited, 0 to disallow)"             }
 };
+
+std::string CHANGECommand::Syntax()
+{
+  std::ostringstream os;
+  os << "Syntax: SITE CHANGE <user> <setting> <value>\n"
+        "        SITE CHANGE {<user> [<user> ..]} <setting> <value>\n"
+        "        SITE CHANGE * <setting> <value>\n"
+        "Settings:\n";
+
+  std::string::size_type maxNameLen = 0;
+  for (const auto& setting : settings)
+    maxNameLen = std::max(maxNameLen, setting.name.length());
+        
+  for (const auto& setting : settings)
+  {
+    os << "          " << std::left << std::setw(maxNameLen) << setting.name 
+       << ": " << setting.description << "\n";
+  }
+  return os.str();
+}
 
 CHANGECommand::SetFunction CHANGECommand::CheckRatio()
 {
@@ -64,7 +98,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
   boost::to_upper(args[3]);
   if (config.Sections().find(args[3]) == config.Sections().end())
   {
-    control.Reply(ftp::ActionNotOkay, "Section " + args[3] + " doesn't exist.");
+    control.Format(ftp::ActionNotOkay, "Section %1% doesn't exist.", args[3]);
     throw cmd::NoPostScriptError();
   }
   
@@ -89,15 +123,18 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
 
 CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
 {
+  control.Format(ftp::NotImplemented, "Not finished");
+  throw cmd::NoPostScriptError();
+
   const cfg::Config& config = cfg::Get();
-  
+    
   std::string section;
   if (args.size() == 5)
   {
     section = boost::to_upper_copy(args[4]);
     if (config.Sections().find(args[4]) == config.Sections().end())
     {
-      control.Reply(ftp::ActionNotOkay, "Section " + args[4] + " doesn't exist.");
+      control.Format(ftp::ActionNotOkay, "Section %1% doesn't exist.", args[4]);
       throw cmd::NoPostScriptError();
     }
   }
@@ -128,7 +165,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckHomeDir()
   assert(!path.empty());
   if (path[0] != '/')
   {
-    control.Reply(ftp::ActionNotOkay, "Must be an absolute path.");
+    control.Format(ftp::ActionNotOkay, "Must be an absolute path.");
     throw cmd::NoPostScriptError();
   }
   
@@ -145,13 +182,13 @@ CHANGECommand::SetFunction CHANGECommand::CheckFlags()
   
   if (!acl::ValidFlags(flags))
   {
-    control.Reply(ftp::ActionNotOkay, "One or more invalid flags. See SITE FLAGS for a list.");
+    control.Format(ftp::ActionNotOkay, "One or more invalid flags. See SITE FLAGS for a list.");
     throw cmd::NoPostScriptError();
   }
   
   if (flags.find(static_cast<char>(acl::Flag::Deleted)) != std::string::npos)
   {
-    control.Reply(ftp::ActionNotOkay, "Flag 6 (deleted) cannot be changed with SITE CHANGE.");
+    control.Format(ftp::ActionNotOkay, "Flag 6 (deleted) cannot be changed with SITE CHANGE.");
     throw cmd::NoPostScriptError();
   }
 
@@ -203,7 +240,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckExpires()
     }
     catch (const boost::bad_lexical_cast&)
     {
-      control.Reply(ftp::ActionNotOkay, "Date must be in format YYYY/MM/DD or YYYY-MM-DD.");
+      control.Format(ftp::ActionNotOkay, "Date must be in format YYYY/MM/DD or YYYY-MM-DD.");
       throw cmd::NoPostScriptError();
     }
   }
@@ -232,7 +269,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckTagline()
   std::string tagline = argStr.substr(args[1].length() + args[2].length() + 2);
   if (!acl::Validate(acl::ValidationType::Tagline, tagline))
   {
-    control.Reply(ftp::ActionNotOkay, "Tagline contains invalid characters.");
+    control.Format(ftp::ActionNotOkay, "Tagline contains invalid characters.");
     throw cmd::NoPostScriptError();
   }
   
@@ -315,6 +352,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxSimDown()
 
 void CHANGECommand::AddFlags(acl::UserID uid, const std::string& flags)
 {
+  std::string name = acl::UserCache::UIDToName(uid);
   acl::UserCache::AddFlags(acl::UserCache::UIDToName(uid), flags);
 }
 
@@ -349,30 +387,16 @@ void CHANGECommand::Execute()
   auto uids = db::user::GetMultiUIDOnly(args[1]);  
   if (uids.empty())
   {
-    control.Reply(ftp::ActionNotOkay, "No user's exist matching that criteria.");
+    control.Format(ftp::ActionNotOkay, "No user's exist matching that criteria.");
     throw cmd::NoPostScriptError();
   }
   
   std::for_each(uids.begin(), uids.end(), set);
-
   assert(!display.empty());
-  
-  std::ostringstream os;
-  os << "Setting " << args[2] << " changed for ";
-  if (uids.size() == 1)
-  {
-     os << acl::UserCache::UIDToName(uids.front()) << ": ";
-  }
-  else
-  {
-    os << uids.size() << " users: ";
-  }
-  
-  os << display;
-  
-  control.Reply(ftp::CommandOkay, os.str());
+  control.Format(ftp::CommandOkay, "Setting %1% changed for %2%: %3%", args[2], 
+                 uids.size() == 1 ? acl::UserCache::UIDToName(uids[0]) : 
+                 util::Format()("%i users", uids.size()), display);
 }
 
-// end
 }
 }

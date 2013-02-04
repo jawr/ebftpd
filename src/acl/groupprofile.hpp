@@ -21,7 +21,7 @@ class GroupProfile
   int slots;
   int leechSlots;
   int allotSlots;
-  int allotSize;
+  int maxAllotSize;
   int maxLogins;
   
   std::string comment;
@@ -32,7 +32,7 @@ public:
     slots(0),
     leechSlots(0),
     allotSlots(0),
-    allotSize(0),
+    maxAllotSize(0),
     maxLogins(-1)
   { }
   
@@ -41,7 +41,7 @@ public:
     slots(0),
     leechSlots(0),
     allotSlots(0),
-    allotSize(0),
+    maxAllotSize(0),
     maxLogins(-1)
   { }
 
@@ -58,7 +58,7 @@ public:
   int Slots() const { return slots; }
   int LeechSlots() const { return leechSlots; }
   int AllotSlots() const { return allotSlots; }
-  int AllotSize() const { return allotSize; }
+  int MaxAllotSize() const { return maxAllotSize; }
   int MaxLogins() const { return maxLogins; }
   const std::string& Comment() const { return comment; }
 

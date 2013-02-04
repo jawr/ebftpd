@@ -174,7 +174,7 @@ void Client::DisplayBanner()
     }
   }
 
-  control.Reply(ftp::ServiceReady, config.LoginPrompt());
+  control.Format(ftp::ServiceReady, config.LoginPrompt());
 }
 
 void Client::IdleReset(std::string commandLine)

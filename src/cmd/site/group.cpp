@@ -37,7 +37,7 @@ void GROUPCommand::PopulateHeadOrFoot(const acl::Group& group,
   tmpl.RegisterValue("allotslots", profile.AllotSlots() != -1 ? 
                                    boost::lexical_cast<std::string>(profile.AllotSlots()) : 
                                    "Unlimited");
-  tmpl.RegisterValue("allotsize", profile.AllotSize());
+  tmpl.RegisterValue("maxallotsize", profile.MaxAllotSize());
   tmpl.RegisterValue("maxlogins", profile.MaxLogins() != -1 ?
                                    boost::lexical_cast<std::string>(profile.MaxLogins()) : 
                                    "Unlimited");
