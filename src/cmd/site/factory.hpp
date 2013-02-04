@@ -128,16 +128,14 @@ private:
    
   Factory();
   
-  static Factory factory;
+  static std::unique_ptr<Factory> factory;
  
 public:
   static CommandDefOpt LookupCustom(const std::string& command);
   static CommandDefOpt Lookup(const std::string& command, bool noCustom = false);
   
-  static const CommandDefsMap& Commands()
-  { return factory.defs; }
-  
-  
+  static void Initialise() { factory.reset(new Factory()); }
+  static const CommandDefsMap& Commands() { return factory->defs; }
   static std::unordered_set<std::string> ACLKeywords();
 };
 

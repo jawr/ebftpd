@@ -23,6 +23,7 @@
 #include "ftp/client.hpp"
 #include "util/error.hpp"
 #include "util/daemonise.hpp"
+#include "cmd/rfc/factory.hpp"
 #include "cmd/site/factory.hpp"
 #include "signals/signal.hpp"
 #include "text/factory.hpp"
@@ -164,6 +165,9 @@ int main(int argc, char** argv)
   bool foreground; 
   if (!ParseOptions(argc, argv, foreground)) return 1;
   logs::debug << "Starting " << programFullname << " .. " << logs::endl;
+
+  cmd::rfc::Factory::Initialise();
+  cmd::site::Factory::Initialise();
   cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
   
   try

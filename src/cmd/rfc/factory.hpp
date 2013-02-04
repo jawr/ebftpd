@@ -85,12 +85,12 @@ private:
    
   Factory();
   
-  static Factory factory;
+  static std::unique_ptr<Factory> factory;
   
 public:
   static CommandDefOptRef Lookup(const std::string& command);
-  static const CommandDefMap& Commands()
-  { return factory.defs; }
+  static const CommandDefMap& Commands() { return factory->defs; }
+  static void Initialise() { factory.reset(new Factory()); }
 };
 
 } /* rfc namespace */

@@ -23,30 +23,43 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
 {
   { "ratio",          1,  "changeratio",    &CHANGECommand::CheckRatio,
     "Non section specific ratio (0 is unlimited)"                                 },
+    
   { "sratio",         2,  "changeratio",    &CHANGECommand::CheckSectionRatio,
     "Section specific ratio, <section> <ratio> (0 is unlimited)"                  },
+    
   { "wkly_allotment", 2,  "changeallot",    &CHANGECommand::CheckWeeklyAllotment,
     "Weekly allotment, optionally for specific section <allotment> [<section>]"   },
+    
   { "homedir",        1,  "changehomedir",  &CHANGECommand::CheckHomeDir,
     "Home directory"                                                              },
+    
   { "flags",          1,  "changeflags",    &CHANGECommand::CheckFlags,
     "Flags, prefixed with +|-|= to add/delete/set"                                },
+    
   { "idle_time",      1,  "change",         &CHANGECommand::CheckIdleTime,
     "Idle time (-1 is disabled, 0 is unlimited)"                                  },
+    
   { "expires",        1,  "change",         &CHANGECommand::CheckExpires,
     "Expiration date in format YYYY-MM-DD or YYYY/MM/DD (never to disable)"       },
+    
   { "num_logins",     1,  "change",         &CHANGECommand::CheckNumLogins,
     "Maximum number of simultaneous logins"                                       },
+    
   { "tagline",        1,  "change",         &CHANGECommand::CheckTagline,
     "Tagline"                                                                     },
+    
   { "comment",        1,  "change",         &CHANGECommand::CheckComment,
     "Comment"                                                                     },
+    
   { "max_up_speed",   1,  "change",         &CHANGECommand::CheckMaxUpSpeed,
     "Maximum upload speed in kbyte/s (0 is unlimited)"                            },
+    
   { "max_down_speed", 1,  "change",         &CHANGECommand::CheckMaxDownSpeed,
     "Maximum download speed in kbyte/s (0 is unlimited)"                          },
+    
   { "max_sim_up",     1,  "change",         &CHANGECommand::CheckMaxSimUp,
     "Maximum simultaneous uploads (-1 is unlimited, 0 to disallow)"               },
+    
   { "max_sim_down",   1,  "change",         &CHANGECommand::CheckMaxSimDown,
     "Maximum simultaneous downloads (-1 is unlimited, 0 to disallow)"             }
 };
