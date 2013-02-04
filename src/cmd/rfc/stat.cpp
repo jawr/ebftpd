@@ -4,6 +4,7 @@
 #include "main.hpp"
 #include "stats/util.hpp"
 #include "util/scopeguard.hpp"
+#include "cmd/dirlist.hpp"
 
 namespace cmd { namespace rfc
 {

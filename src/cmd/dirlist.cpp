@@ -202,13 +202,9 @@ void DirectoryList::Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirE
   }
 }
 
-void DirectoryList::Output(const std::string& message) const
-{
-  socket.Write(message.c_str(), message.length());
-}
-
 void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks, int depth) const
 {
+  boost::timer::auto_cpu_timer t;
   if (maxRecursion && depth > maxRecursion) return;
 
   fs::DirEnumerator dirEnum;
@@ -221,24 +217,19 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
     // silent failure - gives empty directory list
     return;
   }
-
-  if (depth > 1) Output("\r\n");
   
+
   std::ostringstream message;
+  if (depth > 1) message << "\r\n";
+  
   if (!path.IsEmpty() && depth > 1 && (options.Recursive() || !masks.empty()))
   {
     message << path << ":\r\n";
-    Output(message.str());
-    message.str("");
   }
   
   if (options.LongFormat())
   {
-    message << "total "
-            << std::floor(dirEnum.TotalBytes() / 1024)
-            << "\r\n";
-    Output(message.str());
-    message.str("");
+    message << "total " << std::floor(dirEnum.TotalBytes() / 1024) << "\r\n";
   }
   
   std::string mask;
@@ -247,7 +238,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
     mask = masks.front();
     masks.pop();
   }
-
+  
   if (masks.empty())
   {
     for (const auto& de : dirEnum)
@@ -260,38 +251,36 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
       {
         if (options.SizeName())
         {
-          message << std::left << std::setw(8) << de.Status().Size() << " "
+          message << std::left << std::setw(8) << de.Status().Size() << ' '
                   << de.Path();
         }
         else
         {
-          message << Permissions(de.Status()) << " "
-                  << std::setw(3) << de.Status().Native().st_nlink << " "
+          message << Permissions(de.Status()) << ' '
+                  << std::setw(3) << de.Status().Native().st_nlink << ' '
                   << std::left << std::setw(10) 
-                  << UIDToName(de.Owner().UID()).substr(0, 10) << " ";
+                  << UIDToName(de.Owner().UID()) << ' ';
           
           if (!options.NoGroup())
-          message << std::left << std::setw(10) 
-                  << GIDToName(de.Owner().GID()).substr(0, 10) << " ";
+            message << std::left << std::setw(10) 
+                    << GIDToName(de.Owner().GID()) << ' ';
                   
-          message << std::right << std::setw(8) << de.Status().Size() << " "
-                  << Timestamp(de.Status()) << " "
+          message << std::right << std::setw(8) << de.Status().Size() << ' '
+                  << Timestamp(de.Status()) << ' '
                   << de.Path();
         }
         
-        if (options.SlashDirs() && de.Status().IsDirectory()) message << "/";
+        if (options.SlashDirs() && de.Status().IsDirectory()) message << '/';
         message << "\r\n";
-        Output(message.str());
-        message.str("");
       }
       else
       {
         message << de.Path() << "\r\n";
-        Output(message.str());
-        message.str("");
       }
     }
   }
+  
+  Output(message.str());
   
   if (options.Recursive() || !mask.empty())
   {
@@ -342,27 +331,29 @@ std::string DirectoryList::Permissions(const fs::Status& status)
   return perms;
 }
 
-std::string DirectoryList::Timestamp(const fs::Status& status)
-{
-  char buf[13];
-  strftime(buf, sizeof(buf),  "%b %d %H:%M", localtime(&status.Native().st_mtime));
-  return buf;
-}
 
+std::string DirectoryList::Timestamp(const fs::Status& status) const
+{
+  time_t modTime = status.Native().st_mtime - status.Native().st_mtime % 60;
+  auto it = timestampCache.find(modTime);
+  if (it != timestampCache.end()) return it->second;
+  char buf[13];
+  strftime(buf, sizeof(buf), "%b %d %H:%M", localtime(&modTime));
+  return timestampCache[modTime] = buf;
+}
+  
 const std::string& DirectoryList::UIDToName(acl::UserID uid) const
 {
-  std::unordered_map<acl::UserID, std::string>::const_iterator it =
-    userNameCache.find(uid);
+  auto it = userNameCache.find(uid);
   if (it != userNameCache.end()) return it->second;
-  return userNameCache[uid] = acl::UserCache::UIDToName(uid);
+  return userNameCache[uid] = acl::UserCache::UIDToName(uid).substr(0, 10);
 }
 
 const std::string& DirectoryList::GIDToName(acl::GroupID gid) const
 {
-  std::unordered_map<acl::GroupID, std::string>::const_iterator it =
-    groupNameCache.find(gid);
+  auto it = groupNameCache.find(gid);
   if (it != groupNameCache.end()) return it->second;
-  return groupNameCache[gid] = acl::GroupCache::GIDToName(gid);
+  return groupNameCache[gid] = acl::GroupCache::GIDToName(gid).substr(0, 10);
 }
-
+  
 } /* cmd namespace */

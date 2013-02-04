@@ -3,6 +3,7 @@
 #include "fs/file.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
+#include "fs/status.hpp"
 
 namespace cmd { namespace rfc
 {

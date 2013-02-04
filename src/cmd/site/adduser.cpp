@@ -20,7 +20,7 @@ namespace cmd { namespace site
 void ADDUSERCommand::Addips(const std::string& user, 
     const std::vector<std::string>& ips)
 {
-  std::string cpArgStr("ADDIP ");
+  std::string cpArgStr("ADDUSER ");
   cpArgStr += user;
   for (const std::string& ip : ips) cpArgStr += " " + ip;
 
@@ -55,6 +55,7 @@ void ADDUSERCommand::Execute()
   {
     gid = client.User().PrimaryGID();
     if (gid == -1) throw cmd::PermissionError();
+    group = acl::GroupCache::GIDToName(gid);
   }
 
   if (!acl::Validate(acl::ValidationType::Username, args[1]))

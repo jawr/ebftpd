@@ -13,7 +13,6 @@
 #include "util/thread.hpp"
 #include "util/error.hpp"
 #include "fs/path.hpp"
-#include "cmd/dirlist.hpp"
 #include "ftp/replycodes.hpp"
 #include "ftp/data.hpp"
 #include "ftp/control.hpp"

@@ -1,12 +1,14 @@
 #ifndef __CMD_DIRLIST_HPP
 #define __CMD_DIRLIST_HPP
 
+#include <ctime>
 #include <string>
 #include <queue>
 #include <unordered_map>
 #include "fs/path.hpp"
 #include "fs/status.hpp"
 #include "acl/types.hpp"
+#include "ftp/readwriteable.hpp"
 
 namespace ftp
 {
@@ -63,20 +65,25 @@ class DirectoryList
   
   mutable std::unordered_map<acl::UserID, std::string> userNameCache;
   mutable std::unordered_map<acl::GroupID, std::string> groupNameCache;
+  mutable std::unordered_map<time_t, std::string> timestampCache;
   
   void ListPath(const fs::Path& path, std::queue<std::string> masks, int depth = 1) const;
   void Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirEnum) const;
-  inline void Output(const std::string& message) const;
+  inline void Output(const std::string& message) const
+  {
+    socket.Write(message.c_str(), message.length());
+  }
+
   
-  inline const std::string& UIDToName(acl::UserID uid) const;
-  inline const std::string& GIDToName(acl::GroupID gid) const;
+  const std::string& UIDToName(acl::UserID uid) const;
+  const std::string& GIDToName(acl::GroupID gid) const;
   
   static void SplitPath(const fs::Path& path, fs::Path& parent,
                         std::queue<std::string>& masks);
                         
-  inline static std::string Permissions(const fs::Status& status);
-  inline static std::string Timestamp(const fs::Status& status);
-  
+  static std::string Permissions(const fs::Status& status);
+  std::string Timestamp(const fs::Status& status) const;
+
 public:
   DirectoryList(ftp::Client& client,
                 ftp::ReadWriteable& socket,

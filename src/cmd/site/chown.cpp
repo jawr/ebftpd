@@ -11,6 +11,7 @@
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include "cmd/error.hpp"
+#include "fs/status.hpp"
 
 namespace cmd { namespace site
 {

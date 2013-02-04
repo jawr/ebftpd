@@ -12,7 +12,7 @@ namespace cmd { namespace site
 
 void ADDIPCommand::Execute()
 {
-  if (!acl::AllowSiteCmd(client.User(), "addip"))
+  if (args[0] == "ADDIP" && !acl::AllowSiteCmd(client.User(), "addip"))
   {
     if (args[1] != client.User().Name() ||
         !acl::AllowSiteCmd(client.User(), "addipown"))

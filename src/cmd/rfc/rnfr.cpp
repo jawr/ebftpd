@@ -1,6 +1,7 @@
 #include "cmd/rfc/rnfr.hpp"
 #include "acl/path.hpp"
 #include "cmd/error.hpp"
+#include "fs/status.hpp"
 
 namespace cmd { namespace rfc
 {

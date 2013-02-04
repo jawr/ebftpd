@@ -3,6 +3,7 @@
 #include "cfg/get.hpp"
 #include "stats/util.hpp"
 #include "fs/directory.hpp"
+#include "cmd/dirlist.hpp"
 
 namespace cmd { namespace rfc
 {

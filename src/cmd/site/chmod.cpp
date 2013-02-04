@@ -8,6 +8,7 @@
 #include "util/string.hpp"
 #include "cmd/error.hpp"
 #include "logs/logs.hpp"
+#include "fs/status.hpp"
 
 namespace cmd { namespace site
 {

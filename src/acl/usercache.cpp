@@ -414,6 +414,7 @@ util::Error UserCache::ToggleGadminGID(const std::string& name, GroupID gid, boo
   if (added) user.AddGadminGID(gid);
   else user.DelGadminGID(gid); 
 
+  Save(*it->second, "flags  ");
   Save(*it->second, "gadmin gids");
   return util::Error::Success();
 }
