@@ -35,13 +35,13 @@ void RETRCommand::Execute()
   }
   
   switch(ftp::Counter::Download().Start(client.User().UID(), 
-         client.Profile().MaxSimDl(), 
+         client.Profile().MaxSimDown(), 
          client.User().CheckFlag(acl::Flag::Exempt)))
   {
     case ftp::CounterResult::PersonalFail  :
     {
       std::ostringstream os;
-      os << "You have reached your maximum of " << client.Profile().MaxSimDl() 
+      os << "You have reached your maximum of " << client.Profile().MaxSimDown() 
          << " simultaneous download(s).";
       control.Reply(ftp::ActionNotOkay, os.str());
       throw cmd::NoPostScriptError();

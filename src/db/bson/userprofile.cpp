@@ -22,10 +22,10 @@ mongo::BSONObj UserProfile::Serialize(const acl::UserProfile& profile)
   bob.append("num logins", profile.numLogins);
   bob.append("comment", profile.comment);
   bob.append("tagline", profile.tagline);
-  bob.append("max dl speed", profile.maxDlSpeed);
-  bob.append("max ul speed", profile.maxUlSpeed);
-  bob.append("max sim dl", profile.maxSimDl);
-  bob.append("max sim ul", profile.maxSimUl);
+  bob.append("max down speed", profile.maxDownSpeed);
+  bob.append("max up speed", profile.maxUpSpeed);
+  bob.append("max sim down", profile.maxSimDown);
+  bob.append("max sim up", profile.maxSimUp);
   bob.append("logged in", profile.loggedIn);
   
   if (profile.expires) 
@@ -64,17 +64,17 @@ acl::UserProfile UserProfile::Unserialize(const mongo::BSONObj& bo)
   try
   {  
     profile.uid = bo["uid"].Int();
-    profile.weeklyAllotment = bo["weekly allotment"].Int();
+    profile.weeklyAllotment = bo["weekly allotment"].Long();
     profile.homeDir = bo["home dir"].String();
     profile.startupDir = bo["startup dir"].String();
     profile.idleTime = bo["idle time"].Int();
     profile.numLogins = bo["num logins"].Int();
     profile.comment = bo["comment"].String();
     profile.tagline = bo["tagline"].String();
-    profile.maxDlSpeed = bo["max dl speed"].Int();
-    profile.maxUlSpeed = bo["max ul speed"].Int();
-    profile.maxSimDl = bo["max sim dl"].Int();
-    profile.maxSimUl = bo["max sim ul"].Int();
+    profile.maxDownSpeed = bo["max down speed"].Long();
+    profile.maxUpSpeed = bo["max up speed"].Long();
+    profile.maxSimDown = bo["max sim down"].Int();
+    profile.maxSimUp = bo["max sim up"].Int();
     profile.creator = bo["creator"].Int();
     profile.loggedIn = bo["logged in"].Int();
     

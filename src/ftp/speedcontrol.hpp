@@ -97,7 +97,7 @@ class UploadSpeedControl : public SpeedControl
 public:
   UploadSpeedControl(const ftp::Client& client, const fs::VirtualPath& path) :
     SpeedControl(acl::speed::UploadMinimum(client.User(), path),
-                 client.Profile().MaxUlSpeed(),
+                 client.Profile().MaxUpSpeed(),
                  client.Data().State(),
                  acl::speed::UploadMaximum(client.User(), path),
                  Counter::UploadSpeeds())
@@ -110,7 +110,7 @@ class DownloadSpeedControl : public SpeedControl
 public:
   DownloadSpeedControl(const ftp::Client& client, const fs::VirtualPath& path) :
     SpeedControl(acl::speed::DownloadMinimum(client.User(), path),
-                 client.Profile().MaxDlSpeed(),
+                 client.Profile().MaxDownSpeed(),
                  client.Data().State(),
                  acl::speed::DownloadMaximum(client.User(), path),
                  Counter::DownloadSpeeds())

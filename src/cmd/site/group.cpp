@@ -19,6 +19,8 @@
 #include "text/tag.hpp"
 #include "acl/groupprofile.hpp"
 #include "acl/util.hpp"
+#include "acl/allowsitecmd.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
@@ -45,6 +47,13 @@ void GROUPCommand::PopulateHeadOrFoot(const acl::Group& group,
 
 void GROUPCommand::Execute()
 {
+  if (!acl::AllowSiteCmd(client.User(), "group") &&
+      acl::AllowSiteCmd(client.User(), "groupgadmin") && 
+      !client.User().HasGadminGID(acl::GroupCache::NameToGID(args[1])))
+  {
+    throw cmd::PermissionError();
+  }
+
   acl::Group group;
   try
   {
@@ -55,7 +64,7 @@ void GROUPCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
     return;
   }
-
+  
   acl::GroupProfile profile;
   try
   {

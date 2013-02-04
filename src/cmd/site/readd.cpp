@@ -1,11 +1,20 @@
 #include "cmd/site/readd.hpp"
 #include "acl/usercache.hpp"
+#include "acl/allowsitecmd.hpp"
+#include "cmd/error.hpp"
 
 namespace cmd { namespace site
 {
 
 void READDCommand::Execute()
 {
+  if (!acl::AllowSiteCmd(client.User(), "readd") &&
+      acl::AllowSiteCmd(client.User(), "readdgadmin") &&
+      !client.User().HasGadminGID(acl::UserCache::PrimaryGID(acl::UserCache::NameToUID(args[1]))))
+  {
+    throw cmd::PermissionError();
+  }
+  
   // needs further checking to ensure
   // gadmins can't exceed their slots
   

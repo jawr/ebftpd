@@ -21,47 +21,47 @@ namespace cmd { namespace site
 
 const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
 {
-  { "ratio",          1,  "changeratio",    &CHANGECommand::CheckRatio,
-    "Non section specific ratio (0 is unlimited)"                                 },
+  { "ratio",          1,  "change|changegadmin",  &CHANGECommand::CheckRatio,
+    "Non section specific ratio (0 is unlimited)"                                       },
     
-  { "sratio",         2,  "changeratio",    &CHANGECommand::CheckSectionRatio,
-    "Section specific ratio, <section> <ratio> (0 is unlimited)"                  },
+  { "sratio",         2,  "change",               &CHANGECommand::CheckSectionRatio,
+    "Section specific ratio, <section> <ratio> (0 is unlimited)"                        },
     
-  { "wkly_allotment", 2,  "changeallot",    &CHANGECommand::CheckWeeklyAllotment,
-    "Weekly allotment, optionally for specific section <allotment> [<section>]"   },
+  { "wkly_allotment", 2,  "change|changegadmin",  &CHANGECommand::CheckWeeklyAllotment,
+    "Weekly allotment, optionally for specific section <allotment> [<section>]"         },
     
-  { "homedir",        1,  "changehomedir",  &CHANGECommand::CheckHomeDir,
-    "Home directory"                                                              },
+  { "homedir",        1,  "changehomedir",        &CHANGECommand::CheckHomeDir,
+    "Home directory"                                                                    },
     
-  { "flags",          1,  "changeflags",    &CHANGECommand::CheckFlags,
-    "Flags, prefixed with +|-|= to add/delete/set"                                },
+  { "flags",          1,  "changeflags",          &CHANGECommand::CheckFlags,
+    "Flags, prefixed with +|-|= to add/delete/set"                                      },
     
-  { "idle_time",      1,  "change",         &CHANGECommand::CheckIdleTime,
-    "Idle time (-1 is disabled, 0 is unlimited)"                                  },
+  { "idle_time",      1,  "change",               &CHANGECommand::CheckIdleTime,
+    "Idle time (-1 is disabled, 0 is unlimited)"                                        },
     
-  { "expires",        1,  "change",         &CHANGECommand::CheckExpires,
-    "Expiration date in format YYYY-MM-DD or YYYY/MM/DD (never to disable)"       },
+  { "expires",        1,  "change",               &CHANGECommand::CheckExpires,
+    "Expiration date in format YYYY-MM-DD or YYYY/MM/DD (never to disable)"             },
     
-  { "num_logins",     1,  "change",         &CHANGECommand::CheckNumLogins,
-    "Maximum number of simultaneous logins"                                       },
+  { "num_logins",     1,  "change",               &CHANGECommand::CheckNumLogins,
+    "Maximum number of simultaneous logins"                                             },
     
-  { "tagline",        1,  "change",         &CHANGECommand::CheckTagline,
-    "Tagline"                                                                     },
+  { "tagline",        1,  "change",               &CHANGECommand::CheckTagline,
+    "Tagline"                                                                           },
     
-  { "comment",        1,  "change",         &CHANGECommand::CheckComment,
-    "Comment"                                                                     },
+  { "comment",        1,  "change",               &CHANGECommand::CheckComment,
+    "Comment"                                                                           },
     
-  { "max_up_speed",   1,  "change",         &CHANGECommand::CheckMaxUpSpeed,
-    "Maximum upload speed in kbyte/s (0 is unlimited)"                            },
+  { "max_up_speed",   1,  "change",               &CHANGECommand::CheckMaxUpSpeed,
+    "Maximum upload speed in kbyte/s (0 is unlimited)"                                  },
     
-  { "max_down_speed", 1,  "change",         &CHANGECommand::CheckMaxDownSpeed,
-    "Maximum download speed in kbyte/s (0 is unlimited)"                          },
+  { "max_down_speed", 1,  "change",               &CHANGECommand::CheckMaxDownSpeed,
+    "Maximum download speed in kbyte/s (0 is unlimited)"                                },
     
-  { "max_sim_up",     1,  "change",         &CHANGECommand::CheckMaxSimUp,
-    "Maximum simultaneous uploads (-1 is unlimited, 0 to disallow)"               },
+  { "max_sim_up",     1,  "change",               &CHANGECommand::CheckMaxSimUp,
+    "Maximum simultaneous uploads (-1 is unlimited, 0 to disallow)"                     },
     
-  { "max_sim_down",   1,  "change",         &CHANGECommand::CheckMaxSimDown,
-    "Maximum simultaneous downloads (-1 is unlimited, 0 to disallow)"             }
+  { "max_sim_down",   1,  "change",               &CHANGECommand::CheckMaxSimDown,
+    "Maximum simultaneous downloads (-1 is unlimited, 0 to disallow)"                   }
 };
 
 std::string CHANGECommand::Syntax()
@@ -86,6 +86,8 @@ std::string CHANGECommand::Syntax()
 
 CHANGECommand::SetFunction CHANGECommand::CheckRatio()
 {
+  gadmin = !acl::AllowSiteCmd(client.User(), "change") &&
+           acl::AllowSiteCmd(client.User(), "changegadmin");
   try
   {
     int ratio = boost::lexical_cast<int>(args[3]);
@@ -136,6 +138,9 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
 
 CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
 {
+  gadmin = !acl::AllowSiteCmd(client.User(), "change") &&
+           acl::AllowSiteCmd(client.User(), "changegadmin");
+
   control.Format(ftp::NotImplemented, "Not finished");
   throw cmd::NoPostScriptError();
 
@@ -154,7 +159,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
   
   try
   {
-    int allotment = boost::lexical_cast<int>(args[3]);
+    long long allotment = boost::lexical_cast<long long>(args[3]);
     if (allotment < 0) throw boost::bad_lexical_cast();
     
     if (!section.empty()) display = section + "(";
@@ -202,6 +207,12 @@ CHANGECommand::SetFunction CHANGECommand::CheckFlags()
   if (flags.find(static_cast<char>(acl::Flag::Deleted)) != std::string::npos)
   {
     control.Format(ftp::ActionNotOkay, "Flag 6 (deleted) cannot be changed with SITE CHANGE.");
+    throw cmd::NoPostScriptError();
+  }
+
+  if (flags.find(static_cast<char>(acl::Flag::Gadmin)) != std::string::npos)
+  {
+    control.Format(ftp::ActionNotOkay, "Flag 2 (gadmin) cannot be changed with SITE CHANGE.");
     throw cmd::NoPostScriptError();
   }
 
@@ -301,7 +312,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxUpSpeed()
 {
   try
   {
-    int speed = boost::lexical_cast<int>(args[3]);
+    long long speed = boost::lexical_cast<long long>(args[3]);
     if (speed < 0) throw boost::bad_lexical_cast();
     if (speed == 0) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(speed) + "KB/s";
@@ -317,7 +328,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxDownSpeed()
 {
   try
   {
-    int speed = boost::lexical_cast<int>(args[3]);
+    long long speed = boost::lexical_cast<long long>(args[3]);
     if (speed < 0) throw boost::bad_lexical_cast();
     if (speed == 0) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(speed) + "KB/s";
@@ -402,6 +413,16 @@ void CHANGECommand::Execute()
   {
     control.Format(ftp::ActionNotOkay, "No user's exist matching that criteria.");
     throw cmd::NoPostScriptError();
+  }
+  
+  if (gadmin)
+  {
+    auto it = std::find_if(uids.begin(), uids.end(), 
+                [&](acl::UserID uid)
+                {
+                  return !client.User().HasGadminGID(acl::UserCache::PrimaryGID(uid));
+                });
+    if (it != uids.end()) throw cmd::PermissionError();
   }
   
   std::for_each(uids.begin(), uids.end(), set);

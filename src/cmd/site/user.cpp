@@ -28,10 +28,18 @@ namespace cmd { namespace site
 
 void USERCommand::Execute()
 {
-  if (args.size() == 2 && args[1] != client.User().Name() && 
-      !acl::AllowSiteCmd(client.User(), "user"))
+  std::string userName = args.size() == 2 ? args[1] : client.User().Name();
+  if (!acl::AllowSiteCmd(client.User(), "user"))
   {
-    throw cmd::PermissionError();
+    if (userName != client.User().Name() ||
+        !acl::AllowSiteCmd(client.User(), "userown"))
+    {
+      if (!client.User().HasGadminGID(acl::UserCache::PrimaryGID(acl::UserCache::NameToUID(userName))) ||
+          !acl::AllowSiteCmd(client.User(), "usergadmin"))
+      {
+        throw cmd::PermissionError();
+      }
+    }
   }
 
   boost::optional<text::Template> templ;
@@ -45,7 +53,6 @@ void USERCommand::Execute()
     return;
   }
 
-  std::string userName = args.size() == 2 ? args[1] : client.User().Name();
   acl::User user;
   try
   {

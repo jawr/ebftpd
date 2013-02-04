@@ -5,16 +5,20 @@
 #include "ftp/task/task.hpp"
 #include "ftp/task/types.hpp"
 #include "cmd/error.hpp"
+#include "acl/allowsitecmd.hpp"
 
 namespace cmd { namespace site
 {
 
 void DELUSERCommand::Execute()
 {
-  // needs further flag checking to ensure users with more
-  // seniority can't be deleted by those below them
-  // and master in config has ultimate seniority
-  // also make so gadmins can only delete their owner users
+  if (!acl::AllowSiteCmd(client.User(), "deluser") &&
+      acl::AllowSiteCmd(client.User(), "delusergadmin") &&
+      !client.User().HasGadminGID(acl::UserCache::PrimaryGID(acl::UserCache::NameToUID(args[1]))))
+  {
+    throw cmd::PermissionError();
+  }
+
   acl::User user;
   try
   {
@@ -26,7 +30,7 @@ void DELUSERCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  util::Error e = acl::UserCache::Delete(user.Name());
+  util::Error e = acl::UserCache::Delete(args[1]);
   if (!e)
     control.Reply(ftp::ActionNotOkay, e.Message());
   else

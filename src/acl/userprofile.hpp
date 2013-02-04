@@ -25,7 +25,7 @@ class UserProfile
   UserID creator;
   boost::gregorian::date created;
 
-  int weeklyAllotment;
+  long long weeklyAllotment;
   std::string homeDir;
   std::string startupDir;
   int idleTime;
@@ -35,10 +35,10 @@ class UserProfile
   std::string comment;
   std::string tagline;
   
-  int maxDlSpeed;
-  int maxUlSpeed;
-  int maxSimDl;
-  int maxSimUl;
+  long long maxDownSpeed;
+  long long maxUpSpeed;
+  int maxSimDown;
+  int maxSimUp;
 
   int loggedIn;
   boost::optional<boost::posix_time::ptime> lastLogin;
@@ -54,10 +54,10 @@ public:
     startupDir("/"),
     idleTime(-1),
     numLogins(1),
-    maxDlSpeed(-1),
-    maxUlSpeed(-1),
-    maxSimDl(-1),
-    maxSimUl(-1),
+    maxDownSpeed(-1),
+    maxUpSpeed(-1),
+    maxSimDown(-1),
+    maxSimUp(-1),
     loggedIn(-1)
   {
   }
@@ -70,10 +70,10 @@ public:
     startupDir("/"),
     idleTime(-1),
     numLogins(3),
-    maxDlSpeed(0),
-    maxUlSpeed(0),
-    maxSimDl(2),
-    maxSimUl(2),
+    maxDownSpeed(0),
+    maxUpSpeed(0),
+    maxSimDown(2),
+    maxSimUp(2),
     loggedIn(0)
   {
     ratio.insert(std::make_pair("", 3));
@@ -83,17 +83,17 @@ public:
   const boost::optional<boost::gregorian::date>& Expires() const { return expires; }
   bool Expired() const;
   acl::UserID Creator() const { return creator; }
-  int WeeklyAllotment() const { return weeklyAllotment; }
+  long long WeeklyAllotment() const { return weeklyAllotment; }
   const std::string& HomeDir() const { return homeDir; }
   const std::string& StartupDir() const { return startupDir; }
   int IdleTime() const { return idleTime; }
   int NumLogins() const { return numLogins; }
   const std::string& Comment() const { return comment; }
   const std::string& Tagline() const { return tagline; }
-  int MaxDlSpeed() const { return maxDlSpeed; }
-  int MaxUlSpeed() const { return maxUlSpeed; }
-  int MaxSimDl() const { return maxSimDl; }
-  int MaxSimUl() const { return maxSimUl; }
+  long long MaxDownSpeed() const { return maxDownSpeed; }
+  long long MaxUpSpeed() const { return maxUpSpeed; }
+  int MaxSimDown() const { return maxSimDown; }
+  int MaxSimUp() const { return maxSimUp; }
   acl::UserID UID() const { return uid; }
   const boost::gregorian::date& Created() const { return created; }
   const boost::optional<boost::posix_time::ptime>& LastLogin() const { return lastLogin; }

@@ -115,7 +115,7 @@ void Unset(acl::UserID uid, const std::string& field)
   std::make_shared<ftp::task::UserUpdate>(uid)->Push();
 }
 
-void SetWeeklyAllotment(acl::UserID uid, int allotment)
+void SetWeeklyAllotment(acl::UserID uid, long long allotment)
 {
   Set(uid, BSON("weekly allotment" << allotment));
 }
@@ -146,24 +146,24 @@ void SetComment(acl::UserID uid, const std::string& comment)
   Set(uid, BSON("comment" << comment));
 }
 
-void SetMaxDownSpeed(acl::UserID uid, int speed)
+void SetMaxDownSpeed(acl::UserID uid, long long speed)
 {
-  Set(uid, BSON("max dl speed" << speed));
+  Set(uid, BSON("max down speed" << speed));
 }
 
-void SetMaxUpSpeed(acl::UserID uid, int speed)
+void SetMaxUpSpeed(acl::UserID uid, long long speed)
 {
-  Set(uid, BSON("max ul speed" << speed));
+  Set(uid, BSON("max up speed" << speed));
 }
 
 void SetMaxSimDown(acl::UserID uid, int logins)
 {
-  Set(uid, BSON("max sim dl" << logins));
+  Set(uid, BSON("max sim down" << logins));
 }
 
 void SetMaxSimUp(acl::UserID uid, int logins)
 {
-  Set(uid, BSON("max sim ul" << logins));
+  Set(uid, BSON("max sim up" << logins));
 }
 
 void Login(acl::UserID uid)

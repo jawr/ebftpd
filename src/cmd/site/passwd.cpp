@@ -10,7 +10,7 @@ namespace cmd { namespace site
 
 void PASSWDCommand::Execute()
 {
-  std::string cpArgStr("CHPASS ");
+  std::string cpArgStr("PASSWD ");
   cpArgStr += client.User().Name();
   cpArgStr += " ";
   cpArgStr += args[1];

@@ -47,7 +47,7 @@ std::string GRPCHANGECommand::Syntax()
   std::string::size_type maxNameLen = 0;
   for (const auto& setting : settings)
     maxNameLen = std::max(maxNameLen, setting.name.length());
-        std::cout << settings.size() << std::endl;
+
   for (const auto& setting : settings)
   {
     os << "          " << std::left << std::setw(maxNameLen) << setting.name 

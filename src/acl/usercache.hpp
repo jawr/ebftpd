@@ -61,12 +61,15 @@ public:
     GroupID oldGID = -1;
     return SetPrimaryGID(name, primaryGID, oldGID);
   }
-  static util::Error AddGID(const std::string& name, GroupID secondaryGID);
-  static util::Error DelGID(const std::string& name, GroupID secondaryGID);
+  static util::Error AddGID(const std::string& name, GroupID gid);
+  static util::Error DelGID(const std::string& name, GroupID gid);
   static util::Error ResetGIDs(const std::string& name);
   static GroupID PrimaryGID(UserID uid);
-  static bool CheckGID(const std::string& name, acl::GroupID gid);
+  static bool HasGID(const std::string& name, acl::GroupID gid);
 
+  static util::Error ToggleGadminGID(const std::string& name, GroupID gid, bool& added);
+//  static util::Error DelGadminGID(const std::string& name, GroupID gid);
+  
   static unsigned Count(bool includeDeleted = false);
 
   static void Initialize();

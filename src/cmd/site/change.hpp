@@ -23,7 +23,8 @@ class CHANGECommand : public Command
     CheckFunction check;
     std::string description;
   };
-  
+
+  bool gadmin;
   std::string display;
 
   static const std::vector<SettingDef> settings;
@@ -51,7 +52,7 @@ class CHANGECommand : public Command
   
 public:
   CHANGECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) { }
+    Command(client, client.Control(), client.Data(), argStr, args), gadmin(false) { }
 
   void Execute();
   

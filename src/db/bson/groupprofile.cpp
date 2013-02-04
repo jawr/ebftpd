@@ -32,7 +32,7 @@ acl::GroupProfile GroupProfile::Unserialize(const mongo::BSONObj& bo)
     profile.slots = bo["slots"].Int();
     profile.leechSlots = bo["leech slots"].Int();
     profile.allotSlots = bo["allotment slots"].Int();
-    profile.maxAllotSize = bo["max allotment size"].Int();
+    profile.maxAllotSize = bo["max allotment size"].Long();
     profile.slots = bo["slots"].Int();
     profile.maxLogins = bo["max logins"].Int();
   }

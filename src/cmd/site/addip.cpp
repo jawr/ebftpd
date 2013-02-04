@@ -12,10 +12,17 @@ namespace cmd { namespace site
 
 void ADDIPCommand::Execute()
 {
-  if (args[1] != client.User().Name() &&
-     !acl::AllowSiteCmd(client.User(), "addip"))
+  if (!acl::AllowSiteCmd(client.User(), "addip"))
   {
-    throw cmd::PermissionError();
+    if (args[1] != client.User().Name() ||
+        !acl::AllowSiteCmd(client.User(), "addipown"))
+    {
+      if (!client.User().HasGadminGID(acl::UserCache::PrimaryGID(acl::UserCache::NameToUID(args[1]))) ||
+          !acl::AllowSiteCmd(client.User(), "addipgadmin"))
+      {
+        throw cmd::PermissionError();
+      }
+    }
   }
   
   acl::User user;
@@ -36,7 +43,6 @@ void ADDIPCommand::Execute()
   std::vector<std::string> deleted;
   for (auto it = args.begin() + 2; it != args.end(); ++it)
   {
-    //if (it != args.begin()+2) os << "\n";
     util::Error ok;
     if (!acl::SecureIP(client.User(), *it, strength))
     {

@@ -12,6 +12,7 @@
 #include "acl/groupcache.hpp"
 #include "cmd/site/addip.hpp"
 #include "acl/util.hpp"
+#include "acl/allowsitecmd.hpp"
 
 namespace cmd { namespace site
 {
@@ -37,12 +38,6 @@ void ADDUSERCommand::Execute(const std::string& group)
 
 void ADDUSERCommand::Execute()
 {
-  if (!acl::Validate(acl::ValidationType::Username, args[1]))
-  {
-    control.Reply(ftp::ActionNotOkay, "Username contains invalid characters");
-    return;
-  }
-
   acl::GroupID gid = -1;
   if (!group.empty())
   {
@@ -52,6 +47,20 @@ void ADDUSERCommand::Execute()
       control.Reply(ftp::ActionNotOkay, "Group " + group + " doesn't exist.");
       return;
     }
+  }
+  else
+  if (args[0] == "ADDUSER" &&
+      !acl::AllowSiteCmd(client.User(), "adduser") &&
+      acl::AllowSiteCmd(client.User(), "addusergadmin"))
+  {
+    gid = client.User().PrimaryGID();
+    if (gid == -1) throw cmd::PermissionError();
+  }
+
+  if (!acl::Validate(acl::ValidationType::Username, args[1]))
+  {
+    control.Reply(ftp::ActionNotOkay, "Username contains invalid characters");
+    return;
   }
 
   acl::PasswdStrength strength;

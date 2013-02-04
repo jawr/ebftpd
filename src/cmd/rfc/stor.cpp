@@ -122,13 +122,13 @@ void STORCommand::Execute()
   if (!exec::PreCheck(client, path)) throw cmd::NoPostScriptError();
 
   switch(ftp::Counter::Upload().Start(client.User().UID(), 
-         client.Profile().MaxSimUl(), 
+         client.Profile().MaxSimUp(), 
          client.User().CheckFlag(acl::Flag::Exempt)))
   {
     case ftp::CounterResult::PersonalFail  :
     {
       std::ostringstream os;
-      os << "You have reached your maximum of " << client.Profile().MaxSimUl() 
+      os << "You have reached your maximum of " << client.Profile().MaxSimUp() 
          << " simultaneous uploads(s).";
       control.Reply(ftp::ActionNotOkay, os.str());
       throw cmd::NoPostScriptError();

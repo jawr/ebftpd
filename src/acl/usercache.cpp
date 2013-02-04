@@ -336,7 +336,7 @@ util::Error UserCache::AddGID(const std::string& name, GroupID gid)
   
   acl::User& user = *it->second;
 
-  if (user.CheckGID(gid))
+  if (user.HasGID(gid))
   {
     return util::Error::Failure("Already a member.");
   }
@@ -362,7 +362,7 @@ util::Error UserCache::DelGID(const std::string& name, GroupID gid)
   if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
 
   acl::User& user = *it->second;
-  if (!user.CheckGID(gid)) return util::Error::Failure("Not a member.");
+  if (!user.HasGID(gid)) return util::Error::Failure("Not a member.");
   
   if (user.PrimaryGID() == gid)
   {
@@ -399,6 +399,38 @@ util::Error UserCache::ResetGIDs(const std::string& name)
 
   return util::Error::Success();
 }
+
+util::Error UserCache::ToggleGadminGID(const std::string& name, GroupID gid, bool& added)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
+  
+  acl::User& user = *it->second;
+
+  if (!user.HasGID(gid)) return util::Error::Failure("Not a member of that group.");  
+
+  added = !user.HasGadminGID(gid);
+  if (added) user.AddGadminGID(gid);
+  else user.DelGadminGID(gid); 
+
+  Save(*it->second, "gadmin gids");
+  return util::Error::Success();
+}
+
+/*util::Error UserCache::DelGadminGID(const std::string& name, GroupID gid)
+{
+  boost::lock_guard<boost::mutex> lock(instance.mutex);
+  ByNameMap::iterator it = instance.byName.find(name);
+  if (it == instance.byName.end()) return util::Error::Failure("User " + name + " doesn't exist.");
+
+  acl::User& user = *it->second;
+  if (!user.HasGadminGID(gid)) return util::Error::Failure("Not gadmin.");
+  
+  user.DelGadminGID(gid);
+  Save(*it->second, "gadmin gids");
+  return util::Error::Success();
+}*/
 
 acl::User UserCache::User(const std::string& name)
 {
@@ -446,12 +478,12 @@ GroupID UserCache::PrimaryGID(UserID uid)
   return it->second->PrimaryGID();
 }
 
-bool UserCache::CheckGID(const std::string& name, acl::GroupID gid)
+bool UserCache::HasGID(const std::string& name, acl::GroupID gid)
 {
   boost::lock_guard<boost::mutex> lock(instance.mutex);
   ByNameMap::iterator it = instance.byName.find(name);
   if (it == instance.byName.end()) return false;
-  return it->second->CheckGID(gid);
+  return it->second->HasGID(gid);
 }
 
 unsigned UserCache::Count(bool includeDeleted)

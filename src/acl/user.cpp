@@ -118,14 +118,35 @@ void User::ResetSecondaryGIDs()
   secondaryGids.clear();
 }
 
-bool User::HasSecondaryGID(GroupID gid)
+bool User::HasSecondaryGID(GroupID gid) const
 {
   return std::find(secondaryGids.begin(), secondaryGids.end(), gid) != secondaryGids.end();
 }
 
-bool User::CheckGID(GroupID gid)
+bool User::HasGID(GroupID gid) const
 {
   return primaryGid == gid || HasSecondaryGID(gid);
+}
+
+void User::AddGadminGID(GroupID gid)
+{
+  modified = boost::posix_time::microsec_clock::local_time();
+  if (!CheckFlag(Flag::Gadmin)) AddFlag(Flag::Gadmin);
+  gadminGids.emplace_back(gid);
+}
+
+void User::DelGadminGID(GroupID gid)
+{
+  modified = boost::posix_time::microsec_clock::local_time();
+  gadminGids.erase(std::remove(gadminGids.begin(), gadminGids.end(), gid), 
+      gadminGids.end());
+  if (gadminGids.empty()) DelFlag(Flag::Gadmin);
+
+}
+
+bool User::HasGadminGID(GroupID gid) const
+{
+  return std::find(gadminGids.begin(), gadminGids.end(), gid) != gadminGids.end();
 }
 
 util::Error User::AddIPMask(const std::string& mask, std::vector<std::string>& redundant)

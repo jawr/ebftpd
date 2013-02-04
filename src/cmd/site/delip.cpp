@@ -10,10 +10,17 @@ namespace cmd { namespace site
 
 void DELIPCommand::Execute()
 {
-  if (args[1] != client.User().Name() && 
-     !acl::AllowSiteCmd(client.User(), "delip"))
+  if (!acl::AllowSiteCmd(client.User(), "delip"))
   {
-    throw cmd::PermissionError();
+    if (args[1] != client.User().Name() ||
+        !acl::AllowSiteCmd(client.User(), "delipown"))
+    {
+      if (!client.User().HasGadminGID(acl::UserCache::PrimaryGID(acl::UserCache::NameToUID(args[1]))) ||
+          !acl::AllowSiteCmd(client.User(), "delipgadmin"))
+      {
+        throw cmd::PermissionError();
+      }
+    }
   }
 
   acl::User user;

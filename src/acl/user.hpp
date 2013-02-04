@@ -28,6 +28,7 @@ class User
   UserID uid;
   GroupID primaryGid;
   std::vector<GroupID> secondaryGids;
+  std::vector<GroupID> gadminGids;
   
   std::vector<std::string> ipMasks;
    
@@ -73,9 +74,14 @@ public:
   void AddSecondaryGID(GroupID gid);
   void DelSecondaryGID(GroupID gid);
   void ResetSecondaryGIDs();
-  bool HasSecondaryGID(GroupID gid);
+  bool HasSecondaryGID(GroupID gid) const;
+  bool HasGID(GroupID gid) const;
   
-  bool CheckGID(GroupID gid);
+  const std::vector<GroupID> GadminGIDs() const { return gadminGids; }
+  void AddGadminGID(GroupID gid);
+  void DelGadminGID(GroupID gid);
+  bool HasGadminGID(GroupID gid) const;
+  
   
   util::Error AddIPMask(const std::string& mask, std::vector<std::string> &redundant);
   util::Error DelIPMask(decltype(ipMasks.size()) index, std::string& deleted);

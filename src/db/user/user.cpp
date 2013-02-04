@@ -75,13 +75,9 @@ void Save(const acl::User& user, const std::string& field)
 void Delete(acl::UserID uid)
 {
   mongo::Query query = QUERY("uid" << uid);
-  std::vector<TaskPtr> tasks;
-  tasks.emplace_back(new db::Delete("users", query));
-  tasks.emplace_back(new db::Delete("ipmasks", query));
-  tasks.emplace_back(new db::Delete("transfers", query));
-
-  for (auto& task: tasks)
-    Pool::Queue(task);      
+  Pool::Queue(std::make_shared<db::Delete>("users", query));
+  Pool::Queue(std::make_shared<db::Delete>("ipmasks", query));
+  Pool::Queue(std::make_shared<db::Delete>("transfers", query));
 }
 
 boost::ptr_vector<acl::User> 

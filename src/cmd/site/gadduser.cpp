@@ -9,7 +9,7 @@ namespace cmd { namespace site
 
 void GADDUSERCommand::Execute()
 {
-  std::string cpArgStr("ADDUSER ");
+  std::string cpArgStr("GADDUSER ");
   cpArgStr += args[2];
   for (auto it = args.begin() + 3; it != args.end(); ++it)
     cpArgStr += " " + *it;

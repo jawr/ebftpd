@@ -21,6 +21,7 @@ mongo::BSONObj User::Serialize(const acl::User& user)
   bob.append("uid", user.uid);
   bob.append("primary gid", user.primaryGid);
   bob.append("secondary gids", SerializeContainer(user.secondaryGids));
+  bob.append("gadmin gids", SerializeContainer(user.gadminGids));
   bob.append("ip masks", SerializeContainer(user.ipMasks));
 
   return bob.obj();
@@ -42,6 +43,10 @@ void User::Unserialize(const mongo::BSONObj& bo, acl::User& user)
     for (const auto& el: secondaryGids)
       user.secondaryGids.emplace_back(el.Int());
       
+    auto gadminGids = bo["gadmin gids"].Array();
+    for (const auto& el: gadminGids)
+      user.gadminGids.emplace_back(el.Int());
+
     auto ipMasks = bo["ip masks"].Array();
     for (const auto& el : ipMasks)
       user.ipMasks.emplace_back(el.String());
