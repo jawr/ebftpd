@@ -125,7 +125,8 @@ bool UserCache::Exists(UserID uid)
 }
 
 util::Error UserCache::Create(const std::string& name, const std::string& password,
-                              const std::string& flags, acl::UserID creator)
+                              const std::string& flags, acl::UserID creator, 
+                              acl::GroupID gid)
 {
   unsigned totalUsers = cfg::Get().TotalUsers();
   if (totalUsers > 0 && Count() >= totalUsers)
@@ -146,6 +147,8 @@ util::Error UserCache::Create(const std::string& name, const std::string& passwo
         return util::Error::Failure("User " + name + " already exists.");
 
     {
+      user->SetPrimaryGID(gid);
+      
       boost::lock_guard<boost::mutex> lock(instance.mutex);
       assert(instance.byName.find(name) == instance.byName.end());
         
@@ -414,7 +417,7 @@ util::Error UserCache::ToggleGadminGID(const std::string& name, GroupID gid, boo
   if (added) user.AddGadminGID(gid);
   else user.DelGadminGID(gid); 
 
-  Save(*it->second, "flags  ");
+  Save(*it->second, "flags");
   Save(*it->second, "gadmin gids");
   return util::Error::Success();
 }

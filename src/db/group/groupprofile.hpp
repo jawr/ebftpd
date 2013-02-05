@@ -36,6 +36,10 @@ void SetMaxLogins(acl::GroupID gid, int logins);
 void SetDescription(acl::GroupID gid, const std::string& description);
 void SetComment(acl::GroupID gid, const std::string& comment);
 
+int SlotsUsed(acl::GroupID gid);
+int LeechSlotsUsed(acl::GroupID gid);
+int AllotSlotsUsed(acl::GroupID gid);
+
 }
 }
 #endif

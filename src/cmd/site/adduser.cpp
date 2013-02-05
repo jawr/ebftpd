@@ -57,7 +57,7 @@ void ADDUSERCommand::Execute()
     if (gid == -1) throw cmd::PermissionError();
     group = acl::GroupCache::GIDToName(gid);
   }
-
+  
   if (!acl::Validate(acl::ValidationType::Username, args[1]))
   {
     control.Reply(ftp::ActionNotOkay, "Username contains invalid characters");
@@ -81,7 +81,7 @@ void ADDUSERCommand::Execute()
   const cfg::Config& cfg = cfg::Get();
 
   util::Error ok = acl::UserCache::Create(args[1], args[2], 
-    cfg.DefaultFlags(), client.User().UID());
+    cfg.DefaultFlags(), client.User().UID(), gid);
 
   if (!ok)
   {

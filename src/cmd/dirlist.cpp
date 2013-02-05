@@ -204,7 +204,6 @@ void DirectoryList::Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirE
 
 void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks, int depth) const
 {
-  boost::timer::auto_cpu_timer t;
   if (maxRecursion && depth > maxRecursion) return;
 
   fs::DirEnumerator dirEnum;

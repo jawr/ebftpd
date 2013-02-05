@@ -33,10 +33,9 @@ void CreateDefaults()
   
   verify(acl::GroupCache::Exists(0));
 
-  if (acl::UserCache::Create("ebftpd", "ebftpd", "1", 0))
+  if (acl::UserCache::Create("ebftpd", "ebftpd", "1", 0, 0))
   {
     verify(acl::UserCache::NameToUID("ebftpd") == 0);
-    verify(acl::UserCache::SetPrimaryGID("ebftpd", 0));
     verify(acl::UserCache::AddIPMask("ebftpd", "*@127.0.0.1"));
   }
   
@@ -98,6 +97,20 @@ std::string CreditString(const UserProfile& profile)
     {
       os << " " << kv.first << "(" << FormatCredits(profile.Credits(kv.first)) << ")";
     }
+  }
+  return os.str();
+}
+
+std::string GroupString(const User& user)
+{
+  std::ostringstream os;
+  if (user.HasGadminGID(user.PrimaryGID())) os << "+";
+  os << acl::GroupCache::GIDToName(user.PrimaryGID());
+  for (acl::GroupID gid : user.SecondaryGIDs())
+  {
+    os << " ";
+    if (user.HasGadminGID(gid)) os << "+";
+    os << acl::GroupCache::GIDToName(gid);
   }
   return os.str();
 }

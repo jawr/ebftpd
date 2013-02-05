@@ -22,16 +22,22 @@ const std::vector<GRPCHANGECommand::SettingDef> GRPCHANGECommand::settings =
 {
   { "slots",            1,  "grpchange",      &GRPCHANGECommand::CheckSlots,
     "Number of slots (-1 is unlimited)"                                             },
+
   { "leech_slots",      1,  "grpchange",      &GRPCHANGECommand::CheckLeechSlots,
     "Number of leech slots (-1 is unlimited, -2 is disabled)"                       },
+    
   { "allot_slots",      1,  "grpchange",      &GRPCHANGECommand::CheckAllotSlots,
     "Number of allotment slots (-1 is unlimited, -2 is disabled)"                   },
+    
   { "max_allot_size",   1,  "grpchange",      &GRPCHANGECommand::CheckMaxAllotSize,
     "Maximum allotment size in kbytes (0 is unlimited)"                             },
+    
   { "max_logins",       1,  "grpchange",      &GRPCHANGECommand::CheckMaxLogins,
     "Maximum simultaneous logins (-1 is unlimited, 0 is disallow)"                  },
+    
   { "description",      1,  "grpchange",      &GRPCHANGECommand::CheckDescription,
     "Description"                                                                   },
+    
   { "comment",          1,  "grpchange",      &GRPCHANGECommand::CheckComment,
     "Comment"                                                                       }
 };

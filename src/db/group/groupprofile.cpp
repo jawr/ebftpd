@@ -105,5 +105,28 @@ void SetComment(acl::GroupID gid, const std::string& comment)
   Set(gid, BSON("comment" << comment));
 }
 
+int SlotsUsed(acl::GroupID gid, const mongo::BSONObj& query)
+{
+  auto cmd = BSON("count" << "users" << "query" << BSON("primary gid" << gid));
+  boost::unique_future<bool> future;
+  mongo::BSONObj result;
+  Pool::Queue(std::make_shared<db::RunCommand>(cmd, result, future));
+  if (!future.get()) return -1;
+  return result["n"].Number();
+}
+
+int SlotsUsed(acl::GroupID gid)
+{
+  return SlotsUsed(gid, mongo::BSONObj());
+}
+
+int LeechSlotsUsed(acl::GroupID gid)
+{
+}
+
+int AllotSlotsUsed(acl::GroupID gid)
+{
+}
+
 }
 }

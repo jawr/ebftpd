@@ -112,29 +112,7 @@ void USERCommand::Execute()
   body.RegisterValue("flags", user.Flags());
   body.RegisterValue("ratio", acl::RatioString(profile));  
   body.RegisterValue("credits", acl::CreditString(profile));
-  body.RegisterValue("primary_group", 
-    acl::GroupCache::GIDToName(user.PrimaryGID()));
-
-  std::ostringstream secondaryGroups;
-  auto secondary = user.SecondaryGIDs();
-  if (secondary.size() > 0)
-  {
-    acl::Group group;
-    for (auto& gid: user.SecondaryGIDs())
-    {
-      try
-      {
-        group = acl::GroupCache::Group(gid);
-        secondaryGroups << group.Name() << " ";
-      }
-      catch (const util::RuntimeError& e)
-      {
-        secondaryGroups << "Error: " << e.Message() << " ";
-      }
-    }
-  }
-  
-  body.RegisterValue("secondary_groups", secondaryGroups.str());
+  body.RegisterValue("groups", acl::GroupString(user));
   body.RegisterValue("tagline", profile.Tagline());
   body.RegisterValue("comment", profile.Comment());
   body.RegisterSize("weekly_allot", profile.WeeklyAllotment());

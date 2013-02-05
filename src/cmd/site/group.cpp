@@ -105,6 +105,8 @@ void GROUPCommand::Execute()
   std::unordered_map<acl::UserID, ::stats::Stat> dnStats;// = db::stats::GetAllDown(users);
   std::unordered_map<acl::UserID, ::stats::Stat> upStats;// = db::stats::GetAllUp(users);
 
+  std::cout << db::groupprofile::SlotsUsed(group.GID()) << std::endl;
+  
   for (auto& user: users)
   {
     std::string flag = " ";

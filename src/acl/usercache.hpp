@@ -46,7 +46,7 @@ public:
   static bool Exists(const std::string& name);
   static bool Exists(UserID uid);
   static util::Error Create(const std::string& name, const std::string& password,
-                     const std::string& flags, const UserID creator);
+                     const std::string& flags, UserID creator, GroupID gid = -1);
   static util::Error Delete(const std::string& name);
   static util::Error Purge(const std::string& name);
   static util::Error Readd(const std::string& name);
