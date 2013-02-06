@@ -1,7 +1,5 @@
 #include <cstring>
-#if !defined(__CYGWIN__)
 #include <sys/xattr.h>
-#endif
 #include "fs/owner.hpp"
 #include "util/error.hpp"
 #include "logs/logs.hpp"
@@ -11,48 +9,6 @@ namespace fs
 
 namespace
 {
-
-#if defined(__CYGWIN__)
-
-void AttributePath(const char* path, const char* attribute, char* attributePath, size_t size)
-{
-  strncpy(attributePath, path, size);
-  strncat(attributePath, ":", size);
-  strncat(attributePath, attribute, size);
-}
-
-int getxattr(const char* path, const char* attribute, char* value, size_t size)
-{
-  char attributePath[PATH_MAX];
-  AttributePath(path, attribute, attributePath, sizeof(attributePath));
-  
-  int fd = open(attributePath, O_RDONLY);
-  if (fd < 0)
-  {
-    if (errno == EEXIST) errno = ENODATA;
-    return -1;
-  }
-  
-  int len = read(fd, value, size);
-  close(fd);
-  return len;
-}
-
-int setxattr(const char* path, const char* attribute, const char* value, 
-             size_t size, int /* flags */)
-{
-  char attributePath[PATH_MAX];
-  AttributePath(path, attribute, attributePath, sizeof(attributePath));
-  
-  int fd = open(attributePath, O_WRONLY|O_CREAT);
-  if (fd < 0) return -1;
-  
-  ssize_t ret = write(fd, value, size);
-  close(fd);
-  return ret;
-}
-
-#endif
 
 const char* uidAttributeName = "user.ebftpd.uid";
 const char* gidAttributeName = "user.ebftpd.gid";
@@ -102,6 +58,7 @@ Owner GetOwner(const RealPath& path)
 {
   return Owner(GetAttribute(path, uidAttributeName),
                GetAttribute(path, gidAttributeName));
+
 }
 
 util::Error SetOwner(const RealPath& path, const Owner& owner)

@@ -179,9 +179,8 @@ int main(int argc, char** argv)
     logs::error << "Failed to load config: " << e.Message() << logs::endl;
     return 1;
   }
-  
+
   logs::Initialise(cfg::Get().Datapath() / "logs");
-  if (!Daemonise(foreground)) return 1;
   
   {
     util::Error e = signals::Initialise();
@@ -248,10 +247,13 @@ int main(int argc, char** argv)
   }
   else
   { 
-    signals::Handler::StartThread();
-    ftp::Server::StartThread();
-    ftp::Server::JoinThread();
-    signals::Handler::StopThread();
+    if (Daemonise(foreground))
+    {
+      signals::Handler::StartThread();
+      ftp::Server::StartThread();
+      ftp::Server::JoinThread();
+      signals::Handler::StopThread();
+    }
   }
 
   acl::Replicator::Cancel();
