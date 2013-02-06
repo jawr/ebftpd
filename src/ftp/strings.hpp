@@ -84,8 +84,11 @@ enum class String
   PasswordRequired
 };
 
-template <> const char* util::EnumStrings<String>::values[];
-
 } /* ftp namespace */
+
+namespace util
+{
+template <> const char* util::EnumStrings<ftp::String>::values[];
+}
 
 #endif

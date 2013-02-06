@@ -25,6 +25,7 @@ void KickUser::Execute(Server& server)
     {
       client.Interrupt();
       ++kicked;
+      if (oneOnly) break;
     }
   }
   

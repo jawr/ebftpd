@@ -1,9 +1,9 @@
 #include "ftp/strings.hpp"
 
-namespace ftp
+namespace util
 {
 
-template <> const char* util::EnumStrings<String>::values[] = 
+template <> const char* util::EnumStrings<ftp::String>::values[] = 
 {
   "%1% command successful",
   "TLS not enabled",
@@ -84,4 +84,4 @@ template <> const char* util::EnumStrings<String>::values[] =
   ""
 };
 
-} /* ftp namespace */
+} /* util namespace */

@@ -25,8 +25,6 @@ enum class EPSVMode
   Normal
 };
 
-template <> const char* util::EnumStrings<EPSVMode>::values[];
-
 
 enum class DataType
 {
@@ -114,5 +112,10 @@ public:
 };
 
 } /* ftp namespace */
+
+namespace util
+{
+template <> const char* util::EnumStrings<ftp::EPSVMode>::values[];
+}
 
 #endif

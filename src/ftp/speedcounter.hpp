@@ -86,7 +86,7 @@ public:
   Update(const SpeedInfoOpt& last, const SpeedInfo& current, const SpeedLimitList& limits);
   void Clear(const SpeedInfoOpt& last, const SpeedLimitList& limits);
   
-  friend struct Counter;
+  friend class Counter;
 };
 
 } /* ftp namespace */

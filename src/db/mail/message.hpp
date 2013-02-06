@@ -17,8 +17,6 @@ namespace mail
 
 enum class Status : unsigned { Unread, Trash, Saved };
 
-template <> const char* util::EnumStrings<Status>::values[];
-
 class Message
 {
 private:
@@ -53,5 +51,10 @@ Status StatusFromString(const std::string& status);
 
 } /* mail namespace */
 } /* db namespace */
+
+namespace util
+{
+template <> const char* util::EnumStrings<db::mail::Status>::values[];
+}
 
 #endif

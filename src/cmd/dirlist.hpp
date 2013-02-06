@@ -60,7 +60,6 @@ class DirectoryList
   ftp::ReadWriteable& socket;
   fs::Path path;
   ListOptions options;
-  bool dataOutput;
   int maxRecursion;
   
   mutable std::unordered_map<acl::UserID, std::string> userNameCache;

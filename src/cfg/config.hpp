@@ -21,7 +21,6 @@ namespace cfg
 enum class WeekStart { Sunday, Monday };
 
 enum class EPSVFxp { Allow, Deny, Force };
-template <> const char* util::EnumStrings<cfg::EPSVFxp>::values[];
 
 class Config
 { 
@@ -281,6 +280,11 @@ public:
 
 typedef std::shared_ptr<cfg::Config> ConfigPtr;
 
+}
+
+namespace util
+{
+template <> const char* util::EnumStrings<cfg::EPSVFxp>::values[];
 }
 
 

@@ -120,7 +120,11 @@ void TerminateHandler()
   std::stringstream ss;
   try
   {
-    if (!rethrown++) throw;
+    if (!rethrown)
+    {
+      rethrown = true;
+      throw;
+    }
   }
   catch (const std::exception& e)
   {

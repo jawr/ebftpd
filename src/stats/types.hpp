@@ -16,8 +16,6 @@ enum class Timeframe : unsigned
   Alltime
 };
 
-template <> const char* util::EnumStrings<Timeframe>::values[];
-
 extern const std::vector< ::stats::Timeframe> timeframes;
 
 enum class Direction : unsigned
@@ -28,8 +26,6 @@ enum class Direction : unsigned
 
 extern const std::vector< ::stats::Direction> directions;
 
-template <> const char* util::EnumStrings<Direction>::values[];
-
 enum class SortField : unsigned
 {
   Bytes,
@@ -37,9 +33,15 @@ enum class SortField : unsigned
   Speed
 };
 
-template <> const char* util::EnumStrings<SortField>::values[];
-
-
 } /* stats namespace */
+
+namespace util
+{
+
+template <> const char* util::EnumStrings<stats::Timeframe>::values[];
+template <> const char* util::EnumStrings<stats::SortField>::values[];
+template <> const char* util::EnumStrings<stats::Direction>::values[];
+
+}
 
 #endif

@@ -6,8 +6,9 @@
 #include "stats/types.hpp"
 #include "acl/types.hpp"
 
-namespace db { namespace bson {
-class Stat;
+namespace db { namespace bson
+{
+struct Stat;
 } 
 }
 
@@ -58,7 +59,7 @@ public:
     xfertime += stat.xfertime;
   }
   
-  friend class db::bson::Stat;
+  friend struct db::bson::Stat;
 };
 
 // end

@@ -98,11 +98,10 @@ public:
   enum class Result { Okay, Fail, StopStart };
 
 private:
-  boost::unique_future<std::pair<Result, Result>>& future;
   boost::promise<std::pair<Result, Result>> promise;
   
 public:
-  ReloadConfig(boost::unique_future<std::pair<Result, Result>>& future) : future(future)
+  ReloadConfig(boost::unique_future<std::pair<Result, Result>>& future)
   { future = promise.get_future(); }
   
   void Execute(Server& server);

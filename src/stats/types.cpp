@@ -1,9 +1,8 @@
 #include "stats/types.hpp"
 
-namespace stats
+namespace util
 {
-
-template <> const char* util::EnumStrings<Timeframe>::values[] = 
+template <> const char* util::EnumStrings<stats::Timeframe>::values[] = 
 {
   "day",
   "week",
@@ -13,34 +12,40 @@ template <> const char* util::EnumStrings<Timeframe>::values[] =
   ""
 };
 
-const std::vector< ::stats::Timeframe> timeframes =
-{
-  ::stats::Timeframe::Day,
-  ::stats::Timeframe::Week,
-  ::stats::Timeframe::Month,
-  ::stats::Timeframe::Year,
-  ::stats::Timeframe::Alltime,
-};
-
-template <> const char* util::EnumStrings<Direction>::values[] =
+template <> const char* util::EnumStrings<stats::Direction>::values[] =
 {
   "up",
   "down",
   ""
 };
 
-const std::vector< ::stats::Direction> directions =
-{
-  ::stats::Direction::Upload,
-  ::stats::Direction::Download
-};
 
-template <> const char* util::EnumStrings<SortField>::values[] =
+template <> const char* util::EnumStrings<stats::SortField>::values[] =
 {
   "bytes",
   "files",
   "speed"
   ""
+};
+
+}
+
+namespace stats
+{
+
+const std::vector<Timeframe> timeframes =
+{
+  Timeframe::Day,
+  Timeframe::Week,
+  Timeframe::Month,
+  Timeframe::Year,
+  Timeframe::Alltime,
+};
+
+const std::vector<Direction> directions =
+{
+  Direction::Upload,
+  Direction::Download
 };
 
 }

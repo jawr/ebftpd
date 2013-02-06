@@ -6,7 +6,7 @@
 
 namespace db { namespace bson
 {
-  class GroupProfile;
+struct GroupProfile;
 }
 }
 
@@ -54,7 +54,7 @@ public:
   int MaxLogins() const { return maxLogins; }
   const std::string& Comment() const { return comment; }
 
-  friend class db::bson::GroupProfile;
+  friend struct db::bson::GroupProfile;
 };
 
 }

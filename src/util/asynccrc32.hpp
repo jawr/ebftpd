@@ -35,8 +35,6 @@ class AsyncCRC32 : public CRC32
 
   typedef std::vector<Buffer*> QueueVec;
   
-  size_t bufferSize;
-  unsigned queueSize;
   std::atomic<bool> finished;
   std::atomic<unsigned> pending;
   mutable boost::mutex mutex;
@@ -77,8 +75,6 @@ class AsyncCRC32 : public CRC32
   
 public:
   AsyncCRC32(size_t bufferSize, unsigned queueSize) : 
-    bufferSize(bufferSize),
-    queueSize(queueSize),
     finished(false),
     pending(0)
   {

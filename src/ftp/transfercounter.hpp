@@ -31,7 +31,7 @@ public:
   CounterResult Start(acl::UserID uid, int limit, bool exempt);
   void Stop(acl::UserID uid);
   
-  friend struct Counter;
+  friend class Counter;
 };
 
 } /* ftp namespace */

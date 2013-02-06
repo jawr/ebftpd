@@ -15,7 +15,7 @@
 #include "logs/logs.hpp"
 #include "main.hpp"
 
-namespace cfg
+namespace util
 {
 
 template <> const char* util::EnumStrings<cfg::EPSVFxp>::values[] = 
@@ -25,6 +25,11 @@ template <> const char* util::EnumStrings<cfg::EPSVFxp>::values[] =
   "Force",
   ""
 };
+
+}
+
+namespace cfg
+{
 
 int Config::latestVersion = 0;
 std::unordered_set<std::string> Config::aclKeywords;

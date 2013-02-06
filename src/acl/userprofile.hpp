@@ -12,7 +12,7 @@
 
 namespace db { namespace bson
 {
-class UserProfile;
+struct UserProfile;
 }
 }
 

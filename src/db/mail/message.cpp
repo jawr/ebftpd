@@ -1,12 +1,9 @@
-#include <cassert>
-#include <algorithm>
-#include <stdexcept>
 #include "db/mail/message.hpp"
 
-namespace db { namespace mail
+namespace util
 {
 
-template <> const char* util::EnumStrings<Status>::values[] =
+template <> const char* util::EnumStrings<db::mail::Status>::values[] =
 {
   "unread",
   "trash",
@@ -14,5 +11,5 @@ template <> const char* util::EnumStrings<Status>::values[] =
   ""
 };
 
-} /* mail namespace */
-} /* db namespace */
+}
+

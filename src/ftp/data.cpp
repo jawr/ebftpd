@@ -10,14 +10,19 @@
 #include "cfg/get.hpp"
 #include "ftp/error.hpp"
 
-namespace ftp
+namespace util
 {
 
-template <> const char* util::EnumStrings<EPSVMode>::values[]
+template <> const char* util::EnumStrings<ftp::EPSVMode>::values[] =
 {
   "EXTENDED",
   "NORMAL"
 };
+
+}
+
+namespace ftp
+{
 
 Data::Data(Client& client) :
   client(client),

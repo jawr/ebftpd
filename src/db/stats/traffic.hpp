@@ -32,7 +32,7 @@ public:
   
   const std::string& Section() const { return section; }
   
-  friend struct db::bson::Traffic;
+  friend class db::bson::Traffic;
 };
 
 } /* stats namespace */
