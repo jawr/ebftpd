@@ -14,6 +14,7 @@
 #include "util/string.hpp"
 #include "logs/logs.hpp"
 #include "main.hpp"
+#include "util/path.hpp"
 
 namespace util
 {
@@ -41,9 +42,12 @@ const std::vector<std::string> Config::requiredSettings
   "valid_ip"
 };
 
-Config::Config(const std::string& configFile) : 
+const std::string Config::configFile = "ebftpd.conf";
+const std::vector<std::string> Config::configSearch = { "../etc", "etc", "." };
+std::string Config::lastConfigPath;
+
+Config::Config(const std::string& configPath) : 
   version(++latestVersion),
-  configFile(configFile),
   currentSection(nullptr),
   port(-1),
   defaultFlags("3"),
@@ -70,7 +74,7 @@ Config::Config(const std::string& configFile) :
   tlsFxp(acl::ACL::FromString("!*"))
 {
   std::string line;
-  std::ifstream io(configFile.c_str());
+  std::ifstream io(configPath.c_str());
   if (!io) throw ConfigError("Unable to open config file.");
 
   bool okay = true;
@@ -783,6 +787,38 @@ boost::optional<const Section&> Config::SectionMatch(const fs::Path& path) const
   }
       
   return boost::optional<const Section&>();
+}
+
+ConfigPtr Config::Load(std::string configPath)
+{
+  std::vector<std::string> configPaths;
+  if (!configPath.empty())
+  {
+    configPaths.push_back(configPath);
+  }
+  else
+  {
+    for (const std::string& cs : configSearch)
+    {
+      configPaths.push_back(util::path::Join(cs, configFile));
+    }
+  }
+  
+  bool exists = false;
+  for (const std::string& cp : configPaths)
+  {
+    if (!access(cp.c_str(), F_OK))
+    {
+      lastConfigPath = cp;
+      exists = true;
+      break;
+    }
+  }
+  
+  if (!exists) throw ConfigError("Unable to open config file.");
+  
+  logs::debug << "Loading config file.." << logs::endl;
+  return std::make_shared<Config>(lastConfigPath);
 }
 
 // end namespace

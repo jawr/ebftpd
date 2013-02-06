@@ -7,6 +7,4 @@ extern const std::string programName;
 extern const std::string programFullname;
 extern const char* version;
 
-void LoadConfig();
-
 #endif

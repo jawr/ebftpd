@@ -22,10 +22,13 @@ enum class WeekStart { Sunday, Monday };
 
 enum class EPSVFxp { Allow, Deny, Force };
 
+class Config;
+
+typedef std::shared_ptr<cfg::Config> ConfigPtr;
+
 class Config
 { 
   int version;
-  std::string configFile;
  
   void ParseGlobal(const std::string& opt, std::vector<std::string>& toks);
   void ParseSection(const std::string& opt, std::vector<std::string>& toks);
@@ -145,6 +148,9 @@ class Config
   static std::unordered_set<std::string> aclKeywords;
   static int latestVersion;
   static const std::vector<std::string> requiredSettings;
+  static const std::string configFile;
+  static const std::vector<std::string> configSearch;
+  static std::string lastConfigPath;
   
   Config(const Config&) = default;
   Config& operator=(const Config&) = default;
@@ -159,7 +165,7 @@ class Config
   { ParameterCheck(opt, toks, minimum, minimum); }
 
 public:
-  Config(const std::string& configFile);
+  Config(const std::string& configPath);
 
   int Version() const { return version; }
 
@@ -275,10 +281,10 @@ public:
   static void PopulateACLKeywords(const std::unordered_set<std::string>& keywords)
   { aclKeywords.insert(keywords.begin(), keywords.end()); }
   
+  static ConfigPtr Load(std::string configPath = lastConfigPath);
+  
   friend void UpdateLocal();
 };
-
-typedef std::shared_ptr<cfg::Config> ConfigPtr;
 
 }
 

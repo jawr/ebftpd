@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <boost/thread/mutex.hpp>
 #include "util/net/endpoint.hpp"
-#include "cfg/setting.hpp"
+#include "cfg/get.hpp"
 
 namespace ftp
 {
@@ -78,6 +78,12 @@ PortAllocatorImpl PortAllocator<type>::instance;
 
 template class PortAllocator<PortType::Passive>;
 template class PortAllocator<PortType::Active>;
+
+inline void InitialisePortAllocators()
+{
+  cfg::ConnectUpdatedSlot([]() { PortAllocator<ftp::PortType::Active>::SetPorts(cfg::Get().ActivePorts()); });
+  cfg::ConnectUpdatedSlot([]() { PortAllocator<ftp::PortType::Passive>::SetPorts(cfg::Get().PasvPorts()); });
+}
 
 } /* ftp namespace */
 

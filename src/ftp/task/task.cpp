@@ -70,7 +70,7 @@ void ReloadConfig::Execute(Server&)
   Result configResult = Result::Okay;
   try
   {
-    LoadConfig();
+    cfg::UpdateShared(cfg::Config::Load());
   }
   catch (const cfg::ConfigError& e)
   {

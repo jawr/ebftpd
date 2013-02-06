@@ -2,6 +2,7 @@
 #include <cassert>
 #include <boost/thread/tss.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/signals2.hpp>
 #include "cfg/get.hpp"
 #include "cfg/config.hpp"
 #include "logs/logs.hpp"
@@ -13,16 +14,20 @@ namespace
 {
 
 boost::thread_specific_ptr<Config> thisThread;
-
 boost::mutex sharedMutex;
 std::shared_ptr<Config> shared;
+boost::signals2::signal<void()> updated;
 
 }
 
 void UpdateShared(const std::shared_ptr<Config> newShared)
 {
-  boost::lock_guard<boost::mutex> lock(sharedMutex);
-  shared = newShared;
+  {
+    boost::lock_guard<boost::mutex> lock(sharedMutex);
+    shared = newShared;
+  }
+  
+  updated();
 }
 
 void UpdateLocal()
@@ -83,6 +88,11 @@ bool RequireStopStart()
   }
       
   return required;
+}
+
+void ConnectUpdatedSlot(const std::function<void()>& slot)
+{
+  updated.connect(slot);
 }
 
 }

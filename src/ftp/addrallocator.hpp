@@ -6,9 +6,7 @@
 #include <cstdint>
 #include <boost/thread/mutex.hpp>
 #include "util/net/endpoint.hpp"
-#include "cfg/setting.hpp"
-
-#include <iostream>
+#include "cfg/get.hpp"
 
 namespace ftp
 {
@@ -70,6 +68,12 @@ AddrAllocatorImpl AddrAllocator<type>::instance;
 
 template class AddrAllocator<AddrType::Passive>;
 template class AddrAllocator<AddrType::Active>;
+
+inline void InitialiseAddrAllocators()
+{
+  cfg::ConnectUpdatedSlot([]() { AddrAllocator<ftp::AddrType::Active>::SetAddrs(cfg::Get().ActiveAddr()); });
+  cfg::ConnectUpdatedSlot([]() { AddrAllocator<ftp::AddrType::Passive>::SetAddrs(cfg::Get().PasvAddr()); });
+}
 
 } /* ftp namespace */
 

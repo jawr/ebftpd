@@ -37,29 +37,7 @@ extern const std::string programFullname = programName + " " + std::string(versi
 
 namespace
 {
-std::string configFile = "ebftpd.conf";
-std::vector<std::string> configSearch = { "../etc", "etc" };
-}
-
-void LoadConfig()
-{
-  std::string configPath;
-  for (const std::string& search : configSearch)
-  {
-    configPath = search + "/" + configFile;
-    if (!access(configPath.c_str(), F_OK)) break;
-    configPath.clear();
-  }
-  
-  if (configPath.empty()) configPath = configFile;
-
-  logs::debug << "Loading config file.." << logs::endl;
-  cfg::UpdateShared(std::shared_ptr<cfg::Config>(new cfg::Config(configPath)));
-  
-  ftp::AddrAllocator<ftp::AddrType::Active>::SetAddrs(cfg::Get().ActiveAddr());
-  ftp::AddrAllocator<ftp::AddrType::Passive>::SetAddrs(cfg::Get().PasvAddr());
-  ftp::PortAllocator<ftp::PortType::Active>::SetPorts(cfg::Get().ActivePorts());
-  ftp::PortAllocator<ftp::PortType::Passive>::SetPorts(cfg::Get().PasvPorts());
+std::string configPath;
 }
 
 void DisplayHelp(char* argv0, boost::program_options::options_description& desc)
@@ -80,7 +58,7 @@ bool ParseOptions(int argc, char** argv, bool& foreground)
   desc.add_options()
     ("help,h", "display this help message")
     ("version,v", "display version")
-    ("config-file,c", po::value<std::string>(),
+    ("config-path,c", po::value<std::string>(),
      "specify location of config file")
     ("foreground,f", "run server in foreground")
     ("siteop-only,s", "run server in siteop only mode");
@@ -110,7 +88,7 @@ bool ParseOptions(int argc, char** argv, bool& foreground)
     return false;
   }
   
-  if (vm.count("config-file")) configFile = vm["config-file"].as<std::string>();
+  if (vm.count("config-path")) configPath = vm["config-path"].as<std::string>();
   if (vm.count("siteop-only")) ftp::Client::SetSiteopOnly();
   foreground = vm.count("foreground") > 0;
   
@@ -159,7 +137,6 @@ bool Daemonise(bool foreground)
   return true;
 }
 
-#ifndef TEST
 int main(int argc, char** argv)
 {
   bool foreground; 
@@ -169,10 +146,12 @@ int main(int argc, char** argv)
   cmd::rfc::Factory::Initialise();
   cmd::site::Factory::Initialise();
   cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
+  ftp::InitialisePortAllocators();
+  ftp::InitialiseAddrAllocators();
   
   try
   {
-    LoadConfig();
+    cfg::UpdateShared(cfg::Config::Load(configPath));
   }
   catch (const cfg::ConfigError& e)
   {
@@ -263,5 +242,3 @@ int main(int argc, char** argv)
   
   return exitStatus;
 }
-
-#endif

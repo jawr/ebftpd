@@ -15,6 +15,7 @@
 #include "text/factory.hpp"
 #include "cfg/error.hpp"
 #include "acl/replicator.hpp"
+#include "cfg/get.hpp"
 
 namespace signals
 {
@@ -51,7 +52,7 @@ void Handler::Run()
       {
         try
         {
-          LoadConfig();
+          cfg::UpdateShared(cfg::Config::Load());
         }
         catch (const cfg::ConfigError& e)
         {
