@@ -199,7 +199,7 @@ struct Traits<Rename>
   
   static util::Error Allowed(const User& user, const fs::VirtualPath& path)
   {
-    fs::Owner owner = fs::OwnerCache::Owner(fs::MakeReal(path));
+    fs::Owner owner = GetOwner(fs::MakeReal(path));
     if (owner.UID() == user.UID() && AllowedOwner(user, path))
       return util::Error::Success();
     else
@@ -252,7 +252,7 @@ struct Traits<Delete>
 
   static util::Error Allowed(const User& user, const fs::VirtualPath& path)
   {
-    fs::Owner owner = fs::OwnerCache::Owner(fs::MakeReal(path));
+    fs::Owner owner = GetOwner(fs::MakeReal(path));
     if (owner.UID() == user.UID() && AllowedOwner(user, path))
       return util::Error::Success();
     else
@@ -340,8 +340,6 @@ util::Error Allowed(const User& user, const fs::VirtualPath& path)
 template <Type type>
 util::Error FileAllowed(const User& user, const fs::VirtualPath& path)
 {  
-  if (boost::ends_with(path.ToString(), "/" + fs::OwnerFile::ownerFilename)) 
-    return util::Error::Failure(ENOENT);
   return Allowed<type>(user, path);
 }
 

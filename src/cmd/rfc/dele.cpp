@@ -19,7 +19,7 @@ void DELECommand::Execute()
 {
   fs::VirtualPath path(fs::PathFromUser(argStr));
 
-  bool loseCredits = fs::OwnerCache::Owner(fs::MakeReal(path)).UID() == client.User().UID();
+  bool loseCredits = fs::GetOwner(fs::MakeReal(path)).UID() == client.User().UID();
   
   off_t bytes;
   time_t modTime;

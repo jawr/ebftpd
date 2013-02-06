@@ -63,7 +63,7 @@ void STORCommand::DupeMessage(const fs::VirtualPath& path)
   
   if (!hideOwner)
   {
-    fs::Owner owner = fs::OwnerCache::Owner(realPath);
+    fs::Owner owner = fs::GetOwner(realPath);
     std::string user = acl::UserCache::UIDToName(owner.UID());
     if (incomplete)
       os << "File is being uploaded by " << user << ".";

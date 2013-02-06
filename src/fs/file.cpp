@@ -23,7 +23,6 @@ namespace fs
 util::Error DeleteFile(const RealPath& path)
 {
   if (unlink(path.CString()) < 0) return util::Error::Failure(errno);
-  OwnerCache::Delete(path);
   return util::Error::Success();
 }
 
@@ -52,14 +51,8 @@ util::Error DeleteFile(const acl::User& user, const VirtualPath& path,
 
 util::Error RenameFile(const RealPath& oldPath, const RealPath& newPath)
 {
-  Owner owner = OwnerCache::Owner(oldPath);
-  OwnerCache::Delete(oldPath);
   if (rename(oldPath.CString(), newPath.CString()) < 0) 
-  {
-    OwnerCache::Chown(oldPath, owner);
     return util::Error::Failure(errno);
-  }
-  OwnerCache::Chown(newPath, owner);
   return util::Error::Success();
 }
 
@@ -101,8 +94,7 @@ FileSinkPtr CreateFile(const acl::User& user, const VirtualPath& path)
     if (fd < 0) throw util::SystemError(errno);
   }
 
-  OwnerCache::Chown(MakeReal(path), Owner(user.UID(), 
-      user.PrimaryGID()));
+  SetOwner(MakeReal(path), Owner(user.UID(), user.PrimaryGID()));
 
   return FileSinkPtr(new FileSink(fd, boost::iostreams::close_handle));
 }

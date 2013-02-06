@@ -240,8 +240,6 @@ int main(int argc, char** argv)
   acl::UserCache::Initialize();
   acl::CreateDefaults();
   
-  fs::OwnerCache::Start();
-    
   int exitStatus = 0;
   if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
@@ -258,7 +256,6 @@ int main(int argc, char** argv)
 
   acl::Replicator::Cancel();
   db::Cleanup();
-  fs::OwnerCache::Stop();
 
   logs::debug << "Bye!" << logs::endl;
   

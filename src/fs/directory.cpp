@@ -126,15 +126,13 @@ util::Error CreateDirectory(const acl::User& user, const VirtualPath& path)
   if (!e) return e;
 
   e = CreateDirectory(MakeReal(path));  
-  if (e) OwnerCache::Chown(MakeReal(path), Owner(user.UID(), 
-        user.PrimaryGID()));
+  if (e) SetOwner(MakeReal(path), Owner(user.UID(), user.PrimaryGID()));
   return e;
 }
 
 util::Error RemoveDirectory(const RealPath& path)
 {
   if (rmdir(MakeReal(path).CString()) < 0) return util::Error::Failure(errno);
-  OwnerCache::Delete(MakeReal(path));
   return util::Error::Success();
 }
 
@@ -165,7 +163,6 @@ util::Error RemoveDirectory(const acl::User& user, const VirtualPath& path)
       RealPath entryPath(MakeReal(path) / name);
       if (unlink(entryPath.CString()) < 0)
         return util::Error::Failure(errno);
-      OwnerCache::Delete(entryPath);      
     }
   }
   catch (const util::SystemError& e)
@@ -178,8 +175,6 @@ util::Error RemoveDirectory(const acl::User& user, const VirtualPath& path)
 
 util::Error RenameDirectory(const RealPath& oldPath, const RealPath& newPath)
 {
-  OwnerCache::Flush(oldPath);
-
   if (rename(oldPath.CString(), newPath.CString()) < 0) 
     return util::Error::Failure(errno);
     

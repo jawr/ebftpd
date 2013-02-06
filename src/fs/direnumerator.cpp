@@ -97,13 +97,13 @@ void DirEnumerator::Readdir()
         }
         
         Owner owner(0, 0);
-        if (!hideOwner && loadOwners) owner = OwnerCache::Owner(entryPath);
+        if (!hideOwner && loadOwners) owner = GetOwner(entryPath);
         entries.emplace_back(fs::Path(de.d_name), status, owner);
       }
       else
       {
         Owner owner(0, 0);
-        if (loadOwners) owner = OwnerCache::Owner(entryPath);
+        if (loadOwners) owner = GetOwner(entryPath);
         entries.emplace_back(fs::Path(de.d_name), status, owner);
       }
     }

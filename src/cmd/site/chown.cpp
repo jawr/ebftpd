@@ -31,7 +31,7 @@ void CHOWNCommand::Process(fs::VirtualPath pathmask)
       try
       {
         fs::Status status(fs::MakeReal(entryPath));
-        fs::OwnerCache::Chown(fs::MakeReal(entryPath), owner);
+        fs::SetOwner(fs::MakeReal(entryPath), owner);
         if (status.IsDirectory())
         {
           ++dirs;
