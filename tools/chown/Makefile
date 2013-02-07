@@ -1,36 +1,40 @@
-CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic
-CXXFLAGS += -Winit-self	-I../../src -pthread -DEXTERNAL_TOOL
+CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic 
+CXXFLAGS += -Winit-self -pthread -DEXTERNAL_TOOL -I../../src
 
 LIBS := -lboost_program_options -lboost_thread -lboost_regex 
 LIBS += -lmongoclient -lboost_system -lboost_filesystem
  
-OBJECTS := \
-	chown.o \
-	../../src/cfg/config.o \
-	../../src/cfg/setting.o \
-  ../../src/cfg/section.o \
-  ../../src/logs/logs.o \
-	../../src/util/logger.o \
-	../../src/util/path.o \
-  ../../src/acl/acl.o \
-  ../../src/acl/permission.o \
-  ../../src/util/string.o \
-  ../../src/acl/flags.o \
-  ../../src/fs/owner.o \
-  ../../src/util/error.o \
-  ../../src/cfg/get.o \
-  ../../src/util/status.o \
-  ../../src/util/diriterator.o
+SOURCES := chown.cpp \
+	../../src/cfg/config.cpp \
+	../../src/cfg/setting.cpp \
+	../../src/cfg/section.cpp \
+	../../src/logs/logs.cpp \
+	../../src/util/logger.cpp \
+	../../src/util/path.cpp \
+	../../src/acl/acl.cpp \
+	../../src/acl/permission.cpp \
+	../../src/util/string.cpp \
+	../../src/acl/flags.cpp \
+	../../src/fs/owner.cpp \
+	../../src/util/error.cpp \
+	../../src/cfg/get.cpp \
+	../../src/util/status.cpp \
+	../../src/util/diriterator.cpp
 
+OBJECTS = $(join $(addsuffix .chown/, $(dir $(SOURCES))), $(notdir $(SOURCES:.cpp=.o)))
+
+.PHONY: all mkdir
 all: chown
 chown: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) $(LIBS) -o chown
+	
+$(OBJECTS): | mkdir
+	$(CXX) -c $(CXXFLAGS) -o $@ $(patsubst %.o,%.cpp,$(subst .chown/,,$@))
 
-%.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) -MD -o $@ $<
-
--include $(OBJECTS:.o=.d)
+mkdir:
+	@mkdir -p $(sort $(dir $(OBJECTS)))
 
 clean:
-	@rm -f *.o *.d chown
+	-@rm -f $(OBJECTS) chown
+	-@rmdir $(sort $(dir $(OBJECTS))) 2>/dev/null
 	

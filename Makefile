@@ -1,5 +1,5 @@
 CXXFLAGS := -Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic
-CXXFLAGS += -Winit-self -D__STRICT_ANSI__
+CXXFLAGS += -Winit-self
 LIBS := -lmongoclient -lcrypto -lboost_thread -lboost_regex -lboost_serialization
 LIBS += -lboost_iostreams -lboost_system -lssl -lboost_filesystem
 LIBS += -lboost_date_time -lboost_program_options -lz -lboost_signals
@@ -66,7 +66,10 @@ VERSION := $(shell ./scripts/version.sh)
 
 OBJECTS := $(SOURCE:.cpp=.o)
 
-.PHONY: all unity test unitytest state strip clean
+TOOLS := $(wildcard tools/*)
+CLEAN_TOOLS :=  $(addprefix clean_,$(TOOLS))
+
+.PHONY: all unity test unitytest state strip clean force
 
 all: ebftpd
 
@@ -82,12 +85,16 @@ ebftpd: src/pch.hpp.gch $(OBJECTS)
 src/pch.hpp.gch:
 	$(CXX) -c $(CXXFLAGS) src/pch.hpp
 
-
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDE) -MD -o $@ $<
 
 DEPS := $(OBJECTS:.o=.d)
 -include $(DEPS)
+
+tools: $(TOOLS)
+
+$(TOOLS): force
+	cd $@ && $(MAKE)
 
 strip:
 	@strip -s ebftpd
@@ -95,16 +102,21 @@ strip:
 cleandeps:
 	@find src/ -iname "*.[d]" -exec rm '{}' ';'
   
-clean:
+clean: clean_tools
 	@find src/ -iname "*.[od]" -exec rm '{}' ';'
 	@find src/ -iname "*.gch" -exec rm '{}' ';'
 	@rm -f ebftpd
 	@rm -f .state
 	@rm -f unity/*
 	@rm -f ebftpd.dbg
+	
+clean_tools: $(CLEAN_TOOLS)
+
+$(CLEAN_TOOLS): force
+	cd $(patsubst clean_%,%,$@) && $(MAKE) clean
 
 package:
-	if [ ! -z `ls unity/unity* 2>/dev/null` ]; then \
+	@if [ ! -z `ls unity/unity* 2>/dev/null` ]; then \
 	echo "Do make clean and a non-unity build before creating a package!"; \
 	exit 0; \
 	fi; \
