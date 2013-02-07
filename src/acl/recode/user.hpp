@@ -22,14 +22,14 @@ class User
 {
   UserDBProxy db;
   
+  User(const UserProfile&) = delete;
+  User& operator=(const UserProfile&) = delete;
+  
 protected:
   boost::posix_time::ptime modified;
   acl::UserID id;
   std::string name;
   std::vector<std::string> ipMasks;
-  
-  User(const UserProfile&) = delete;
-  User& operator=(const UserProfile&) = delete;
   
 public:
   class SetIDKey : util::KeyBase {  SetIDKey() { } };

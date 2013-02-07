@@ -27,13 +27,13 @@ class Group
 {
   GroupDBProxy db;
   
+  Group(const GroupProfile&) = delete;
+  Group& operator=(const GroupProfile&) = delete;
+  
 protected:
   boost::posix_time::ptime modified;
   acl::GroupID id;
   std::string name;
-  
-  Group(const GroupProfile&) = delete;
-  Group& operator=(const GroupProfile&) = delete;
   
 public:
   class SetIDKey : util::KeyBase {  SetIDKey() { } };
