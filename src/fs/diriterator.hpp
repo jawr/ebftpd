@@ -21,7 +21,7 @@ class DirIterator : public util::DirIterator
 public:
   DirIterator() : user(nullptr) { }
   DirIterator(const acl::User& user, const VirtualPath& path) : 
-    util::DirIterator(path.ToString()), user(&user) { }
+    util::DirIterator(MakeReal(path).ToString()), user(&user) { }
 };
 
 
