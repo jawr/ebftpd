@@ -15,22 +15,23 @@ util::Error Factory::Initialize()
 {
   std::unique_ptr<Factory> factory(new Factory());
   
-  fs::Path textpath = cfg::Get().Datapath() / "text";
+  auto textpath = fs::Path(cfg::Get().Datapath()) / "text";
   
   try
   {
-    fs::DirIterator it(textpath);
-    fs::DirIterator end;
+    util::DirIterator it(textpath.ToString());
+    util::DirIterator end;
    
     // let's get all error's in one go 
     int errors = 0;
 
     for (; it != end; ++it)
     {
-      if (it->Extension() != "tmpl") continue;
+      fs::Path p(*it);
+      if (p.Extension() != "tmpl") continue;
       
-      fs::Path file(textpath / *it);
-      std::string name = it->NoExtension(); 
+      fs::Path file(textpath / p);
+      std::string name = p.NoExtension(); 
       boost::to_lower(name);
 
       try

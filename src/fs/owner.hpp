@@ -1,8 +1,12 @@
 #ifndef __FS_OWNER_HPP
 #define __FS_OWNER_HPP
 
+#include <ostream>
 #include "acl/types.hpp"
+
+#ifndef EXTERNAL_TOOL
 #include "fs/path.hpp"
+#endif
 
 namespace util
 {
@@ -24,10 +28,19 @@ public:
   acl::GroupID GID() const { return gid; }
 };
 
+Owner GetOwner(const std::string& path);
+util::Error SetOwner(const std::string& path, const Owner& owner);
+
+#ifndef EXTERNAL_TOOL
 Owner GetOwner(const RealPath& path);
 util::Error SetOwner(const RealPath& path, const Owner& owner);
+#endif
 
-std::ostream& operator<<(std::ostream& os, const Owner& owner);
+inline std::ostream& operator<<(std::ostream& os, const Owner& owner)
+{
+  os << owner.UID() << "," << owner.GID();
+  return os;
+}
 
 } /* fs namespace */
 

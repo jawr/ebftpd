@@ -7,7 +7,6 @@
 #include <boost/regex.hpp>
 #include <sys/types.h>
 #include "acl/acl.hpp"
-#include "fs/path.hpp"
 #include "acl/passwdstrength.hpp"
 #include "acl/ipstrength.hpp"
 #include "main.hpp"
@@ -24,7 +23,7 @@ class Database
   std::string password;
   
 public:
-  Database() : name(programName), address("localhost"), port(27017) { }
+  Database() : name("ebftpd"), address("localhost"), port(27017) { }
   Database(const std::vector<std::string>& toks);
   
   const std::string& Name() const { return name; }
@@ -36,15 +35,15 @@ public:
 
 class Right
 {
-  fs::Path path;
-  // includes wildcards and possibley regex so can't be fs::Path path;
+  std::string path;
+  // includes wildcards and possibley regex so can't be std::string path;
   acl::ACL acl;
   bool specialVar;
   
 public:
   Right(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
-  const fs::Path& Path() const { return path; }
+  const std::string& Path() const { return path; }
   bool SpecialVar() const { return specialVar; }
 };
 
@@ -111,13 +110,13 @@ public:
 
 class SpeedLimit
 {
-  fs::Path path;
+  std::string path;
   long dlLimit;
   long ulLimit;
   acl::ACL acl;
 public:
   SpeedLimit(std::vector<std::string> toks);
-  const fs::Path& Path() const { return path; }
+  const std::string& Path() const { return path; }
   long DlLimit() const { return dlLimit; }
   long UlLimit() const { return ulLimit; }
   const acl::ACL& ACL() const { return acl; }
@@ -184,22 +183,22 @@ public:
 class Alias
 {
   std::string name;
-  fs::Path path;
+  std::string path;
 public:
   Alias(const std::vector<std::string>& toks);
   const std::string& Name() const { return name; }
-  const fs::Path& Path() const { return path; }
+  const std::string& Path() const { return path; }
 };
 
 class PathFilter
 {
-  fs::Path messagePath;
+  std::string messagePath;
   boost::regex regex;
   acl::ACL acl;
   
 public:
   PathFilter(std::vector<std::string> toks);
-  const fs::Path& MessagePath() const { return messagePath; }
+  const std::string& MessagePath() const { return messagePath; }
   const boost::regex& Regex() const { return regex; }
   const acl::ACL& ACL() const { return acl; }
   
@@ -227,35 +226,35 @@ public:
 
 class Lslong
 {
-  fs::Path bin;
+  std::string bin;
   std::string options;
   int maxRecursion;
 public:
   Lslong() : options("l"), maxRecursion(0) { }
   Lslong(std::vector<std::string> toks);
-  const fs::Path& Bin() const { return bin; }
+  const std::string& Bin() const { return bin; }
   const std::string& Options() const { return options; }
   int MaxRecursion() const { return maxRecursion; }
 };
 
 class HiddenFiles
 {
-  fs::Path path;
+  std::string path;
   std::vector<std::string> masks;
 public:
   HiddenFiles(std::vector<std::string> toks);
-  const fs::Path& Path() const { return path; }
+  const std::string& Path() const { return path; }
   const std::vector<std::string>& Masks() const { return masks; }
 };
 
 class Requests
 {
-  fs::Path path;
+  std::string path;
   int max;
 public:
   Requests() : max(10) { }
   Requests(const std::vector<std::string>& toks);
-  const fs::Path& Path() const { return path; }                              
+  const std::string& Path() const { return path; }                              
   int Max() const { return max; }
 };
 
@@ -277,13 +276,13 @@ public:
 
 class Creditcheck
 {
-  fs::Path path;
+  std::string path;
   int ratio;
   acl::ACL acl;
   
 public:
   Creditcheck(std::vector<std::string> toks);
-  const fs::Path& Path() const { return path; }
+  const std::string& Path() const { return path; }
   int Ratio() const { return ratio; }
   const acl::ACL& ACL() const { return acl; }
 };
@@ -292,7 +291,7 @@ class Creditloss
 {
   int ratio;
   bool allowLeechers;
-  fs::Path path;
+  std::string path;
   acl::ACL acl;
   
 public:
@@ -300,7 +299,7 @@ public:
   const acl::ACL& ACL() const { return acl; }
   int Ratio() const { return ratio; }
   bool AllowLeechers() const { return allowLeechers; }
-  const fs::Path& Path() const { return path; }
+  const std::string& Path() const { return path; }
 };
 
 class NukedirStyle
@@ -324,24 +323,24 @@ public:
 class Msgpath
 {
   std::string path;
-  fs::Path file;
+  std::string file;
   acl::ACL acl;
   
 public:
   Msgpath(const std::vector<std::string>& toks);
   const std::string& Path() const { return path; }
   const acl::ACL& ACL() const { return acl; }
-  const fs::Path& File() const { return file; }
+  const std::string& File() const { return file; }
 };
 
 class Privpath
 {
-  fs::Path path; // no wildcards to avoid slowing down listing
+  std::string path; // no wildcards to avoid slowing down listing
   acl::ACL acl;
 
 public:
   Privpath(std::vector<std::string> toks);
-  const fs::Path& Path() const { return path; }
+  const std::string& Path() const { return path; }
   const acl::ACL& ACL() const { return acl; }
 };
 
@@ -374,12 +373,12 @@ public:
 private:
   std::string command;
   Type type;
-  fs::Path path;
+  std::string path;
   
 public:
   Cscript(const std::vector<std::string>& toks);
   const std::string& Command() const { return command; }                       
-  const fs::Path& Path() const { return path; }
+  const std::string& Path() const { return path; }
   Type GetType() const { return type; }
 };
 
@@ -407,15 +406,15 @@ public:
 
 class CheckScript
 {
-  fs::Path path;
-  fs::Path mask;
+  std::string path;
+  std::string mask;
   bool disabled;
 
 public:
   CheckScript(const std::vector<std::string>& toks);
 
-  const fs::Path Path() const { return path; }
-  const fs::Path Mask() const { return mask; }
+  const std::string Path() const { return path; }
+  const std::string Mask() const { return mask; }
   bool Disabled() const { return disabled; }
 };
 

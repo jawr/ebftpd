@@ -27,7 +27,7 @@
 #include "db/user/userprofile.hpp"
 #include "acl/misc.hpp"
 #include "ftp/speedcontrol.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -40,7 +40,7 @@ std::string FileAge(const fs::RealPath& path)
 {
   try
   {
-    time_t age = time(nullptr) - fs::Status(path).Native().st_mtime;
+    time_t age = time(nullptr) - util::path::Status(path.ToString()).Native().st_mtime;
     return util::FormatDuration(util::TimePair(age, 0));
   }
   catch (const util::SystemError&)
@@ -307,7 +307,7 @@ void STORCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
-  auto section = cfg::Get().SectionMatch(path);
+  auto section = cfg::Get().SectionMatch(path.ToString());
   
   if (exec::PostCheck(client, path, 
                       calcCrc ? crc32->HexString() : "000000", speed, 

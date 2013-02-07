@@ -14,7 +14,7 @@
 #include "stats/stat.hpp"
 #include "acl/util.hpp"
 #include "text/parser.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 
 namespace text
 {
@@ -46,12 +46,12 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   ts.RegisterValue("work_dir", workDir.ToString());
   
   unsigned long long freeSpace = -1;
-  (void) fs::FreeDiskSpace(fs::MakeReal(workDir), freeSpace);
+  (void) util::path::FreeDiskSpace(fs::MakeReal(workDir).ToString(), freeSpace);
   ts.RegisterSize("free_space", freeSpace);
 
   if (ts.HasTag("section"))
   {
-    auto section = config.SectionMatch(workDir);
+    auto section = config.SectionMatch(workDir.ToString());
     ts.RegisterValue("section", section ? section->Name() : "");
   }
   

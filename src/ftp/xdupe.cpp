@@ -102,12 +102,11 @@ std::string MessageFour(const std::vector<std::string>& dupes)
   return s + '\n';
 }
 
-bool IsXdupe(const fs::Path& path)
+bool IsXdupe(const std::string& path)
 {
-  const std::string& pathStr = path.ToString();
   for (const std::string& mask : cfg::Get().Xdupe())
   {
-    if (util::string::WildcardMatch(mask, pathStr)) return true;
+    if (util::string::WildcardMatch(mask, path)) return true;
   }
   return false;
 }
@@ -117,9 +116,9 @@ std::vector<std::string> BuildDupeList(ftp::Client& client, const fs::VirtualPat
   std::vector<std::string> dupes;
   try
   {
-    for (const fs::Path& dupe : fs::DirContainer(client.User(), path.Dirname()))
+    for (const std::string& dupe : fs::DirContainer(client.User(), path.Dirname()))
     {
-      if (IsXdupe(dupe)) dupes.emplace_back(dupe.ToString());
+      if (IsXdupe(dupe)) dupes.emplace_back(dupe);
     }
   }
   catch (const util::SystemError& e)

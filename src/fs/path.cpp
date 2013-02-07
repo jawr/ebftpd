@@ -42,13 +42,13 @@ const VirtualPath& MakeVirtual(const RealPath& path)
 {
   if (!path.cache.virt)
   {
-    const std::string& sitepath = cfg::Get().Sitepath().ToString();
+    const std::string& sitepath = cfg::Get().Sitepath();
     const std::string& pathstr = path.ToString();
     if (!pathstr.compare(0, sitepath.length(), sitepath) &&
         (pathstr[sitepath.length()] == '/' ||
          pathstr.length() == sitepath.length()))
     {
-      std::string newpath(path.ToString(), cfg::Get().Sitepath().Length());
+      std::string newpath(path.ToString(), cfg::Get().Sitepath().length());
       if (newpath.empty()) newpath = "/";
       path.cache.virt = new VirtualPath(newpath);
     }

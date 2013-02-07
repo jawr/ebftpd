@@ -1,18 +1,16 @@
 #include "cmd/rfc/rnfr.hpp"
 #include "acl/path.hpp"
 #include "cmd/error.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 
 namespace cmd { namespace rfc
 {
 
 void RNFRCommand::Execute()
 {
-  namespace PP = acl::path;
-  
   fs::VirtualPath path(fs::PathFromUser(argStr));
   
-  util::Error e(PP::FileAllowed<PP::View>(client.User(), path));
+  util::Error e(acl::path::FileAllowed<acl::path::View>(client.User(), path));
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
@@ -21,7 +19,7 @@ void RNFRCommand::Execute()
 
   try
   {
-    fs::Status status(client.User(), path);
+    util::path::Status status(path.ToString());
   }
   catch (const util::SystemError& e)
   {

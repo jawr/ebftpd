@@ -1,35 +1,21 @@
 #include <unistd.h>
 #include <cerrno>
 #include <sys/statvfs.h>
-#include "fs/status.hpp"
+#include "util/status.hpp"
 #include "util/error.hpp"
-#include "acl/path.hpp"
-#include "acl/user.hpp"
 
-namespace fs
+namespace util { namespace path
 {
 
 Status::Status() :
-  user(nullptr),
   linkDirectory(false),
   linkRegularFile(false),
   statOkay(false)
 {
 }
 
-Status::Status(const Path& path) :
-  user(nullptr),
-  path(RealPath(path)),
-  linkDirectory(false),
-  linkRegularFile(false),
-  statOkay(false)
-{
-  Reset();
-}
-
-Status::Status(const acl::User& user, const VirtualPath& path) :
-  user(&user),
-  path(MakeReal(path)),
+Status::Status(const std::string& path) :
+  path(path),
   linkDirectory(false),
   linkRegularFile(false),
   statOkay(false)
@@ -39,27 +25,15 @@ Status::Status(const acl::User& user, const VirtualPath& path) :
 
 Status& Status::Reset()
 {
-  if (path.IsEmpty()) throw std::logic_error("no path set");
+  if (path.empty()) throw std::logic_error("no path set");
   if (!statOkay)
-  {
-    if (user)
-    {
-      util::Error e = acl::path::FileAllowed<acl::path::View>(*user, MakeVirtual(path));
-      if (!e) throw util::SystemError(e.Errno());
-    }
-    
-    if (lstat(path.CString(), &native) < 0) throw util::SystemError(errno);
-    
-    if (user && IsDirectory())
-    {
-      util::Error e = acl::path::DirAllowed<acl::path::View>(*user, MakeVirtual(path));
-      if (!e) throw util::SystemError(e.Errno());
-    }
+  {    
+    if (lstat(path.c_str(), &native) < 0) throw util::SystemError(errno);
     
     if (IsSymLink())
     {
       struct stat st;
-      if (!stat(path.CString(), &st) < 0) throw util::SystemError(errno);
+      if (!stat(path.c_str(), &st) < 0) throw util::SystemError(errno);
       if (S_ISDIR(st.st_mode)) linkDirectory = true;
       else if (S_ISREG(st.st_mode)) linkRegularFile = true;
     }    
@@ -68,19 +42,10 @@ Status& Status::Reset()
   return *this;
 }
 
-Status& Status::Reset(const Path& path)
+Status& Status::Reset(const std::string& path)
 {
   statOkay = false;
-  this->path = RealPath(path);
-  Reset();
-  return *this;
-}
-
-Status& Status::Reset(const acl::User& user, const VirtualPath& path)
-{
-  this->user = &user;
-  statOkay = false;
-  this->path = MakeReal(path);
+  this->path = path;
   Reset();
   return *this;
 }
@@ -131,15 +96,16 @@ const struct stat& Status::Native() const
   return native;
 }
 
-util::Error FreeDiskSpace(const Path& real, unsigned long long& freeBytes)
+util::Error FreeDiskSpace(const std::string& real, unsigned long long& freeBytes)
 {
   struct statvfs sfs;
 
-  if (statvfs(real.CString(), &sfs) <0)
+  if (statvfs(real.c_str(), &sfs) <0)
     return util::Error::Failure(errno);
 
   freeBytes = sfs.f_bsize * sfs.f_bfree;
   return util::Error::Success();
 }
 
-} /* fs namespace */
+} /* path namespace */
+} /* util namespace */

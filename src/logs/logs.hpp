@@ -4,15 +4,10 @@
 #include <string>
 #include "util/logger.hpp"
 
-namespace fs
-{
-class Path;
-}
-
 namespace logs
 {
 
-void Initialise(const fs::Path& logsPath);
+void Initialise(const std::string& logsPath);
 
 void NoStdout();
 

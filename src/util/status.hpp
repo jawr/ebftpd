@@ -1,26 +1,20 @@
 #ifndef __FS_STATUS_HPP
 #define __FS_STATUS_HPP
 
+#include <string>
 #include <sys/stat.h>
-#include "fs/path.hpp"
-
-namespace acl
-{
-class User;
-}
 
 namespace util
 {
 class Error;
 }
 
-namespace fs
+namespace util { namespace path
 {
 
 class Status
 {
-  const acl::User* user;
-  RealPath path;
+  std::string path;
   struct stat native;
   bool linkDirectory;
   bool linkRegularFile;
@@ -29,12 +23,10 @@ class Status
   Status& Reset();
   
 public:
-  Status(const Path& path);
-  Status(const acl::User& user, const VirtualPath& path);
   Status();
+  Status(const std::string& path);
   
-  Status& Reset(const Path& path);
-  Status& Reset(const acl::User& user, const VirtualPath& path);  
+  Status& Reset(const std::string& path);
   
   bool IsRegularFile() const;
   bool IsDirectory() const;
@@ -51,8 +43,9 @@ public:
   const struct stat& Native() const;
 };
 
-util::Error FreeDiskSpace(const Path& real, unsigned long long& freeBytes);
+util::Error FreeDiskSpace(const std::string& real, unsigned long long& freeBytes);
 
+} /* path namespace */
 } /* fs namespace */
 
 #endif

@@ -13,11 +13,11 @@ SpeedCounter::Update(const SpeedInfoOpt& last, const SpeedInfo& current, const S
   boost::lock_guard<boost::mutex> lock(mutex);
   for (const auto& limit : limits)
   {
-    auto it = speeds.find(limit->Path().ToString());
+    auto it = speeds.find(limit->Path());
     if (it == speeds.end())
     {
       auto result = speeds.insert(std::make_pair(
-            limit->Path().ToString(), std::make_pair(1, current)));
+            limit->Path(), std::make_pair(1, current)));
       it = result.first;
     }
     else
@@ -41,7 +41,7 @@ void SpeedCounter::Clear(const SpeedInfoOpt& last, const SpeedLimitList& limits)
   boost::lock_guard<boost::mutex> lock(mutex);
   for (const auto& limit : limits)
   {
-    auto it = speeds.find(limit->Path().ToString());
+    auto it = speeds.find(limit->Path());
     if (it != speeds.end())
     {
       if (--it->second.first <= 0)

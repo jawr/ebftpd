@@ -6,7 +6,7 @@
 #include <queue>
 #include <unordered_map>
 #include "fs/path.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 #include "acl/types.hpp"
 #include "ftp/readwriteable.hpp"
 
@@ -80,8 +80,8 @@ class DirectoryList
   static void SplitPath(const fs::Path& path, fs::Path& parent,
                         std::queue<std::string>& masks);
                         
-  static std::string Permissions(const fs::Status& status);
-  std::string Timestamp(const fs::Status& status) const;
+  static std::string Permissions(const util::path::Status& status);
+  std::string Timestamp(const util::path::Status& status) const;
 
 public:
   DirectoryList(ftp::Client& client,

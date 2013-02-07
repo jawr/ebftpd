@@ -164,10 +164,10 @@ bool Client::Accept(util::net::TCPListener& server)
 void Client::DisplayBanner()
 {
   const cfg::Config& config = cfg::Get();
-  if (!config.Banner().IsEmpty())
+  if (!config.Banner().empty())
   {
     std::string banner;
-    if (util::ReadFileToString(config.Banner().ToString(), banner))
+    if (util::ReadFileToString(config.Banner(), banner))
     {
       control.Reply(ftp::ServiceReady, banner);
       return;

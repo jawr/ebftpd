@@ -12,7 +12,7 @@ CreditCheck(const User& user, const fs::VirtualPath& path)
 {
   for (const auto& cc : cfg::Get().Creditcheck())
   {
-    if (util::string::WildcardMatch(cc.Path().ToString(), path.ToString()) &&
+    if (util::string::WildcardMatch(cc.Path(), path.ToString()) &&
         cc.ACL().Evaluate(user))
     {
       return boost::optional<const cfg::setting::Creditcheck&>(cc);
@@ -26,7 +26,7 @@ CreditLoss(const User& user, const fs::VirtualPath& path)
 {
   for (const auto& cc : cfg::Get().Creditloss())
   {
-    if (util::string::WildcardMatch(cc.Path().ToString(), path.ToString()) &&
+    if (util::string::WildcardMatch(cc.Path(), path.ToString()) &&
         cc.ACL().Evaluate(user))
     {
       return boost::optional<const cfg::setting::Creditloss&>(cc);

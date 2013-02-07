@@ -4,7 +4,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/thread/tss.hpp>
 #include "fs/directory.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
 #include "fs/owner.hpp"
@@ -12,6 +12,7 @@
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
 #include "fs/dircontainer.hpp"
+#include "util/dircontainer.hpp"
 #include "fs/path.hpp"
 #include "util/error.hpp"
 
@@ -43,7 +44,7 @@ util::Error ChangeDirectory(const acl::User& user, const VirtualPath& path)
 
   try
   {
-    Status stat(MakeReal(path));
+    util::path::Status stat(MakeReal(path).ToString());
     if (!stat.IsDirectory()) return util::Error::Failure(ENOTDIR);
     if (!stat.IsExecutable()) return util::Error::Failure(EACCES);
   }
@@ -84,7 +85,7 @@ util::Error ChangeMatch(const acl::User& user, const VirtualPath& path, VirtualP
   {
     for (auto& entry : DirContainer(user, path.Dirname()))
     {
-      if (!boost::starts_with(boost::to_lower_copy(entry.ToString()), lcBasename)) continue;
+      if (!boost::starts_with(boost::to_lower_copy(entry), lcBasename)) continue;
       match = path.Dirname() / entry;
       e = ChangeDirectory(user, match);
       if (e || (e.Errno() != ENOENT && e.Errno() != ENOTDIR))
@@ -143,13 +144,12 @@ util::Error RemoveDirectory(const acl::User& user, const VirtualPath& path)
   
   try
   {
-    DirContainer dirCont(MakeReal(path));
+    util::DirContainer dirCont(MakeReal(path).ToString());
     for (auto& name : dirCont)
     {
-      if (name.ToString()[0] !=  '.') return
-        util::Error::Failure(ENOTEMPTY);
+      if (name[0] !=  '.') return util::Error::Failure(ENOTEMPTY);
         
-      Status status(MakeReal(path) / name);
+      util::path::Status status((MakeReal(path) / name).ToString());
       if (status.IsDirectory() ||
           !status.IsWriteable())
         return util::Error::Failure(ENOTEMPTY);
@@ -201,12 +201,12 @@ util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes)
   
   try
   {
-    for (auto& entry : DirContainer(path))
+    for (auto& entry : util::DirContainer(path.ToString()))
     {
       try
       {
         auto entryPath = path / entry;
-        Status status(entryPath);
+        util::path::Status status(entryPath.ToString());
         if (status.IsDirectory())
         {
           if (!status.IsSymLink())

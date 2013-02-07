@@ -10,7 +10,7 @@
 #include "cmd/dirlist.hpp"
 #include "ftp/client.hpp"
 #include "fs/direnumerator.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include "logs/logs.hpp"
@@ -142,7 +142,7 @@ void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
 { 
   try
   {
-    if (fs::Status(fs::MakeReal(path)).IsRegularFile())
+    if (util::path::Status(fs::MakeReal(path).ToString()).IsRegularFile())
     {
       parent = path.Dirname();
       masks.push(path.Basename().ToString());
@@ -308,7 +308,7 @@ void DirectoryList::Execute()
   ListPath(parent, masks);
 }
 
-std::string DirectoryList::Permissions(const fs::Status& status)
+std::string DirectoryList::Permissions(const util::path::Status& status)
 {
   std::string perms(10, '-');
   
@@ -331,7 +331,7 @@ std::string DirectoryList::Permissions(const fs::Status& status)
 }
 
 
-std::string DirectoryList::Timestamp(const fs::Status& status) const
+std::string DirectoryList::Timestamp(const util::path::Status& status) const
 {
   time_t modTime = status.Native().st_mtime - status.Native().st_mtime % 60;
   auto it = timestampCache.find(modTime);

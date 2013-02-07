@@ -6,15 +6,13 @@
 #include "db/index/index.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 
 namespace cmd { namespace rfc
 {
 
 void RNTOCommand::Execute()
 {
-  namespace PP = acl::path;
-  
   fs::VirtualPath path(fs::PathFromUser(argStr));
 
   fs::Path messagePath;
@@ -29,7 +27,7 @@ void RNTOCommand::Execute()
   bool isDirectory;
   try
   {
-    isDirectory = fs::Status(client.User(), client.RenameFrom()).IsDirectory();
+    isDirectory = util::path::Status(client.RenameFrom().ToString()).IsDirectory();
     if (isDirectory)
       e = fs::RenameDirectory(client.User(), client.RenameFrom(), path);
     else
@@ -56,7 +54,7 @@ void RNTOCommand::Execute()
 
     if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
     {
-      auto section = cfg::Get().SectionMatch(path);
+      auto section = cfg::Get().SectionMatch(path.ToString());
       db::index::Add(path.ToString(), section ? section->Name() : "");
     }
   }

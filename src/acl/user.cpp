@@ -78,15 +78,6 @@ void User::DelFlag(Flag flag)
   DelFlags(std::string(1, static_cast<char>(flag)));
 }
 
-bool User::CheckFlags(const std::string& flags) const
-{
-  for (char ch: flags)
-  {
-    if (this->flags.find(ch) != std::string::npos) return true;
-  }
-  return false;
-}
-
 bool User::CheckFlag(Flag flag) const
 {
   return this->flags.find(static_cast<char>(flag)) != std::string::npos;

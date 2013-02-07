@@ -11,7 +11,7 @@
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "util/randomstring.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 #include "util/error.hpp"
 #include "logs/logs.hpp"
 
@@ -36,7 +36,7 @@ util::Error DeleteFile(const acl::User& user, const VirtualPath& path,
   {
     try
     {
-      Status status(MakeReal(path));
+      util::path::Status status(MakeReal(path).ToString());
       *size = status.Size();
       *modTime = status.Native().st_mtime;
     }
@@ -74,7 +74,7 @@ FileSinkPtr CreateFile(const acl::User& user, const VirtualPath& path)
   if (!e) throw util::SystemError(e.Errno());
   
   unsigned long long freeBytes;
-  e = fs::FreeDiskSpace(MakeReal(path).Dirname(), freeBytes);
+  e = util::path::FreeDiskSpace(MakeReal(path).Dirname().ToString(), freeBytes);
   if (!e) throw util::SystemError(e.Errno());
   
   if (cfg::Get().FreeSpace() > freeBytes / 1024 / 1024)
@@ -105,7 +105,7 @@ FileSinkPtr AppendFile(const acl::User& user, const VirtualPath& path, off_t off
   if (!e) throw util::SystemError(e.Errno());
 
   unsigned long long freeBytes;
-  e = fs::FreeDiskSpace(MakeReal(path).Dirname(), freeBytes);
+  e = util::path::FreeDiskSpace(MakeReal(path).Dirname().ToString(), freeBytes);
   if (!e) throw util::SystemError(e.Errno());
   
   if (cfg::Get().FreeSpace() > freeBytes / 1024 / 1024)
@@ -155,7 +155,7 @@ util::Error UniqueFile(const acl::User& user, const VirtualPath& path,
     uniquePath = path / filename;
     try
     {
-      Status status(MakeReal(uniquePath));
+      util::path::Status status(MakeReal(uniquePath).ToString());
     }
     catch (const util::SystemError& e)
     {
@@ -173,7 +173,7 @@ bool IsIncomplete(const RealPath& path)
   
   try
   {
-    Status status(path);
+    util::path::Status status(path.ToString());
     if (status.IsExecutable() && 
         time(nullptr) - status.Native().st_mtime < maxInactivity)
       return true;

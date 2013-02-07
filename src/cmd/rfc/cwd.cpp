@@ -3,7 +3,7 @@
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 #include "util/misc.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -17,7 +17,7 @@ void CWDCommand::ShowDiz(const fs::VirtualPath& path)
     try
     {
       fs::RealPath dizPath = real / diz.Path();
-      if (fs::Status(dizPath).IsReadable())
+      if (util::path::Status(dizPath.ToString()).IsReadable())
       {
         std::string lines;
         if (util::ReadFileToString(dizPath.ToString(), lines))

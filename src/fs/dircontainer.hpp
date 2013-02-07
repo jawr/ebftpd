@@ -20,7 +20,6 @@ class DirContainer
   DirIterator endIt;
   
 public:
-	explicit DirContainer(const Path& path) : it(path) { }
   explicit DirContainer(const acl::User& user, const VirtualPath& path) :
     it(user, path) { }
     

@@ -94,7 +94,7 @@ SecurePass::SecurePass(std::vector<std::string> toks) :
 
 SpeedLimit::SpeedLimit(std::vector<std::string> toks)
 {
-  path = fs::Path(toks[0]);
+  path = toks[0];
   dlLimit = boost::lexical_cast<long>(toks[1]);
   ulLimit = boost::lexical_cast<long>(toks[2]);
   if (toks.size() > 3)
@@ -157,21 +157,21 @@ AllowFxp::AllowFxp(std::vector<std::string> toks)
 Alias::Alias(const std::vector<std::string>& toks)   
 {
   name = boost::to_lower_copy(toks[0]);
-  path = fs::Path(toks[1]);
+  path = toks[1];
 }
 
 Right::Right(std::vector<std::string> toks)
 {
-  path = fs::Path(toks[0]);
+  path = toks[0];
   toks.erase(toks.begin());
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
-  specialVar = path.ToString().find("[:username:]") != std::string::npos ||
-               path.ToString().find("[:groupname:]") != std::string::npos;
+  specialVar = path.find("[:username:]") != std::string::npos ||
+               path.find("[:groupname:]") != std::string::npos;
 }
 
 PathFilter::PathFilter(std::vector<std::string> toks)   
 {
-  messagePath = fs::Path(toks[0]);
+  messagePath = toks[0];
   try
   {
     regex = boost::regex(toks[1]);
@@ -224,14 +224,14 @@ Lslong::Lslong(std::vector<std::string> toks)
 
 HiddenFiles::HiddenFiles(std::vector<std::string> toks)   
 {
-  path = fs::Path(toks[0]);
+  path = toks[0];
   toks.erase(toks.begin());
   masks = toks;
 }
 
 Requests::Requests(const std::vector<std::string>& toks)   
 {
-  path = fs::Path(toks[0]);
+  path = toks[0];
   max = boost::lexical_cast<int>(toks[1]);
 }
 
@@ -261,7 +261,7 @@ Lastonline::Lastonline(const std::vector<std::string>& toks) :
 
 Creditcheck::Creditcheck(std::vector<std::string> toks)   
 {
-  path = fs::Path(toks[0]);
+  path = toks[0];
   ratio = boost::lexical_cast<int>(toks[1]);
   if (ratio < 0) throw ConfigError("creditloss ratio must be 0 or larger");
   toks.erase(toks.begin(), toks.begin()+2);
@@ -273,7 +273,7 @@ Creditloss::Creditloss(std::vector<std::string> toks)
   ratio = boost::lexical_cast<int>(toks[0]);
   if (ratio < 0) throw ConfigError("creditloss ratio must be 0 or larger");
   allowLeechers = util::string::BoolLexicalCast(toks[1]);
-  path = fs::Path(toks[2]);
+  path = toks[2];
   toks.erase(toks.begin(), toks.begin()+3);
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
@@ -303,13 +303,13 @@ NukedirStyle::NukedirStyle(const std::vector<std::string>& toks)
 Msgpath::Msgpath(const std::vector<std::string>& toks)   
 {
   path = toks[0];
-  file = fs::Path(toks[1]);
+  file = toks[1];
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
 
 Privpath::Privpath(std::vector<std::string> toks)   
 {
-  path = fs::Path(toks[0]);
+  path = toks[0];
   toks.erase(toks.begin());
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
@@ -339,7 +339,7 @@ Cscript::Cscript(const std::vector<std::string>& toks)
   if (when == "pre") type = Type::PRE;
   else if (when == "post") type = Type::POST;
   else throw cfg::ConfigError("Invalid cscript parameter");
-  path = fs::Path(toks[2]);
+  path = toks[2];
 }
 
 IdleTimeout::IdleTimeout(const std::vector<std::string>& toks) :

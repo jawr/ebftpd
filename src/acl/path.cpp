@@ -21,7 +21,7 @@ bool HiddenFile(const fs::VirtualPath& path)
 
   for (auto& hf : cfg::Get().HiddenFiles())
   {
-    if (util::string::WildcardMatch(hf.Path().ToString(), dirname))
+    if (util::string::WildcardMatch(hf.Path(), dirname))
     {
       for (auto& mask : hf.Masks())
       {
@@ -42,7 +42,7 @@ bool Evaluate(const std::vector<cfg::setting::Right>& rights,
   {
     if (right.SpecialVar())
     {
-      std::string specialPath(right.Path().ToString());
+      std::string specialPath(right.Path());
       boost::replace_all(specialPath, "[:username:]", user.Name());
       if (firstSpecial)
       {
@@ -60,7 +60,7 @@ bool Evaluate(const std::vector<cfg::setting::Right>& rights,
         return right.ACL().Evaluate(user);
     }
     else
-      if (util::string::WildcardMatch(right.Path().ToString(), path.ToString()))
+      if (util::string::WildcardMatch(right.Path(), path.ToString()))
         return right.ACL().Evaluate(user);
   }
   return false;
@@ -324,7 +324,7 @@ bool PrivatePath(const fs::VirtualPath& path, const User& user)
 {
   for (const auto& pp : cfg::Get().Privpath())
   {
-    if (!path.ToString().compare(0, pp.Path().Length(), pp.Path().ToString()))
+    if (!path.ToString().compare(0, pp.Path().length(), pp.Path()))
       return !pp.ACL().Evaluate(user);
   }
   return false;
@@ -387,7 +387,7 @@ util::Error Filter(const User& user, const fs::Path& basename,
     {
       if (!boost::regex_match(basename.ToString(), filter.Regex()))
       {
-        messagePath = filter.MessagePath();
+        messagePath = fs::Path(filter.MessagePath());
         return util::Error::Failure(EACCES);
       }
       break;

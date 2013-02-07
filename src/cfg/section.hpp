@@ -15,7 +15,7 @@ namespace cfg
 class Section
 {
   std::string name;
-  std::vector<fs::Path> paths;
+  std::vector<std::string> paths;
   bool separateCredits;
   int ratio;
 
@@ -27,7 +27,7 @@ public:
   { }
   
   const std::string& Name() const { return name; }
-  bool IsMatch(const fs::Path& path) const;
+  bool IsMatch(const std::string& path) const;
   bool SeparateCredits() const { return separateCredits; }
   int Ratio() const { return ratio; }
   

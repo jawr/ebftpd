@@ -1,6 +1,6 @@
 #include <sstream>
 #include "cmd/site/diskfree.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 #include "acl/path.hpp"
 
 namespace cmd { namespace site
@@ -17,7 +17,7 @@ void DISKFREECommand::Execute()
   }
   
   unsigned long long bytes;
-  auto e = fs::FreeDiskSpace(fs::MakeReal(path), bytes);
+  auto e = util::path::FreeDiskSpace(fs::MakeReal(path).ToString(), bytes);
   if (!e)
   {
     control.Reply(ftp::ActionNotOkay, pathStr + ":" + e.Message());

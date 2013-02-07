@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "fs/path.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 #include "fs/owner.hpp"
 
 namespace acl
@@ -18,16 +18,16 @@ namespace fs
 class DirEntry
 {
   fs::Path path;
-  fs::Status status;
+  util::path::Status status;
   fs::Owner owner;
   
 public:  
-  explicit DirEntry(const fs::Path& path, const fs::Status& status,
+  explicit DirEntry(const fs::Path& path, const util::path::Status& status,
                     const fs::Owner& owner) :
     path(path), status(status), owner(owner) { }
 
   const fs::Path& Path() const { return path; }
-  const fs::Status& Status() const { return status; }
+  const util::path::Status& Status() const { return status; }
   const fs::Owner& Owner() const { return owner; }
 };
 

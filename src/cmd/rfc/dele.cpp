@@ -30,7 +30,7 @@ void DELECommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  auto section = cfg::Get().SectionMatch(path);
+  auto section = cfg::Get().SectionMatch(path.ToString());
   bool nostats = !section || acl::path::FileAllowed<acl::path::Nostats>(client.User(), path);
   if (!nostats)
   {

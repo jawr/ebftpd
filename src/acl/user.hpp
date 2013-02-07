@@ -60,7 +60,14 @@ public:
   void AddFlag(Flag flag);
   void DelFlags(const std::string& flags);
   void DelFlag(Flag flag);
-  bool CheckFlags(const std::string& flags) const;
+  bool CheckFlags(const std::string& flags) const
+  {
+    for (char ch: flags)
+    {
+      if (this->flags.find(ch) != std::string::npos) return true;
+    }
+    return false;
+  }
   bool CheckFlag(Flag flag) const;
   bool Deleted() const { return CheckFlag(Flag::Deleted); }
   bool Template() const { return CheckFlag(Flag::Template); }

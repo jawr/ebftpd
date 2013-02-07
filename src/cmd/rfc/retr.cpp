@@ -98,7 +98,7 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  auto section = cfg::Get().SectionMatch(path);
+  auto section = cfg::Get().SectionMatch(path.ToString());
   int ratio = stats::DownloadRatio(client, path, section);
   if (!db::userprofile::DecrCredits(client.User().UID(), size * ratio, 
           section && section->SeparateCredits() ? section->Name() : "", false))

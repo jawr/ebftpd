@@ -14,7 +14,7 @@ fs::Path Evaluate(const std::vector<cfg::setting::Right>& rights, const User& us
 {
   for (const auto& right : rights)
   {
-    if (right.ACL().Evaluate(user)) return right.Path();
+    if (right.ACL().Evaluate(user)) return fs::Path(right.Path());
   }
   return fs::Path();
 }
@@ -87,7 +87,7 @@ UploadMaximum(const User& user, const fs::Path& path)
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {
       if (limit.UlLimit() > 0 && limit.ACL().Evaluate(user) &&
-          util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
+          util::string::WildcardMatch(limit.Path(), path.ToString()))
       {
         matches.emplace_back(&limit);
       }
@@ -105,7 +105,7 @@ DownloadMaximum(const User& user, const fs::Path& path)
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {
       if (limit.DlLimit() > 0 && limit.ACL().Evaluate(user) &&
-          util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
+          util::string::WildcardMatch(limit.Path(), path.ToString()))
       {
         matches.emplace_back(&limit);
       }
@@ -119,7 +119,7 @@ int UploadMinimum(const User& user, const fs::Path& path)
   for (const auto& limit : cfg::Get().MinimumSpeed())
   {
     if (limit.ACL().Evaluate(user) &&
-        util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
+        util::string::WildcardMatch(limit.Path(), path.ToString()))
     {
       return limit.UlLimit();
     }
@@ -132,7 +132,7 @@ int DownloadMinimum(const User& user, const fs::Path& path)
   for (const auto& limit : cfg::Get().MinimumSpeed())
   {
     if (limit.ACL().Evaluate(user) &&
-        util::string::WildcardMatch(limit.Path().ToString(), path.ToString()))
+        util::string::WildcardMatch(limit.Path(), path.ToString()))
     {
       return limit.DlLimit();
     }

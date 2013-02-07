@@ -34,13 +34,13 @@ void MKDCommand::Execute()
   
   if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
   {
-    auto section = cfg::Get().SectionMatch(path);
+    auto section = cfg::Get().SectionMatch(path.ToString());
     db::index::Add(path.ToString(), section ? section->Name() : "");
   }
   
   if (acl::path::DirAllowed<acl::path::Dupelog>(client.User(), path))
   {
-    auto section = cfg::Get().SectionMatch(path);
+    auto section = cfg::Get().SectionMatch(path.ToString());
     db::dupe::Add(path.Basename().ToString(), section ? section->Name() : "");    
   }
   

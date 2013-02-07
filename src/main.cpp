@@ -9,7 +9,6 @@
 #include "util/net/error.hpp"
 #include "logs/logs.hpp"
 #include "fs/owner.hpp"
-#include "fs/path.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "cfg/error.hpp"
@@ -29,16 +28,12 @@
 #include "text/factory.hpp"
 #include "text/error.hpp"
 #include "acl/replicator.hpp"
+#include "util/path.hpp"
 
 #include "version.hpp"
 
 extern const std::string programName = "ebftpd";
 extern const std::string programFullname = programName + " " + std::string(version);
-
-namespace
-{
-std::string configPath;
-}
 
 void DisplayHelp(char* argv0, boost::program_options::options_description& desc)
 {
@@ -51,7 +46,7 @@ void DisplayVersion()
   std::cout << programFullname << std::endl;
 }
 
-bool ParseOptions(int argc, char** argv, bool& foreground)
+bool ParseOptions(int argc, char** argv, bool& foreground, std::string& configPath)
 {
   namespace po = boost::program_options;
   po::options_description desc("supported options");
@@ -97,10 +92,10 @@ bool ParseOptions(int argc, char** argv, bool& foreground)
 
 bool Daemonise(bool foreground)
 {
-  const fs::Path& pidfile = cfg::Get().Pidfile();
-  if (!pidfile.IsEmpty())
+  const std::string& pidfile = cfg::Get().Pidfile();
+  if (!pidfile.empty())
   {
-    util::Error e = util::daemonise::NotRunning(pidfile.ToString());
+    util::Error e = util::daemonise::NotRunning(pidfile);
     if (!e)
     {
       if (e.ValidErrno())
@@ -125,9 +120,9 @@ bool Daemonise(bool foreground)
       logs::NoStdout();
   }
   
-  if (!pidfile.IsEmpty())
+  if (!pidfile.empty())
   {
-    util::Error e = util::daemonise::CreatePIDFile(pidfile.ToString());
+    util::Error e = util::daemonise::CreatePIDFile(pidfile);
     if (!e)
     {
       logs::error << "Failed to create pid file: " << e.Message() << logs::endl;
@@ -139,8 +134,10 @@ bool Daemonise(bool foreground)
 
 int main(int argc, char** argv)
 {
+  std::string configPath;
   bool foreground; 
-  if (!ParseOptions(argc, argv, foreground)) return 1;
+  
+  if (!ParseOptions(argc, argv, foreground, configPath)) return 1;
   logs::debug << "Starting " << programFullname << " .. " << logs::endl;
 
   cmd::rfc::Factory::Initialise();
@@ -151,6 +148,7 @@ int main(int argc, char** argv)
   
   try
   {
+    logs::debug << "Loading config file.." << logs::endl;
     cfg::UpdateShared(cfg::Config::Load(configPath));
   }
   catch (const cfg::ConfigError& e)
@@ -159,7 +157,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  logs::Initialise(cfg::Get().Datapath() / "logs");
+  logs::Initialise(util::path::Join(cfg::Get().Datapath(), "logs"));
   
   {
     util::Error e = signals::Initialise();
@@ -170,7 +168,7 @@ int main(int argc, char** argv)
     }
   }
   
-  if (cfg::Get().TlsCertificate().IsEmpty())
+  if (cfg::Get().TlsCertificate().empty())
   {
     logs::debug << "No TLS certificate set in config, TLS disabled." << logs::endl;
   }
@@ -180,9 +178,9 @@ int main(int argc, char** argv)
     {
       logs::debug << "Initialising TLS context.." << logs::endl;
       util::net::TLSServerContext::Initialise(
-          cfg::Get().TlsCertificate().ToString(), cfg::Get().TlsCiphers());
+          cfg::Get().TlsCertificate(), cfg::Get().TlsCiphers());
       util::net::TLSClientContext::Initialise(
-          cfg::Get().TlsCertificate().ToString(), cfg::Get().TlsCiphers());
+          cfg::Get().TlsCertificate(), cfg::Get().TlsCiphers());
     }
     catch (const util::net::NetworkError& e)
     {

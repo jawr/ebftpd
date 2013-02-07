@@ -1,6 +1,10 @@
 #ifndef __FS_PATH_HPP
 #define __FS_PATH_HPP
 
+#ifdef EXTERNAL_TOOL
+#error "This header not suitable for inclusion in external tools"
+#endif
+
 #include <cassert>
 #include <string>
 #include <cstring>
@@ -221,7 +225,10 @@ inline Path operator/(const Path& lhs, const Path& rhs)
 inline Path operator/(const Path& lhs, const std::string& rhs)
 { return Path(lhs) /= rhs; }
 
-inline Path operator/(const Path& lhs, const char* rhs)
+inline Path operator/(const std::string& lhs, const Path& rhs)
+{ return Path(lhs) /= rhs; }
+
+inline Path operator/(const char* lhs, const Path& rhs)
 { return Path(lhs) /= rhs; }
 
 inline Path operator&(const Path& lhs, const Path& rhs)
@@ -230,7 +237,13 @@ inline Path operator&(const Path& lhs, const Path& rhs)
 inline Path operator&(const Path& lhs, const std::string& rhs)
 { return Path(lhs) &= rhs; }
 
+inline Path operator&(const std::string& lhs, Path& rhs)
+{ return Path(lhs) &= rhs; }
+
 inline Path operator&(const Path& lhs, const char* rhs)
+{ return Path(lhs) &= rhs; }
+
+inline Path operator&(const char* lhs, const Path& rhs)
 { return Path(lhs) &= rhs; }
 
 inline VirtualPath operator/(const VirtualPath& lhs, const Path& rhs)
@@ -239,7 +252,13 @@ inline VirtualPath operator/(const VirtualPath& lhs, const Path& rhs)
 inline VirtualPath operator/(const VirtualPath& lhs, const std::string& rhs)
 { return VirtualPath(lhs) /= rhs; }
 
+inline VirtualPath operator/(const std::string& lhs, const VirtualPath& rhs)
+{ return VirtualPath(lhs) /= rhs; }
+
 inline VirtualPath operator/(const VirtualPath& lhs, const char* rhs)
+{ return VirtualPath(lhs) /= rhs; }
+
+inline VirtualPath operator/(const char* lhs, const VirtualPath& rhs)
 { return VirtualPath(lhs) /= rhs; }
 
 inline VirtualPath operator&(const VirtualPath& lhs, const Path& rhs)
@@ -257,7 +276,13 @@ inline RealPath operator/(const RealPath& lhs, const Path& rhs)
 inline RealPath operator/(const RealPath& lhs, const std::string& rhs)
 { return RealPath(lhs) /= rhs; }
 
+inline RealPath operator/(const std::string& lhs, const RealPath& rhs)
+{ return RealPath(lhs) /= rhs; }
+
 inline RealPath operator/(const RealPath& lhs, const char* rhs)
+{ return RealPath(lhs) /= rhs; }
+
+inline RealPath operator/(const char* lhs, const RealPath& rhs)
 { return RealPath(lhs) /= rhs; }
 
 inline RealPath operator&(const RealPath& lhs, const Path& rhs)

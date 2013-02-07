@@ -13,10 +13,10 @@ namespace
 const char* uidAttributeName = "user.ebftpd.uid";
 const char* gidAttributeName = "user.ebftpd.gid";
 
-int32_t GetAttribute(const RealPath& path, const char* attribute)
+int32_t GetAttribute(const std::string& path, const char* attribute)
 {
   char buf[11];
-  int len = getxattr(path.CString(), attribute, buf, sizeof(buf));
+  int len = getxattr(path.c_str(), attribute, buf, sizeof(buf));
   if (len < 0)
   {
     if (errno != ENODATA)
@@ -38,11 +38,11 @@ int32_t GetAttribute(const RealPath& path, const char* attribute)
   return id;
 }
 
-util::Error SetAttribute(const RealPath& path, const char* attribute, int32_t id)
+util::Error SetAttribute(const std::string& path, const char* attribute, int32_t id)
 {
   char buf[11];
   int len = snprintf(buf, sizeof(buf), "%i", id);
-  if (setxattr(path.CString(), attribute, buf, len, 0) < 0)
+  if (setxattr(path.c_str(), attribute, buf, len, 0) < 0)
   {
     auto e = util::Error::Failure(errno);
     logs::error << "Error while setting filesystem ownership attribute " << attribute 
@@ -54,19 +54,40 @@ util::Error SetAttribute(const RealPath& path, const char* attribute, int32_t id
 
 }
 
-Owner GetOwner(const RealPath& path)
+Owner GetOwner(const std::string& path)
 {
   return Owner(GetAttribute(path, uidAttributeName),
                GetAttribute(path, gidAttributeName));
 
 }
 
+util::Error SetOwner(const std::string& path, const Owner& owner)
+{
+  if (owner.UID() != -1)
+  {
+    auto e = SetAttribute(path, uidAttributeName, owner.UID());
+    if (!e) return e;
+  }
+  
+  if (owner.GID() != -1)
+  {
+    return SetAttribute(path, gidAttributeName, owner.GID());
+  }
+  
+  return util::Error::Success();
+}
+
+#ifndef EXTERNAL_TOOL
+Owner GetOwner(const RealPath& path)
+{
+  return GetOwner(path.ToString());
+
+}
+
 util::Error SetOwner(const RealPath& path, const Owner& owner)
 {
-  auto e = SetAttribute(path, uidAttributeName, owner.UID());
-  if (!e) return e;
-  
-  return SetAttribute(path, gidAttributeName, owner.GID());
+  return SetOwner(path.ToString(), owner);
 }
+#endif
 
 } /* fs namespace */

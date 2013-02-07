@@ -46,8 +46,9 @@ const std::string Config::configFile = "ebftpd.conf";
 const std::vector<std::string> Config::configSearch = { "../etc", "etc", "." };
 std::string Config::lastConfigPath;
 
-Config::Config(const std::string& configPath) : 
+Config::Config(const std::string& configPath, bool tool) : 
   version(++latestVersion),
+  tool(tool),
   currentSection(nullptr),
   port(-1),
   defaultFlags("3"),
@@ -110,7 +111,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1, -1);
     std::string keyword(opt.substr(1));
-    if (aclKeywords.find(keyword) == aclKeywords.end())
+    if (aclKeywords.find(keyword) == aclKeywords.end() && !tool)
       throw ConfigError("Invalid command acl keyword: " + keyword);
     commandACLs.insert(std::make_pair(keyword, 
         acl::ACL::FromString(boost::join(toks, " "))));
@@ -122,7 +123,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     std::string command(boost::to_upper_copy(opt.substr(7)));
     if (std::find_if(siteCmd.begin(), siteCmd.end(), 
         [&](const setting::SiteCmd& sc)
-        { return command == sc.Command();}) == siteCmd.end())
+        { return command == sc.Command();}) == siteCmd.end() && !tool)
     {
       throw ConfigError("Invalid custom command acl keyword: " + command);
     }
@@ -139,13 +140,13 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   if (opt == "sitepath")
   {
     ParameterCheck(opt, toks, 1);
-    sitepath = fs::Path(toks[0]);
+    sitepath = toks[0];
   }
   else
   if (opt == "pidfile")
   {
     ParameterCheck(opt, toks, 1);
-    pidfile = fs::Path(toks[0]);
+    pidfile = toks[0];
   }
   else if (opt == "port")
   {
@@ -159,7 +160,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "tls_certificate")
   {
     ParameterCheck(opt, toks, 1);
-    tlsCertificate = fs::Path(toks[0]);
+    tlsCertificate = toks[0];
   }
   else if (opt == "tls_ciphers")
   {
@@ -173,7 +174,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "datapath")
   {
     ParameterCheck(opt, toks, 1);
-    datapath = fs::Path(toks[0]);
+    datapath = toks[0];
   }
   else if (opt == "pwd_path")
   {
@@ -186,7 +187,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "banner")
   {
     ParameterCheck(opt, toks, 1);
-    banner = fs::Path(toks[0]);
+    banner = toks[0];
   }
   else if (opt == "ascii_downloads")
   {
@@ -765,7 +766,7 @@ void Config::SanityCheck()
   }
   
   if (loginPrompt.empty())
-    loginPrompt = sitenameLong + ": " + programFullname + " connected.";
+    loginPrompt = sitenameLong + ": ebftpd connected.";
     
   if (allowFxp.empty()) allowFxp.emplace_back();
 }
@@ -778,7 +779,7 @@ bool Config::IsBouncer(const std::string& ip) const
 
 }
 
-boost::optional<const Section&> Config::SectionMatch(const fs::Path& path) const
+boost::optional<const Section&> Config::SectionMatch(const std::string& path) const
 {
   for (const auto& kv : sections)
   {
@@ -789,7 +790,7 @@ boost::optional<const Section&> Config::SectionMatch(const fs::Path& path) const
   return boost::optional<const Section&>();
 }
 
-ConfigPtr Config::Load(std::string configPath)
+ConfigPtr Config::Load(std::string configPath, bool tool)
 {
   std::vector<std::string> configPaths;
   if (!configPath.empty())
@@ -815,10 +816,8 @@ ConfigPtr Config::Load(std::string configPath)
     }
   }
   
-  if (!exists) throw ConfigError("Unable to open config file.");
-  
-  logs::debug << "Loading config file.." << logs::endl;
-  return std::make_shared<Config>(lastConfigPath);
+  if (!exists) throw ConfigError("Unable to open config file.");  
+  return std::make_shared<Config>(lastConfigPath, tool);
 }
 
 // end namespace

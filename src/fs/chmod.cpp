@@ -5,9 +5,10 @@
 #include "fs/chmod.hpp"
 #include "acl/user.hpp"
 #include "fs/mode.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
+#include "fs/path.hpp"
 
 namespace fs
 {
@@ -17,7 +18,7 @@ util::Error Chmod(const RealPath& path, const Mode& mode)
   try
   {
     mode_t newMode;
-    mode.Apply(Status(path).Native().st_mode, umask(0), newMode);
+    mode.Apply(util::path::Status(path.ToString()).Native().st_mode, umask(0), newMode);
   
     if (chmod(MakeReal(path).CString(), newMode) < 0)
       return util::Error::Failure(errno);
@@ -39,7 +40,7 @@ util::Error Chmod(const acl::User& user, const VirtualPath& path, const Mode& mo
   
   try
   {
-    Status status(MakeReal(path));
+    util::path::Status status(MakeReal(path).ToString());
     if (status.IsDirectory())
     {
       util::Error e = PP::DirAllowed<PP::View>(user, path);

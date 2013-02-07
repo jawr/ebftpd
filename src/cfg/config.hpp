@@ -10,7 +10,6 @@
 #include <map>
 #include <boost/optional.hpp>
 #include "cfg/setting.hpp"
-#include "fs/path.hpp"
 #include "cfg/section.hpp"
 #include "util/enum.hpp"
 
@@ -29,6 +28,7 @@ typedef std::shared_ptr<cfg::Config> ConfigPtr;
 class Config
 { 
   int version;
+  bool tool;
  
   void ParseGlobal(const std::string& opt, std::vector<std::string>& toks);
   void ParseSection(const std::string& opt, std::vector<std::string>& toks);
@@ -42,9 +42,9 @@ class Config
   Section* currentSection;
 
   // containers
-  fs::Path sitepath;
-  fs::Path pidfile;
-  fs::Path tlsCertificate;
+  std::string sitepath;
+  std::string pidfile;
+  std::string tlsCertificate;
   std::string tlsCiphers;
   int port;
   std::string defaultFlags;
@@ -59,7 +59,7 @@ class Config
   std::vector<std::string> master;
   std::vector<setting::SecureIp> secureIp;
   std::vector<setting::SecurePass> securePass;
-  fs::Path datapath;
+  std::string datapath;
   std::vector<std::string> bouncerIp;
   bool bouncerOnly;
   std::vector<setting::SpeedLimit> maximumSpeed;
@@ -75,9 +75,9 @@ class Config
   std::vector<setting::AllowFxp> allowFxp;
   std::vector<setting::Right> welcomeMsg;
   std::vector<setting::Right> goodbyeMsg;
-  fs::Path banner;
+  std::string banner;
   std::vector<setting::Alias> alias;
-  std::vector<fs::Path> cdpath;
+  std::vector<std::string> cdpath;
   std::vector<std::string> ignoreType;
   // ind rights
   std::vector<setting::Right> delete_; // delete is reserved
@@ -164,15 +164,16 @@ class Config
                              int minimum)
   { ParameterCheck(opt, toks, minimum, minimum); }
 
+
 public:
-  Config(const std::string& configPath);
+  Config(const std::string& configPath, bool tool = false);
 
   int Version() const { return version; }
 
   const setting::Database& Database() const { return database; }
-  const fs::Path& Sitepath() const { return sitepath; }
-  const fs::Path& Pidfile() const { return pidfile; }
-  const fs::Path& TlsCertificate() const { return tlsCertificate; }
+  const std::string& Sitepath() const { return sitepath; }
+  const std::string& Pidfile() const { return pidfile; }
+  const std::string& TlsCertificate() const { return tlsCertificate; }
   const std::string& TlsCiphers() const { return tlsCiphers; }
   int Port() const { return port; }
   const std::string& DefaultFlags() const { return defaultFlags; }
@@ -190,7 +191,7 @@ public:
   }
   const std::vector<setting::SecureIp>& SecureIp() const { return secureIp; }
   const std::vector<setting::SecurePass>& SecurePass() const { return securePass; }
-  const fs::Path& Datapath() const { return datapath; }
+  const std::string& Datapath() const { return datapath; }
   //const std::vector<std::string>& BouncerIp() const { return bouncerIp; }
   bool IsBouncer(const std::string& ip) const;
   bool BouncerOnly() const { return bouncerOnly; }
@@ -207,9 +208,9 @@ public:
   const std::vector<setting::AllowFxp>& AllowFxp() const { return allowFxp; }
   const std::vector<setting::Right>& WelcomeMsg() const { return welcomeMsg; }
   const std::vector<setting::Right>& GoodbyeMsg() const { return goodbyeMsg; }
-  const fs::Path& Banner() const { return banner; }
+  const std::string& Banner() const { return banner; }
   const std::vector<setting::Alias>& Alias() const { return alias; }
-  const std::vector<fs::Path>& Cdpath() const { return cdpath; }
+  const std::vector<std::string>& Cdpath() const { return cdpath; }
   const std::vector<std::string>& IgnoreType() const { return ignoreType; }
   
   // rights section
@@ -264,7 +265,7 @@ public:
   const std::vector<setting::CheckScript>& PreDirCheck() const { return preDirCheck; }
   const std::vector<setting::CheckScript>& PostCheck() const { return postCheck; }  
   const std::map<std::string, Section>& Sections() const { return sections; }
-  boost::optional<const Section&> SectionMatch(const fs::Path& path) const;
+  boost::optional<const Section&> SectionMatch(const std::string& path) const;
   ::cfg::EPSVFxp EPSVFxp() const { return epsvFxp; }
   int MaximumRatio() const { return maximumRatio; }
   const acl::ACL& TLSControl() const { return tlsControl; }
@@ -281,7 +282,7 @@ public:
   static void PopulateACLKeywords(const std::unordered_set<std::string>& keywords)
   { aclKeywords.insert(keywords.begin(), keywords.end()); }
   
-  static ConfigPtr Load(std::string configPath = lastConfigPath);
+  static ConfigPtr Load(std::string configPath = lastConfigPath, bool tool = false);
   
   friend void UpdateLocal();
 };

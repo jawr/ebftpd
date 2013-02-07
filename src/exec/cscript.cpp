@@ -15,7 +15,7 @@ bool Cscript(ftp::Client& client, const std::string& group,
       CscriptType type, ftp::ReplyCode failCode)
 {                      
   util::ProcessReader::ArgvType argv =
-  { cscript.Path().ToString(), fullCommand, client.User().Name(), group };
+  { cscript.Path(), fullCommand, client.User().Name(), group };
   
   try
   {

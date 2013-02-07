@@ -3,7 +3,7 @@
 #include <cstring>
 #include <dirent.h>
 #include "fs/direnumerator.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 #include "acl/user.hpp"
 #include "acl/path.hpp"
 #include "cfg/config.hpp"
@@ -78,7 +78,7 @@ void DirEnumerator::Readdir()
 
     try
     {
-      fs::Status status(entryPath);
+      util::path::Status status(entryPath.ToString());
       totalBytes += status.Size();
       
       if (user)

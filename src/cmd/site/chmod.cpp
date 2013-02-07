@@ -8,7 +8,7 @@
 #include "util/string.hpp"
 #include "cmd/error.hpp"
 #include "logs/logs.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 
 namespace cmd { namespace site
 {
@@ -16,30 +16,30 @@ namespace cmd { namespace site
 void CHMODCommand::Process(fs::VirtualPath pathmask)
 {
   using util::string::WildcardMatch;
-  
+
   try
-  {  
+  {
     for (auto& entry : fs::DirContainer(client.User(), pathmask.Dirname()))
     {
-      if (!WildcardMatch(pathmask.Basename().ToString(), entry.ToString()))
+      if (!WildcardMatch(pathmask.Basename().ToString(), entry))
         continue;
 
       fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try
       {
-        fs::Status status(fs::MakeReal(entryPath));          
+        util::path::Status status(fs::MakeReal(entryPath).ToString());
         util::Error e = fs::Chmod(client.User(), entryPath, *mode);
         if (!e)
         {
           ++failed;
-          control.PartReply(ftp::CommandOkay, "CHOWN " + 
-              entryPath.ToString() + ": " + e.Message());        
+          control.PartReply(ftp::CommandOkay, "CHOWN " +
+              entryPath.ToString() + ": " + e.Message());
         }
         else
         if (status.IsDirectory())
         {
           ++dirs;
-          if (recursive && !status.IsSymLink()) 
+          if (recursive && !status.IsSymLink())
             Process(entryPath / "*");
         }
         else ++files;
@@ -47,15 +47,15 @@ void CHMODCommand::Process(fs::VirtualPath pathmask)
       catch (const util::SystemError& e)
       {
         ++failed;
-        control.PartReply(ftp::CommandOkay, "CHOWN " + 
-            entryPath.ToString() + ": " + e.Message());        
+        control.PartReply(ftp::CommandOkay, "CHOWN " +
+            entryPath.ToString() + ": " + e.Message());
       }
     }
   }
   catch (const util::SystemError& e)
   {
     ++failed;
-    control.PartReply(ftp::CommandOkay, 
+    control.PartReply(ftp::CommandOkay,
         "CHMOD " + pathmask.Dirname().ToString() + ": " + e.Message());
   }
 }
@@ -64,19 +64,19 @@ void CHMODCommand::ParseArgs()
 {
   int n = 1;
   boost::to_lower(args[1]);
-  if (args[1] == "-r") 
+  if (args[1] == "-r")
   {
     ++n;
     recursive = true;
     boost::to_lower(args[n]);
   }
-  
+
   modeStr = args[n];
-  
+
   std::string::size_type pos =
       util::string::FindNthNonConsecutiveChar(argStr, ' ', n);
   if (pos == std::string::npos) throw cmd::SyntaxError();
-  
+
   patharg = argStr.substr(pos);
   boost::trim(patharg);
 }
@@ -87,7 +87,7 @@ void CHMODCommand::Execute()
 
   if (recursive && !client.ConfirmCommand(argStr))
   {
-    control.Reply(ftp::CommandOkay, 
+    control.Reply(ftp::CommandOkay,
         "Repeat the command to confirm you "
         "want to do recursive chmod!");
     return;
@@ -102,12 +102,12 @@ void CHMODCommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
     return;
   }
-  
+
   Process(fs::PathFromUser(patharg));
-  
+
   std::ostringstream os;
   os << "CHMOD finished (okay on: "
-     << dirs << " directories, " << files 
+     << dirs << " directories, " << files
      << " files / failures: " << failed << ").";
   control.Reply(ftp::CommandOkay, os.str());
 }

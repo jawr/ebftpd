@@ -11,7 +11,7 @@
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include "cmd/error.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 
 namespace cmd { namespace site
 {
@@ -24,13 +24,13 @@ void CHOWNCommand::Process(fs::VirtualPath pathmask)
   {
     for (auto& entry : fs::DirContainer(client.User(), pathmask.Dirname()))
     {
-      if (!WildcardMatch(pathmask.Basename().ToString(), entry.ToString()))
+      if (!WildcardMatch(pathmask.Basename().ToString(), entry))
         continue;
 
       fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try
       {
-        fs::Status status(fs::MakeReal(entryPath));
+        util::path::Status status(fs::MakeReal(entryPath).ToString());
         fs::SetOwner(fs::MakeReal(entryPath), owner);
         if (status.IsDirectory())
         {

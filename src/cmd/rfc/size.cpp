@@ -3,7 +3,7 @@
 #include "fs/file.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -16,7 +16,10 @@ void SIZECommand::Execute()
 
   try
   {
-    fs::Status status(client.User(), path);
+    auto e = acl::path::FileAllowed<acl::path::View>(client.User(), path);
+    if (!e) throw util::SystemError(e.Errno());
+      
+    util::path::Status status(path.ToString());
     if (status.IsRegularFile())
       control.Reply(ftp::FileStatus, 
         boost::lexical_cast<std::string>(status.Size())); 

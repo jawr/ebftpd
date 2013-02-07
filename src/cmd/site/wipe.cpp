@@ -10,7 +10,7 @@
 #include "cmd/error.hpp"
 #include "db/index/index.hpp"
 #include "acl/path.hpp"
-#include "fs/status.hpp"
+#include "util/status.hpp"
 
 namespace cmd { namespace site
 {
@@ -23,13 +23,13 @@ void WIPECommand::Process(fs::VirtualPath pathmask, int depth)
   {
     for (auto& entry : fs::DirContainer(client.User(), pathmask.Dirname()))
     {
-      if (!WildcardMatch(pathmask.Basename().ToString(), entry.ToString()))
+      if (!WildcardMatch(pathmask.Basename().ToString(), entry))
         continue;
 
       fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try
       {
-        fs::Status status(fs::MakeReal(entryPath));
+        util::path::Status status(fs::MakeReal(entryPath).ToString());
         if (status.IsDirectory())
         {
           if ((recursive || depth == 1) && !status.IsSymLink())
