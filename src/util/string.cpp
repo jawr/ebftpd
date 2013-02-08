@@ -14,10 +14,10 @@ bool BoolLexicalCast(std::string arg)
   return boost::lexical_cast<bool>(arg);
 }
 
-bool WildcardMatch(const std::string& pattern,
-                   const std::string& str, bool iCase)
+bool WildcardMatch(const char* pattern, const std::string& str, bool iCase)
 {
-  return !fnmatch(pattern.c_str(), str.c_str(), iCase ? FNM_CASEFOLD : 0);
+std::cout << pattern << " " << str << std::endl;
+  return !fnmatch(pattern, str.c_str(), iCase ? FNM_CASEFOLD : 0);
 }
 
 std::string::size_type 

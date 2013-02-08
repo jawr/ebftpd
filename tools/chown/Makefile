@@ -36,5 +36,9 @@ mkdir:
 
 clean:
 	-@rm -f $(OBJECTS) chown
-	-@rmdir $(sort $(dir $(OBJECTS))) 2>/dev/null
+	-@for d in $(sort $(dir $(OBJECTS))); do \
+		if [ -d $$d ]; then \
+		rmdir $$d; \
+		fi; \
+		done
 	

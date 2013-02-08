@@ -217,7 +217,7 @@ Factory::Factory()
                       "Display latest directories" }, },
     { "CHOWN",      { 2,  -1,  "chown",
                       CreatorBasePtr(new Creator<CHOWNCommand>()),
-                      "Syntax: SITE CHOWN [-R] <owner> <pathmask>",
+                      "Syntax: SITE CHOWN [-R] [user][:[group]] <pathmask>",
                       "Change file and/or directory ownership" }, },
     { "CHMOD",      { 2,  -1,  "chmod",
                       CreatorBasePtr(new Creator<CHMODCommand>()),

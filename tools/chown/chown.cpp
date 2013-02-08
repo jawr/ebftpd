@@ -37,11 +37,11 @@ bool ParseOptions(int argc, char** argv, bool& recursive, std::string& configPat
     ("help,h", "display this help message")
     ("version,v", "display version")
     ("config-path,c", po::value<std::string>(), "specify location of config file")
-    ("recursive,r", "apply changes recursively")
+    ("recursive,R", "apply changes recursively")
   ;
 
   std::string who;
-  po::options_description all("supported options");
+  po::options_description all("positional options");
   all.add(visible);
   all.add_options()
     ("who", po::value<std::string>(&who)->required(), "who")
