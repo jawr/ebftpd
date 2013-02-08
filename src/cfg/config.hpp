@@ -233,6 +233,14 @@ public:
   const std::vector<setting::Right>& Nostats() const { return nostats; } 
   const std::vector<setting::Right>& Hideowner() const { return hideowner; } 
 
+<<<<<<< Updated upstream
+=======
+  bool IsEventLogged(const std::string& path) const;
+  bool IsDupeLogged(const std::string& path) const;
+  bool IsIndexed(const std::string& path) const;
+  const std::vector<std::string>& Indexed() const { return indexed; }
+
+>>>>>>> Stashed changes
   const std::vector<setting::PathFilter>& PathFilter() const { return pathFilter; }
   const setting::MaxUsers& MaxUsers() const { return maxUsers; }
   const std::vector<setting::ACLInt>& MaxUstats() const { return maxUstats; }

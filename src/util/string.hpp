@@ -9,9 +9,33 @@ namespace util { namespace string
 
 bool BoolLexicalCast(std::string arg);
 
-bool WildcardMatch(const std::string& pattern,
+bool WildcardMatch(const char* pattern,
                    const std::string& str, bool iCase = false);
 
+<<<<<<< Updated upstream
+=======
+inline bool WildcardMatch(const std::string& pattern,
+                          const std::string& str, bool iCase = false)
+{
+  return WildcardMatch(pattern.c_str(), str, iCase);
+}
+
+template<typename Iterator>
+inline bool WildcardMatch(Iterator begin, Iterator end, const std::string& str, bool iCase = false)
+{
+  return std::find_if(begin, end, [&](const std::string& pattern)
+            {
+              return WildcardMatch(pattern, str, iCase);
+            }) != end;
+}
+
+template <typename Container>
+inline bool WildcardMatch(const Container& container, const std::string& str, bool iCase = false)
+{
+  return WildcardMatch(std::begin(container), std::end(container), str, iCase);
+}
+                   
+>>>>>>> Stashed changes
 std::string::size_type 
 FindNthChar(const std::string& str, char ch, unsigned n);
 
