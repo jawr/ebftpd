@@ -11,6 +11,7 @@
 #include "db/index/index.hpp"
 #include "acl/path.hpp"
 #include "util/status.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace site
 {
@@ -43,7 +44,7 @@ void WIPECommand::Process(fs::VirtualPath pathmask, int depth)
           }
           else
           {
-            if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), entryPath))
+            if (cfg::Get().IsIndexed(entryPath.ToString()))
               db::index::Delete(entryPath.ToString());
             ++dirs;
           }

@@ -25,7 +25,7 @@ void UPDATECommand::Execute()
       if (!WildcardMatch(pathMask.Basename().ToString(), entry)) continue;
 
       fs::VirtualPath entryPath(pathMask.Dirname() / entry);
-      if (!acl::path::DirAllowed<acl::path::Indexed>(client.User(), entryPath)) continue;
+      if (!cfg::Get().IsIndexed(entryPath.ToString())) continue;
 
       try
       {

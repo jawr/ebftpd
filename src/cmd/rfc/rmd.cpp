@@ -3,6 +3,7 @@
 #include "cmd/error.hpp"
 #include "db/index/index.hpp"
 #include "acl/path.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -17,7 +18,7 @@ void RMDCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
+  if (cfg::Get().IsIndexed(path.ToString()))
     db::index::Delete(path.ToString());
   
   control.Reply(ftp::FileActionOkay, "RMD command successful."); 

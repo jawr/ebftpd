@@ -1,6 +1,8 @@
 #ifndef __UTIL_STRING_HPP
 #define __UTIL_STRING_HPP
 
+#include <algorithm>
+#include <string>
 #include <boost/lexical_cast.hpp>
 #include "util/error.hpp"
 
@@ -12,6 +14,21 @@ bool BoolLexicalCast(std::string arg);
 bool WildcardMatch(const std::string& pattern,
                    const std::string& str, bool iCase = false);
 
+template<typename Iterator>
+inline bool WildcardMatch(Iterator begin, Iterator end, const std::string& str, bool iCase = false)
+{
+  return std::find_if(begin, end, [&](const std::string& pattern)
+            {
+              return WildcardMatch(pattern, str, iCase);
+            }) != end;
+}
+
+template <typename Container>
+inline bool WildcardMatch(const Container& container, const std::string& str, bool iCase = false)
+{
+  return WildcardMatch(std::begin(container), std::end(container), str, iCase);
+}
+                   
 std::string::size_type 
 FindNthChar(const std::string& str, char ch, unsigned n);
 
