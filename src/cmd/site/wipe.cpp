@@ -10,7 +10,7 @@
 #include "cmd/error.hpp"
 #include "db/index/index.hpp"
 #include "acl/path.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 #include "cfg/get.hpp"
 
 namespace cmd { namespace site

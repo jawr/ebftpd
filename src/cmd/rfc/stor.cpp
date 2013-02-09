@@ -27,7 +27,7 @@
 #include "db/user/userprofile.hpp"
 #include "acl/misc.hpp"
 #include "ftp/speedcontrol.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 
 namespace cmd { namespace rfc
 {

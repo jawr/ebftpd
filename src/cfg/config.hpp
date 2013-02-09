@@ -11,7 +11,7 @@
 #include <boost/optional.hpp>
 #include "cfg/setting.hpp"
 #include "cfg/section.hpp"
-#include "util/enum.hpp"
+#include "util/enumstrings.hpp"
 
 
 namespace cfg
@@ -235,6 +235,7 @@ public:
   bool IsEventLogged(const std::string& path) const;
   bool IsDupeLogged(const std::string& path) const;
   bool IsIndexed(const std::string& path) const;
+  const std::vector<std::string>& Indexed() const { return indexed; }
 
   const std::vector<setting::PathFilter>& PathFilter() const { return pathFilter; }
   const setting::MaxUsers& MaxUsers() const { return maxUsers; }

@@ -6,7 +6,7 @@
 #include "db/index/index.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 
 namespace cmd { namespace rfc
 {

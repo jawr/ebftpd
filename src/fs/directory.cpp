@@ -4,7 +4,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/thread/tss.hpp>
 #include "fs/directory.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
 #include "fs/owner.hpp"

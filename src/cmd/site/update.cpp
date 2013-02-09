@@ -3,7 +3,7 @@
 #include "util/string.hpp"
 #include "fs/dircontainer.hpp"
 #include "fs/path.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 #include "cfg/get.hpp"
 #include "db/index/index.hpp"
 #include "acl/path.hpp"

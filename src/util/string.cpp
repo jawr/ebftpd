@@ -16,7 +16,6 @@ bool BoolLexicalCast(std::string arg)
 
 bool WildcardMatch(const char* pattern, const std::string& str, bool iCase)
 {
-std::cout << pattern << " " << str << std::endl;
   return !fnmatch(pattern, str.c_str(), iCase ? FNM_CASEFOLD : 0);
 }
 
@@ -111,6 +110,16 @@ std::string TitleSimpleCopy(const std::string& s)
   std::string result(s);
   TitleSimple(result);
   return result;
+}
+
+bool IsASCIIOnly(const std::string& s)
+{
+  for (char ch : s)
+  {
+    unsigned char uCh = static_cast<unsigned char>(ch);
+    if (uCh > 127) return false;
+  }
+  return true;
 }
 
 } /* string namespace */

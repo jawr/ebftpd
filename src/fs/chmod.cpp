@@ -5,7 +5,7 @@
 #include "fs/chmod.hpp"
 #include "acl/user.hpp"
 #include "fs/mode.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
 #include "fs/path.hpp"

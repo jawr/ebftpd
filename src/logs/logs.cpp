@@ -1,6 +1,6 @@
 #define __LOGGER_LOGGER_CPP
 #include "logs/logs.hpp"
-#include "util/path.hpp"
+#include "util/path/path.hpp"
 
 namespace logs
 {

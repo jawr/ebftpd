@@ -11,8 +11,14 @@ namespace util { namespace string
 
 bool BoolLexicalCast(std::string arg);
 
-bool WildcardMatch(const std::string& pattern,
+bool WildcardMatch(const char* pattern,
                    const std::string& str, bool iCase = false);
+
+inline bool WildcardMatch(const std::string& pattern,
+                          const std::string& str, bool iCase = false)
+{
+  return WildcardMatch(pattern.c_str(), str, iCase);
+}
 
 template<typename Iterator>
 inline bool WildcardMatch(Iterator begin, Iterator end, const std::string& str, bool iCase = false)
@@ -44,14 +50,24 @@ std::string WordWrap(std::string& source, std::string::size_type length);
 void TitleSimple(std::string& s);
 std::string TitleSimpleCopy(const std::string& s);
 
-inline bool IsASCIIOnly(const std::string& s)
+bool IsASCIIOnly(const std::string& s);
+
+template <typename Iterator>
+std::string Join(Iterator begin, Iterator end, const std::string& delim)
 {
-  for (char ch : s)
+  std::string result;
+  for (auto it = begin; it != end; ++it)
   {
-    unsigned char uCh = static_cast<unsigned char>(ch);
-    if (uCh > 127) return false;
+    if (it != begin) result += delim;
+    result += *it;
   }
-  return true;
+  return result;
+}
+
+template <typename Container>
+std::string Join(const Container& cont, const std::string& delim)
+{
+  return Join(cont.begin(), cont.end(), delim);
 }
 
 } /* string namespace */

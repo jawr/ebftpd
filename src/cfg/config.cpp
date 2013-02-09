@@ -14,7 +14,7 @@
 #include "util/string.hpp"
 #include "logs/logs.hpp"
 #include "main.hpp"
-#include "util/path.hpp"
+#include "util/path/path.hpp"
 
 namespace util
 {

@@ -9,7 +9,7 @@
 #include <string>
 #include <cstring>
 #include <ostream>
-#include "util/path.hpp"
+#include "util/path/path.hpp"
 
 namespace fs
 {

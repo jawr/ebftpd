@@ -2,7 +2,7 @@
 #define __STATS_TYPES_HPP
 
 #include <vector>
-#include "util/enum.hpp"
+#include "util/enumstrings.hpp"
 
 namespace stats
 {
@@ -38,9 +38,9 @@ enum class SortField : unsigned
 namespace util
 {
 
-template <> const char* util::EnumStrings<stats::Timeframe>::values[];
-template <> const char* util::EnumStrings<stats::SortField>::values[];
-template <> const char* util::EnumStrings<stats::Direction>::values[];
+template <> const char* EnumStrings<stats::Timeframe>::values[];
+template <> const char* EnumStrings<stats::SortField>::values[];
+template <> const char* EnumStrings<stats::Direction>::values[];
 
 }
 

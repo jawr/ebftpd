@@ -3,7 +3,7 @@
 #include <cstring>
 #include <dirent.h>
 #include "fs/direnumerator.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 #include "acl/user.hpp"
 #include "acl/path.hpp"
 #include "cfg/config.hpp"

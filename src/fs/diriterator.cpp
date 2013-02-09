@@ -1,7 +1,7 @@
 #include <cassert>
 #include "fs/diriterator.hpp"
 #include "acl/path.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 
 namespace fs
 {

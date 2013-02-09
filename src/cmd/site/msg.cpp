@@ -15,7 +15,7 @@
 #include "db/mail/mail.hpp"
 #include "db/mail/message.hpp"
 #include "util/string.hpp"
-#include "util/enum.hpp"
+#include "util/enumstrings.hpp"
 #include "cmd/error.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
