@@ -6,30 +6,33 @@
 namespace util { namespace path
 {
 
-template <typename GenericDirIterator = DirIterator>
-class DirContainer
+template <typename IteratorType>
+class GenericDirContainer
 {
-	GenericDirIterator it;
-  GenericDirIterator endIt;
+	IteratorType it;
+  IteratorType endIt;
   
 public:  
-  explicit DirContainer(GenericDirIterator begin) :
+  explicit GenericDirContainer(IteratorType begin) :
     it(begin)
   { }
   
   template <typename... Args>
-  explicit DirContainer(Args... args) : 
+  explicit GenericDirContainer(Args... args) : 
     it(std::forward<Args>(args)...)
   { }
 
   void Rewind() { it.Rewind(); }
     
-  GenericDirIterator begin() { return it; }
-  GenericDirIterator end() { return endIt; }
+  IteratorType begin() { return it; }
+  IteratorType end() { return endIt; }
 };
 
+class DirIterator;
+typedef GenericDirContainer<path::DirIterator> DirContainer;
+
 class RecursiveDirIterator;
-typedef DirContainer<path::RecursiveDirIterator> RecursiveDirContainer;
+typedef GenericDirContainer<path::RecursiveDirIterator> RecursiveDirContainer;
 
 } /* path namespace */
 } /* util namespace */
