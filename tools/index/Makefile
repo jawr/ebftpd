@@ -16,7 +16,9 @@ SOURCES := index.cpp \
 	../../src/util/path/path.cpp \
 	../../src/util/path/status.cpp \
 	../../src/util/path/diriterator.cpp \
-	../../src/util/error.cpp
+	../../src/util/error.cpp \
+  ../../src/util/path/globiterator.cpp \
+  ../../src/util/path/recursivediriterator.cpp
 
 OBJECTS = $(join $(addsuffix .index/, $(dir $(SOURCES))), $(notdir $(SOURCES:.cpp=.o)))
 

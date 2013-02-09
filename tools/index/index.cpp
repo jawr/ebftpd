@@ -17,6 +17,7 @@
 #include "db/error.hpp"
 #include "util/path/path.hpp"
 #include "util/misc.hpp"
+#include "util/enumbitwise.hpp"
 
 std::shared_ptr<cfg::Config> config;
 mongo::DBClientConnection conn;
@@ -114,32 +115,23 @@ std::string VirtualPath(std::string path)
 
 void AddPath(const std::string& path)
 {
+  static const auto globFlags = util::path::GlobIterator::IgnoreErrors |
+                                util::path::GlobIterator::Recursive;
+
   std::string collection = config->Database().Name() + ".index";
   util::path::GlobIterator globEnd;
-  std::cout << path << std::endl;
-  auto globIter = util::path::GlobIterator(path, util::path::GlobIterator::IgnoreErrors);
+  auto globIter = util::path::GlobIterator(path, globFlags);
   for (; globIter != globEnd; ++globIter)
   {
-    std::cout << "! " << *globIter << std::endl;
+    if (!util::path::IsDirectory(*globIter)) continue;
     auto vpath = VirtualPath(*globIter);
     if (!vpath.empty())
     {
-      std::cout << "vpath: " << vpath << std::endl;
       auto section = config->SectionMatch(vpath);
       auto obj = BSON("path" << vpath << "section" << (section ? section->Name() : ""));
       conn.insert(collection, obj);
-      auto err = conn.getLastErrorDetailed();
-      if (err["n"].Number() == 1.0)
-        std::cout << "Added to index: " << vpath << std::endl;
-      else
-      if (err["code"].Int() != 11000)
-        std::cerr << "Error while adding to index: " << err["err"].String() 
-                  << " : " << vpath << std::endl;
     }
-    else
-      std::cout << "????????" << std::endl;
   }
-
 }
 
 void AddPaths(const std::vector<std::string>& paths)
@@ -180,12 +172,6 @@ void DeletePath(const std::string& path)
   {
     auto query = QUERY("path" << path);
     conn.remove(collection, query);
-    auto err = conn.getLastErrorDetailed();
-    if (err["n"].Number() == 1.0)
-      std::cout << "Delete from index: " << path << std::endl;
-    else
-      std::cerr << "Error while deleting from index: " << err["err"].String() 
-                << " : " << path << std::endl;
   }
 }
 
@@ -233,6 +219,7 @@ bool ConnectDatabase()
       if (!conn.auth(dbConfig.Name(), dbConfig.Login(), dbConfig.Password(), errmsg))
         throw mongo::DBException("Authentication failed", 0);
     }
+    conn.setWriteConcern(mongo::W_NONE);
   }
   catch (const mongo::DBException& e)
   {
@@ -272,12 +259,14 @@ int main(int argc, char** argv)
   {
     if (mode == Mode::Both || mode == Mode::AddOnly) 
     {
-      AddPaths(paths.empty() ? ConfigPaths() : paths);
+      if (paths.empty()) paths = ConfigPaths();
+      AddPaths(paths);
     }
     
     if (mode == Mode::Both || mode == Mode::DeleteOnly) 
     {
-      DeletePaths(paths.empty() ? std::vector<std::string>({ "*" }) : paths);
+      if (paths.empty()) paths.emplace_back(util::path::Append(config->Sitepath(), "*"));
+      DeletePaths(paths);
     }
   }
   catch (const mongo::DBException& e)
