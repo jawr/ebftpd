@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <boost/optional.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "acl/types.hpp"
 

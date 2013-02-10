@@ -6,7 +6,7 @@
 #include "db/index/index.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -49,10 +49,10 @@ void RNTOCommand::Execute()
   {
     // this should be changed to a single move action so as to retain the
     // creation date in the database
-    if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), client.RenameFrom()))
+    if (cfg::Get().IsIndexed(client.RenameFrom().ToString()))
       db::index::Delete(client.RenameFrom().ToString());
 
-    if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
+    if (cfg::Get().IsIndexed(path.ToString()))
     {
       auto section = cfg::Get().SectionMatch(path.ToString());
       db::index::Add(path.ToString(), section ? section->Name() : "");

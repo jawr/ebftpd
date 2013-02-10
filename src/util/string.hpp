@@ -1,6 +1,8 @@
 #ifndef __UTIL_STRING_HPP
 #define __UTIL_STRING_HPP
 
+#include <algorithm>
+#include <string>
 #include <boost/lexical_cast.hpp>
 #include "util/error.hpp"
 
@@ -12,8 +14,6 @@ bool BoolLexicalCast(std::string arg);
 bool WildcardMatch(const char* pattern,
                    const std::string& str, bool iCase = false);
 
-<<<<<<< Updated upstream
-=======
 inline bool WildcardMatch(const std::string& pattern,
                           const std::string& str, bool iCase = false)
 {
@@ -35,7 +35,6 @@ inline bool WildcardMatch(const Container& container, const std::string& str, bo
   return WildcardMatch(std::begin(container), std::end(container), str, iCase);
 }
                    
->>>>>>> Stashed changes
 std::string::size_type 
 FindNthChar(const std::string& str, char ch, unsigned n);
 
@@ -51,14 +50,24 @@ std::string WordWrap(std::string& source, std::string::size_type length);
 void TitleSimple(std::string& s);
 std::string TitleSimpleCopy(const std::string& s);
 
-inline bool IsASCIIOnly(const std::string& s)
+bool IsASCIIOnly(const std::string& s);
+
+template <typename Iterator>
+std::string Join(Iterator begin, Iterator end, const std::string& delim)
 {
-  for (char ch : s)
+  std::string result;
+  for (auto it = begin; it != end; ++it)
   {
-    unsigned char uCh = static_cast<unsigned char>(ch);
-    if (uCh > 127) return false;
+    if (it != begin) result += delim;
+    result += *it;
   }
-  return true;
+  return result;
+}
+
+template <typename Container>
+std::string Join(const Container& cont, const std::string& delim)
+{
+  return Join(cont.begin(), cont.end(), delim);
 }
 
 } /* string namespace */

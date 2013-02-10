@@ -4,7 +4,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/thread/tss.hpp>
 #include "fs/directory.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
 #include "fs/owner.hpp"
@@ -12,7 +12,7 @@
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
 #include "fs/dircontainer.hpp"
-#include "util/dircontainer.hpp"
+#include "util/path/dircontainer.hpp"
 #include "fs/path.hpp"
 #include "util/error.hpp"
 
@@ -144,7 +144,7 @@ util::Error RemoveDirectory(const acl::User& user, const VirtualPath& path)
   
   try
   {
-    util::DirContainer dirCont(MakeReal(path).ToString());
+    util::path::DirContainer dirCont(MakeReal(path).ToString());
     for (auto& name : dirCont)
     {
       if (name[0] !=  '.') return util::Error::Failure(ENOTEMPTY);
@@ -155,8 +155,6 @@ util::Error RemoveDirectory(const acl::User& user, const VirtualPath& path)
         return util::Error::Failure(ENOTEMPTY);
     }
     
-    
-    dirCont.Rewind();
     
     for (auto& name : dirCont)
     {
@@ -201,7 +199,7 @@ util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes)
   
   try
   {
-    for (auto& entry : util::DirContainer(path.ToString()))
+    for (auto& entry : util::path::DirContainer(path.ToString()))
     {
       try
       {

@@ -32,13 +32,13 @@ void MKDCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  if (acl::path::DirAllowed<acl::path::Indexed>(client.User(), path))
+  if (cfg::Get().IsIndexed(path.ToString()))
   {
     auto section = cfg::Get().SectionMatch(path.ToString());
     db::index::Add(path.ToString(), section ? section->Name() : "");
   }
   
-  if (acl::path::DirAllowed<acl::path::Dupelog>(client.User(), path))
+  if (cfg::Get().IsDupeLogged(path.ToString()))
   {
     auto section = cfg::Get().SectionMatch(path.ToString());
     db::dupe::Add(path.Basename().ToString(), section ? section->Name() : "");    

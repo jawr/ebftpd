@@ -14,7 +14,7 @@
 #include "stats/stat.hpp"
 #include "acl/util.hpp"
 #include "text/parser.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 
 namespace text
 {

@@ -10,7 +10,7 @@
 #include "cmd/dirlist.hpp"
 #include "ftp/client.hpp"
 #include "fs/direnumerator.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include "logs/logs.hpp"

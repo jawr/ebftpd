@@ -346,5 +346,13 @@ uint32_t crc32(const uint8_t *buf, size_t size, uint32_t crc)
   return ~crc;
 }
 
+#undef A
+#undef B
+#undef C
+#undef D
+
+#undef S8
+#undef S32
+
 } /* sliceby8 namespace */
 } /* util namespace */

@@ -7,7 +7,7 @@
 #include "util/net/endpoint.hpp"
 #include "ftp/readwriteable.hpp"
 #include "ftp/transferstate.hpp"
-#include "util/enum.hpp"
+#include "util/enumstrings.hpp"
 
 namespace acl
 {

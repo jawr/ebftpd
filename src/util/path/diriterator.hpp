@@ -1,6 +1,7 @@
 #ifndef __UTIL_DIRITERATOR_HPP
 #define __UTIL_DIRITERATOR_HPP
 
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <string>
@@ -13,10 +14,8 @@ namespace acl
 class User;
 }
 
-namespace util
+namespace util { namespace path
 {
-
-class DirContainer;
 
 class DirIterator : 
   public std::iterator<std::forward_iterator_tag, std::string>
@@ -25,35 +24,39 @@ class DirIterator :
   struct dirent de;
   struct dirent *dep;
   std::shared_ptr<DIR> dp;
-  std::string current;
   bool basenameOnly;
   
   void Opendir();
-  void NextEntry();
   
-  virtual util::Error Check(const std::string& /* path */) { return util::Error::Success(); }
+protected:
+  std::function<bool(const std::string&)> filter;
+  std::string current;
+
+  virtual std::string NextEntry();
   
 public:
   DirIterator() : dep(nullptr) { }
   explicit DirIterator(const std::string& path, bool basenameOnly = true);
+  explicit DirIterator(const std::string& path, 
+                       const std::function<bool(const std::string&)>& filter, 
+                       bool basenameOnly = true);
   
   virtual ~DirIterator() { }
   
-  DirIterator& Rewind();
+  virtual DirIterator& Rewind();
 
-  bool operator==(const DirIterator& rhs)
+  virtual bool operator==(const DirIterator& rhs)
   { return dep == rhs.dep; }
   
-  bool operator!=(const DirIterator& rhs)
+  virtual bool operator!=(const DirIterator& rhs)
   { return !operator==(rhs); }
   
   DirIterator& operator++();
   const std::string& operator*() const { return current; }
   const std::string* operator->() const { return &current; }
-  
-  friend class DirContainer;
 };
 
+} /* path namespace */
 } /* util namespace */
 
 #endif

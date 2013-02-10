@@ -1,6 +1,6 @@
 #include <sstream>
 #include "cmd/site/diskfree.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 #include "acl/path.hpp"
 
 namespace cmd { namespace site

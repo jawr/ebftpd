@@ -4,26 +4,26 @@
 #include <boost/algorithm/string/trim.hpp>
 #include "cmd/site/chmod.hpp"
 #include "fs/chmod.hpp"
+#include "fs/globiterator.hpp"
 #include "fs/dircontainer.hpp"
 #include "util/string.hpp"
 #include "cmd/error.hpp"
 #include "logs/logs.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
+#include "util/enumbitwise.hpp"
 
 namespace cmd { namespace site
 {
 
 void CHMODCommand::Process(fs::VirtualPath pathmask)
 {
-  using util::string::WildcardMatch;
+  auto flags = fs::GlobIterator::NoFlags;
+  if (recursive) flags |= fs::GlobIterator::Recursive;
 
   try
   {
-    for (auto& entry : fs::DirContainer(client.User(), pathmask.Dirname()))
+    for (auto& entry : fs::GlobContainer(client.User(), pathmask, flags))
     {
-      if (!WildcardMatch(pathmask.Basename().ToString(), entry))
-        continue;
-
       fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try
       {
@@ -36,12 +36,7 @@ void CHMODCommand::Process(fs::VirtualPath pathmask)
               entryPath.ToString() + ": " + e.Message());
         }
         else
-        if (status.IsDirectory())
-        {
-          ++dirs;
-          if (recursive && !status.IsSymLink())
-            Process(entryPath / "*");
-        }
+        if (status.IsDirectory()) ++dirs;
         else ++files;
       }
       catch (const util::SystemError& e)

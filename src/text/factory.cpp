@@ -19,8 +19,8 @@ util::Error Factory::Initialize()
   
   try
   {
-    util::DirIterator it(textpath.ToString());
-    util::DirIterator end;
+    util::path::DirIterator it(textpath.ToString());
+    util::path::DirIterator end;
    
     // let's get all error's in one go 
     int errors = 0;

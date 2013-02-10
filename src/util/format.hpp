@@ -4,7 +4,7 @@
 #include <string>
 #include <functional>
 #include <boost/format.hpp>
-#include "util/enum.hpp"
+#include "util/enumstrings.hpp"
 
 namespace util
 {

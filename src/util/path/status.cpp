@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <cerrno>
 #include <sys/statvfs.h>
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 #include "util/error.hpp"
 
 namespace util { namespace path
@@ -94,6 +94,36 @@ off_t Status::Size() const
 const struct stat& Status::Native() const
 {
   return native;
+}
+
+bool Exists(const std::string& path)
+{
+  try { (void) Status(path); } catch (const util::SystemError&) { return false; }
+  return true;
+}
+
+bool IsDirectory(const std::string& path)
+{
+  try { return Status(path).IsDirectory(); } catch (const util::SystemError&) { }
+  return false;
+}
+
+bool IsRegularFile(const std::string& path)
+{
+  try { return Status(path).IsRegularFile(); } catch (const util::SystemError&) { }
+  return false;
+}
+
+bool IsSymLink(const std::string& path)
+{
+  try { return Status(path).IsSymLink(); } catch (const util::SystemError&) { }
+  return false;
+}
+
+off_t Size(const std::string& path)
+{
+  try { return Status(path).Size(); } catch (const util::SystemError&) { }
+  return -1;
 }
 
 util::Error FreeDiskSpace(const std::string& real, unsigned long long& freeBytes)

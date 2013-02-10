@@ -3,7 +3,7 @@
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 #include "util/misc.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
 
 namespace cmd { namespace rfc
 {

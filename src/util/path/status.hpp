@@ -43,6 +43,11 @@ public:
   const struct stat& Native() const;
 };
 
+bool IsDirectory(const std::string& path);
+bool IsRegularFile(const std::string& path);
+bool IsSymLink(const std::string& path);
+off_t Size(const std::string& path);
+
 util::Error FreeDiskSpace(const std::string& real, unsigned long long& freeBytes);
 
 } /* path namespace */

@@ -2,6 +2,7 @@
 #define __UTIL_PATH_HPP
 
 #include <string>
+#include <vector>
 
 namespace util { namespace path
 {
@@ -16,6 +17,8 @@ std::string Basename(std::string path);
 std::string Extension(const std::string& path);
 std::string NoExtension(const std::string& path);
 std::string Relative(const std::string& workPath, const std::string& path);
+std::vector<std::string> Glob(const std::string& path, bool tilde = true);
+bool WildcardMatch(const std::string& pattern, const std::string& path, bool iCase = false);
 
 } /* path namespace */
 } /* util namespace */

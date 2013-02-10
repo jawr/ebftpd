@@ -14,7 +14,7 @@
 #include "util/string.hpp"
 #include "logs/logs.hpp"
 #include "main.hpp"
-#include "util/path.hpp"
+#include "util/path/path.hpp"
 
 namespace util
 {
@@ -458,18 +458,18 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "eventlog")
   {
-    ParameterCheck(opt, toks, 2, -1);
-    eventlog.emplace_back(toks);
+    ParameterCheck(opt, toks, 1);
+    eventlog.emplace_back(toks[0]);
   }
   else if (opt == "dupelog")
   {
-    ParameterCheck(opt, toks, 2, -1);
-    dupelog.emplace_back(toks);
+    ParameterCheck(opt, toks, 1);
+    dupelog.emplace_back(toks[0]);
   }
   else if (opt == "indexed")
   {
-    ParameterCheck(opt, toks, 2, -1);
-    indexed.emplace_back(toks);
+    ParameterCheck(opt, toks, 1);
+    indexed.emplace_back(toks[0]);
   }  else if (opt == "hideinwho")
   {
     ParameterCheck(opt, toks, 2, -1);
@@ -818,6 +818,22 @@ ConfigPtr Config::Load(std::string configPath, bool tool)
   
   if (!exists) throw ConfigError("Unable to open config file.");  
   return std::make_shared<Config>(lastConfigPath, tool);
+}
+
+bool Config::IsEventLogged(const std::string& path) const
+{
+  if (path.empty()) return false;
+  return util::string::WildcardMatch(eventlog, path + (path.back() != '/' ? "/" : ""));
+}
+
+bool Config::IsDupeLogged(const std::string& path) const
+{
+  return util::string::WildcardMatch(dupelog, path + (path.back() != '/' ? "/" : ""));
+}
+
+bool Config::IsIndexed(const std::string& path) const
+{
+  return util::string::WildcardMatch(dupelog, path + (path.back() != '/' ? "/" : ""));
 }
 
 // end namespace

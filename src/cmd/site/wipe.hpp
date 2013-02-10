@@ -14,7 +14,7 @@ class WIPECommand : public Command
   int files;
   int failed;
   
-  void Process(fs::VirtualPath pathmask, int dept = 1);
+  void Process(fs::VirtualPath pathmask);
   void ParseArgs();
   
 public:

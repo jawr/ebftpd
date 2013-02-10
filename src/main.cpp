@@ -28,7 +28,7 @@
 #include "text/factory.hpp"
 #include "text/error.hpp"
 #include "acl/replicator.hpp"
-#include "util/path.hpp"
+#include "util/path/path.hpp"
 
 #include "version.hpp"
 

@@ -5,7 +5,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <mongo/client/dbclient.h>
 #include "acl/types.hpp"
-#include "util/enum.hpp"
+#include "util/enumstrings.hpp"
 
 namespace db { namespace bson
 {

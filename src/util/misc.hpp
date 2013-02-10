@@ -58,6 +58,26 @@ inline std::string EscapeRegex(const std::string& term)
   return boost::regex_replace(term, esc, rep, boost::match_default | boost::format_sed);
 }
                          
+
+inline std::string WildcardToRegex(const std::string& wc)
+{
+  const std::string escape = "+()^$.{}[]|\\";
+  std::string re;
+  for (char ch : wc)
+  {
+    if (ch == '*') re += ".*";
+    else if (ch == '?') re += '.';
+    else if (escape.find(ch) != std::string::npos)
+    {
+      re += '\\';
+      re += ch;
+    }
+    else
+      re += ch;
+  }
+  return re;
+}
+
 } /* util namespace */
 
 #endif

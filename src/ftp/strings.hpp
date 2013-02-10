@@ -1,7 +1,7 @@
 #ifndef __FTP_STRINGS_HPP
 #define __FTP_STRINGS_HPP
 
-#include "util/enum.hpp"
+#include "util/enumstrings.hpp"
 
 namespace ftp
 {

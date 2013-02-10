@@ -25,9 +25,6 @@ enum Type
   Overwrite,
   Makedir,
   Download,
-  Eventlog,
-  Dupelog,
-  Indexed,
   Rename,
   Filemove,
   Nuke,
@@ -38,6 +35,9 @@ enum Type
   Nostats,
   Hideowner
 };
+
+template <Type type>
+util::Error Allowed(const User& user, const fs::VirtualPath& path);
 
 template <Type type>
 util::Error FileAllowed(const User& user, const fs::VirtualPath& path);

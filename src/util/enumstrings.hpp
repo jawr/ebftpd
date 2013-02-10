@@ -1,5 +1,5 @@
-#ifndef __UTIL_ENUM_HPP
-#define __UTIL_ENUM_HPP
+#ifndef __UTIL_ENUMSTRINGS_HPP
+#define __UTIL_ENUMSTRINGS_HPP
 
 #include <string>
 #include <algorithm>

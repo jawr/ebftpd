@@ -1,8 +1,9 @@
-#include <vector>
+#include <glob.h>
+#include <fnmatch.h>
 #include <stdexcept>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include "util/path.hpp"
+#include "util/path/path.hpp"
 
 namespace util { namespace path
 {
@@ -183,6 +184,29 @@ std::string Relative(const std::string& workPath, const std::string& path)
     
   result.insert(result.end(), pSegments.begin() + i, pSegments.end());
   return JoinSegments(result);
+}
+
+std::vector<std::string> Glob(const std::string& path, bool tilde)
+{
+  glob_t glMatches;
+  std::vector<std::string> matches;
+  if (!glob(path.c_str(), tilde ? GLOB_TILDE : 0, nullptr, &glMatches))
+  {
+    matches.reserve(glMatches.gl_pathc);
+    for (size_t i = 0; i < glMatches.gl_pathc; ++i)
+    {
+      matches.push_back(glMatches.gl_pathv[i]);
+    }
+    globfree(&glMatches);
+  }
+  return matches;
+}
+
+bool WildcardMatch(const std::string& pattern, const std::string& path, bool iCase)
+{
+  int flags = iCase ? FNM_CASEFOLD : 0;
+  flags |= FNM_PATHNAME;
+  return !fnmatch(pattern.c_str(), path.c_str(), flags);
 }
 
 } /* path namespace */

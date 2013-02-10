@@ -6,38 +6,33 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/chown.hpp"
+#include "fs/globiterator.hpp"
 #include "fs/dircontainer.hpp"
-#include "util/string.hpp"
 #include "acl/usercache.hpp"
 #include "acl/groupcache.hpp"
 #include "cmd/error.hpp"
-#include "util/status.hpp"
+#include "util/path/status.hpp"
+#include "util/enumbitwise.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace site
 {
 
 void CHOWNCommand::Process(fs::VirtualPath pathmask)
 {
-  using util::string::WildcardMatch;
-
+  auto flags = fs::GlobIterator::NoFlags;
+  if (recursive) flags |= fs::GlobIterator::Recursive;
+  
   try
   {
-    for (auto& entry : fs::DirContainer(client.User(), pathmask.Dirname()))
+    for (auto& entry : fs::GlobContainer(client.User(), pathmask, flags))
     {
-      if (!WildcardMatch(pathmask.Basename().ToString(), entry))
-        continue;
-
       fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try
       {
         util::path::Status status(fs::MakeReal(entryPath).ToString());
         fs::SetOwner(fs::MakeReal(entryPath), owner);
-        if (status.IsDirectory())
-        {
-          ++dirs;
-          if (recursive && !status.IsSymLink()) 
-            Process(entryPath / "*");
-        }
+        if (status.IsDirectory()) ++dirs;
         else ++files;
       }
       catch (const util::SystemError& e)

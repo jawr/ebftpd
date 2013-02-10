@@ -1,3 +1,9 @@
+build
+*.cmake
+Makefile
+CMakeFiles
+tools/chown/chown
+tools/index/index
 *.o
 *.d
 *.swp
