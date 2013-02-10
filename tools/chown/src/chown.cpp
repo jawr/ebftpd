@@ -10,8 +10,8 @@
 #include "cfg/config.hpp"
 #include "cfg/error.hpp"
 #include "fs/owner.hpp"
-#include "util/status.hpp"
-#include "util/diriterator.hpp"
+#include "util/path/status.hpp"
+#include "util/path/diriterator.hpp"
 #include "version.hpp"
 #include "db/error.hpp"
 
@@ -112,7 +112,7 @@ void SetOwner(Iterator begin, Iterator end, const fs::Owner& owner, bool recursi
         auto status = util::path::Status(path);
         if (status.IsDirectory() && !status.IsSymLink())
         {
-          SetOwner(util::DirIterator(path, false), util::DirIterator(), owner, recursive);
+          SetOwner(util::path::DirIterator(path, false), util::path::DirIterator(), owner, recursive);
         }
       }
       catch (const util::SystemError& e)
