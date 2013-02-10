@@ -13,7 +13,7 @@ DirIterator::DirIterator(const std::string& path, bool basenameOnly) :
 }
 
 DirIterator::DirIterator(const std::string& path, 
-    const std::function<bool(std::string)>& filter, bool basenameOnly) :
+    const std::function<bool(const std::string&)>& filter, bool basenameOnly) :
   path(path), dep(nullptr), basenameOnly(basenameOnly), filter(filter)
 {
   Opendir();
@@ -21,9 +21,6 @@ DirIterator::DirIterator(const std::string& path,
 
 void DirIterator::Opendir()
 {
-  auto e = Check(path);
-  if (!e) throw util::SystemError(e.Errno());
-
   dp.reset(opendir(path.c_str()), closedir);
   if (!dp.get()) throw util::SystemError(errno);
   
@@ -41,8 +38,7 @@ std::string DirIterator::NextEntry()
 
     if (!strcmp(de.d_name, ".") ||
         !strcmp(de.d_name, "..") ||
-        (filter && !filter(util::path::Join(path, de.d_name))) ||
-        !Check(util::path::Join(path, de.d_name)))
+        (filter && !filter(util::path::Join(path, de.d_name))))
         continue;
     
     if (!basenameOnly) entry = util::path::Join(path, de.d_name);

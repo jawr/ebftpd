@@ -22,9 +22,11 @@ public:
     it(std::forward<Args>(args)...)
   { }
 
-  void Rewind() { it.Rewind(); }
-    
-  IteratorType begin() { return it; }
+  IteratorType begin()
+  {
+    it.Rewind();
+    return it;
+  }
   IteratorType end() { return endIt; }
 };
 
@@ -33,6 +35,9 @@ typedef GenericDirContainer<path::DirIterator> DirContainer;
 
 class RecursiveDirIterator;
 typedef GenericDirContainer<path::RecursiveDirIterator> RecursiveDirContainer;
+
+class GlobIterator;
+typedef GenericDirContainer<path::GlobIterator> GlobDirContainer;
 
 } /* path namespace */
 } /* util namespace */

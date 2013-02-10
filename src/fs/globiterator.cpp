@@ -1,6 +1,6 @@
 #include <cassert>
 #include <boost/bind.hpp>
-#include "fs/diriterator.hpp"
+#include "fs/globiterator.hpp"
 #include "acl/path.hpp"
 #include "util/path/status.hpp"
 
@@ -24,8 +24,8 @@ std::string PreFilter(const acl::User& user, const std::string& path)
 
 }
 
-DirIterator::DirIterator(const acl::User& user, const VirtualPath& path) : 
-  util::path::DirIterator(PreFilter(user, path.ToString()), boost::bind(&Filter, boost::ref(user), _1)), 
+GlobIterator::GlobIterator(const acl::User& user, const VirtualPath& path, Flags flags) : 
+  util::path::GlobIterator(PreFilter(user, path.ToString()), boost::bind(&Filter, boost::ref(user), _1), flags), 
   user(&user)
 { }
 

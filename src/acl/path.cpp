@@ -6,6 +6,7 @@
 #include "acl/user.hpp"
 #include "logs/logs.hpp"
 #include "acl/groupcache.hpp"
+#include "util/path/status.hpp"
 
 namespace acl { namespace path
 {
@@ -295,7 +296,7 @@ bool PrivatePath(const fs::VirtualPath& path, const User& user)
 }
 
 template <Type type>
-util::Error Allowed(const User& user, const fs::VirtualPath& path)
+util::Error InnerAllowed(const User& user, const fs::VirtualPath& path)
 { 
   if (PrivatePath(path, user)) return util::Error::Failure(ENOENT);
   return Traits<type>::Allowed(user, path);
@@ -304,7 +305,7 @@ util::Error Allowed(const User& user, const fs::VirtualPath& path)
 template <Type type>
 util::Error FileAllowed(const User& user, const fs::VirtualPath& path)
 {  
-  return Allowed<type>(user, path);
+  return InnerAllowed<type>(user, path);
 }
 
 template util::Error FileAllowed<Upload>(const User& user, const fs::VirtualPath& path);
@@ -325,9 +326,9 @@ util::Error DirAllowed(const User& user, const fs::VirtualPath& path)
 {
   if (path.IsEmpty()) return util::Error::Failure(EINVAL);
   if (path.ToString()[path.Length() - 1] != '/') 
-    return Allowed<type>(user, fs::VirtualPath(path.ToString() + '/'));
+    return InnerAllowed<type>(user, fs::VirtualPath(path.ToString() + '/'));
   else
-    return Allowed<type>(user, path);
+    return InnerAllowed<type>(user, path);
 }
 
 template util::Error DirAllowed<Makedir>(const User& user, const fs::VirtualPath& path);
@@ -337,6 +338,17 @@ template util::Error DirAllowed<Delete>(const User& user, const fs::VirtualPath&
 template util::Error DirAllowed<View>(const User& user, const fs::VirtualPath& path);
 template util::Error DirAllowed<Hideinwho>(const User& user, const fs::VirtualPath& path);
 template util::Error DirAllowed<Hideowner>(const User& user, const fs::VirtualPath& path);
+
+template <Type type>
+util::Error Allowed(const User& user, const fs::VirtualPath& path)
+{
+  if (util::path::IsDirectory(fs::MakeReal(path).ToString()))
+    return DirAllowed<type>(user, path);
+  else
+    return FileAllowed<type>(user, path);
+}
+
+template util::Error Allowed<View>(const User& user, const fs::VirtualPath& path);
 
 util::Error Filter(const User& user, const fs::Path& basename, 
     fs::Path& messagePath)

@@ -28,10 +28,8 @@ class DirIterator :
   
   void Opendir();
   
-  virtual util::Error Check(const std::string& /* path */) { return util::Error::Success(); }
-
 protected:
-  std::function<bool(std::string)> filter;
+  std::function<bool(const std::string&)> filter;
   std::string current;
 
   virtual std::string NextEntry();
@@ -39,7 +37,8 @@ protected:
 public:
   DirIterator() : dep(nullptr) { }
   explicit DirIterator(const std::string& path, bool basenameOnly = true);
-  explicit DirIterator(const std::string& path, const std::function<bool(std::string)>& filter, 
+  explicit DirIterator(const std::string& path, 
+                       const std::function<bool(const std::string&)>& filter, 
                        bool basenameOnly = true);
   
   virtual ~DirIterator() { }

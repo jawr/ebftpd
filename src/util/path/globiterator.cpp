@@ -18,8 +18,10 @@ namespace util { namespace path
 namespace
 {
 
-bool Filter(const std::string& path, const std::string& mask, bool lastToken)
+bool Filter(const std::string& path, const std::string& mask, bool lastToken,
+            const std::function<bool(const std::string&)>& filter)
 {
+  if (!filter(path)) return false;
   if (!IsDirectory(path))
   {
     if (!lastToken) return false;
@@ -46,7 +48,23 @@ GlobIterator::GlobIterator() :
 }
 
 GlobIterator::GlobIterator(std::string pathMask, Flags flags) :
+  pathMask(pathMask),
 	flags(flags)
+{
+  Initialise();
+}
+
+GlobIterator::GlobIterator(std::string pathMask, 
+               const std::function<bool(const std::string&)>& filter, 
+               Flags flags) :
+  pathMask(pathMask),
+	flags(flags),
+  filter(filter)
+{
+  Initialise();
+}
+
+void GlobIterator::Initialise()
 {
 	verify(!pathMask.empty());
   
@@ -60,7 +78,7 @@ GlobIterator::GlobIterator(std::string pathMask, Flags flags) :
     std::string nextPath = util::string::Join(toks.begin(), next, "/");
     if (nextPath.empty()) nextPath = "/"; 
 
-		iter.reset(new SubIterator(nextPath, next, toks.end(), flags));    
+		iter.reset(new SubIterator(nextPath, next, toks.end(), flags, filter));    
 	}
 	catch (const util::SystemError& e)
 	{
@@ -74,12 +92,14 @@ GlobIterator::SubIterator::SubIterator() :
 }
 
 GlobIterator::SubIterator::SubIterator(const std::string& path, 
-    Tokens::const_iterator mask, Tokens::const_iterator endTokens, Flags flags) :
+    Tokens::const_iterator mask, Tokens::const_iterator endTokens, 
+    Flags flags, const std::function<bool(const std::string&)>& filter) :
   lastToken(mask == endTokens - 1),
   path(path),
   mask(mask),
   endTokens(endTokens),
   flags(flags),
+  filter(filter),
   iter(BeginIterator(lastToken && flags & Recursive)),
   end(EndIterator(lastToken && flags & Recursive))
 {
@@ -109,7 +129,7 @@ void GlobIterator::SubIterator::NextSub()
   
   try
   {
-    subIter.reset(new SubIterator(nextPath, next, endTokens, flags));
+    subIter.reset(new SubIterator(nextPath, next, endTokens, flags, filter));
     if (!subEnd) subEnd.reset(new SubIterator());
   }
   catch (const util::SystemError& e)
@@ -154,7 +174,7 @@ DirIterator* GlobIterator::SubIterator::BeginIterator(bool recursive, Args... ar
 DirIterator* GlobIterator::SubIterator::BeginIterator(bool recursive)
 {
   return BeginIterator(recursive, path, boost::bind(&Filter, _1, 
-                util::path::Join(path, *mask), lastToken), false);
+                util::path::Join(path, *mask), lastToken, filter), false);
 }
 
 DirIterator* GlobIterator::SubIterator::EndIterator(bool recursive)

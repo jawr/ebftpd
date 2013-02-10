@@ -37,6 +37,9 @@ enum Type
 };
 
 template <Type type>
+util::Error Allowed(const User& user, const fs::VirtualPath& path);
+
+template <Type type>
 util::Error FileAllowed(const User& user, const fs::VirtualPath& path);
 
 template <Type type>

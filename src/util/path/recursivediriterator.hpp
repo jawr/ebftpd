@@ -25,7 +25,7 @@ public:
   { }
 
   explicit RecursiveDirIterator(const std::string& path, 
-        const std::function<bool(std::string)>& filter, bool ignoreErrors = false) : 
+        const std::function<bool(const std::string&)>& filter, bool ignoreErrors = false) : 
     DirIterator(path, filter, false), ignoreErrors(ignoreErrors)
   { }
   

@@ -1,6 +1,7 @@
 #include <sstream>
 #include "cmd/site/update.hpp"
 #include "util/string.hpp"
+#include "fs/globiterator.hpp"
 #include "fs/dircontainer.hpp"
 #include "fs/path.hpp"
 #include "util/path/status.hpp"
@@ -20,10 +21,8 @@ void UPDATECommand::Execute()
     using util::string::WildcardMatch;
   
     unsigned addedCount = 0;
-    for (const auto& entry : fs::DirContainer(client.User(), pathMask.Dirname()))
+    for (const auto& entry : fs::GlobContainer(client.User(), pathMask))
     {
-      if (!WildcardMatch(pathMask.Basename().ToString(), entry)) continue;
-
       fs::VirtualPath entryPath(pathMask.Dirname() / entry);
       if (!cfg::Get().IsIndexed(entryPath.ToString())) continue;
 

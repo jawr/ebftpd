@@ -3,8 +3,8 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/wipe.hpp"
+#include "fs/globiterator.hpp"
 #include "fs/dircontainer.hpp"
-#include "util/string.hpp"
 #include "fs/directory.hpp"
 #include "fs/file.hpp"
 #include "cmd/error.hpp"
@@ -12,29 +12,26 @@
 #include "acl/path.hpp"
 #include "util/path/status.hpp"
 #include "cfg/get.hpp"
+#include "util/enumbitwise.hpp"
 
 namespace cmd { namespace site
 {
 
-void WIPECommand::Process(fs::VirtualPath pathmask, int depth)
+void WIPECommand::Process(fs::VirtualPath pathmask)
 {
-  using util::string::WildcardMatch;
-
+  auto flags = fs::GlobIterator::NoFlags;
+  if (recursive) flags |= fs::GlobIterator::Recursive;
+  
   try
   {
-    for (auto& entry : fs::DirContainer(client.User(), pathmask.Dirname()))
+    for (auto& entry : fs::GlobContainer(client.User(), pathmask, flags))
     {
-      if (!WildcardMatch(pathmask.Basename().ToString(), entry))
-        continue;
-
       fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try
       {
         util::path::Status status(fs::MakeReal(entryPath).ToString());
         if (status.IsDirectory())
         {
-          if ((recursive || depth == 1) && !status.IsSymLink())
-            Process(entryPath / "*", depth + 1);
           util::Error e = fs::RemoveDirectory(client.User(), entryPath);
           if (!e)
           {

@@ -28,6 +28,7 @@ private:
     Tokens::const_iterator mask;
     Tokens::const_iterator endTokens;
     Flags flags;
+    std::function<bool(const std::string&)> filter;
     
     std::shared_ptr<DirIterator> iter;
     std::shared_ptr<DirIterator> end;
@@ -47,7 +48,8 @@ private:
   public:
     SubIterator();
     SubIterator(const std::string& path, Tokens::const_iterator mask, 
-                Tokens::const_iterator endTokens, Flags flags);
+                Tokens::const_iterator endTokens, Flags flags,
+                const std::function<bool(const std::string&)>& filter);
     
     SubIterator& operator++()
     {
@@ -61,32 +63,47 @@ private:
     const std::string& operator*() const;
     const std::string* operator->() const;
   };
+  
+protected:
 
+  std::string pathMask;
   Flags flags;
+  std::function<bool(const std::string&)> filter;
   std::shared_ptr<SubIterator> iter;
   SubIterator end;
+  
+  void Initialise();
   
   static Tokens TokenizePathMask(const std::string& pathMask);
   
 public:
   GlobIterator();
   GlobIterator(std::string pathMask, Flags flags = NoFlags);  
+  GlobIterator(std::string pathMask, 
+               const std::function<bool(const std::string&)>& filter, 
+               Flags flags = NoFlags);  
   virtual ~GlobIterator() { }
 
+  GlobIterator& Rewind()
+  {
+    Initialise();
+    return *this;
+  }
+  
   virtual bool operator==(const GlobIterator& rhs)
   { return *iter == *rhs.iter; }
   
   virtual bool operator!=(const GlobIterator& rhs)
   { return !operator==(rhs); }
 
-  GlobIterator& operator++()
+  virtual GlobIterator& operator++()
   {
     ++(*iter);
     return *this;
   }
   
-  const std::string& operator*() const { return **iter; }
-  const std::string* operator->() const { return &**iter; }
+  virtual const std::string& operator*() const { return **iter; }
+  virtual const std::string* operator->() const { return &**iter; }
 };
 
 } /* path namespace */
