@@ -59,7 +59,7 @@ void ProcessReader::Open()
     pipe.CloseRead();
     if (dup2(pipe.WriteFd(), fileno(stdout)) < 0) return;
 
-    execvpe(file.c_str(), PrepareArgv(argv), PrepareArgv(env));
+    execve(file.c_str(), PrepareArgv(argv), PrepareArgv(env));
     pipe.CloseWrite();
 //    _exit(1);
 

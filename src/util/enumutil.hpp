@@ -2,8 +2,8 @@
 #define __UTIL_ENUMUTIL_HPP
 
 #if defined(__GNUC__)
-#include <features.h>
-#if __GNUC_PREREQ(4,7)
+#if __GNUC__ > 4 || \
+    (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
 #include <type_traits>
 #else
 
