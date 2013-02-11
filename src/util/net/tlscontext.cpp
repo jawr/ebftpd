@@ -4,6 +4,7 @@
 #include <cassert>
 #include "util/net/tlscontext.hpp"
 #include "util/net/tlserror.hpp"
+#include "util/net/threadid.hpp"
 
 // some of this code is based loosely on code ftom pure-ftpd's tls.c
 // which seems to have parts based on openssl's s_server.c
@@ -161,11 +162,7 @@ void TLSContext::SelectCiphers()
 
 unsigned long TLSContext::ThreadIdCallback()
 {
-#if defined(__CYGWIN__)
-  return reinterpret_cast<unsigned long>(pthread_self());
-#else
-  return pthread_self();
-#endif
+  return ThreadID::Self();
 }
 
 
