@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <unistd.h>
 #include <boost/thread/thread.hpp>
 #include "util/processreader.hpp"
 

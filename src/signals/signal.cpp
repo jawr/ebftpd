@@ -2,20 +2,35 @@
 #include <cerrno>
 #include <stdexcept>
 #include <exception>
+
 #if !defined(__CYGWIN__)
-#include <sys/ptrace.h>
+# include <sys/ptrace.h>
 #endif
+
 #include "ftp/task/task.hpp"
 #include "signals/signal.hpp"
 #include "logs/logs.hpp"
+
 #if !defined(__CYGWIN__)
-#include "util/debug.hpp"
+# include "util/debug.hpp"
 #endif
+
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "cfg/error.hpp"
 #include "acl/replicator.hpp"
 #include "cfg/get.hpp"
+
+#if !defined(__CYGWIN__)
+#  define USE_PTRACE
+#  if !defined(PTRACE_TRACEME)
+#    if defined(PTRACE_TRACE_ME)
+#      define PTRACE_TRACEME PTRACE_TRACE_ME
+#    else
+#      undef USE_PTRACE
+#    endif
+#  endif
+#endif
 
 namespace signals
 {
@@ -170,10 +185,12 @@ util::Error Initialise()
   sa.sa_handler = CrashHandler;
   if (sigaction(SIGSEGV, &sa, nullptr) < 0)
     return util::Error::Failure(errno);
-  
+
+#if defined(USE_PTRACE)
   // allow interruption inside gdb
   if (ptrace(PTRACE_TRACEME, 0, nullptr, 0) < 0 && errno == EPERM)
     sigdelset(&set, SIGINT);
+#endif
 
  std::set_terminate(TerminateHandler);
 #endif

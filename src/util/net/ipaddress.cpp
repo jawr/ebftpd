@@ -99,14 +99,14 @@ bool IPAddress::IsLoopback() const
   }
   else
   {
-    return IN6_IS_ADDR_LOOPBACK(&data);
+    return IN6_IS_ADDR_LOOPBACK(&data.in6);
   }
 }
 
 bool IPAddress::IsMappedv4() const
 {
   if (family != IPFamily::IPv6) return false;
-  return IN6_IS_ADDR_V4MAPPED(&data);
+  return IN6_IS_ADDR_V4MAPPED(&data.in6);
 }
 
 IPAddress IPAddress::ToUnmappedv4() const
