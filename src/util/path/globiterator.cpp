@@ -21,7 +21,7 @@ namespace
 bool Filter(const std::string& path, const std::string& mask, bool lastToken,
             const std::function<bool(const std::string&)>& filter)
 {
-  if (!filter(path)) return false;
+  if (filter && !filter(path)) return false;
   if (!IsDirectory(path))
   {
     if (!lastToken) return false;
