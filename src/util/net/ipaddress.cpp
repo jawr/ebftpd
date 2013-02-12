@@ -1,9 +1,8 @@
 #include <cstring>
+#include <sys/types.h>
 #include <arpa/inet.h>
 #include "util/net/ipaddress.hpp"
 #include "util/error.hpp"
-
-#include <iostream>
 
 namespace util { namespace net
 {
