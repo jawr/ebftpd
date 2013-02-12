@@ -21,9 +21,10 @@ DirIterator::DirIterator(const std::string& path,
 
 void DirIterator::Opendir()
 {
-  dp.reset(opendir(path.c_str()), closedir);
-  if (!dp.get()) throw util::SystemError(errno);
+  DIR* dp = opendir(path.c_str());
+  if (!dp) throw util::SystemError(errno);
   
+  this->dp.reset(dp, closedir);
   current = NextEntry();
 }
 
