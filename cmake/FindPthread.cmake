@@ -1,0 +1,25 @@
+
+if(Pthread_INCLUDE_DIR AND Pthread_LIBRARY)
+  set(Pthread_INCLUDE_DIRS ${Pthread_INCLUDE_DIR})
+  set(Pthread_LIBRARIES ${Pthread_LIBRARY})
+  set(Pthread_FOUND TRUE)
+  return()
+endif()
+
+find_path(Pthread_INCLUDE_DIR NAMES pthread.h)
+find_library(Pthread_LIBRARY NAMES pthread)
+
+if(Pthread_INCLUDE_DIR AND Pthread_LIBRARY)
+  set(Pthread_FOUND TRUE)
+  set(Pthread_INCLUDE_DIRS ${Pthread_INCLUDE_DIR})
+  set(Pthread_LIBRARIES ${Pthread_LIBRARY})
+  message(STATUS "Found Pthread: ${Pthread_INCLUDE_DIRS}, ${Pthread_LIBRARIES}")
+else()
+  if (Pthread_FIND_REQUIRED)
+    message(FATAL_ERROR "Pthread not found.")  
+  else()
+    message(STATUS "Pthread not found.")
+  endif()
+endif()
+
+mark_as_advanced(Pthread_INCLUDE_DIR Pthread_LIBRARY)

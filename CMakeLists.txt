@@ -10,7 +10,6 @@ find_package (OpenSSL REQUIRED)
 link_directories (${OpenSSL_LIBRARY_DIRS})
 include_directories (${OpenSSL_INCLUDE_DIRS})
 
-link_libraries(${MongoDB_LIBRARIES} crypto ssl ${Boost_LIBRARIES})
 if(${UNITY} GREATER 0)
 	set(COUNT 0)
 	while(${COUNT} LESS ${UNITY})
@@ -33,5 +32,14 @@ else()
 	add_dependencies(ebftpd version)
 
 endif()
+
+target_link_libraries(
+  ebftpd
+  ${MongoDB_LIBRARIES}
+  ${OPENSSL_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${Execinfo_LIBRARIES}
+  ${Pthread_LIBRARIES}
+)
 
 add_subdirectory(tools)

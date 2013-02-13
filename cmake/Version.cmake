@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8)
-find_package(Git)
+find_package(Git QUIET REQUIRED)
 execute_process(COMMAND ${GIT_EXECUTABLE} log --decorate --all
                 OUTPUT_VARIABLE GIT_OUTPUT)
 string(REPLACE "\n" ";" GIT_LINES ${GIT_OUTPUT})
