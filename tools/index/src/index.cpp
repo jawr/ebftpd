@@ -224,6 +224,7 @@ bool ConnectDatabase()
   catch (const mongo::DBException& e)
   {
     std::cerr << "Database connect failed: " << e.what() << std::endl;
+    return false;
   }
   return true;
 }
