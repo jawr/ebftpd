@@ -10,6 +10,14 @@
 #include "util/error.hpp"
 #include "logs/logs.hpp"
 
+#ifndef ENOATTR
+# define ENOATTR ENODATA
+#endif
+
+#ifndef ENODATA
+# define ENODATA ENOATTR
+#endif
+
 namespace fs
 {
 
@@ -40,9 +48,8 @@ int32_t GetAttribute(const std::string& path, const char* attribute)
   int len = getxattr(path.c_str(), attribute, buf, sizeof(buf));
   if (len < 0)
   {
-    if (errno != ENOATTR)
+    if (errno != ENOATTR && errno != ENODATA)
     {
-    std::cout << errno << " " << ENOATTR << std::endl;
       logs::error << "Error while reading filesystem attribute " << attribute 
                   << ": " << path << " : " << util::Error::Failure(errno).Message() << logs::endl;
     }
