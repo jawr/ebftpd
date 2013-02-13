@@ -48,5 +48,16 @@ bool Thread::TryJoin()
   return false;
 }
 
+void Thread::Main()
+{
+  try
+  {
+    Run();
+  }
+  catch (const boost::thread_interrupted&)
+  {
+  }
+}
+
 // end util namespace
 }

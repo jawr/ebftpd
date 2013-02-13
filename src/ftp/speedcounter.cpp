@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <boost/thread/locks.hpp>
 #include "ftp/speedcounter.hpp"
 #include "stats/util.hpp"
 #include "cfg/setting.hpp"

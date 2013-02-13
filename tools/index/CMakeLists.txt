@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 project(ebftpd)
-include ("../../CMakeModules/Defaults.cmake")
+include ("../../cmake/Defaults.cmake")
 include_directories (src ${SERVER_SRC})
 add_executable (index src/index.cpp
 								${SERVER_SRC}/cfg/config.cpp

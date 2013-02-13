@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdint>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 #include "util/net/endpoint.hpp"
 #include "cfg/get.hpp"
 

@@ -3,6 +3,7 @@
 #include <boost/thread/tss.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/signals2.hpp>
+#include <boost/thread/locks.hpp>
 #include "cfg/get.hpp"
 #include "cfg/config.hpp"
 #include "logs/logs.hpp"

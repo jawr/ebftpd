@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 project("ebftpd")
-include("CMakeModules/Defaults.cmake")
+include("cmake/Defaults.cmake")
 option(UNITY "unity builds" OFF)
 project(ebftpd)
 include_directories(src)
