@@ -4,6 +4,7 @@
 #include <atomic>
 #include <future>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 #include "acl/replicable.hpp"
 #include "logs/logs.hpp"
 

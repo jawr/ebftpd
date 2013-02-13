@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <memory>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 #include "text/template.hpp"
 #include "text/parser.hpp"
 #include "text/templatesection.hpp"

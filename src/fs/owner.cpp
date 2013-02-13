@@ -18,10 +18,6 @@ namespace
 
 #if defined(__FreeBSD__)
 
-#if !defined(ENODATA)
-#define ENODATA ENOATTR
-#endif
-
 int setxattr(const char *path, const char *name, const void *value, size_t size, int /* flags */)
 {
   int ret = extattr_set_file(path, EXTATTR_NAMESPACE_USER, name, value, size);
@@ -44,8 +40,9 @@ int32_t GetAttribute(const std::string& path, const char* attribute)
   int len = getxattr(path.c_str(), attribute, buf, sizeof(buf));
   if (len < 0)
   {
-    if (errno != ENODATA)
+    if (errno != ENOATTR)
     {
+    std::cout << errno << " " << ENOATTR << std::endl;
       logs::error << "Error while reading filesystem attribute " << attribute 
                   << ": " << path << " : " << util::Error::Failure(errno).Message() << logs::endl;
     }

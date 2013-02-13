@@ -3,6 +3,8 @@
 
 #include <ios>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/lock_algorithms.hpp>
+#include <boost/thread/locks.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace ftp

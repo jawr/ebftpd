@@ -36,20 +36,10 @@ void CreateDefaults()
   if (acl::UserCache::Create("ebftpd", "ebftpd", "1", 0, 0))
   {
     verify(acl::UserCache::NameToUID("ebftpd") == 0);
-    verify(acl::UserCache::AddIPMask("ebftpd", "*@127.0.0.1"));
+    verify(acl::UserCache::AddIPMask("ebftpd", "*@localhost"));
   }
   
   verify(acl::UserCache::Exists(0));
-  
-  if (acl::UserCache::Create("biohazard", "password", "1", 0))
-  {
-    verify(acl::UserCache::AddIPMask("biohazard", "*@127.0.0.1"));
-  }
-  
-  if (acl::UserCache::Create("io", "password", "1", 0))
-  {
-    verify(acl::UserCache::AddIPMask("io", "*@127.0.0.1"));
-  }
 }
 
 bool Validate(ValidationType type, const std::string& s)

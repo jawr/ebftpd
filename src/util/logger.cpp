@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <fstream>
 #include <ctime>
+#include <boost/thread/locks.hpp>
 #include "util/logger.hpp"
 
 namespace util { namespace logger

@@ -1,4 +1,5 @@
 #include <cassert>
+#include <boost/thread/locks.hpp>
 #include "ftp/logincounter.hpp"
 #include "cfg/get.hpp"
 #include "ftp/counter.hpp"

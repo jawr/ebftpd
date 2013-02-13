@@ -20,8 +20,17 @@ include_directories (${Boost_INCLUDE_DIRS})
 find_package (MongoDB REQUIRED)
 include_directories (${MongoDB_INCLUDE_DIRS})
 
+# Check for pthreads
+find_package (Pthread REQUIRED)
+include_directories (${Pthread_INCLUDE_DIRS})
+
+# Some OSes seem to use external libexecinfo
+find_package (Execinfo REQUIRED)
+include_directories(${Execinfo_INCLUDE_DIRS})
+
+
 if(NOT TARGET version)
 	add_custom_target(version 
 		COMMAND ${CMAKE_COMMAND} -D DEST=${CMAKE_CURRENT_LIST_DIR}/../src/version.hpp 
-														 -P ${MODULES_DIR}/version.cmake)
+														 -P ${MODULES_DIR}/Version.cmake)
 endif()
