@@ -2,7 +2,6 @@ cmake_minimum_required (VERSION 2.8)
 project(ebftpd)
 include ("../../CMakeModules/Defaults.cmake")
 include_directories (src ${SERVER_SRC})
-link_libraries (mongoclient boost_regex boost_thread boost_system boost_filesystem boost_program_options)
 add_executable (chown src/chown.cpp
 								${SERVER_SRC}/cfg/config.cpp
 								${SERVER_SRC}/cfg/setting.cpp
@@ -20,3 +19,10 @@ add_executable (chown src/chown.cpp
 								${SERVER_SRC}/util/path/status.cpp
 								${SERVER_SRC}/util/path/diriterator.cpp)
 add_dependencies(chown version)
+target_link_libraries(
+  chown
+  ${MongoDB_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${Pthread_LIBRARIES}
+)
+
