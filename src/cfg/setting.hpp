@@ -18,6 +18,7 @@ class Database
 {
   std::string name;
   std::string address;
+  std::string host;
   int port;
   std::string login;
   std::string password;
@@ -29,8 +30,10 @@ public:
   const std::string& Name() const { return name; }
   const std::string& Address() const { return address; }
   int Port() const { return port; }
+  const std::string& Host() const { return host; }
   const std::string& Login() const { return login; }
   const std::string& Password() const { return password; }
+  bool NeedAuth() const;
 };
 
 class Right

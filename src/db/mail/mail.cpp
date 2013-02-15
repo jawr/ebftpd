@@ -1,127 +1,104 @@
+#include <boost/optional.hpp>
 #include "db/mail/mail.hpp"
 #include "db/mail/message.hpp"
-#include "db/bson/message.hpp"
-#include "db/pool.hpp"
-#include "db/task.hpp"
+#include "db/connection.hpp"
 
-namespace db
+namespace db { namespace mail
 {
 
-typedef std::shared_ptr<Task> TaskPtr;
-typedef std::vector<mongo::BSONObj> QueryResults;
-
-namespace mail
+mongo::BSONObj Serialize(const Message& message)
 {
+  mongo::BSONObjBuilder bob;
+  bob.append("recipient", message.recipient);
+  bob.append("sender", message.sender);
+  bob.append("time sent", ToDateT(message.timeSent));
+  bob.append("body", message.body);
+  bob.append("status", util::EnumToString(message.status));
+  return bob.obj();
+}
+
+Message Unserialize(const mongo::BSONObj& obj)
+{
+  Message message;
+  message.recipient = obj["recipient"].Int();
+  message.sender = obj["sender"].String();
+  message.timeSent = ToPosixTime(obj["time sent"].Date());
+  message.body = obj["body"].String();
+  message.status = util::EnumFromString<db::mail
+      ::Status>(obj["status"].String());
+  mongo::BSONElement oid;
+  obj.getObjectID(oid);
+  message.oid = oid.OID();
+  return message;
+}
 
 void Send(const Message& message)
 {
-  mongo::BSONObj obj = db::bson::Message::Serialize(message);
-  TaskPtr task(new db::Insert("mail", obj));
-  Pool::Queue(task);
+  NoErrorConnection conn;
+  conn.Insert("mail", Serialize(message));
 }
 
 std::vector<Message> Get(acl::UserID recipient)
 {
-  QueryResults results;
+  NoErrorConnection conn;
+  return conn.QueryMulti<Message>("mail", QUERY("recipient" << recipient));
+}
+
+boost::optional<mongo::OID> IndexToOID(acl::UserID recipient, int index)
+{
+  NoErrorConnection conn;
   mongo::Query query = QUERY("recipient" << recipient);
-  boost::unique_future<bool> future;
-  TaskPtr task(new db::Select("mail", query, results, future));
-  Pool::Queue(task);
-
-  future.wait();
-
-  std::vector<Message> mail;
+  auto cursor = conn.Query("mail", query, 1, index);
+  if (!cursor || !cursor->more()) return boost::optional<mongo::OID>();
   
-  for (auto& obj: results)
-    mail.emplace_back(bson::Message::Unserialize(obj));
-    
-  return mail;
+  mongo::BSONElement oidElem;
+  cursor->next().getObjectID(oidElem);
+  return boost::optional<mongo::OID>(oidElem.OID());
 }
 
 bool Save(acl::UserID recipient, int index)
 {
-  QueryResults results;
-
-  {
-    mongo::Query query = QUERY("recipient" << recipient);
-    boost::unique_future<bool> future;
-    TaskPtr task(new db::Select("mail", query, results, future, 1, index));
-    Pool::Queue(task);
-    future.wait();
-    
-    if (results.empty()) return false;
-  }
+  auto oid = IndexToOID(recipient, index);
+  if (!oid) return false;
   
-  mongo::BSONElement oid;
-  results.front().getObjectID(oid);
-  mongo::Query query = QUERY("_id" << oid.OID());
-  boost::unique_future<int> future;
-  TaskPtr task(new db::Update("mail", query, BSON("$set" << BSON("status" << "saved")), future));
-  Pool::Queue(task);
-  
-  future.wait();
-  return future.get() > 0;
+  NoErrorConnection conn;
+  mongo::Query query = QUERY("_id" << *oid);
+  return conn.Update("mail", query, BSON("$set" << BSON("status" << "saved"))) > 0;
 }
 
-unsigned SaveTrash(acl::UserID recipient)
+int SaveTrash(acl::UserID recipient)
 {
   mongo::Query query = QUERY("recipient" << recipient << "status" << "trash");
-  boost::unique_future<int> future;
-  TaskPtr task(new db::Update("mail", query, BSON("$set" << BSON("status" << "saved")), future));
-  Pool::Queue(task);
-  future.wait();
-  int purged = future.get();
-  return purged == -1 ? 0 : purged;
+  NoErrorConnection conn;
+  return conn.Update("mail", query, BSON("$set" << BSON("status" << "saved")));
 }
 
 bool Purge(acl::UserID recipient, int index)
 {
-  QueryResults results;
-  
-  {
-    mongo::Query query = QUERY("recipient" << recipient);
-    boost::unique_future<bool> future;
-    TaskPtr task(new db::Select("mail", query, results, future, 1, index));
-    Pool::Queue(task);
-    future.wait();
-    
-    if (results.empty()) return false;
-  }
-  
-  mongo::BSONElement oid;
-  results.front().getObjectID(oid);
-  mongo::Query query = QUERY("_id" << oid.OID());
-  boost::unique_future<int> future;
-  TaskPtr task(new db::Delete("mail", query, future));
-  Pool::Queue(task);
-  future.wait();
-  
-  return future.get() > 0;
+  auto oid = IndexToOID(recipient, index);
+  if (!oid) return false;
+
+  NoErrorConnection conn;
+  return conn.Remove("mail", QUERY("_id" << *oid)) > 0;
 }
 
-unsigned PurgeTrash(acl::UserID recipient)
+int PurgeTrash(acl::UserID recipient)
 {
   mongo::Query query = QUERY("recipient" << recipient << "status" << "trash");
-  boost::unique_future<int> future;
-  TaskPtr task(new db::Delete("mail", query, future));
-  Pool::Queue(task);
-  future.wait();
-  int purged = future.get();
-  return purged == -1 ? 0 : purged;
+  NoErrorConnection conn;
+  return conn.Remove("mail", query);
 }
 
 void LogOffPurgeTrash(acl::UserID recipient)
 {
-  mongo::Query query = QUERY("recipient" << recipient << "status" << "trash");
-  TaskPtr task(new db::Delete("mail", query));
-  Pool::Queue(task);
+  PurgeTrash(recipient);
 }
 
 void Trash(const Message& message)
 {
   mongo::Query query = QUERY("_id" << message.oid);
-  TaskPtr task(new db::Update("mail", query, BSON("$set" << BSON("status" << "trash"))));
-  Pool::Queue(task);
+  NoErrorConnection conn;
+  conn.Update("mail", query, BSON("$set" << BSON("status" << "trash")));
 }
 
 } /* mail namespace */

@@ -7,13 +7,13 @@
 #include "acl/types.hpp"
 #include "util/enumstrings.hpp"
 
-namespace db { namespace bson
+namespace db { namespace mail
 {
-struct Message;
-}
 
-namespace mail
-{
+class Message;
+
+Message Unserialize(const mongo::BSONObj& obj);
+mongo::BSONObj Serialize(const Message& message);
 
 enum class Status : unsigned { Unread, Trash, Saved };
 
@@ -42,8 +42,9 @@ public:
   const boost::posix_time::ptime& TimeSent() const { return timeSent; }
   ::db::mail::Status Status() const { return status; }
   
-  friend struct db::bson::Message;
   friend void Trash(const Message& message);
+  friend Message Unserialize(const mongo::BSONObj& obj);
+  friend mongo::BSONObj Serialize(const Message& message);
 };
 
 std::string StatusToString(Status status);

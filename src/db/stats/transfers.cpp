@@ -1,11 +1,10 @@
 #include "db/stats/transfers.hpp"
-#include "db/task.hpp"
-#include "db/pool.hpp"
-#include "db/bson/error.hpp"
-#include "db/bson/timeframe.hpp"
+#include "db/error.hpp"
+#include "db/stats/serialization.hpp"
 #include "cfg/get.hpp"
 #include "stats/types.hpp"
 #include "db/stats/traffic.hpp"
+#include "db/connection.hpp"
 
 namespace db { namespace stats
 {
@@ -24,7 +23,7 @@ long long TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
       sections.append(kv.first);
     match.appendElements(BSON("section" << BSON("$nin" << sections.arr())));
   }
-  match.appendElements(::db::bson::TimeframeSerialize(timeframe));
+  match.appendElements(Serialize(timeframe));
   
   mongo::BSONObj cmd = BSON("aggregate" << "transfers" << "pipeline" <<
     BSON_ARRAY(
@@ -34,28 +33,26 @@ long long TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,
           "total" << BSON("$sum" << "$kbytes")
         ))));
   
-  boost::unique_future<bool> future;
-  mongo::BSONObj result;
-  TaskPtr task(new db::RunCommand(cmd, result, future));
-  Pool::Queue(task);
-  future.wait();
-
-  auto elems = result["result"].Array();
   
-  long long total = 0;
-  if (!elems.empty())
+  mongo::BSONObj result;
+  NoErrorConnection conn;
+  if (conn.RunCommand(cmd, result))
   {
     try
     {
-      total = elems[0]["total"].Long();
+      auto elems = result["result"].Array();
+      if (!elems.empty())
+      {
+        return elems[0]["total"].Long();
+      }
     }
     catch (const mongo::DBException& e)
     {
-      db::bson::UnserializeFailure("transfers total", e, result, true);
+      LogException("Unserialize transfers total", e, result);
     }
   }
   
-  return total;
+  return 0;
 }
 
 Traffic TransfersUser(acl::UserID uid, ::stats::Timeframe timeframe,

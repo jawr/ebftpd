@@ -1,10 +1,8 @@
 #include <boost/regex.hpp>
 #include <boost/thread/future.hpp>
 #include "db/index/index.hpp"
-#include "db/task.hpp"
-#include "db/pool.hpp"
-#include "db/bson/bson.hpp"
 #include "util/misc.hpp"
+#include "db/connection.hpp"
 
 namespace db
 {
@@ -14,15 +12,26 @@ typedef std::vector<mongo::BSONObj> QueryResults;
 namespace index
 {
 
+
+SearchResult Unserialize(const mongo::BSONObj& obj)
+{
+  mongo::BSONElement oid;
+  obj.getObjectID(oid);
+  return SearchResult(obj["path"].String(),
+                      obj["section"].String(),
+                      ToPosixTime(oid.OID().asDateT()));
+}
+
 void Add(const std::string& path, const std::string& section)
 {
-  Pool::Queue(std::make_shared<db::Insert>("index", 
-          BSON("path" << path << "section" << section)));
+  FastConnection conn;
+  conn.Insert("index", BSON("path" << path << "section" << section));
 }
 
 void Delete(const std::string& path)
 {
-  Pool::Queue(std::make_shared<db::Delete>("index", QUERY("path" << path)));
+  NoErrorConnection conn;
+  conn.Remove("index", QUERY("path" << path));
 }
 
 std::vector<SearchResult> Search(const std::vector<std::string>& terms, int limit)
@@ -34,28 +43,8 @@ std::vector<SearchResult> Search(const std::vector<std::string>& terms, int limi
   }
   
   mongo::Query query(bob.obj());
-  QueryResults queryResults;
-  boost::unique_future<bool> future;
-
-  Pool::Queue(std::make_shared<db::Select>("index", query.sort("_id", -1),        
-                    queryResults, future, limit));
-  
-  future.wait();
-  
-  std::vector<SearchResult> results;
-  if (future.get())
-  {
-    for (const auto& obj : queryResults)
-    {
-      mongo::BSONElement oid;
-      obj.getObjectID(oid);
-      results.emplace_back(obj["path"].String(),
-                           obj["section"].String(),
-                           db::bson::ToPosixTime(oid.OID().asDateT()));
-    }
-  }
-  
-  return results;
+  NoErrorConnection conn;
+  return conn.QueryMulti<SearchResult>("index", query.sort("_id", -1), limit);
 }
 
 std::vector<SearchResult> Newest(int limit)

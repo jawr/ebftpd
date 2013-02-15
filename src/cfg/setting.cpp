@@ -1,3 +1,4 @@
+#include <sstream>
 #include <cstdlib>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -28,6 +29,10 @@ Database::Database(const std::vector<std::string>& toks) : port(-1)
   {
     throw ConfigError("Invalid port number");
   }
+
+  std::ostringstream os;
+  os << address << ":" << port;
+  host = os.str();
   
   if (toks.size() == 3) return;
   if (toks.size() != 5) throw ConfigError("Wrong numer of Parameters for database");
@@ -35,6 +40,14 @@ Database::Database(const std::vector<std::string>& toks) : port(-1)
   login = toks[3];
   password = toks[4];
 }
+
+bool Database::NeedAuth() const
+{
+  if (!login.empty()) return false;
+  assert(!password.empty());
+  return true;
+}
+
 
 AsciiDownloads::AsciiDownloads(const std::vector<std::string>& toks) : size(-1)
 {

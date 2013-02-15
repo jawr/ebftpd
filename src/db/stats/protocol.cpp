@@ -1,12 +1,10 @@
 #include "db/stats/protocol.hpp"
 #include "stats/date.hpp"
-#include "db/task.hpp"
-#include "db/pool.hpp"
 #include "cfg/get.hpp"
-#include "db/bson/error.hpp"
-#include "db/bson/timeframe.hpp"
 #include "db/stats/traffic.hpp"
 #include "stats/types.hpp"
+#include "db/stats/serialization.hpp"
+#include "db/connection.hpp"
 
 namespace db { namespace stats
 {
@@ -23,46 +21,43 @@ void ProtocolUpdate(acl::UserID uid, long long sendKBytes, long long receiveKByt
   qbob.append("year", date.Year());
   mongo::Query query(qbob.obj());
   
-  mongo::BSONObj bo = BSON("$inc" << BSON("send kbytes" << sendKBytes) <<
-                           "$inc" << BSON("receive kbytes" << receiveKBytes));
-  TaskPtr task(new db::Update("protocol", query, bo, true));
-  Pool::Queue(task);
+  mongo::BSONObj obj = BSON("$inc" << BSON("send kbytes" << sendKBytes) <<
+                            "$inc" << BSON("receive kbytes" << receiveKBytes));
+  NoErrorConnection conn;
+  conn.Update("protocol", query, obj, true);
 }
 
 Traffic ProtocolUser(acl::UserID uid, ::stats::Timeframe timeframe)
 {
   mongo::BSONObj cmd = BSON("aggregate" << "protocol" << "pipeline" <<
     BSON_ARRAY(
-      BSON("$match" << ::db::bson::TimeframeSerialize(timeframe)) <<
+      BSON("$match" << Serialize(timeframe)) <<
       BSON("$group" << 
         BSON("_id" << (uid == -1 ? "" : "$uid") <<
           "send total" << BSON("$sum" << "$send kbytes") <<
           "receive total" << BSON("$sum" << "$receive kbytes")
         ))));
   
-  boost::unique_future<bool> future;
   mongo::BSONObj result;
-  TaskPtr task(new db::RunCommand(cmd, result, future));
-  Pool::Queue(task);
-  future.wait();
-
-  auto elems = result["result"].Array();
-  
-  Traffic total;
-  if (!elems.empty())
+  NoErrorConnection conn;
+  if (conn.RunCommand(cmd, result))
   {
-    try
+    auto elems = result["result"].Array();  
+    if (!elems.empty())
     {
-      total = Traffic(elems[0]["send total"].Long(), 
-                      elems[0]["receive total"].Long());
-    }
-    catch (const mongo::DBException& e)
-    {
-      db::bson::UnserializeFailure("protocol total", e, result, true);
+      try
+      {
+        return Traffic(elems[0]["send total"].Long(), 
+                       elems[0]["receive total"].Long());
+      }
+      catch (const mongo::DBException& e)
+      {
+        LogException("Unserialize protocol total", e, result);
+      }
     }
   }
   
-  return total;
+  return Traffic();
 }
 
 Traffic ProtocolTotal(::stats::Timeframe timeframe)

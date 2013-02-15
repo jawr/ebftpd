@@ -1,4 +1,8 @@
 #include <cassert>
+#include <functional>
+#include <vector>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include "acl/misc.hpp"
 #include "acl/user.hpp"
@@ -6,6 +10,8 @@
 #include "fs/owner.hpp"
 #include "cfg/get.hpp"
 #include "util/string.hpp"
+#include "acl/ipstrength.hpp"
+#include "acl/passwdstrength.hpp"
 
 namespace acl { namespace message
 {
@@ -141,4 +147,111 @@ int DownloadMinimum(const User& user, const fs::Path& path)
 }
 
 } /* speed namespace */
+
+bool AllowFxp(const User& user, bool& logging, 
+  const std::function<bool(const cfg::setting::AllowFxp&)>& isAllowed)
+{
+  const cfg::Config& config = cfg::Get();
+  for (const auto& af : config.AllowFxp())
+  {
+    if (af.ACL().Evaluate(user))
+    {
+      logging = af.Logging();
+      return isAllowed(af);
+    }
+  }
+  
+  return false;
+}
+
+bool AllowFxpSend(const User& user, bool& logging)
+{
+  return AllowFxp(user, logging, 
+      [](const cfg::setting::AllowFxp& af) { return af.Uploads(); });
+}
+
+bool AllowFxpReceive(const User& user, bool& logging)
+{
+  return AllowFxp(user, logging, 
+      [](const cfg::setting::AllowFxp& af) { return af.Downloads(); });
+}
+
+bool AllowSiteCmd(const User& user, const std::string& keyword)
+{
+  std::vector<std::string> toks;
+  boost::split(toks, keyword, boost::is_any_of("|"));
+	if (toks.empty()) return true;
+  for (auto& tok : toks)
+  {
+    try
+    {
+      if (cfg::Get().CommandACL(tok).Evaluate(user)) return true;
+    }
+    catch (const std::out_of_range&) { }
+  }
+  return false;
+}
+
+boost::optional<const cfg::setting::Creditcheck&> 
+CreditCheck(const User& user, const fs::VirtualPath& path)
+{
+  for (const auto& cc : cfg::Get().Creditcheck())
+  {
+    if (util::string::WildcardMatch(cc.Path(), path.ToString()) &&
+        cc.ACL().Evaluate(user))
+    {
+      return boost::optional<const cfg::setting::Creditcheck&>(cc);
+    }
+  }
+  return boost::optional<const cfg::setting::Creditcheck&>();
+}
+
+boost::optional<const cfg::setting::Creditloss&> 
+CreditLoss(const User& user, const fs::VirtualPath& path)
+{
+  for (const auto& cc : cfg::Get().Creditloss())
+  {
+    if (util::string::WildcardMatch(cc.Path(), path.ToString()) &&
+        cc.ACL().Evaluate(user))
+    {
+      return boost::optional<const cfg::setting::Creditloss&>(cc);
+    }
+  }
+  return boost::optional<const cfg::setting::Creditloss&>();
+}
+
+bool SecureIP(const User& user, const std::string& ip, IPStrength& minimum)
+{
+  IPStrength strength(ip);
+  for (auto& si : cfg::Get().SecureIp())
+    if (si.ACL().Evaluate(user))
+    {
+      if (si.Strength().Allowed(strength))
+        return true;
+      else
+      {
+        minimum = si.Strength();
+        return false;
+      }
+    }
+  return true;
+}
+
+bool SecurePass(const User& user, const std::string& password , PasswdStrength& minimum)
+{
+  PasswdStrength strength(password);
+  for (auto& sp : cfg::Get().SecurePass())
+    if (sp.ACL().Evaluate(user))
+    {
+      if (sp.Strength().Allowed(strength))
+        return true;
+      else
+      {
+        minimum = sp.Strength();
+        return false;
+      }
+    }
+  return true;
+}
+
 } /* acl namespace */
