@@ -71,7 +71,10 @@ Container Unserialize(const std::vector<mongo::BSONElement>& arr,
     auto elemObj = elem.Obj();
     std::set<std::string> fieldNames;
     elemObj.getFieldNames(fieldNames);
-    verify(fieldNames.size() == 1); // should be exception
+    
+    if (fieldNames.size() != 1)
+      throw mongo::DBException("invalid bson object for mapped container element", 13111);
+
     const std::string& key = *fieldNames.begin();
     
     typename Container::mapped_type value;

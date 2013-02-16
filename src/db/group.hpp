@@ -1,7 +1,8 @@
 #ifndef __DB_GROUP_HPP
 #define __DB_GROUP_HPP
 
-#include <iostream>
+#include <string>
+#include <memory>
 #include "acl/types.hpp"
 
 namespace mongo
@@ -43,6 +44,17 @@ public:
 
 mongo::BSONObj Serialize(const acl::Group& group);
 acl::Group Unserialize(const mongo::BSONObj& obj);
+
+struct GroupCache
+{
+  virtual std::string GIDToName(acl::GroupID gid) = 0;
+  virtual acl::GroupID NameToGID(const std::string& name) = 0;
+};
+
+void RegisterGroupCache(const std::shared_ptr<GroupCache>& cache);
+
+std::string GIDToName(acl::GroupID gid);
+acl::GroupID NameToGID(const std::string& name);
 
 } /* db namespace */
 

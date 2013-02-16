@@ -2,6 +2,7 @@
 #define __DB_USERP_HPP
 
 #include <string>
+#include <memory>
 #include <boost/optional.hpp>
 #include "acl/types.hpp"
 
@@ -59,6 +60,17 @@ public:
 
 mongo::BSONObj Serialize(const acl::User& user);
 acl::User Unserialize(const mongo::BSONObj& obj);
+
+struct UserCache
+{
+  virtual std::string UIDToName(acl::UserID uid) = 0;
+  virtual acl::UserID NameToUID(const std::string& name) = 0;
+};
+
+void RegisterUserCache(const std::shared_ptr<UserCache>& cache);
+
+std::string UIDToName(acl::UserID uid);
+acl::UserID NameToUID(const std::string& name);
 
 } /* db namespace */
 

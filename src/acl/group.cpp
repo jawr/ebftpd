@@ -1,7 +1,6 @@
 #include <cassert>
 #include "acl/group.hpp"
 #include "db/group.hpp"
-#include "db/grouputil.hpp"
 #include "util/error.hpp"
 
 namespace acl

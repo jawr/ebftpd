@@ -2,7 +2,6 @@
 #include "acl/user.hpp"
 #include "util/passwd.hpp"
 #include "db/user.hpp"
-#include "db/userutil.hpp"
 #include "util/error.hpp"
 
 namespace acl
