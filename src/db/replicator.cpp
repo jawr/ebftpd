@@ -1,8 +1,9 @@
 #include <list>
 #include <csignal>
-#include "acl/replicator.hpp"
+#include "db/replicator.hpp"
+#include "logs/logs.hpp"
 
-namespace acl
+namespace db
 {
 
 std::shared_ptr<Replicator> Replicator::instance;
@@ -19,6 +20,17 @@ void Replicator::ResetTimer()
   if (enabled) alarm(interval);
 }
 
+void Replicator::LogFailed(const std::list<Replicable*>& failed)
+{
+  logs::db << "Exceeded maximum retries while replicating caches: ";
+  for (auto it = failed.begin(); it != failed.end(); ++it)
+  {
+    if (it != failed.begin()) logs::db << ", ";
+    logs::db << (*it)->Name();
+  }
+  logs::db << logs::endl;
+}
+
 void Replicator::Run(const std::shared_ptr<BusyGuard>& lock)
 {
   std::list<Replicable*> notDone(caches.begin(), caches.end());
@@ -33,11 +45,7 @@ void Replicator::Run(const std::shared_ptr<BusyGuard>& lock)
     }
   }
   
-  if (!notDone.empty())
-  {
-    logs::db << "Exceeded maximum retries while attempting cache replication" << logs::endl;
-  }
-  
+  if (!notDone.empty()) LogFailed(notDone);
   ResetTimer();
   
   (void) lock;
@@ -58,4 +66,4 @@ void Replicator::InnerReplicate()
   std::async(std::launch::async, &Replicator::Run, this, lock);
 }
 
-} /* acl namespace */
+} /* db namespace */

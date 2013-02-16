@@ -1,14 +1,13 @@
-#ifndef __ACL_REPLICATOR_HPP
-#define __ACL_REPLICATOR_HPP
+#ifndef __DB_REPLICATOR_HPP
+#define __DB_REPLICATOR_HPP
 
 #include <atomic>
 #include <future>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
-#include "acl/replicable.hpp"
-#include "logs/logs.hpp"
+#include "db/replicable.hpp"
 
-namespace acl
+namespace db
 {
 
 class Replicator
@@ -35,6 +34,7 @@ class Replicator
 
   void InnerReplicate();
   void ResetTimer();
+  void LogFailed(const std::list<Replicable*>& failed);
   
 public:
 
@@ -61,6 +61,6 @@ public:
   }
 };
 
-} /* acl namespace */
+} /* db namespace */
 
 #endif
