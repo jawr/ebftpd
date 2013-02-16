@@ -23,7 +23,7 @@ void SETPGRPCommand::Execute()
   }
   
   acl::GroupID oldGID = -1;
-  util::Error ok = acl::UserCache::SetPrimaryGID(args[1], group.GID(), oldGID);
+  util::Error ok = acl::UserCache::SetPrimaryGID(args[1], group.ID(), oldGID);
   if (!ok)
     control.Reply(ftp::ActionNotOkay, ok.Message());
   else

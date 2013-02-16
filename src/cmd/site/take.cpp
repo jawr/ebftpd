@@ -6,7 +6,7 @@
 #include "acl/types.hpp"
 #include "acl/user.hpp"
 #include "acl/usercache.hpp"
-#include "acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "util/error.hpp"
 #include "db/user/userprofile.hpp"
 #include "cmd/error.hpp"
@@ -74,7 +74,7 @@ void TAKECommand::Execute()
   else if (type == "M")
     credits *= 1024 * 1024;
 
-  db::userprofile::DecrCredits(user.UID(), credits, section, true);
+  db::userprofile::DecrCredits(user.ID(), credits, section, true);
   
   std::ostringstream os;
   os << "Taken " << std::fixed << std::setprecision(2) << credits / 1024.0

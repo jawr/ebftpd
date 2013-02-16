@@ -62,7 +62,7 @@ void Client::SetState(ClientState state)
   if (state == ClientState::Finished && 
       this->state == ClientState::LoggedIn) 
   {
-    Counter::Login().Stop(user.UID());
+    Counter::Login().Stop(user.ID());
   }
   this->state = state;
 }
@@ -70,7 +70,7 @@ void Client::SetState(ClientState state)
 void Client::SetLoggedIn(const acl::UserProfile& profile, bool kicked)
 {
   
-  auto result = Counter::Login().Start(user.UID(), profile.NumLogins(), kicked, 
+  auto result = Counter::Login().Start(user.ID(), profile.NumLogins(), kicked, 
                                user.CheckFlag(acl::Flag::Exempt));
   switch (result)
   {
@@ -261,7 +261,7 @@ void Client::ReloadUser()
   
   try
   {
-    acl::UserProfile profile(db::userprofile::Get(user.UID()));
+    acl::UserProfile profile(db::userprofile::Get(user.ID()));
   
     boost::lock_guard<boost::mutex> lock(mutex);
     this->profile = std::move(profile);
@@ -338,14 +338,14 @@ bool Client::ConfirmCommand(const std::string& argStr)
 
 void Client::LogTraffic() const
 {
-  db::stats::ProtocolUpdate(user.UID(), (control.BytesWrite() + data.BytesWrite()) / 1024,
+  db::stats::ProtocolUpdate(user.ID(), (control.BytesWrite() + data.BytesWrite()) / 1024,
                             (control.BytesRead() + data.BytesRead()) / 1024);
 }
 
 bool Client::PostCheckAddress()
 {
-  return acl::UserCache::IdentIPAllowed(user.UID(), ident + "@" + IP()) ||
-        (IP() != Hostname() && acl::UserCache::IdentIPAllowed(user.UID(), ident + "@" + Hostname()));
+  return acl::UserCache::IdentIPAllowed(user.ID(), ident + "@" + IP()) ||
+        (IP() != Hostname() && acl::UserCache::IdentIPAllowed(user.ID(), ident + "@" + Hostname()));
 }
 
 bool Client::PreCheckAddress()
@@ -491,7 +491,7 @@ void Client::Run()
   scope_guard finishedGuard = make_guard([&]
   {
     SetState(ClientState::Finished);
-    if (user.UID() != -1) db::mail::LogOffPurgeTrash(user.UID());
+    if (user.ID() != -1) db::mail::LogOffPurgeTrash(user.ID());
     LogTraffic();
   });
 

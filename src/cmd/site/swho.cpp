@@ -3,7 +3,7 @@
 #include <boost/optional.hpp>
 #include "cmd/site/swho.hpp"
 #include "acl/user.hpp"
-#include "acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "acl/group.hpp"
 #include "acl/groupcache.hpp"
 #include "ftp/task/types.hpp"

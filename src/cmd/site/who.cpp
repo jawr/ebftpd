@@ -4,7 +4,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/site/who.hpp"
 #include "acl/user.hpp"
-#include "acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "db/user/userprofile.hpp"
 #include "acl/group.hpp"
 #include "acl/groupcache.hpp"

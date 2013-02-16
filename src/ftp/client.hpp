@@ -7,7 +7,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/user.hpp"
-#include "acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "util/net/tcpsocket.hpp"
 #include "util/net/tcplistener.hpp"
 #include "util/thread.hpp"

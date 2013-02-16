@@ -168,8 +168,8 @@ void MSGCommand::Send()
   for (auto& user : users)
   {
     if (user.Deleted()) continue;
-    if (user.UID() == client.User().UID()) continue;
-    db::mail::Send(db::mail::Message(client.User().Name(), user.UID(), body, now));
+    if (user.ID() == client.User().UID()) continue;
+    db::mail::Send(db::mail::Message(client.User().Name(), user.ID(), body, now));
     ++sentCount;
   }
   

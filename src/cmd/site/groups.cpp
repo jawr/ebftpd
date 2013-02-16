@@ -4,7 +4,7 @@
 #include "cmd/site/groups.hpp"
 #include "acl/group.hpp"
 #include "acl/user.hpp"
-#include "acl/groupprofile.hpp"
+#include "acl/group.hpp"
 #include "db/user/user.hpp"
 #include "db/group/group.hpp"
 #include "text/error.hpp"
@@ -44,7 +44,7 @@ void GROUPSCommand::Execute()
     std::string description;
     try
     {
-      description = db::groupprofile::Get(group.GID()).Description();
+      description = db::groupprofile::Get(group.ID()).Description();
     }
     catch (const util::RuntimeError& e)
     {

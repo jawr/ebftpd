@@ -1,12 +1,14 @@
 #include <cassert>
-#include "recode/acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "util/passwd.hpp"
-#include "db/userprofile.hpp"
+#include "db/user.hpp"
+#include "db/userutil.hpp"
+#include "util/error.hpp"
 
 namespace acl
 {
 
-UserProfile::UserProfile() :
+User::User() :
   db(*this),
   primaryGid(-1),
   creator(-1),
@@ -24,19 +26,19 @@ UserProfile::UserProfile() :
   ratio.insert(std::make_pair("", 3));
 }
 
-void UserProfile::Rename(const std::string& name)
+void User::Rename(const std::string& name)
 {
   this->name = name; 
   db->SaveName();
 }
 
-void UserProfile::AddIPMask(const std::string& ipMask)
+void User::AddIPMask(const std::string& ipMask)
 {
   ipMasks.push_back(ipMask);
   db->SaveIPMasks();
 }
 
-void UserProfile::DelIPMask(const std::string& ipMask)
+void User::DelIPMask(const std::string& ipMask)
 {
   auto it = std::find(ipMasks.begin(), ipMasks.end(), ipMask);
   if (it != ipMasks.end())
@@ -46,13 +48,13 @@ void UserProfile::DelIPMask(const std::string& ipMask)
   }
 }
 
-bool UserProfile::VerifyPassword(const std::string& password) const
+bool User::VerifyPassword(const std::string& password) const
 {
   using namespace util::passwd;
   return HexEncode(HashPassword(password, HexDecode(salt))) == this->password;
 }
 
-void UserProfile::SetPassword(const std::string& password)
+void User::SetPassword(const std::string& password)
 {
   using namespace util::passwd;  
   std::string rawSalt = GenerateSalt();
@@ -61,14 +63,14 @@ void UserProfile::SetPassword(const std::string& password)
   db->SavePassword();
 }
 
-void UserProfile::SetFlags(const std::string& flags)
+void User::SetFlags(const std::string& flags)
 {
   assert(ValidFlags(flags));
   this->flags = flags;
   db->SaveFlags();
 }
 
-void UserProfile::AddFlags(const std::string& flags)
+void User::AddFlags(const std::string& flags)
 {
   assert(ValidFlags(flags));
   for (char ch: flags)
@@ -80,12 +82,12 @@ void UserProfile::AddFlags(const std::string& flags)
   db->SaveFlags();
 }
 
-void UserProfile::AddFlag(Flag flag)
+void User::AddFlag(Flag flag)
 {
   AddFlags(std::string(1, static_cast<char>(flag)));
 }
 
-void UserProfile::DelFlags(const std::string& flags)
+void User::DelFlags(const std::string& flags)
 {
   for (char ch: flags)
   {
@@ -95,12 +97,12 @@ void UserProfile::DelFlags(const std::string& flags)
   db->SaveFlags();
 }
 
-void UserProfile::DelFlag(Flag flag)
+void User::DelFlag(Flag flag)
 {
   DelFlags(std::string(1, static_cast<char>(flag)));
 }
 
-bool UserProfile::CheckFlags(const std::string& flags) const
+bool User::CheckFlags(const std::string& flags) const
 {
   for (char ch: flags)
   {
@@ -109,138 +111,138 @@ bool UserProfile::CheckFlags(const std::string& flags) const
   return false;
 }
 
-bool UserProfile::CheckFlag(Flag flag) const
+bool User::CheckFlag(Flag flag) const
 {
   return this->flags.find(static_cast<char>(flag)) != std::string::npos;
 }
 
-bool UserProfile::HasSecondaryGID(GroupID gid) const
+bool User::HasSecondaryGID(GroupID gid) const
 {
   return std::find(secondaryGids.begin(), secondaryGids.end(), gid) != secondaryGids.end();
 }
 
-bool UserProfile::HasGID(GroupID gid) const
+bool User::HasGID(GroupID gid) const
 {
   return primaryGid == gid || HasSecondaryGID(gid);
 }
 
-void UserProfile::SetPrimaryGID(acl::GroupID gid)
+void User::SetPrimaryGID(acl::GroupID gid)
 {
   this->primaryGid = gid;
   db->SavePrimaryGID();
 }
 
-void UserProfile::AddSecondaryGID(GroupID gid)
+void User::AddSecondaryGID(GroupID gid)
 {
   secondaryGids.emplace_back(gid);
   db->SaveSecondaryGIDs();
 }
 
-void UserProfile::DelSecondaryGID(GroupID gid)
+void User::DelSecondaryGID(GroupID gid)
 {
   secondaryGids.erase(std::remove(secondaryGids.begin(), secondaryGids.end(), gid), 
       secondaryGids.end());
   db->SaveSecondaryGIDs();
 }
 
-void UserProfile::ResetSecondaryGIDs()
+void User::ResetSecondaryGIDs()
 {
   secondaryGids.clear();
   db->SaveSecondaryGIDs();
 }
 
-bool UserProfile::HasGadminGID(GroupID gid) const
+bool User::HasGadminGID(GroupID gid) const
 {
   return std::find(gadminGids.begin(), gadminGids.end(), gid) != gadminGids.end();
 }
 
-void UserProfile::AddGadminGID(GroupID gid)
+void User::AddGadminGID(GroupID gid)
 {
   gadminGids.insert(gid);
   db->SaveGadminGIDs();
   if (!CheckFlag(Flag::Gadmin)) AddFlag(Flag::Gadmin);
 }
 
-void UserProfile::DelGadminGID(GroupID gid)
+void User::DelGadminGID(GroupID gid)
 {
   gadminGids.erase(gid);
   db->SaveGadminGIDs();
   if (gadminGids.empty()) DelFlag(Flag::Gadmin);
 }
 
-void UserProfile::SetWeeklyAllotment(long long weeklyAllotment)
+void User::SetWeeklyAllotment(long long weeklyAllotment)
 {
   this->weeklyAllotment = weeklyAllotment;
   db->SaveWeeklyAllotment();
 }
 
-void UserProfile::SetHomeDir(const std::string& homeDir)
+void User::SetHomeDir(const std::string& homeDir)
 {
   this->homeDir = homeDir;
   db->SaveHomeDir();
 }
 
-void UserProfile::SetIdleTime(int idleTime)
+void User::SetIdleTime(int idleTime)
 {
   this->idleTime = idleTime;
   db->SaveIdleTime();
 }
 
-bool UserProfile::Expired() const
+bool User::Expired() const
 {
   if (!expires) return false;
   return boost::gregorian::day_clock::local_day() >= *expires;
 }
 
-void UserProfile::SetExpires(const boost::optional<boost::gregorian::date>& expires)
+void User::SetExpires(const boost::optional<boost::gregorian::date>& expires)
 {
   this->expires = expires;
   db->SaveExpires();
 }
 
-void UserProfile::SetNumLogins(int numLogins)
+void User::SetNumLogins(int numLogins)
 {
   this->numLogins = numLogins;
   db->SaveNumLogins();
 }
 
-void UserProfile::Comment(const std::string& comment)
+void User::Comment(const std::string& comment)
 {
   this->comment = comment;
   db->SaveComment();
 }
 
-void UserProfile::Tagline(const std::string& tagline)
+void User::Tagline(const std::string& tagline)
 {
   this->tagline = tagline;
   db->SaveTagline();
 }
 
-void UserProfile::SetMaxDownSpeed(long long maxDownSpeed)
+void User::SetMaxDownSpeed(long long maxDownSpeed)
 {
   this->maxDownSpeed = maxDownSpeed;
   db->SaveMaxDownSpeed();
 }
 
-void UserProfile::SetMaxUpSpeed(long long maxUpSpeed)
+void User::SetMaxUpSpeed(long long maxUpSpeed)
 {
   this->maxUpSpeed = maxUpSpeed;
   db->SaveMaxUpSpeed();
 }
 
-void UserProfile::SetMaxSimDown(int maxSimDown)
+void User::SetMaxSimDown(int maxSimDown)
 {
   this->maxSimDown = maxSimDown;
   db->SaveMaxSimDown();
 }
 
-void UserProfile::SetMaxSimUp(int maxSimUp)
+void User::SetMaxSimUp(int maxSimUp)
 {
   this->maxSimUp = maxSimUp;
   db->SaveMaxSimUp();
 }
 
-void UserProfile::SetLoggedIn()
+void User::SetLoggedIn()
 {
   ++loggedIn;
   db->SaveLoggedIn();
@@ -249,32 +251,32 @@ void UserProfile::SetLoggedIn()
   db->SaveLastLogin();
 }
 
-int UserProfile::SectionRatio(const std::string& section) const
+int User::SectionRatio(const std::string& section) const
 {
   auto it = ratio.find(section);
   return it != ratio.end() ? it->second : -1;
 }
 
-void UserProfile::SetSectionRatio(const std::string& section, int ratio)
+void User::SetSectionRatio(const std::string& section, int ratio)
 {
   this->ratio[section] = ratio;
   db->SaveRatio();
 }
 
-long long UserProfile::SectionCredits(const std::string& section) const
+long long User::SectionCredits(const std::string& section) const
 {
   auto it = credits.find(section);
   return it != credits.end() ? it->second : -1;
 }
 
-void UserProfile::IncrSectionCredits(const std::string& section, long long kBytes)
+void User::IncrSectionCredits(const std::string& section, long long kBytes)
 {
   long long newCredits;
   db->IncrCredits(section, kBytes, newCredits);
   this->credits[section] = newCredits;
 }
 
-bool UserProfile::DecrSectionCredits(const std::string& section, long long kBytes)
+bool User::DecrSectionCredits(const std::string& section, long long kBytes)
 {
   long long newCredits;
   if (!db->DecrCredits(section, kBytes, false, newCredits)) return false;
@@ -282,23 +284,70 @@ bool UserProfile::DecrSectionCredits(const std::string& section, long long kByte
   return true;
 }
 
-void UserProfile::DecrSectionCreditsForce(const std::string& section, long long kBytes)
+void User::DecrSectionCreditsForce(const std::string& section, long long kBytes)
 {
   long long newCredits;
   (void) db->DecrCredits(section, kBytes, false, newCredits);
   credits[section] = newCredits;
 }
 
-boost::optional<UserProfile> UserProfile::Load(acl::UserID uid)
+boost::optional<User> User::Load(acl::UserID uid)
 {
-  return db::UserProfile::Load(uid);
+  return db::User::Load(uid);
 }
 
-UserProfile UserProfile::Skeleton(acl::UserID uid)
+User User::Skeleton(acl::UserID uid)
 {
-  UserProfile profile;
-  profile.id = uid;
-  return profile;
+  User user;
+  user.id = uid;
+  return user;
+}
+
+User User::Create(const std::string& name, const std::string& password, 
+                  acl::UserID creator)
+{
+  try
+  {
+    User user;
+    user.name = name;
+    user.SetPassword(password);
+    user.creator = creator;
+    user.id = user.db->Create();
+    return user;
+  }
+  catch (const db::DBKeyError&)
+  {
+    throw util::RuntimeError("User already exists");
+  }
+}
+
+User User::FromTemplate(const std::string& name, const std::string& password,
+                        acl::UserID creator, const User& templateUser)
+{
+  try
+  {
+    User user(templateUser);
+    user.name = name;
+    user.SetPassword(password);
+    user.creator = creator;
+    user.DelFlag(Flag::Template);
+    user.id = user.db->Create();
+    return user;
+  }
+  catch (const db::DBKeyError&)
+  {
+    throw util::RuntimeError("User already exists");
+  }
+}
+
+std::string UIDToName(acl::UserID uid)
+{
+  return db::UIDToName(uid);
+}
+
+acl::UserID NameToUID(const std::string& name)
+{
+  return db::NameToUID(name);
 }
 
 } /* acl namespace */

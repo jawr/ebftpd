@@ -1,5 +1,5 @@
-#ifndef __ACL_USERPROFILE_HPP
-#define __ACL_USERPROFILE_HPP
+#ifndef __ACL_USER_HPP
+#define __ACL_USER_HPP
 
 #include <unordered_set>
 #include <unordered_map>
@@ -17,24 +17,24 @@ class BSONObj;
 
 namespace acl
 {
-class UserProfile;
+class User;
 }
 
 namespace db
 {
-class UserProfile;
-mongo::BSONObj Serialize(const acl::UserProfile& profile);
-acl::UserProfile Unserialize(const mongo::BSONObj& obj);
+class User;
+mongo::BSONObj Serialize(const acl::User& user);
+acl::User Unserialize(const mongo::BSONObj& obj);
 }
 
 namespace acl
 {
 
-typedef DBProxy<UserProfile, acl::UserID, db::UserProfile> UserProfileProxy;
+typedef DBProxy<User, acl::UserID, db::User> UserProxy;
 
-class UserProfile
+class User
 {
-  UserProfileProxy db;
+  UserProxy db;
 
   boost::posix_time::ptime modified;
   acl::UserID id;
@@ -71,7 +71,7 @@ class UserProfile
   std::unordered_map<std::string, int> ratio;
   std::unordered_map<std::string, long long> credits;
 
-  UserProfile();
+  User();
   
 public:
   class SetIDKey : util::KeyBase {  SetIDKey() { } };
@@ -175,13 +175,26 @@ public:
   void DecrDefaultCreditsForce(const std::string& section, long long kBytes)
   { return DecrDefaultCreditsForce("", kBytes); }
   
-  boost::optional<UserProfile> Load(acl::UserID uid);
-  UserProfile Skeleton(acl::UserID uid);
-  
-  friend class DBProxy<UserProfile, acl::UserID, db::UserProfile>;
-  friend mongo::BSONObj db::Serialize(const UserProfile& profile);
-  friend UserProfile db::Unserialize(const mongo::BSONObj& obj);
+  static boost::optional<User> Load(acl::UserID uid);
+  static User Skeleton(acl::UserID uid);
+  static User Create(const std::string& name, const std::string& password, 
+                     acl::UserID creator);
+  static User FromTemplate(const std::string& name, const std::string& password,
+                           acl::UserID creator, const User& templateUser);
+    
+  friend class DBProxy<User, acl::UserID, db::User>;
+  friend mongo::BSONObj db::Serialize(const User& user);
+  friend User db::Unserialize(const mongo::BSONObj& obj);
 };
+
+std::string UIDToName(acl::UserID uid);
+acl::UserID NameToUID(const std::string& name);
+
+inline bool UIDExists(acl::UserID uid)
+{ return UIDToName(uid) != "unknown"; }
+
+inline bool UserExists(const std::string& name)
+{ return NameToUID(name) != -1; }
 
 } /* acl namespace */
 

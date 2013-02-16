@@ -165,7 +165,7 @@ struct Traits<Rename>
   static util::Error Allowed(const User& user, const fs::VirtualPath& path)
   {
     fs::Owner owner = GetOwner(fs::MakeReal(path));
-    if (owner.UID() == user.UID() && AllowedOwner(user, path))
+    if (owner.UID() == user.ID() && AllowedOwner(user, path))
       return util::Error::Success();
     else
       return AllowedOther(user, path);
@@ -218,7 +218,7 @@ struct Traits<Delete>
   static util::Error Allowed(const User& user, const fs::VirtualPath& path)
   {
     fs::Owner owner = GetOwner(fs::MakeReal(path));
-    if (owner.UID() == user.UID() && AllowedOwner(user, path))
+    if (owner.UID() == user.ID() && AllowedOwner(user, path))
       return util::Error::Success();
     else
       return AllowedOther(user, path);

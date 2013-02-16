@@ -6,7 +6,6 @@
 #include "fs/directory.hpp"
 #include "util/path/status.hpp"
 #include "acl/user.hpp"
-#include "ftp/client.hpp"
 #include "fs/owner.hpp"
 #include "fs/direnumerator.hpp"
 #include "acl/path.hpp"
@@ -127,7 +126,7 @@ util::Error CreateDirectory(const acl::User& user, const VirtualPath& path)
   if (!e) return e;
 
   e = CreateDirectory(MakeReal(path));  
-  if (e) SetOwner(MakeReal(path), Owner(user.UID(), user.PrimaryGID()));
+  if (e) SetOwner(MakeReal(path), Owner(user.ID(), user.PrimaryGID()));
   return e;
 }
 

@@ -30,7 +30,7 @@ void Update(const acl::User& user, long long kBytes, long long xfertime,
 
   ::stats::Date date(cfg::Get().WeekStart() == cfg::WeekStart::Monday);
   mongo::BSONObjBuilder query;
-  query.append("uid", user.UID());
+  query.append("uid", user.ID());
   query.append("day", date.Day());
   query.append("week", date.Week());
   query.append("month", date.Month());
@@ -58,7 +58,7 @@ void UploadDecr(const acl::User& user, long long kBytes, time_t modTime, const s
           BSON("year" << t.Year() << "month" << t.Month()  <<
                "week" << t.Week() << "day" << t.Day())) <<
         BSON("$group" << 
-          BSON("_id" << user.UID() << 
+          BSON("_id" << user.ID() << 
             "total kbytes" << BSON("$sum" << "$kbytes") <<
             "total xfertime" << BSON("$sum" << "$xfertime")
       ))));

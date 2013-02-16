@@ -1,5 +1,5 @@
-#ifndef __ACL_GROUPPROFILE_HPP
-#define __ACL_GROUPPROFILE_HPP
+#ifndef __ACL_GROUP_HPP
+#define __ACL_GROUP_HPP
 
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -14,24 +14,24 @@ class BSONObj;
 
 namespace acl
 {
-class GroupProfile;
+class Group;
 }
 
 namespace db
 {
-class GroupProfile;
-mongo::BSONObj Serialize(const acl::GroupProfile& profile);
-acl::GroupProfile Unserialize(const mongo::BSONObj& obj);
+class Group;
+mongo::BSONObj Serialize(const acl::Group& group);
+acl::Group Unserialize(const mongo::BSONObj& obj);
 }
 
 namespace acl
 {
 
-typedef DBProxy<GroupProfile, acl::GroupID, db::GroupProfile> GroupProfileProxy;
+typedef DBProxy<Group, acl::GroupID, db::Group> GroupProxy;
 
-class GroupProfile
+class Group
 {
-  GroupProfileProxy db;
+  GroupProxy db;
   
   boost::posix_time::ptime modified;
   acl::GroupID id;
@@ -46,7 +46,7 @@ class GroupProfile
   long long maxAllotmentSize;
   int maxLogins;
 
-  GroupProfile();
+  Group();
   
 public:
   class SetIDKey : util::KeyBase {  SetIDKey() { } };
@@ -78,14 +78,25 @@ public:
   int MaxLogins() const { return maxLogins; }
   void SetMaxLogins(int maxLogins);
   
-  static boost::optional<GroupProfile> Load(acl::GroupID gid);
-  static GroupProfile Skeleton(acl::GroupID gid);
+  static boost::optional<Group> Load(acl::GroupID gid);
+  static Group Skeleton(acl::GroupID gid);
+  static Group Create(const std::string& name);
   
-  friend class DBProxy<GroupProfile, acl::GroupID, db::GroupProfile>;
-  friend class db::GroupProfile;
-  friend mongo::BSONObj db::Serialize(const GroupProfile& profile);
-  friend GroupProfile db::Unserialize(const mongo::BSONObj& obj);
+  friend class DBProxy<Group, acl::GroupID, db::Group>;
+  friend class db::Group;
+  friend mongo::BSONObj db::Serialize(const Group& group);
+  friend Group db::Unserialize(const mongo::BSONObj& obj);
 };
+
+std::string GIDToName(acl::GroupID gid);
+acl::GroupID NameToGID(const std::string& name);
+
+inline bool GIDExists(acl::GroupID gid)
+{ return GIDToName(gid) == "unknown"; }
+
+inline bool GroupExists(const std::string& name)
+{ return NameToGID(name) != -1; }
+
 
 } /* acl namespace */
 

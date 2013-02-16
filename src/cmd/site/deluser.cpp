@@ -36,7 +36,7 @@ void DELUSERCommand::Execute()
   else
   {
     boost::unique_future<unsigned> future;
-    std::make_shared<ftp::task::KickUser>(user.UID(), future)->Push();
+    std::make_shared<ftp::task::KickUser>(user.ID(), future)->Push();
     
     future.wait();
     unsigned kicked = future.get();

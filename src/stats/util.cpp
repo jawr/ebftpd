@@ -2,7 +2,7 @@
 #include <iomanip>
 #include "stats/util.hpp"
 #include "ftp/client.hpp"
-#include "acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "cfg/section.hpp"
 #include "acl/credits.hpp"
 #include "cfg/setting.hpp"

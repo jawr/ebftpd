@@ -24,14 +24,14 @@ void KICKCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
-  if (user.CheckFlag(acl::Flag::Siteop) && user.UID() != client.User().UID())
+  if (user.CheckFlag(acl::Flag::Siteop) && user.ID() != client.User().UID())
   {
     control.Reply(ftp::ActionNotOkay, "Cannot kick a siteop.");
     throw cmd::NoPostScriptError();
   } 
 
   boost::unique_future<unsigned> future;
-  std::make_shared<ftp::task::KickUser>(user.UID(), future)->Push();
+  std::make_shared<ftp::task::KickUser>(user.ID(), future)->Push();
 
   future.wait();
   unsigned kicked = future.get();

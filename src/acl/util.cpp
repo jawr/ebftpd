@@ -3,10 +3,8 @@
 #include <boost/regex.hpp>
 #include "acl/util.hpp"
 #include "util/error.hpp"
-#include "acl/groupcache.hpp"
-#include "acl/usercache.hpp"
 #include "util/verify.hpp"
-#include "acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "cfg/get.hpp"
 
 namespace acl
@@ -26,20 +24,22 @@ boost::regex validationPatterns[] =
 
 void CreateDefaults()
 {
-  if (acl::GroupCache::Create("ebftpd"))
+  if (!GIDExists(0))
   {
-    verify(acl::GroupCache::NameToGID("ebftpd") == 0);
+    verify(Group::Create("ebftpd"));
+    verify(NameToGID("ebftpd") == 0);
   }
-  
-  verify(acl::GroupCache::Exists(0));
 
-  if (acl::UserCache::Create("ebftpd", "ebftpd", "1", 0, 0))
+  if (!UIDExists(0))
   {
-    verify(acl::UserCache::NameToUID("ebftpd") == 0);
-    verify(acl::UserCache::AddIPMask("ebftpd", "*@localhost"));
+    verify(User::Create("ebftpd", "ebftpd"));
+    verify(NameToUID("ebftpd") == 0);
+    
+    auto user = User::Load(0);
+    verify(user);
+    user->AddIPMask("*@localhost");
+    user->AddFlag(Flag::Siteop);
   }
-  
-  verify(acl::UserCache::Exists(0));
 }
 
 bool Validate(ValidationType type, const std::string& s)
@@ -56,15 +56,15 @@ std::string FormatRatio(int ratio)
   return os.str();
 }
 
-std::string RatioString(const UserProfile& profile)
+std::string RatioString(const User& user)
 {
   std::ostringstream os;
-  os << FormatRatio(profile.Ratio(""));
+  os << FormatRatio(user.Ratio(""));
   for (const auto& kv : cfg::Get().Sections())
   {
-    if (profile.Ratio(kv.first) != -1)
+    if (user.Ratio(kv.first) != -1)
     {
-      os << " " << kv.first << "(" << FormatRatio(profile.Ratio(kv.first)) << ")";
+      os << " " << kv.first << "(" << FormatRatio(user.Ratio(kv.first)) << ")";
     }
   }
   return os.str();
@@ -77,15 +77,15 @@ std::string FormatCredits(long long credits)
   return os.str();
 }
 
-std::string CreditString(const UserProfile& profile)
+std::string CreditString(const User& user)
 {
   std::ostringstream os;
-  os << FormatCredits(profile.Credits(""));
+  os << FormatCredits(user.Credits(""));
   for (const auto& kv : cfg::Get().Sections())
   {
     if (kv.second.SeparateCredits())
     {
-      os << " " << kv.first << "(" << FormatCredits(profile.Credits(kv.first)) << ")";
+      os << " " << kv.first << "(" << FormatCredits(user.Credits(kv.first)) << ")";
     }
   }
   return os.str();

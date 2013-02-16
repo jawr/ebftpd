@@ -8,7 +8,7 @@
 #include "acl/user.hpp"
 #include "acl/usercache.hpp"
 #include "db/user/userprofile.hpp"
-#include "acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "acl/groupcache.hpp"
 #include "db/user/userprofile.hpp"
 #include "db/group/group.hpp"
@@ -67,7 +67,7 @@ void USERCommand::Execute()
   acl::UserProfile profile;
   try
   {
-    profile = db::userprofile::Get(user.UID());
+    profile = db::userprofile::Get(user.ID());
   }
   catch (const util::RuntimeError& e)
   {

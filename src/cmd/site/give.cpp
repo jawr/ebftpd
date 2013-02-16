@@ -5,7 +5,7 @@
 #include "acl/types.hpp"
 #include "acl/user.hpp"
 #include "acl/usercache.hpp"
-#include "acl/userprofile.hpp"
+#include "acl/user.hpp"
 #include "util/error.hpp"
 #include "logs/logs.hpp"
 #include "acl/allowsitecmd.hpp"
@@ -82,7 +82,7 @@ void GIVECommand::Execute()
   {
     try
     {
-      acl::UserProfile profile = db::userprofile::Get(user.UID());
+      acl::UserProfile profile = db::userprofile::Get(user.ID());
       int ratio = profile.Ratio(section);
       if (ratio == 0 || (ratio == -1 && profile.Ratio("") == 0))
       {
@@ -108,7 +108,7 @@ void GIVECommand::Execute()
   }
   
   // give user the credits
-  db::userprofile::IncrCredits(user.UID(), credits, section);
+  db::userprofile::IncrCredits(user.ID(), credits, section);
   os << "Given " << std::setprecision(2) << std::fixed << credits / 1024.0 
      << "KB credits to " << user.Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());

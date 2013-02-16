@@ -94,7 +94,7 @@ FileSinkPtr CreateFile(const acl::User& user, const VirtualPath& path)
     if (fd < 0) throw util::SystemError(errno);
   }
 
-  SetOwner(MakeReal(path), Owner(user.UID(), user.PrimaryGID()));
+  SetOwner(MakeReal(path), Owner(user.ID(), user.PrimaryGID()));
 
   return FileSinkPtr(new FileSink(fd, boost::iostreams::close_handle));
 }

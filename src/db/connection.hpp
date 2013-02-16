@@ -54,32 +54,18 @@ class Connection
   
 public:
   Connection(ConnectionMode mode);
-
-  int Update(const std::string& collection, const mongo::Query& query, const mongo::BSONObj& obj, bool upsert = false)
+  
+  LastError GetLastError()
   {
-    if (scopedConn)
-    {
-      boost::this_thread::disable_interruption noInterrupt;
-      
-      try
-      {
-        scopedConn->conn().update(Namespace(collection), query, obj, upsert);
-        if (mode != ConnectionMode::Fast)
-        {
-          return scopedConn->conn().getLastErrorDetailed()["n"].Int();
-        }
-      }
-      catch (const mongo::DBException& e)
-      {
-        LogException("Update", e, collection, query, obj, upsert);
-        if (mode == ConnectionMode::Safe) throw e;
-      }
-    }
-    return 0;
+    return LastError(scopedConn->conn().getLastErrorDetailed());
   }
 
+  int Update(const std::string& collection, const mongo::Query& query, 
+          const mongo::BSONObj& obj, bool upsert = false);
+  
   template <typename T>
-  void SetField(const std::string& collection, const mongo::Query& query, const T& obj, const std::vector<std::string>& fields)
+  void SetField(const std::string& collection, const mongo::Query& query, 
+          const T& obj, const std::vector<std::string>& fields)
   {
     try
     {
@@ -93,13 +79,15 @@ public:
     }
     catch (const mongo::DBException& e)
     {
-      LogException("SetField", e, typeid(obj).name(), boost::join(fields, " "));
-      if (mode == ConnectionMode::Safe) throw e;
+      LogException("Set field", e, typeid(obj).name(), boost::join(fields, " "));
+      if (mode == ConnectionMode::Safe) 
+        throw DBWriteError();
     }
   }
   
   template <typename T>
-  void SetField(const std::string& collection, const mongo::Query& query, const T& obj, const std::string& field)
+  void SetField(const std::string& collection, const mongo::Query& query, const T& obj, 
+        const std::string& field)
   {
     SetField(collection, query, obj, { field });
   }
@@ -114,11 +102,20 @@ public:
     try
     {
       scopedConn->conn().insert(Namespace(collection), obj);
+      if (mode != ConnectionMode::Fast)
+      {
+        auto err = GetLastError();
+        if (!err.Okay())
+        {
+          LogLastError("Insert", err, collection, obj);
+          if (mode == ConnectionMode::Safe) throw DBWriteError();
+        }
+      }
     }
     catch (const mongo::DBException& e)
     {
       LogException("Insert", e, collection, obj);
-      if (mode == ConnectionMode::Safe) throw e;
+      if (mode == ConnectionMode::Safe) throw DBWriteError();
     }
   }
   
@@ -139,7 +136,7 @@ public:
     }
     catch (const mongo::DBException& e)
     {
-      LogException("InsertOne", e, typeid(objects.front()).name());
+      LogException("Insert multi", e, typeid(objects.front()).name());
       if (mode == ConnectionMode::Safe) throw e;
     }    
   }
@@ -154,51 +151,16 @@ public:
     }
     catch (const mongo::DBException& e)
     {
-      LogException("InsertOne", e, typeid(obj).name());
+      LogException("Insert one", e, typeid(obj).name());
       if (mode == ConnectionMode::Safe) throw e;
     }
   }
 
-  int Remove(const std::string& collection, const mongo::Query& query)
-  {
-    if (!scopedConn) return 0;
-    
-    boost::this_thread::disable_interruption noInterrupt;
-    
-    try
-    {
-      scopedConn->conn().remove(Namespace(collection), query);
-      if (mode != ConnectionMode::Fast)
-      {
-        return scopedConn->conn().getLastErrorDetailed()["n"].Int();
-      }
-    }
-    catch (const mongo::DBException& e)
-    {
-      LogException("Remove", e, collection, query);
-      if (mode == ConnectionMode::Safe) throw e;
-    }
-    return 0;
-  }
+  int Remove(const std::string& collection, const mongo::Query& query);
   
-  std::unique_ptr<mongo::DBClientCursor> 
-  Query(const std::string& collection, const mongo::Query& query, int nToReturn = 0, int nToSkip = 0,
-        const mongo::BSONObj* fieldsToReturn = nullptr)
-  {
-    if (!scopedConn) return nullptr;
-    
-    try
-    {
-      return std::unique_ptr<mongo::DBClientCursor>(scopedConn->conn().query(
-                Namespace(collection), query, nToReturn, nToSkip, fieldsToReturn));
-    }
-    catch (const mongo::DBException& e)
-    {
-      LogException("Query", e, collection, query, nToReturn, nToSkip, *fieldsToReturn);
-      if (mode == ConnectionMode::Safe) throw e;
-      else return nullptr;
-    }
-  }
+  std::vector<mongo::BSONObj> Query(const std::string& collection, 
+        const mongo::Query& query, int nToReturn, int nToSkip, 
+        const mongo::BSONObj* fieldsToReturn);
   
   template <typename T>
   std::vector<T> QueryMulti(const std::string& collection, const mongo::Query& query, 
@@ -208,21 +170,19 @@ public:
     std::vector<T> results;
     if (!scopedConn) return results;
     
-    auto cursor = Query(collection, query, nToReturn, nToSkip, fieldsToReturn);
-    if (cursor)
+    auto objects = Query(collection, query, nToReturn, nToSkip, fieldsToReturn);
+    try
     {
-      try
-      {
-        while (cursor->more())
-        {
-          results.emplace_back(Unserialize<T>(cursor->nextSafe()));
-        }
-      }
-      catch (const mongo::DBException& e)
-      {
-        LogException("QueryMulti", e, collection, query, fieldsToReturn);
-        if (mode == ConnectionMode::Safe) throw e;
-      }
+      std::for_each(objects.begin(), objects.end(),
+              [&](const mongo::BSONObj& obj)
+              {
+                results.emplace_back(Unserialize<T>(obj));
+              });
+    }
+    catch (const mongo::DBException& e)
+    {
+      LogException("Query multi", e, collection, query, fieldsToReturn);
+      if (mode == ConnectionMode::Safe) throw e;
     }
     
     return results;
@@ -240,58 +200,33 @@ public:
     return boost::optional<T>();
   }
   
-  void EnsureIndex(const std::string& collection, const mongo::BSONObj& keys, bool unique)
-  {
-    if (!scopedConn) return;
-    
-    try
-    {
-      scopedConn->conn().ensureIndex(collection, keys, unique);
-    }
-    catch (const mongo::DBException& e)
-    {
-      LogException("EnsureIndex", e, collection, keys, unique);
-      if (mode == ConnectionMode::Safe) throw e;
-    }
-  }
+  void EnsureIndex(const std::string& collection, const mongo::BSONObj& keys, bool unique);
+  unsigned long long Count(const std::string& collection, 
+        const mongo::BSONObj& query = mongo::BSONObj());  
+          
+  bool RunCommand(const mongo::BSONObj& command, mongo::BSONObj& info, int options = 0);
+  bool Eval(const std::string& javascript, mongo::BSONElement& ret, 
+        mongo::BSONObj* args = nullptr);
+  int InsertAutoIncrement(const std::string& collection, const mongo::BSONObj& obj, 
+        const std::string& autoIncField);
   
-  unsigned long long Count(const std::string& collection, const mongo::BSONObj& query = mongo::BSONObj())
-  {
-    if (scopedConn) 
-    {
-      try
-      {
-        return scopedConn->conn().count(Namespace(collection), query);
-      }
-      catch (const mongo::DBException& e)
-      {
-        LogException("Count", e, collection, query);
-        if (mode == ConnectionMode::Safe) throw e;
-      }
-    }
-    
-    return 0;
-  }
-  
-  bool RunCommand(const mongo::BSONObj& command, mongo::BSONObj& info, int options = 0)
+  template <typename T>
+  int InsertAutoIncrement(const std::string& collection, const T& obj, 
+        const std::string& autoIncField)
   {
     if (scopedConn)
     {
-      boost::this_thread::disable_interruption noInterrupt;
-      
       try
       {
-        return scopedConn->conn().runCommand(database, command, info, options);
+        return InsertAutoIncrement(collection, Serialize(obj), autoIncField);
       }
       catch (const mongo::DBException& e)
       {
-        LogException("RunCommand", e, database, command, "output reference", options);
+        LogException("Insert one", e, typeid(obj).name());
         if (mode == ConnectionMode::Safe) throw e;
-      }      
+      }
     }
-    
-    return false;
-    
+    return -1;
   }
 };
 
@@ -312,6 +247,8 @@ class FastConnection : public Connection
 public:
   FastConnection() : Connection(ConnectionMode::Fast) { }
 };
+
+std::ostream& operator<<(std::ostream& os, const mongo::BSONObj* obj);
 
 } /* db namespace */
 

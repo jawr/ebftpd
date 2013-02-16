@@ -17,7 +17,7 @@
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
-#include "acl/groupprofile.hpp"
+#include "acl/group.hpp"
 #include "acl/util.hpp"
 #include "acl/allowsitecmd.hpp"
 #include "cmd/error.hpp"
@@ -68,7 +68,7 @@ void GROUPCommand::Execute()
   acl::GroupProfile profile;
   try
   {
-    profile = db::groupprofile::Get(group.GID());
+    profile = db::groupprofile::Get(group.ID());
   }
   catch (const util::RuntimeError&)
   {
@@ -105,7 +105,7 @@ void GROUPCommand::Execute()
   std::unordered_map<acl::UserID, ::stats::Stat> dnStats;// = db::stats::GetAllDown(users);
   std::unordered_map<acl::UserID, ::stats::Stat> upStats;// = db::stats::GetAllUp(users);
 
-  std::cout << db::groupprofile::SlotsUsed(group.GID()) << std::endl;
+  std::cout << db::groupprofile::SlotsUsed(group.ID()) << std::endl;
   
   for (auto& user: users)
   {
@@ -116,12 +116,12 @@ void GROUPCommand::Execute()
 
     body.RegisterValue("flag", flag);
     body.RegisterValue("user", user.Name());
-    body.RegisterValue("files_up", upStats[user.UID()].Files());
-    body.RegisterSize("size_up", upStats[user.UID()].KBytes());
-    body.RegisterValue("files_dn", dnStats[user.UID()].Files());
-    body.RegisterSize("size_dn", dnStats[user.UID()].KBytes());
-    body.RegisterValue("ratio", acl::RatioString(profiles[user.UID()]));
-    body.RegisterValue("weekly_allot", profiles[user.UID()].WeeklyAllotment());
+    body.RegisterValue("files_up", upStats[user.ID()].Files());
+    body.RegisterSize("size_up", upStats[user.ID()].KBytes());
+    body.RegisterValue("files_dn", dnStats[user.ID()].Files());
+    body.RegisterSize("size_dn", dnStats[user.ID()].KBytes());
+    body.RegisterValue("ratio", acl::RatioString(profiles[user.ID()]));
+    body.RegisterValue("weekly_allot", profiles[user.ID()].WeeklyAllotment());
     os << body.Compile();
   }
   

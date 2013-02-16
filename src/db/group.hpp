@@ -1,5 +1,5 @@
-#ifndef __DB_GROUPPROFILE_HPP
-#define __DB_GROUPPROFILE_HPP
+#ifndef __DB_GROUP_HPP
+#define __DB_GROUP_HPP
 
 #include <iostream>
 #include "acl/types.hpp"
@@ -12,22 +12,22 @@ class Query;
 
 namespace acl
 {
-class GroupProfile;
+class Group;
 } 
 
 namespace db
 {
 
-class GroupProfile
+class Group
 {
-  acl::GroupProfile& profile;
+  acl::Group& group;
   
   void SaveField(const std::string& field);
   
 public:
-  GroupProfile(acl::GroupProfile& profile) :  profile(profile) { }
+  Group(acl::Group& group) :  group(group) { }
   
-  void Save();
+  acl::GroupID Create();
   void SaveName();
   void SaveDescription();
   void SaveComment();
@@ -37,12 +37,12 @@ public:
   void SaveMaxAllotmentSize();
   void SaveMaxLogins();
   
-  static boost::optional<acl::GroupProfile> Load(acl::GroupID gid);
+  static boost::optional<acl::Group> Load(acl::GroupID gid);
 };
 
 
-mongo::BSONObj Serialize(const acl::GroupProfile& profile);
-acl::GroupProfile Unserialize(const mongo::BSONObj& obj);
+mongo::BSONObj Serialize(const acl::Group& group);
+acl::Group Unserialize(const mongo::BSONObj& obj);
 
 } /* db namespace */
 

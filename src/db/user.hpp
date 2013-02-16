@@ -1,5 +1,5 @@
-#ifndef __DB_USERPROFILE_HPP
-#define __DB_USERPROFILE_HPP
+#ifndef __DB_USERP_HPP
+#define __DB_USERP_HPP
 
 #include <string>
 #include <boost/optional.hpp>
@@ -12,22 +12,22 @@ class BSONObj;
 
 namespace acl
 {
-class UserProfile;
+class User;
 } 
 
 namespace db
 {
 
-class UserProfile
+class User
 {
-  acl::UserProfile& profile;
+  acl::User& user;
 
   void SaveField(const std::string& field);
   
 public:
-  UserProfile(acl::UserProfile& profile) :  profile(profile) { }
+  User(acl::User& user) :  user(user) { }
   
-  void Save();
+  acl::UserID Create();
   void SaveName();
   void SaveIPMasks();
   void SavePassword();
@@ -54,11 +54,11 @@ public:
   bool DecrCredits(const std::string& section, long long kBytes, 
                    bool force, long long& newCredits);
                    
-  static boost::optional<acl::UserProfile> Load(acl::UserID uid);
+  static boost::optional<acl::User> Load(acl::UserID uid);
 };
 
-mongo::BSONObj Serialize(const acl::UserProfile& profile);
-acl::UserProfile Unserialize(const mongo::BSONObj& obj);
+mongo::BSONObj Serialize(const acl::User& user);
+acl::User Unserialize(const mongo::BSONObj& obj);
 
 } /* db namespace */
 

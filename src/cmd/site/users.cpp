@@ -54,9 +54,9 @@ void USERSCommand::Execute()
 
     for (auto& user: users)
     {
-      ::stats::Stat upStat = db::stats::CalculateSingleUser(user.UID(), "", 
+      ::stats::Stat upStat = db::stats::CalculateSingleUser(user.ID(), "", 
                             ::stats::Timeframe::Alltime, ::stats::Direction::Upload);
-      ::stats::Stat dnStat = db::stats::CalculateSingleUser(user.UID(), "", 
+      ::stats::Stat dnStat = db::stats::CalculateSingleUser(user.ID(), "", 
                             ::stats::Timeframe::Alltime, ::stats::Direction::Download);
 
       body.RegisterValue("user", user.Name());

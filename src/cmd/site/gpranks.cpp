@@ -12,7 +12,7 @@
 #include "db/group/groupprofile.hpp"
 #include "acl/allowsitecmd.hpp"
 #include "acl/misc.hpp"
-#include "acl/groupprofile.hpp"
+#include "acl/group.hpp"
 #include "stats/stat.hpp"
 
 namespace cmd { namespace site
