@@ -12,7 +12,7 @@ void IDLECommand::Execute()
 {
   namespace pt = boost::posix_time;
 
-  if (client.Profile().IdleTime() == 0)
+  if (client.User().IdleTime() == 0)
   {
     control.Reply(ftp::CommandOkay, "This command doesn't apply to you, you have no idle limit.");
     return;
@@ -27,38 +27,37 @@ void IDLECommand::Execute()
   }                
   else
   {
-    pt::seconds idleTimeout(0);
     try
     {
-      idleTimeout = pt::seconds(boost::lexical_cast<long>(args[1]));
+      pt::seconds idleTimeout(boost::lexical_cast<long>(args[1]));
+    
+      const cfg::Config& config = cfg::Get();
+      
+      pt::seconds maximum(config.IdleTimeout().Maximum());
+      if (client.User().IdleTime() > 0)
+        maximum = pt::seconds(client.User().IdleTime());
+      
+      if (idleTimeout < config.IdleTimeout().Minimum() ||
+          idleTimeout > maximum)
+      {
+        std::ostringstream os;
+        os << "Idle timeout must be between " 
+           << config.IdleTimeout().Minimum().total_seconds()
+           << " and " << maximum.total_seconds() << " seconds.";
+        control.Reply(ftp::SyntaxError, os.str());
+        return;
+      }
+      
+      client.SetIdleTimeout(idleTimeout);
+      std::ostringstream os;
+      os << "Idle timeout set to " << idleTimeout.total_seconds() 
+         << " seconds.";
+      control.Reply(ftp::CommandOkay, os.str());
     }
     catch (const boost::bad_lexical_cast&)
     {
       throw cmd::SyntaxError();
     }
-    
-    const cfg::Config& config = cfg::Get();
-    
-    pt::seconds maximum(config.IdleTimeout().Maximum());
-    if (client.Profile().IdleTime() > 0)
-      maximum = pt::seconds(client.Profile().IdleTime());
-    
-    if (idleTimeout < config.IdleTimeout().Minimum() ||
-        idleTimeout > maximum)
-    {
-      std::ostringstream os;
-      os << "Idle timeout must be between " 
-         << config.IdleTimeout().Minimum().total_seconds()
-         << " and " << maximum.total_seconds() << " seconds.";
-      control.Reply(ftp::SyntaxError, os.str());
-      return;
-    }
-    
-    client.SetIdleTimeout(idleTimeout);
-    std::ostringstream os;
-    os << "Idle timeout set to " << idleTimeout.total_seconds() 
-       << " seconds.";
-    control.Reply(ftp::CommandOkay, os.str());
   }
   
   return;

@@ -5,7 +5,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/types.hpp"
 #include "db/dbproxy.hpp"
-#include "util/keybase.hpp"
 
 namespace mongo
 {
@@ -20,14 +19,18 @@ class Group;
 namespace db
 {
 class Group;
-mongo::BSONObj Serialize(const acl::Group& group);
-acl::Group Unserialize(const mongo::BSONObj& obj);
+
+template <typename T> mongo::BSONObj Serialize(const T& group);
+template <> mongo::BSONObj Serialize<acl::Group>(const acl::Group& group);
+
+template <typename T> T Unserialize(const mongo::BSONObj& obj);
+template <> acl::Group Unserialize<acl::Group>(const mongo::BSONObj& obj);
 }
 
 namespace acl
 {
 
-typedef DBProxy<Group, acl::GroupID, db::Group> GroupProxy;
+typedef db::DBProxy<Group, acl::GroupID, db::Group> GroupProxy;
 
 class Group
 {
@@ -49,13 +52,12 @@ class Group
   Group();
   
 public:
-  class SetIDKey : util::KeyBase {  SetIDKey() { } };
-  
+  ~Group();
+
   acl::GroupID ID() const { return id; }
-  void SetID(acl::GroupID id, const SetIDKey& key) { this->id = id; }
   
   const std::string& Name() const { return name; }
-  void Rename(const std::string& name);
+  bool Rename(const std::string& name);
 
   const std::string& Description() const { return description; }
   void SetDescription(const std::string& description);
@@ -67,7 +69,7 @@ public:
   void SetSlots(int slots);
   
   int LeechSlots() const { return leechSlots; }
-  void SetLeechslots(int leechSlots);
+  void SetLeechSlots(int leechSlots);
   
   int AllotmentSlots() const { return allotmentSlots; }
   void SetAllotmentSlots(int allotmentSlots);
@@ -78,14 +80,18 @@ public:
   int MaxLogins() const { return maxLogins; }
   void SetMaxLogins(int maxLogins);
   
-  static boost::optional<Group> Load(acl::GroupID gid);
-  static Group Skeleton(acl::GroupID gid);
-  static Group Create(const std::string& name);
+  long long NumMembers() const;
   
-  friend class DBProxy<Group, acl::GroupID, db::Group>;
+  void Purge();
+  
+  static boost::optional<Group> Load(acl::GroupID gid);
+  static boost::optional<Group> Load(const std::string& name);
+  static boost::optional<Group> Create(const std::string& name);
+  
+  friend class db::DBProxy<Group, acl::GroupID, db::Group>;
   friend class db::Group;
-  friend mongo::BSONObj db::Serialize(const Group& group);
-  friend Group db::Unserialize(const mongo::BSONObj& obj);
+  friend mongo::BSONObj db::Serialize<acl::Group>(const Group& group);
+  friend Group db::Unserialize<acl::Group>(const mongo::BSONObj& obj);
 };
 
 std::string GIDToName(acl::GroupID gid);

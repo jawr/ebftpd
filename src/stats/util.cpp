@@ -4,7 +4,7 @@
 #include "ftp/client.hpp"
 #include "acl/user.hpp"
 #include "cfg/section.hpp"
-#include "acl/credits.hpp"
+#include "acl/misc.hpp"
 #include "cfg/setting.hpp"
 #include "acl/path.hpp"
 
@@ -49,7 +49,7 @@ int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path,
 {
   if (section)
   {
-    int ratio = client.UserProfile().Ratio(section->Name());
+    int ratio = client.User().SectionRatio(section->Name());
     if (ratio >= 0) return ratio;
   }
   
@@ -58,8 +58,8 @@ int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path,
   
   if (section &&  section->Ratio() >= 0) return section->Ratio();
   
-  assert(client.UserProfile().Ratio("") >= 0);
-  return client.UserProfile().Ratio("");
+  assert(client.User().DefaultRatio() >= 0);
+  return client.User().DefaultRatio();
 }
 
 int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
@@ -69,7 +69,7 @@ int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path,
   
   if (section)
   {
-    int ratio = client.UserProfile().Ratio(section->Name());
+    int ratio = client.User().SectionRatio(section->Name());
     if (ratio >= 0) return ratio;
   }
   
@@ -78,8 +78,8 @@ int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path,
   
   if (section &&  section->Ratio() >= 0) return section->Ratio();
   
-  assert(client.UserProfile().Ratio("") >= 0);
-  return client.UserProfile().Ratio("");
+  assert(client.User().DefaultRatio() >= 0);
+  return client.User().DefaultRatio();
 }
 
 } /* stats namespace */

@@ -1,8 +1,8 @@
+#include <algorithm>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include "cmd/site/delip.hpp"
-#include "acl/usercache.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 #include "cmd/error.hpp"
 
 namespace cmd { namespace site
@@ -15,7 +15,7 @@ void DELIPCommand::Execute()
     if (args[1] != client.User().Name() ||
         !acl::AllowSiteCmd(client.User(), "delipown"))
     {
-      if (!client.User().HasGadminGID(acl::UserCache::PrimaryGID(acl::UserCache::NameToUID(args[1]))) ||
+      if (!client.User().HasGadminGID(acl::NameToPrimaryGID(args[1])) ||
           !acl::AllowSiteCmd(client.User(), "delipgadmin"))
       {
         throw cmd::PermissionError();
@@ -23,14 +23,10 @@ void DELIPCommand::Execute()
     }
   }
 
-  acl::User user;
-  try
+  auto user = acl::User::Load(args[1]);
+  if (!user)
   {
-    user = acl::UserCache::User(args[1]);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
     return;
   }
 
@@ -38,6 +34,7 @@ void DELIPCommand::Execute()
   
   std::vector<int> indexes;
   bool all = false;
+  const auto& masks = user->IPMasks();
   for (auto it = args.begin() + 2; it != args.end(); ++it)
   {
     if (*it == "*")
@@ -50,25 +47,31 @@ void DELIPCommand::Execute()
     try
     {
       int index = boost::lexical_cast<int>(*it);
-      if (index < 0) throw boost::bad_lexical_cast();
+      if (index < 0 || index > static_cast<ssize_t>(masks.size()) - 1)
+      {
+        control.Reply(ftp::ActionNotOkay, "IP mask index out of range.");
+        return;
+      }
+      
       indexes.emplace_back(index);
     }
     catch (const boost::bad_lexical_cast&)
     {
+      auto it2 = std::find(masks.begin(), masks.end(), *it);
+      if (it2 == user->IPMasks().end())
+      {
+        control.Reply(ftp::ActionNotOkay, "No IP mask matching " + *it + " exists for " + args[1] + ".");
+        return;
+      }
+      indexes.emplace_back(std::distance(masks.begin(), it2));
     }
   }
 
+  os << "Deleting IPs from " << user->Name();
   if (all)
   {
-    std::vector<std::string> deleted;
-    util::Error ok = acl::UserCache::DelAllIPMasks(user.Name(), deleted);
-    if (!ok)
-    {
-      control.Reply(ftp::ActionNotOkay, ok.Message());
-      return;
-    }
-
-    os << "Deleting IPs from " << user.Name();
+    std::vector<std::string> deleted = user->IPMasks();
+    user->ClearIPMasks();
     for (const std::string& mask : deleted)
     {
       os << "\nIP " << mask << " deleted successfully.";
@@ -76,18 +79,12 @@ void DELIPCommand::Execute()
   }
   else
   {
-    os << "Deleting IPs from " << user.Name();
-    
     std::sort(indexes.begin(), indexes.end(), std::greater<int>());
-
     std::string mask;
     for (int index : indexes)
     {
-      util::Error ok = acl::UserCache::DelIPMask(user.Name(), index, mask);
-      if (!ok)
-        os << "\nIP not deleted: " << ok.Message();
-      else
-        os << "\nIP " << mask << " deleted successfully.";
+      user->DelIPMask(index);
+      os << "\nIP " << mask << " deleted successfully.";
     }
   }
 

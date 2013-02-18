@@ -1,11 +1,10 @@
 #include <sstream>
 #include "cmd/site/deluser.hpp"
 #include "acl/user.hpp"
-#include "acl/usercache.hpp"
 #include "ftp/task/task.hpp"
 #include "ftp/task/types.hpp"
 #include "cmd/error.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 
 namespace cmd { namespace site
 {
@@ -14,38 +13,30 @@ void DELUSERCommand::Execute()
 {
   if (!acl::AllowSiteCmd(client.User(), "deluser") &&
       acl::AllowSiteCmd(client.User(), "delusergadmin") &&
-      !client.User().HasGadminGID(acl::UserCache::PrimaryGID(acl::UserCache::NameToUID(args[1]))))
+      !client.User().HasGadminGID(acl::NameToPrimaryGID(args[1])))
   {
     throw cmd::PermissionError();
   }
 
-  acl::User user;
-  try
+  auto user = acl::User::Load(args[1]);
+  if (!user)
   {
-    user = acl::UserCache::User(args[1]);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
-    throw cmd::NoPostScriptError();
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
+    throw cmd::NoPostScriptError();    
   }
   
-  util::Error e = acl::UserCache::Delete(args[1]);
-  if (!e)
-    control.Reply(ftp::ActionNotOkay, e.Message());
-  else
-  {
-    boost::unique_future<unsigned> future;
-    std::make_shared<ftp::task::KickUser>(user.ID(), future)->Push();
-    
-    future.wait();
-    unsigned kicked = future.get();
-    std::ostringstream os;
-    os << "User " << args[1] << " has been deleted.";
-    if (kicked) os << " (" << kicked << " login(s) kicked)";
+  user->AddFlag(acl::Flag::Deleted);
 
-    control.Reply(ftp::CommandOkay, os.str());
-  }
+  boost::unique_future<unsigned> future;
+  std::make_shared<ftp::task::KickUser>(user->ID(), future)->Push();
+  
+  future.wait();
+  unsigned kicked = future.get();
+  std::ostringstream os;
+  os << "User " << args[1] << " has been deleted.";
+  if (kicked) os << " (" << kicked << " login(s) kicked)";
+
+  control.Reply(ftp::CommandOkay, os.str());
 }
 
 } /* site namespace */

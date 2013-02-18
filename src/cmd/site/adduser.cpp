@@ -2,17 +2,14 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include "cmd/site/adduser.hpp"
-#include "acl/usercache.hpp"
 #include "util/error.hpp"
-#include "cfg/get.hpp"
-#include "cfg/config.hpp"
-#include "acl/securepass.hpp"
+#include "acl/misc.hpp"
 #include "acl/passwdstrength.hpp"
 #include "cmd/error.hpp"
-#include "acl/groupcache.hpp"
 #include "cmd/site/addip.hpp"
 #include "acl/util.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
+#include "acl/group.hpp"
 
 namespace cmd { namespace site
 {
@@ -41,7 +38,7 @@ void ADDUSERCommand::Execute()
   acl::GroupID gid = -1;
   if (!group.empty())
   {
-    gid = acl::GroupCache::NameToGID(group);
+    gid = acl::NameToGID(group);
     if (gid == -1)
     {
       control.Reply(ftp::ActionNotOkay, "Group " + group + " doesn't exist.");
@@ -55,7 +52,7 @@ void ADDUSERCommand::Execute()
   {
     gid = client.User().PrimaryGID();
     if (gid == -1) throw cmd::PermissionError();
-    group = acl::GroupCache::GIDToName(gid);
+    group = acl::GIDToName(gid);
   }
   
   if (!acl::Validate(acl::ValidationType::Username, args[1]))
@@ -69,38 +66,37 @@ void ADDUSERCommand::Execute()
   {
     std::ostringstream os;
     os << "Password not strong enough. Must meed the following minimum criteria:\n"
-      << strength.UpperCase() << " uppercase, "
-      << strength.LowerCase() << " lowercase, "
-      << strength.Digits() << " digits, " 
-      << strength.Others() << " others, "
-      << strength.Length() << " length.";
+      << strength.String() << ".";
     control.Reply(ftp::ActionNotOkay, os.str());
     throw cmd::NoPostScriptError();
   }
   
-  const cfg::Config& cfg = cfg::Get();
-
-  util::Error ok = acl::UserCache::Create(args[1], args[2], 
-    cfg.DefaultFlags(), client.User().UID(), gid);
-
-  if (!ok)
+  auto user = acl::User::Create(args[1], args[2], client.User().ID());
+  if (!user)
   {
-    control.Reply(ftp::ActionNotOkay, ok.Message());
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " already exists.");
     throw cmd::NoPostScriptError();
   }
 
-  std::string reply = "Added user " + args[1];
-  if (gid != -1) reply += " to group " + group;
-  reply += ".";
+  std::ostringstream os;
+  os << "Added user " << args[1];
   
+  if (gid != -1)
+  {
+    user->SetPrimaryGID(gid);
+    os << " to group " << group;
+  }
+  
+  os << ".";
+
   if (args.size() > 3)
   {
-    control.PartReply(ftp::CommandOkay, reply);
+    control.PartReply(ftp::CommandOkay, os.str());
     Addips(args[1], std::vector<std::string>(args.begin() + 3, args.end()));
   }
   else
   {
-    control.Reply(ftp::CommandOkay, reply);
+    control.Reply(ftp::CommandOkay, os.str());
   }
 }
 

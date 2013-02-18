@@ -5,8 +5,8 @@
 #include "util/string.hpp"
 #include "acl/user.hpp"
 #include "logs/logs.hpp"
-#include "acl/groupcache.hpp"
 #include "util/path/status.hpp"
+#include "acl/group.hpp"
 
 namespace acl { namespace path
 {
@@ -49,7 +49,7 @@ bool Evaluate(const std::vector<cfg::setting::Right>& rights,
       {
         if (user.PrimaryGID() != -1)
         {
-          group = acl::GroupCache::GIDToName(user.PrimaryGID());
+          group = acl::GIDToName(user.PrimaryGID());
         }
         firstSpecial = false;
       }

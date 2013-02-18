@@ -88,6 +88,13 @@ inline bool Demangle(const char* mangled, char* demangled, size_t size)
   return abi::__cxa_demangle(mangled, demangled, &size, &status) != nullptr;
 }
 
+inline std::string Demangle(const char* mangled)
+{
+  char demangled[124];
+  if (Demangle(mangled, demangled, sizeof(demangled))) return std::string(demangled);
+  return std::string(mangled);
+}
+
 } /* debug namespace */
 } /* util namespace */
 

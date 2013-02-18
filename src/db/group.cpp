@@ -1,3 +1,5 @@
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include <mongo/client/dbclient.h>
 #include "db/group.hpp"
 #include "acl/group.hpp"
@@ -11,14 +13,28 @@ namespace db
 
 acl::GroupID Group::Create()
 {
-  db::SafeConnection conn;
+  SafeConnection conn;
   return conn.InsertAutoIncrement("groups", group, "gid");
 }
 
 void Group::SaveField(const std::string& field)
 {
-  db::NoErrorConnection conn;
+  NoErrorConnection conn;
   conn.SetField("groups", QUERY("gid" << group.ID()), group, { field, "modified" });
+}
+
+bool Group::SaveName()
+{
+  try
+  {
+    SafeConnection conn;
+    conn.SetField("groups", QUERY("gid" << group.ID()), group, { std::string("name"), "modified" });
+    return true;
+  }
+  catch (const db::DBError&)
+  {
+    return false;
+  }
 }
 
 void Group::SaveDescription()
@@ -56,7 +72,24 @@ void Group::SaveMaxLogins()
   SaveField("max logins");
 }
 
-mongo::BSONObj Serialize(const acl::Group& group)
+long long Group::NumMembers() const
+{
+  mongo::BSONArrayBuilder bab;
+  bab.append(group.ID());
+  
+  NoErrorConnection conn;
+  return conn.Count("users", BSON("$or" << 
+              BSON_ARRAY(BSON("primary gid" << group.ID()) <<
+                         BSON("secondary gids" << BSON("$in" << bab.arr())))));
+}
+
+void Group::Purge() const
+{
+  NoErrorConnection conn;
+  conn.Remove("groups", QUERY("gid" << group.ID()));
+}
+
+template <> mongo::BSONObj Serialize<acl::Group>(const acl::Group& group)
 {
   mongo::BSONObjBuilder bob;
   bob.append("modified", ToDateT(group.modified));
@@ -72,7 +105,7 @@ mongo::BSONObj Serialize(const acl::Group& group)
   return bob.obj();
 }
 
-acl::Group Unserialize(const mongo::BSONObj& obj)
+template <> acl::Group Unserialize<acl::Group>(const mongo::BSONObj& obj)
 {
   try
   {
@@ -97,7 +130,7 @@ acl::Group Unserialize(const mongo::BSONObj& obj)
   }
 }
 
-boost::optional<acl::Group> Load(acl::GroupID gid)
+boost::optional<acl::Group> Group::Load(acl::GroupID gid)
 {
   NoErrorConnection conn;
   return conn.QueryOne<acl::Group>("groups", QUERY("gid" << gid));
@@ -105,8 +138,8 @@ boost::optional<acl::Group> Load(acl::GroupID gid)
 
 namespace
 {
-
 std::shared_ptr<GroupCache> cache;
+}
 
 struct GroupPair
 {
@@ -114,7 +147,7 @@ struct GroupPair
   acl::GroupID gid;
 };
 
-GroupPair Unserialize(const mongo::BSONObj& obj)
+template <> GroupPair Unserialize<GroupPair>(const mongo::BSONObj& obj)
 {
   GroupPair pair;
   pair.name = obj["name"].String();
@@ -140,8 +173,6 @@ acl::GroupID LookupGIDByName(const std::string& name)
   return pair->gid;
 }
 
-} /* unnamed namespace */
-
 std::string GIDToName(acl::GroupID gid)
 {
   if (cache) return cache->GIDToName(gid);
@@ -152,6 +183,46 @@ acl::GroupID NameToGID(const std::string& name)
 {
   if (cache) return cache->NameToGID(name);
   return LookupGIDByName(name);
+}
+
+namespace
+{
+
+template <typename T>
+std::vector<T> GetGeneric(const std::string& multiStr, const mongo::BSONObj* fields)
+{
+  std::vector<std::string> toks;
+  boost::split(toks, multiStr, boost::is_any_of(" "), boost::token_compress_on);
+  
+  mongo::Query query;
+  if (std::find(toks.begin(), toks.end(), "*") == toks.end())
+  {
+    mongo::BSONArrayBuilder namesBab;
+    
+    for (std::string tok : toks)
+    {
+      if (tok[0] == '=') tok.erase(0, 1);
+      namesBab.append(tok);
+    }
+    
+    query = QUERY("name" << BSON("$in" << namesBab.arr()));
+  }
+  
+  NoErrorConnection conn;
+  return conn.QueryMulti<T>("groups", query, 0, 0, fields);
+}
+
+}
+
+std::vector<acl::GroupID> GetGIDs(const std::string& multiStr)
+{
+  auto fields = BSON("gid" << 1);
+  return GetGeneric<acl::GroupID>(multiStr, &fields);
+}
+
+std::vector<acl::Group> GetGroups(const std::string& multiStr)
+{
+  return GetGeneric<acl::Group>(multiStr, nullptr);
 }
 
 } /* acl namespace */

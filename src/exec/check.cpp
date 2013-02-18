@@ -6,8 +6,8 @@
 #include "fs/directory.hpp"
 #include "util/string.hpp"
 #include "cfg/get.hpp"
+#include "acl/group.hpp"
 #include "logs/logs.hpp"
-#include "acl/groupcache.hpp"
 
 namespace exec
 {
@@ -129,8 +129,8 @@ bool PostCheck(ftp::Client& client, const fs::VirtualPath& path,
     fs::MakeReal(path).ToString(), 
     crc,
     client.User().Name(),
-    acl::GroupCache::GIDToName(client.User().PrimaryGID()),
-    client.UserProfile().Tagline(),
+    acl::GIDToName(client.User().PrimaryGID()),
+    client.User().Tagline(),
     boost::lexical_cast<std::string>(static_cast<unsigned>(speed / 1024)),
     section
   };

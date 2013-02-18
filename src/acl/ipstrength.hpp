@@ -75,6 +75,15 @@ public:
   unsigned NumOctets() const { return numOctets; }
   bool IsHostname() const { return isHostname; }
   bool HasIdent() const { return hasIdent; }
+  
+  std::string String() const
+  {
+    std::ostringstream os;
+    os << NumOctets() << " octets";
+    if (HasIdent()) os << ", have an ident";
+    if (!IsHostname()) os << ", not be a hostname";
+    return os.str();
+  }
 };
 
 } /* acl namespace */

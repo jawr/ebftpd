@@ -1,16 +1,12 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/gpranks.hpp"
-#include "db/stats/stat.hpp"
+#include "db/stats/stats.hpp"
 #include "stats/types.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
-#include "acl/usercache.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
-#include "acl/groupcache.hpp"
 #include "logs/logs.hpp"
-#include "db/group/groupprofile.hpp"
-#include "acl/allowsitecmd.hpp"
 #include "acl/misc.hpp"
 #include "acl/group.hpp"
 #include "stats/stat.hpp"
@@ -113,18 +109,10 @@ void GPRANKSCommand::Execute()
   {
     if (index < number)
     {
-      std::string description;
-      try
-      {
-        description = db::groupprofile::Get(g.ID()).Description();
-      }
-      catch (const util::RuntimeError&)
-      {
-      }
-      
+      auto group = acl::Group::Load(g.ID());
       body.RegisterValue("index", ++index);
-      body.RegisterValue("group", acl::GroupCache::GIDToName(g.ID()));
-      body.RegisterValue("descr", description);
+      body.RegisterValue("group", group ? group->Name() : "unknown");
+      body.RegisterValue("descr", group ? group->Description() : "");
       body.RegisterValue("files", g.Files());
       body.RegisterSize("size", g.KBytes());
       body.RegisterSpeed("speed", g.Speed());

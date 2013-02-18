@@ -2,12 +2,15 @@
 #include "acl/group.hpp"
 #include "db/group.hpp"
 #include "util/error.hpp"
+#include "db/error.hpp"
 
 namespace acl
 {
 
 Group::Group() :
   db(*this),
+  modified(boost::posix_time::microsec_clock::local_time()),
+  id(-1),
   slots(0),
   leechSlots(-2),
   allotmentSlots(-2),
@@ -16,10 +19,20 @@ Group::Group() :
 {
 }
 
-void Group::Rename(const std::string& name)
+Group::~Group()
 {
+}
+
+bool Group::Rename(const std::string& name)
+{
+  std::string oldName = this->name;
   this->name = name; 
-  db->SaveName();
+  if (!db->SaveName())
+  {
+    this->name.swap(oldName);
+    return false;
+  }
+  return true;
 }
 
 void Group::SetDescription(const std::string& description)
@@ -40,7 +53,7 @@ void Group::SetSlots(int slots)
   db->SaveSlots();
 }
 
-void Group::SetLeechslots(int leechSlots)
+void Group::SetLeechSlots(int leechSlots)
 {
   this->leechSlots = leechSlots;
   db->SaveLeechSlots();
@@ -64,30 +77,38 @@ void Group::SetMaxLogins(int maxLogins)
   db->SaveMaxLogins();
 }
 
+long long Group::NumMembers() const
+{
+  return db->NumMembers();
+}
+
+void Group::Purge()
+{
+  db->Purge();
+}
+
 boost::optional<Group> Group::Load(acl::GroupID gid)
 {
   return db::Group::Load(gid);
 }
 
-Group Group::Skeleton(acl::GroupID gid)
+boost::optional<Group> Group::Load(const std::string& name)
 {
-  Group group;
-  group.id = gid;
-  return group;
+  return Load(NameToGID(name));
 }
 
-Group Group::Create(const std::string& name)
+boost::optional<Group> Group::Create(const std::string& name)
 {
   try
   {
     Group group;
     group.name = name;
     group.id = group.db->Create();
-    return group;
+    return boost::optional<Group>(group);
   }
   catch (const db::DBKeyError&)
   {
-    throw util::RuntimeError("Group already exists");
+    return boost::optional<Group>();
   }
 }
 

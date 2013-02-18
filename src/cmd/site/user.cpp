@@ -6,14 +6,9 @@
 #include "cmd/site/user.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
-#include "acl/usercache.hpp"
-#include "db/user/userprofile.hpp"
 #include "acl/user.hpp"
-#include "acl/groupcache.hpp"
-#include "db/user/userprofile.hpp"
-#include "db/group/group.hpp"
 #include "util/error.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 #include "cmd/error.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
@@ -34,7 +29,7 @@ void USERCommand::Execute()
     if (userName != client.User().Name() ||
         !acl::AllowSiteCmd(client.User(), "userown"))
     {
-      if (!client.User().HasGadminGID(acl::UserCache::PrimaryGID(acl::UserCache::NameToUID(userName))) ||
+      if (!client.User().HasGadminGID(acl::NameToPrimaryGID(userName)) ||
           !acl::AllowSiteCmd(client.User(), "usergadmin"))
       {
         throw cmd::PermissionError();
@@ -53,78 +48,51 @@ void USERCommand::Execute()
     return;
   }
 
-  acl::User user;
-  try
+  auto user = acl::User::Load(userName);
+  if (!user)
   {
-    user = acl::UserCache::User(userName);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
+    control.Reply(ftp::ActionNotOkay, "User " + userName + " doesn't exist.");
     return;
-  }
-
-  acl::UserProfile profile;
-  try
-  {
-    profile = db::userprofile::Get(user.ID());
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
-    return;
-  }
-  
-  std::string creator = "<ebftpd>";
-  try
-  {
-    acl::User creatorUser = acl::UserCache::User(profile.Creator());
-    creator = creatorUser.Name();
-  }
-  catch (const util::RuntimeError& e)
-  {
-    if (profile.Creator() != 0) creator = "<deleted>";
   }
 
   text::TemplateSection& head = templ->Head();
   text::TemplateSection& body = templ->Body();
   text::TemplateSection& foot = templ->Foot();
 
-  body.RegisterValue("user", user.Name());
-  body.RegisterValue("logged_in", profile.LoggedIn());
-  body.RegisterValue("created", boost::gregorian::to_simple_string(profile.Created()));
+  body.RegisterValue("user", user->Name());
+  body.RegisterValue("logged_in", user->LoggedIn());
+  body.RegisterValue("created", boost::gregorian::to_simple_string(user->Created()));
 
-  if (profile.LastLogin())
+  if (user->LastLogin())
   {
     boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
-    boost::posix_time::time_duration diff = now - *profile.LastLogin();
-    body.RegisterValue("last_login", boost::posix_time::to_simple_string(*profile.LastLogin()));
+    boost::posix_time::time_duration diff = now - *user->LastLogin();
+    body.RegisterValue("last_login", boost::posix_time::to_simple_string(*user->LastLogin()));
     body.RegisterValue("since_login", boost::posix_time::to_simple_string(diff));
   }
   else
     body.RegisterValue("last_login", "Never");
 
-  if (profile.Expires())
-    body.RegisterValue("expires", boost::gregorian::to_simple_string(*profile.Expires()));
+  if (user->Expires())
+    body.RegisterValue("expires", boost::gregorian::to_simple_string(*user->Expires()));
   else
     body.RegisterValue("expires", "Never");
-  body.RegisterValue("creator", creator);
-  body.RegisterValue("flags", user.Flags());
-  body.RegisterValue("ratio", acl::RatioString(profile));  
-  body.RegisterValue("credits", acl::CreditString(profile));
-  body.RegisterValue("groups", acl::GroupString(user));
-  body.RegisterValue("tagline", profile.Tagline());
-  body.RegisterValue("comment", profile.Comment());
-  body.RegisterSize("weekly_allot", profile.WeeklyAllotment());
+    
+  body.RegisterValue("creator", acl::UIDToName(user->Creator()));
+  body.RegisterValue("flags", user->Flags());
+  body.RegisterValue("ratio", acl::RatioString(*user));  
+  body.RegisterValue("credits", acl::CreditString(*user));
+  body.RegisterValue("groups", acl::GroupString(*user));
+  body.RegisterValue("tagline", user->Tagline());
+  body.RegisterValue("comment", user->Comment());
+  body.RegisterSize("weekly_allot", user->WeeklyAllotment());
 
-  std::vector<std::string> masks;
-  auto ok = acl::UserCache::ListIPMasks(user.Name(), masks);
-  int idx = 0;
-  for (auto& i : masks)
+  const auto& ipMasks = user->IPMasks();
+  for (auto it = ipMasks.begin(); it != ipMasks.end(); ++it)
   {
-    std::ostringstream maskIdx;
-    maskIdx << "ip" << idx++;
-    body.RegisterValue(maskIdx.str(), i);
+    std::ostringstream tag;
+    tag << "ip" << std::distance(ipMasks.begin(), it);
+    body.RegisterValue(tag.str(), *it);
   }
 
   std::ostringstream os;

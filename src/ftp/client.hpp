@@ -6,7 +6,7 @@
 #include <atomic>
 #include <boost/thread/mutex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include "acl/user.hpp"
+#include <boost/optional.hpp>
 #include "acl/user.hpp"
 #include "util/net/tcpsocket.hpp"
 #include "util/net/tcplistener.hpp"
@@ -41,7 +41,7 @@ class Client : public util::Thread
   util::ProcessReader child;
   
   std::atomic<bool> userUpdated;
-  acl::User user;
+  boost::optional<acl::User> user;
   ::ftp::ClientState state;
   int passwordAttemps;
   fs::VirtualPath renameFrom;
@@ -49,8 +49,6 @@ class Client : public util::Thread
   std::string confirmCommand;
   std::string currentCommand;
   bool kickLogin;
-
-  acl::UserProfile profile;
 
   boost::posix_time::ptime loggedInAt;
   boost::posix_time::ptime idleExpires;
@@ -78,12 +76,12 @@ public:
   Client();
   ~Client();
      
-  const acl::User& User() const { return user; }
-  const acl::UserProfile& UserProfile() const { return profile; }
+  acl::User& User() { return *user; }
+  const acl::User& User() const { return *user; }
   
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;
-  void SetLoggedIn(const acl::UserProfile& profile, bool kicked);
+  void SetLoggedIn(bool kicked);
   void SetWaitingPassword(const acl::User& user, bool kickLogin);
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
@@ -140,8 +138,6 @@ public:
   void Interrupt();
   
   void LogTraffic() const;
-  
-  const acl::UserProfile& Profile() const { return profile; }
   
   static bool SetSiteopOnly()
   {

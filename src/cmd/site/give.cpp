@@ -4,12 +4,9 @@
 #include "cmd/site/give.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
-#include "acl/usercache.hpp"
-#include "acl/user.hpp"
 #include "util/error.hpp"
 #include "logs/logs.hpp"
-#include "acl/allowsitecmd.hpp"
-#include "db/user/userprofile.hpp"
+#include "acl/misc.hpp"
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
 
@@ -40,14 +37,10 @@ void GIVECommand::Execute()
     }
   }
 
-  acl::User user;
-  try
+  auto user = acl::User::Load(args[1]);
+  if (!user)
   {
-    user = acl::UserCache::User(args[1]);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
     return;
   }
 
@@ -80,27 +73,18 @@ void GIVECommand::Execute()
   if (acl::AllowSiteCmd(client.User(), "giveown") &&
       !acl::AllowSiteCmd(client.User(), "give"))
   {
-    try
+    int ratio = client.User().SectionRatio(section);
+    if (ratio == 0 || (ratio == -1 && client.User().DefaultRatio() == 0))
     {
-      acl::UserProfile profile = db::userprofile::Get(user.ID());
-      int ratio = profile.Ratio(section);
-      if (ratio == 0 || (ratio == -1 && profile.Ratio("") == 0))
-      {
-        control.Reply(ftp::ActionNotOkay, "Not allowed to give credits when you have leech!");
-        return;
-      }
-    }
-    catch (const util::RuntimeError& e)
-    {
-      control.Reply(ftp::ActionNotOkay, "Unable to load your user profile.");
+      control.Reply(ftp::ActionNotOkay, "Not allowed to give credits when you have leech!");
       return;
     }
+
     // take away users credits/warn them
     
-    if (!db::userprofile::DecrCredits(client.User().UID(), credits, section, false))
+    if (!client.User().DecrSectionCredits(section, credits))
     {
-      os << "Not enough credits to do that.";
-      control.Reply(ftp::ActionNotOkay, os.str());
+      control.Reply(ftp::ActionNotOkay, "Not enough credits to do that.");
       return;
     }
     
@@ -108,9 +92,9 @@ void GIVECommand::Execute()
   }
   
   // give user the credits
-  db::userprofile::IncrCredits(user.ID(), credits, section);
+  user->IncrSectionCredits(section, credits);
   os << "Given " << std::setprecision(2) << std::fixed << credits / 1024.0 
-     << "KB credits to " << user.Name() << ".";
+     << "KB credits to " << user->Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
 }
 

@@ -6,36 +6,19 @@
 #include <boost/optional.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "acl/flags.hpp"
-#include "util/keybase.hpp"
 #include "db/dbproxy.hpp"
 #include "acl/types.hpp"
-
-namespace mongo
-{
-class BSONObj;
-}
-
-namespace acl
-{
-class User;
-}
 
 namespace db
 {
 class User;
-mongo::BSONObj Serialize(const acl::User& user);
-acl::User Unserialize(const mongo::BSONObj& obj);
 }
 
 namespace acl
 {
 
-typedef DBProxy<User, acl::UserID, db::User> UserProxy;
-
-class User
+struct UserData
 {
-  UserProxy db;
-
   boost::posix_time::ptime modified;
   acl::UserID id;
   std::string name;
@@ -70,28 +53,49 @@ class User
   boost::optional<boost::posix_time::ptime> lastLogin;
   std::unordered_map<std::string, int> ratio;
   std::unordered_map<std::string, long long> credits;
+  
+  UserData();
+};
+
+typedef db::DBProxy<UserData, acl::UserID, db::User> UserProxy;
+
+class User
+{
+private:
+  UserData data;
+  UserProxy db;
 
   User();
+  User(UserData&& data);
+
+  bool HasSecondaryGID(GroupID gid) const;
   
 public:
-  class SetIDKey : util::KeyBase {  SetIDKey() { } };
+  User& operator=(User&& rhs);
+  User& operator=(const User& rhs);
 
-  acl::UserID ID() const { return id; }
-  void SetID(acl::UserID id, const SetIDKey& key) { this->id = id; }
+  User(User&& other);
+  User(const User& other);
   
-  const std::string& Name() const { return name; }
-  void Rename(const std::string& name);
+  ~User();
 
-  const std::vector<std::string>& IPMasks() const { return ipMasks; }
-  void AddIPMask(const std::string& ipMask);
+  acl::UserID ID() const { return data.id; }
+  
+  const std::string& Name() const { return data.name; }
+  bool Rename(const std::string& name);
+
+  const std::vector<std::string>& IPMasks() const { return data.ipMasks; }
+  bool AddIPMask(const std::string& ipMask, std::vector<std::string>* deleted = nullptr);
   void DelIPMask(const std::string& ipMask);
+  void DelIPMask(size_t index);
+  void ClearIPMasks();
 
   bool VerifyPassword(const std::string& password) const;
   void SetPassword(const std::string& password);
   
-  const std::string& Flags() const { return flags; }
-  bool CheckFlags(const std::string& flags) const;
-  bool CheckFlag(Flag flag) const;
+  const std::string& Flags() const { return data.flags; }
+  bool HasFlags(const std::string& flags) const;
+  bool HasFlag(Flag flag) const;
 
   void SetFlags(const std::string& flags);
   void AddFlags(const std::string& flags);
@@ -99,61 +103,62 @@ public:
   void DelFlags(const std::string& flags);
   void DelFlag(Flag flag);
 
-  acl::UserID PrimaryGID() const { return primaryGid; }
-  const std::vector<GroupID> SecondaryGIDs() const { return secondaryGids; }
-  bool HasSecondaryGID(GroupID gid) const;
+  acl::GroupID PrimaryGID() const { return data.primaryGid; }
+  const std::vector<GroupID> SecondaryGIDs() const { return data.secondaryGids; }
   bool HasGID(GroupID gid) const;
 
   void SetPrimaryGID(acl::GroupID gid);
-  void AddSecondaryGID(GroupID gid);
-  void DelSecondaryGID(GroupID gid);
-  void ResetSecondaryGIDs();
+  void AddGIDs(const std::vector<acl::GroupID>& gids);
+  void DelGIDs(const std::vector<acl::GroupID>& gids);
+  void SetGIDs(const std::vector<acl::GroupID>& gids);
+  void ToggleGIDs(const std::vector<acl::GroupID>& gids);
   
-  const std::unordered_set<GroupID> GadminGIDs() const { return gadminGids; }
+  const std::unordered_set<GroupID> GadminGIDs() const { return data.gadminGids; }
   bool HasGadminGID(GroupID gid) const;
 
   void AddGadminGID(GroupID gid);
   void DelGadminGID(GroupID gid);
+  bool ToggleGadminGID(GroupID gid);
 
-  acl::UserID Creator() const { return creator; }
-  const boost::gregorian::date& Created() const { return created; }
+  acl::UserID Creator() const { return data.creator; }
+  const boost::gregorian::date& Created() const { return data.created; }
   
-  long long WeeklyAllotment() const { return weeklyAllotment; }
+  long long WeeklyAllotment() const { return data.weeklyAllotment; }
   void SetWeeklyAllotment(long long weeklyAllotment);
   
-  const std::string& HomeDir() const { return homeDir; }
+  const std::string& HomeDir() const { return data.homeDir; }
   void SetHomeDir(const std::string& homeDir);
   
-  int IdleTime() const { return idleTime; }
+  int IdleTime() const { return data.idleTime; }
   void SetIdleTime(int idleTime);
   
-  const boost::optional<boost::gregorian::date>& Expires() const { return expires; }
+  const boost::optional<boost::gregorian::date>& Expires() const { return data.expires; }
   bool Expired() const;
   void SetExpires(const boost::optional<boost::gregorian::date>& expires);
   
-  int NumLogins() const { return numLogins; }
+  int NumLogins() const { return data.numLogins; }
   void SetNumLogins(int numLogins);
   
-  const std::string& Comment() const { return comment; }
-  void Comment(const std::string& comment);
+  const std::string& Comment() const { return data.comment; }
+  void SetComment(const std::string& comment);
   
-  const std::string& Tagline() const { return tagline; }
-  void Tagline(const std::string& tagline);
+  const std::string& Tagline() const { return data.tagline; }
+  void SetTagline(const std::string& tagline);
   
-  long long MaxDownSpeed() const { return maxDownSpeed; }
+  long long MaxDownSpeed() const { return data.maxDownSpeed; }
   void SetMaxDownSpeed(long long maxDownSpeed);
   
-  long long MaxUpSpeed() const { return maxUpSpeed; }
+  long long MaxUpSpeed() const { return data.maxUpSpeed; }
   void SetMaxUpSpeed(long long maxUpSpeed);
   
-  int MaxSimDown() const { return maxSimDown; }
+  int MaxSimDown() const { return data.maxSimDown; }
   void SetMaxSimDown(int maxSimDown);
   
-  int MaxSimUp() const { return maxSimUp; }
+  int MaxSimUp() const { return data.maxSimUp; }
   void SetMaxSimUp(int maxSimUp);
   
-  int LoggedIn() const { return loggedIn; }
-  const boost::optional<boost::posix_time::ptime>& LastLogin() const { return lastLogin; }
+  int LoggedIn() const { return data.loggedIn; }
+  const boost::optional<boost::posix_time::ptime>& LastLogin() const { return data.lastLogin; }
   void SetLoggedIn();
   
   int SectionRatio(const std::string& section) const;
@@ -168,27 +173,31 @@ public:
   void DecrSectionCreditsForce(const std::string& section, long long kBytes);
   
   long long DefaultCredits() const { return SectionCredits(""); }
-  void IncrDefaultCredits(const std::string& section, long long kBytes)
+  void IncrDefaultCredits(long long kBytes)
   { IncrSectionCredits("", kBytes); }
-  bool DecrDefaultCredits(const std::string& section, long long kBytes)
-  { return DecrDefaultCredits(section, kBytes); }
-  void DecrDefaultCreditsForce(const std::string& section, long long kBytes)
-  { return DecrDefaultCreditsForce("", kBytes); }
+  bool DecrDefaultCredits(long long kBytes)
+  { return DecrSectionCredits("", kBytes); }
+  void DecrDefaultCreditsForce(long long kBytes)
+  { return DecrSectionCreditsForce("", kBytes); }
+  
+  void Purge() const;
   
   static boost::optional<User> Load(acl::UserID uid);
-  static User Skeleton(acl::UserID uid);
-  static User Create(const std::string& name, const std::string& password, 
-                     acl::UserID creator);
+  static boost::optional<User> Load(const std::string& name);
+  static boost::optional<User> Create(const std::string& name, const std::string& password, 
+                                      acl::UserID creator);
   static User FromTemplate(const std::string& name, const std::string& password,
                            acl::UserID creator, const User& templateUser);
-    
-  friend class DBProxy<User, acl::UserID, db::User>;
-  friend mongo::BSONObj db::Serialize(const User& user);
-  friend User db::Unserialize(const mongo::BSONObj& obj);
+  static std::vector<acl::UserID> GetUIDs(const std::string& multiStr = "*");
+  static std::vector<acl::User> GetUsers(const std::string& multiStr = "*");
 };
 
 std::string UIDToName(acl::UserID uid);
 acl::UserID NameToUID(const std::string& name);
+acl::GroupID UIDToPrimaryGID(acl::UserID uid);
+
+inline acl::GroupID NameToPrimaryGID(const std::string& name)
+{ return UIDToPrimaryGID(NameToUID(name)); }
 
 inline bool UIDExists(acl::UserID uid)
 { return UIDToName(uid) != "unknown"; }

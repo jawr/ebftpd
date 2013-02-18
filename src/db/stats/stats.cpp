@@ -8,7 +8,6 @@
 #include "cfg/get.hpp"
 #include "util/time.hpp"
 #include "db/stats/serialization.hpp"
-#include "acl/usercache.hpp"
 #include "logs/logs.hpp"
 #include "stats/stat.hpp"
 #include "db/connection.hpp"
@@ -184,12 +183,13 @@ std::vector< ::stats::Stat> RetrieveGroups(
   auto users = RetrieveUsers(section, timeframe, direction, boost::none);
   std::unordered_map<acl::GroupID, ::stats::Stat> stats;
   
-  for (const auto& user : users)
+  for (const auto& uStats : users)
   {
-    auto ugid = acl::UserCache::PrimaryGID(user.ID());
+    auto user = acl::User::Load(uStats.ID());
+    acl::GroupID ugid =  user ? user->PrimaryGID() : acl::GroupID();
     if (gid && ugid != *gid) continue;
-    auto it = stats.insert(std::make_pair(ugid, ::stats::Stat(ugid, user)));
-    if (!it.second) it.first->second.Incr(user);
+    auto it = stats.insert(std::make_pair(ugid, ::stats::Stat(ugid, uStats)));
+    if (!it.second) it.first->second.Incr(uStats);
   }
 
   std::vector< ::stats::Stat> groups;

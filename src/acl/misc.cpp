@@ -88,7 +88,7 @@ std::vector<const cfg::setting::SpeedLimit*>
 UploadMaximum(const User& user, const fs::Path& path)
 {
   std::vector<const cfg::setting::SpeedLimit*> matches;
-  if (!user.CheckFlag(acl::Flag::Exempt))
+  if (!user.HasFlag(acl::Flag::Exempt))
   {
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {
@@ -106,7 +106,7 @@ std::vector<const cfg::setting::SpeedLimit*>
 DownloadMaximum(const User& user, const fs::Path& path)
 {
   std::vector<const cfg::setting::SpeedLimit*> matches;
-  if (!user.CheckFlag(acl::Flag::Exempt))
+  if (!user.HasFlag(acl::Flag::Exempt))
   {
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {

@@ -3,7 +3,7 @@
 #include "cmd/rfc/site.hpp"
 #include "cmd/site/factory.hpp"
 #include "cfg/get.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 #include "cmd/splitargs.hpp"
 #include "cmd/error.hpp"
 #include "exec/cscript.hpp"

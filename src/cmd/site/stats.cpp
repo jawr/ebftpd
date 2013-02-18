@@ -3,11 +3,10 @@
 #include "cmd/site/stats.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
-#include "db/stats/stat.hpp"
+#include "db/stats/stats.hpp"
 #include "cfg/get.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 #include "cmd/error.hpp"
-#include "acl/usercache.hpp"
 #include "stats/types.hpp"
 #include "stats/stat.hpp"
 
@@ -24,7 +23,7 @@ void STATSCommand::Execute()
   
   std::string userName = args.size() == 2 ? args[1] : client.User().Name();
   
-  auto uid = acl::UserCache::NameToUID(userName);
+  auto uid = acl::NameToUID(userName);
   if (uid < 0)
   {
     control.Reply(ftp::ActionNotOkay, "User " + userName + " doesn't exist.");

@@ -18,18 +18,22 @@
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "cfg/error.hpp"
-#include "acl/replicator.hpp"
+#include "db/replicator.hpp"
 #include "cfg/get.hpp"
+
+#if defined(PTRACE_TRACEME)
+#warning "PTRACE?"
+#endif
 
 #if !defined(__CYGWIN__)
 #  define USE_PTRACE
-#  if !defined(PTRACE_TRACEME)
+/*#  if !defined(PTRACE_TRACEME)
 #    if defined(PTRACE_TRACE_ME)
 #      define PTRACE_TRACEME PTRACE_TRACE_ME
 #    else
 #      undef USE_PTRACE
 #    endif
-#  endif
+#  endif*/
 #endif
 
 namespace signals
@@ -93,7 +97,7 @@ void Handler::Run()
       }
       case SIGALRM  :
       {
-        acl::Replicator::Replicate();
+        db::Replicator::Replicate();
       }
     }
   }
@@ -175,24 +179,33 @@ util::Error Initialise()
   sigset_t set;
   sigfillset(&set);
 
-#if !defined(__CYGWIN__)
-  sigdelset(&set, SIGSEGV);
-  sigdelset(&set, SIGABRT);
-  
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_flags = 0;
-  sa.sa_handler = CrashHandler;
-  if (sigaction(SIGSEGV, &sa, nullptr) < 0)
-    return util::Error::Failure(errno);
-
+  bool debugger = false;
 #if defined(USE_PTRACE)
   // allow interruption inside gdb
-  if (ptrace(PTRACE_TRACEME, 0, nullptr, 0) < 0 && errno == EPERM)
+  int ret = ptrace(PTRACE_TRACEME, 0, nullptr, 0);
+  if (ret < 0 && errno == EPERM)
+  {
+    debugger = true;
     sigdelset(&set, SIGINT);
+  }
 #endif
+  
+#if !defined(__CYGWIN__)
+  if (!debugger)
+  {
+    sigdelset(&set, SIGSEGV);
+    sigdelset(&set, SIGABRT);
+    
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_flags = 0;
+    sa.sa_handler = CrashHandler;
+    if (sigaction(SIGSEGV, &sa, nullptr) < 0)
+      return util::Error::Failure(errno);
 
- std::set_terminate(TerminateHandler);
+
+   std::set_terminate(TerminateHandler);
+ }
 #endif
 
   if (pthread_sigmask(SIG_BLOCK, &set, nullptr) < 0)

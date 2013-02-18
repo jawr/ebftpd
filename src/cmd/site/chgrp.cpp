@@ -1,85 +1,61 @@
 #include <sstream>
 #include "cmd/site/chgrp.hpp"
-#include "acl/usercache.hpp"
-#include "acl/groupcache.hpp"
 #include "util/error.hpp"
 #include "cmd/error.hpp"
+#include "acl/util.hpp"
+#include "acl/group.hpp"
 
 namespace cmd { namespace site 
 {
 
 void CHGRPCommand::Execute()
 {
-  std::vector<std::string>::size_type iterPoint = 3;
-  Method method = Method::Toggle;
-  std::ostringstream os;
-  util::Error ok;
+  auto user = acl::User::Load(args[1]);
+  if (!user)
+  {
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
+    return;
+  }
+
+  std::function<void(const std::vector<acl::GroupID>&)> go;
+  std::vector<acl::GroupID> gids;
+  auto it = args.begin() + 3;
 
   if (args[2] == "-")
   {
-    method = Method::Delete;
-    os << "Deleting group(s) from " << args[1] << ":";
+    go = boost::bind(&acl::User::DelGIDs, user, boost::ref(gids));
   }
   else if (args[2] == "=") 
   {
-    ok = acl::UserCache::ResetGIDs(args[1]);
-    if (!ok)
-    {
-      control.Reply(ftp::ActionNotOkay, ok.Message());
-      return;
-    }
-    method = Method::Add;
-    os << "Setting group(s) for " << args[1] << ":";
+    go = boost::bind(&acl::User::SetGIDs, user, boost::ref(gids));
+  }
+  else if (args[2] == "+")
+  {
+    go = boost::bind(&acl::User::AddGIDs, user, boost::ref(gids));
   }
   else
   {
-    --iterPoint;
-    os << "Toggling group(s) for " << args[1] << ":";    
+    go = boost::bind(&acl::User::ToggleGIDs, user, boost::ref(gids));
+    --it;
   }
-
-  std::vector<std::string>::iterator it = args.begin() + iterPoint;
-  if (it == args.end()) throw cmd::SyntaxError();
   
+  if (it == args.end()) throw cmd::SyntaxError();
+
   for (; it != args.end(); ++it)
   {
-    std::string action = "toggled";
-    if (method == Method::Add) action = "added";
-    else if (method == Method::Delete) action = "deleted";
-  
-    acl::GroupID gid = acl::GroupCache::NameToGID(*it);
+    auto gid = acl::NameToGID(*it);
     if (gid == -1)
     {
-      os << "\nGroup " << *it << " not " << action << ": Doesn't exist.";
-      continue;
+      control.Reply(ftp::ActionNotOkay, "Group " + *it + " doesn't exist.");
+      return;
     }
-    
-    if (method == Method::Add)
-      ok = acl::UserCache::AddGID(args[1], gid);
-    else if (method == Method::Delete)
-      ok = acl::UserCache::DelGID(args[1], gid);
-    else if (method == Method::Toggle)
-    {
-      if (acl::UserCache::HasGID(args[1], gid))
-      {
-        ok = acl::UserCache::DelGID(args[1], gid);
-        action = "deleted";
-      }
-      else
-      {
-        ok = acl::UserCache::AddGID(args[1], gid);
-        action = "added";
-      }
-    }
-    
-    if (!ok)
-      os << "\nGroup " << *it << " not " << action << ": " << ok.Message();
-    else
-      os << "\nGroup " << *it << " " << action << " successfully.";
+    gids.emplace_back(gid);
   }
   
-  os << "\nCommand finished.";
-  
-  control.Reply(ftp::CommandOkay, os.str());
+  if (user->PrimaryGID() == -1)
+    control.Reply(ftp::CommandOkay, "User " + user->Name() + " not has no groups.");
+  else
+    control.Reply(ftp::CommandOkay, "User " + user->Name() + " now has groups: " + acl::GroupString(*user));
 }
 
 // end

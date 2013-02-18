@@ -7,13 +7,11 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "cmd/site/grpchange.hpp"
 #include "acl/group.hpp"
-#include "acl/groupcache.hpp"
 #include "util/error.hpp"
-#include "db/group/group.hpp"
-#include "db/group/groupprofile.hpp"
 #include "cmd/error.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 #include "acl/util.hpp"
+#include "db/group.hpp"
 
 namespace cmd { namespace site
 {
@@ -70,7 +68,8 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckSlots()
     if (slots < -1) throw boost::bad_lexical_cast();
     if (slots == -1) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(slots);
-    return boost::bind(&db::groupprofile::SetSlots, _1, slots);
+    
+    return [slots](acl::Group& group) { group.SetSlots(slots); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -87,7 +86,8 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckLeechSlots()
     if (slots == -1) display = "Unlimited";
     else if (slots == -2) display = "Disabled";
     else display = boost::lexical_cast<std::string>(slots);
-    return boost::bind(&db::groupprofile::SetLeechSlots, _1, slots);
+    
+    return [slots](acl::Group& group) { group.SetLeechSlots(slots); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -104,7 +104,8 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckAllotSlots()
     if (slots == -1) display = "Unlimited";
     else if (slots == -2) display = "Disabled";
     else display = boost::lexical_cast<std::string>(slots);
-    return boost::bind(&db::groupprofile::SetAllotSlots, _1, slots);
+    
+    return [slots](acl::Group& group) { group.SetAllotmentSlots(slots); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -120,7 +121,8 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckMaxAllotSize()
     if (allotment < 0) throw boost::bad_lexical_cast();
     if (allotment == -1) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(allotment);
-    return boost::bind(&db::groupprofile::SetMaxAllotSize, _1, allotment);
+    
+    return [allotment](acl::Group& group) { group.SetMaxAllotmentSize(allotment); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -136,7 +138,8 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckMaxLogins()
     if (logins < -1) throw boost::bad_lexical_cast();
     if (logins == -1) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(logins);
-    return boost::bind(&db::groupprofile::SetMaxLogins, _1, logins);
+    
+    return [logins](acl::Group& group) { group.SetMaxLogins(logins); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -154,14 +157,15 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckDescription()
   }
   
   display = description;
-  return boost::bind(&db::groupprofile::SetDescription, _1, description);
+  
+  return [description](acl::Group& group) { group.SetDescription(description); };
 }
 
 GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckComment()
 {
   std::string comment = argStr.substr(args[1].length() + args[2].length() + 2);
   display = comment;
-  return boost::bind(&db::groupprofile::SetComment, _1, comment);
+  return [comment](acl::Group& group) { group.SetComment(comment); };
 }
 
 GRPCHANGECommand::SetFunction GRPCHANGECommand::Check()
@@ -182,17 +186,22 @@ void GRPCHANGECommand::Execute()
 {
   SetFunction set = Check();
   
-  auto gids = db::group::GetMultiGIDOnly(args[1]);  
+  auto gids = db::GetGIDs(args[1]);
   if (gids.empty())
   {
     control.Format(ftp::ActionNotOkay, "No group's exist matching that criteria.");
     throw cmd::NoPostScriptError();
   }
   
-  std::for_each(gids.begin(), gids.end(), set);
+  for (auto gid : gids)
+  {
+    auto group = acl::Group::Load(gid);
+    if (group) set(*group);
+  }
+
   assert(!display.empty());
   control.Format(ftp::CommandOkay, "Setting %1% changed for %2%: %3%", args[2], 
-                 gids.size() == 1 ? acl::GroupCache::GIDToName(gids[0]) : 
+                 gids.size() == 1 ? acl::GIDToName(gids[0]) : 
                  util::Format()("%i groups", gids.size()), display);
 }
 

@@ -14,10 +14,6 @@
 #include "cfg/error.hpp"
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
-#include "db/interface.hpp"
-#include "db/error.hpp"
-#include "acl/usercache.hpp"
-#include "acl/groupcache.hpp"
 #include "acl/util.hpp"
 #include "ftp/client.hpp"
 #include "util/error.hpp"
@@ -27,7 +23,7 @@
 #include "signals/signal.hpp"
 #include "text/factory.hpp"
 #include "text/error.hpp"
-#include "acl/replicator.hpp"
+#include "db/replicator.hpp"
 #include "util/path/path.hpp"
 
 #include "version.hpp"
@@ -140,6 +136,16 @@ int main(int argc, char** argv)
   if (!ParseOptions(argc, argv, foreground, configPath)) return 1;
   logs::debug << "Starting " << programFullname << " .. " << logs::endl;
 
+  {
+    util::Error e = signals::Initialise();
+    if (!e)
+    {
+      logs::error << "Failed to setup signal handlers: " << e.Message() << logs::endl;
+      return 1;
+    }
+    signals::Handler::StartThread();
+  }
+  
   cmd::rfc::Factory::Initialise();
   cmd::site::Factory::Initialise();
   cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
@@ -154,19 +160,11 @@ int main(int argc, char** argv)
   catch (const cfg::ConfigError& e)
   {
     logs::error << "Failed to load config: " << e.Message() << logs::endl;
+    signals::Handler::StopThread();
     return 1;
   }
 
   logs::Initialise(util::path::Join(cfg::Get().Datapath(), "logs"));
-  
-  {
-    util::Error e = signals::Initialise();
-    if (!e)
-    {
-      logs::error << "Failed to setup signal handlers: " << e.Message() << logs::endl;
-      return 1;
-    }
-  }
   
   if (cfg::Get().TlsCertificate().empty())
   {
@@ -185,6 +183,7 @@ int main(int argc, char** argv)
     catch (const util::net::NetworkError& e)
     {
       logs::error << "TLS failed to initialise: " << e.Message() << logs::endl;
+      signals::Handler::StopThread();
       return 1;
     }
   }
@@ -197,24 +196,18 @@ int main(int argc, char** argv)
   catch (const text::TemplateError& e)
   {
     logs::error << "Templates failed to initialise: " << e.Message() << logs::endl;
+    signals::Handler::StopThread();
     return 1;
   }
   
-  try
+  db::Replicator::Initialise(cfg::Get().CacheReplicate());
+
+  if (!acl::CreateDefaults())
   {
-    db::Initialize();
-  }
-  catch (const db::DBError& e)
-  {
-    logs::error << "DB failed to initialise: " << e.Message() << logs::endl;
+    logs::error << "Error while creating default user and group" << logs::endl;
+    signals::Handler::StopThread();
     return 1;
   }
-
-  acl::Replicator::Initialise(cfg::Get().CacheReplicate());
-
-  acl::GroupCache::Initialize();
-  acl::UserCache::Initialize();
-  acl::CreateDefaults();
   
   int exitStatus = 0;
   if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
@@ -226,15 +219,12 @@ int main(int argc, char** argv)
   { 
     if (Daemonise(foreground))
     {
-      signals::Handler::StartThread();
       ftp::Server::StartThread();
       ftp::Server::JoinThread();
-      signals::Handler::StopThread();
     }
   }
 
-  acl::Replicator::Cancel();
-  db::Cleanup();
+  db::Replicator::Cancel();
 
   logs::debug << "Bye!" << logs::endl;
   

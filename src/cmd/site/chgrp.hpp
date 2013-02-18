@@ -13,6 +13,7 @@ class CHGRPCommand : public Command
   {
     Add,
     Delete,
+    Set,
     Toggle
   };
 

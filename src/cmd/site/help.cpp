@@ -2,7 +2,7 @@
 #include <boost/optional.hpp>
 #include "cmd/site/help.hpp"
 #include "cmd/site/factory.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 #include "main.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"

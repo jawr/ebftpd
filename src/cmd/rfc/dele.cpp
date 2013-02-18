@@ -2,15 +2,13 @@
 #include <iomanip>
 #include "cmd/rfc/dele.hpp"
 #include "fs/file.hpp"
-#include "acl/usercache.hpp"
-#include "db/stats/stat.hpp"
+#include "db/stats/stats.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
 #include "fs/owner.hpp"
 #include "logs/logs.hpp"
 #include "cmd/error.hpp"
 #include "stats/util.hpp"
-#include "db/user/userprofile.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -19,7 +17,7 @@ void DELECommand::Execute()
 {
   fs::VirtualPath path(fs::PathFromUser(argStr));
 
-  bool loseCredits = fs::GetOwner(fs::MakeReal(path)).UID() == client.User().UID();
+  bool loseCredits = fs::GetOwner(fs::MakeReal(path)).UID() == client.User().ID();
   
   off_t bytes;
   time_t modTime;
@@ -42,8 +40,7 @@ void DELECommand::Execute()
     long long creditLoss = bytes / 1024 * stats::UploadRatio(client, path, section);
     if (creditLoss)
     {
-      db::userprofile::DecrCredits(client.User().UID(), creditLoss, 
-              section && section->SeparateCredits() ? section->Name() : "", true);
+      client.User().DecrSectionCredits(section && section->SeparateCredits() ? section->Name() : "", creditLoss);
       std::ostringstream os;
       os << "DELE command successful. (" << std::fixed << std::setprecision(2) 
          << creditLoss / 1024.0 << "MB credits lost)";

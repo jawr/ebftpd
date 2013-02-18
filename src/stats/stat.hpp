@@ -24,16 +24,16 @@ class Stat
   long long xfertime;
   mutable double speed;
 
-  static_assert(std::is_same<decltype(id), acl::UserID>::value, 
+/*  static_assert(std::is_same<decltype(id), acl::UserID>::value, 
                 "id must be same as acl::UserID");
   static_assert(std::is_same<decltype(id), acl::GroupID>::value, 
-                "id must be same as acl::GroupID");
+                "id must be same as acl::GroupID");*/
   
 public:
   Stat() : id(-1), files(0), kBytes(0), xfertime(0), speed(-1) { }  
   Stat(int32_t id) : id(id), files(0), kBytes(0), xfertime(0), speed(-1) { }
 
-  Stat(int32_t id, int files, long long kBytes, long long xftertime) :
+  Stat(int32_t id, int files, long long kBytes, long long xfertime) :
     id(id), files(files), kBytes(kBytes), xfertime(xfertime), speed(-1)
   { } 
 

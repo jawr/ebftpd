@@ -7,14 +7,13 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include "cmd/site/change.hpp"
-#include "acl/usercache.hpp"
-#include "db/user/user.hpp"
-#include "db/user/userprofile.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/user.hpp"
+#include "acl/misc.hpp"
 #include "util/error.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 #include "acl/util.hpp"
+#include "db/user.hpp"
 
 namespace cmd { namespace site
 {
@@ -33,7 +32,7 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
   { "homedir",        1,  "changehomedir",        &CHANGECommand::CheckHomeDir,
     "Home directory"                                                                    },
     
-  { "flags",          1,  "changeflags",          &CHANGECommand::CheckFlags,
+  { "flags",          1,  "changeflags",          &CHANGECommand::HasFlags,
     "Flags, prefixed with +|-|= to add/delete/set"                                      },
     
   { "idle_time",      1,  "change",               &CHANGECommand::CheckIdleTime,
@@ -96,7 +95,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckRatio()
     if (ratio == 0) display = "Unlimited";
     else display = "1:" + boost::lexical_cast<std::string>(ratio);
 
-    return boost::bind(&db::userprofile::SetRatio, _1, "", ratio);
+    return [ratio](acl::User& user) { user.SetDefaultRatio(ratio); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -110,10 +109,10 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
   
   const cfg::Config& config = cfg::Get();
   
-  boost::to_upper(args[3]);
-  if (config.Sections().find(args[3]) == config.Sections().end())
+  std::string section = boost::to_upper_copy(args[3]);
+  if (config.Sections().find(section) == config.Sections().end())
   {
-    control.Format(ftp::ActionNotOkay, "Section %1% doesn't exist.", args[3]);
+    control.Format(ftp::ActionNotOkay, "Section %1% doesn't exist.", section);
     throw cmd::NoPostScriptError();
   }
   
@@ -122,13 +121,13 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
     int ratio = boost::lexical_cast<int>(args[4]);
     if (ratio < 0 || ratio > cfg::Get().MaximumRatio()) throw boost::bad_lexical_cast();
     
-    display = args[3] + "(";
+    display = section + "(";
     if (ratio == 0) display += "Unlimited";
     else display += "1:" + boost::lexical_cast<std::string>(ratio);
     
     display += ")";
     
-    return boost::bind(&db::userprofile::SetRatio, _1, args[3], ratio);
+    return [ratio, section](acl::User& user) { user.SetSectionRatio(section, ratio); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -168,7 +167,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
     
     if (!section.empty()) display += ")";
     
-    return boost::bind(&db::userprofile::SetWeeklyAllotment, _1, allotment);
+    return [allotment](acl::User& user) { user.SetWeeklyAllotment(allotment); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -188,10 +187,10 @@ CHANGECommand::SetFunction CHANGECommand::CheckHomeDir()
   }
   
   display = path;  
-  return boost::bind(&db::userprofile::SetHomeDir,  _1, path);
+  return [path](acl::User& user) { user.SetHomeDir(path); };
 }
 
-CHANGECommand::SetFunction CHANGECommand::CheckFlags()
+CHANGECommand::SetFunction CHANGECommand::HasFlags()
 {
   char action = args[3][0];
   
@@ -220,9 +219,9 @@ CHANGECommand::SetFunction CHANGECommand::CheckFlags()
   
   switch (action)
   {
-    case '+'  : return boost::bind(&CHANGECommand::AddFlags, this, _1, flags);
-    case '-'  : return boost::bind(&CHANGECommand::DelFlags, this, _1, flags);
-    case '='  : return boost::bind(&CHANGECommand::SetFlags, this, _1, flags);
+    case '+'  : return [flags](acl::User& user) { user.AddFlags(flags); };
+    case '-'  : return [flags](acl::User& user) { user.DelFlags(flags); };
+    case '='  : return [flags](acl::User& user) { user.SetFlags(flags); };
     default   : throw cmd::SyntaxError();
   }
 }
@@ -236,7 +235,8 @@ CHANGECommand::SetFunction CHANGECommand::CheckIdleTime()
     if (idleTime == -1) display = "Unset";
     else if (idleTime == 0) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(idleTime) + " seconds";
-    return boost::bind(&db::userprofile::SetIdleTime, _1, idleTime);
+
+    return [idleTime](acl::User& user) { user.SetIdleTime(idleTime); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -270,7 +270,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckExpires()
   }
   
   display = args[3];
-  return boost::bind(&db::userprofile::SetExpires, _1, date);
+  return [date](acl::User& user) { user.SetExpires(date); };
 }
 
 CHANGECommand::SetFunction CHANGECommand::CheckNumLogins()
@@ -280,7 +280,8 @@ CHANGECommand::SetFunction CHANGECommand::CheckNumLogins()
     int logins = boost::lexical_cast<int>(args[3]);
     if (logins < 0) throw boost::bad_lexical_cast();
     display = boost::lexical_cast<std::string>(logins);
-    return boost::bind(&db::userprofile::SetNumLogins, _1, logins);
+    
+    return [logins](acl::User& user) { user.SetNumLogins(logins); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -298,14 +299,14 @@ CHANGECommand::SetFunction CHANGECommand::CheckTagline()
   }
   
   display = tagline;
-  return boost::bind(&db::userprofile::SetTagline, _1, tagline);
+  return [tagline](acl::User& user) { user.SetTagline(tagline); };
 }
 
 CHANGECommand::SetFunction CHANGECommand::CheckComment()
 {
   std::string comment = argStr.substr(args[1].length() + args[2].length() + 2);
   display = comment;
-  return boost::bind(&db::userprofile::SetComment, _1, comment);
+  return [comment](acl::User& user) {user.SetComment(comment); };
 }
 
 CHANGECommand::SetFunction CHANGECommand::CheckMaxUpSpeed()
@@ -316,7 +317,8 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxUpSpeed()
     if (speed < 0) throw boost::bad_lexical_cast();
     if (speed == 0) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(speed) + "KB/s";
-    return boost::bind(&db::userprofile::SetMaxUpSpeed, _1, speed);
+    
+    return [speed](acl::User& user) { user.SetMaxUpSpeed(speed); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -332,7 +334,8 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxDownSpeed()
     if (speed < 0) throw boost::bad_lexical_cast();
     if (speed == 0) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(speed) + "KB/s";
-    return boost::bind(&db::userprofile::SetMaxDownSpeed, _1, speed);
+
+    return [speed](acl::User& user) { user.SetMaxDownSpeed(speed); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -349,7 +352,8 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxSimUp()
     if (logins == 0) display = "Disabled";
     else if (logins == -1) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(logins);
-    return boost::bind(&db::userprofile::SetMaxSimUp, _1, logins);
+    
+    return [logins](acl::User& user) { user.SetMaxSimUp(logins); };
   }
   catch (const boost::bad_lexical_cast&)
   {
@@ -366,28 +370,13 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxSimDown()
     if (logins == 0) display = "Disabled";
     else if (logins == -1) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(logins);
-    return boost::bind(&db::userprofile::SetMaxSimDown, _1, logins);
+    
+    return [logins](acl::User& user) { user.SetMaxSimDown(logins); };
   }
   catch (const boost::bad_lexical_cast&)
   {
     throw cmd::SyntaxError();
   }
-}
-
-void CHANGECommand::AddFlags(acl::UserID uid, const std::string& flags)
-{
-  std::string name = acl::UserCache::UIDToName(uid);
-  acl::UserCache::AddFlags(acl::UserCache::UIDToName(uid), flags);
-}
-
-void CHANGECommand::DelFlags(acl::UserID uid, const std::string& flags)
-{
-  acl::UserCache::DelFlags(acl::UserCache::UIDToName(uid), flags);
-}
-
-void CHANGECommand::SetFlags(acl::UserID uid, const std::string& flags)
-{
-  acl::UserCache::SetFlags(acl::UserCache::UIDToName(uid), flags);
 }
 
 CHANGECommand::SetFunction CHANGECommand::Check()
@@ -408,7 +397,7 @@ void CHANGECommand::Execute()
 {
   SetFunction set = Check();
   
-  auto uids = db::user::GetMultiUIDOnly(args[1]);  
+  auto uids = acl::User::GetUIDs(args[1]);  
   if (uids.empty())
   {
     control.Format(ftp::ActionNotOkay, "No user's exist matching that criteria.");
@@ -420,15 +409,20 @@ void CHANGECommand::Execute()
     auto it = std::find_if(uids.begin(), uids.end(), 
                 [&](acl::UserID uid)
                 {
-                  return !client.User().HasGadminGID(acl::UserCache::PrimaryGID(uid));
+                  return !client.User().HasGadminGID(acl::UIDToPrimaryGID(uid));
                 });
     if (it != uids.end()) throw cmd::PermissionError();
   }
   
-  std::for_each(uids.begin(), uids.end(), set);
+  for (auto uid : uids)
+  {
+    auto user = acl::User::Load(uid);
+    if (user) set(*user);
+  }
+
   assert(!display.empty());
   control.Format(ftp::CommandOkay, "Setting %1% changed for %2%: %3%", args[2], 
-                 uids.size() == 1 ? acl::UserCache::UIDToName(uids[0]) : 
+                 uids.size() == 1 ? acl::UIDToName(uids[0]) : 
                  util::Format()("%i users", uids.size()), display);
 }
 

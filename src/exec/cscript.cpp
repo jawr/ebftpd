@@ -5,7 +5,7 @@
 #include "exec/util.hpp"
 #include "logs/logs.hpp"
 #include "exec/script.hpp"
-#include "acl/groupcache.hpp"
+#include "acl/group.hpp"
 
 namespace exec
 {
@@ -61,7 +61,7 @@ bool Cscript(ftp::Client& client, const std::string& group,
 bool Cscripts(ftp::Client& client, const std::string& command, 
       const std::string& fullCommand, CscriptType type, ftp::ReplyCode failCode)
 {
-  std::string group = acl::GroupCache::GIDToName(client.User().PrimaryGID());
+  std::string group = acl::GIDToName(client.User().PrimaryGID());
 
   for (const auto& cscript : cfg::Get().Cscript())
   {

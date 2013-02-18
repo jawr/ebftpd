@@ -1,7 +1,6 @@
 #include <sstream>
 #include "cmd/site/kick.hpp"
 #include "acl/user.hpp"
-#include "acl/usercache.hpp"
 #include "acl/types.hpp"
 #include "ftp/task/task.hpp"
 #include "ftp/task/types.hpp"
@@ -13,25 +12,21 @@ namespace cmd { namespace site
 
 void KICKCommand::Execute()
 {
-  acl::User user;
-  try
+  auto user = acl::User::Load(args[1]);
+  if (!user)
   {
-    user = acl::UserCache::User(args[1]);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
     throw cmd::NoPostScriptError();
   }
 
-  if (user.CheckFlag(acl::Flag::Siteop) && user.ID() != client.User().UID())
+  if (user->HasFlag(acl::Flag::Siteop) && user->ID() != client.User().ID())
   {
     control.Reply(ftp::ActionNotOkay, "Cannot kick a siteop.");
     throw cmd::NoPostScriptError();
   } 
 
   boost::unique_future<unsigned> future;
-  std::make_shared<ftp::task::KickUser>(user.ID(), future)->Push();
+  std::make_shared<ftp::task::KickUser>(user->ID(), future)->Push();
 
   future.wait();
   unsigned kicked = future.get();
@@ -42,6 +37,5 @@ void KICKCommand::Execute()
   if (kicked == 0) throw cmd::NoPostScriptError();
 }
 
-// end
 }
 }

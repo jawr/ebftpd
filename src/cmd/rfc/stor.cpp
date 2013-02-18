@@ -3,9 +3,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/rfc/stor.hpp"
 #include "fs/file.hpp"
-#include "db/stats/stat.hpp"
-#include "acl/usercache.hpp"
-#include "acl/groupcache.hpp"
+#include "db/stats/stats.hpp"
 #include "stats/util.hpp"
 #include "ftp/counter.hpp"
 #include "util/scopeguard.hpp"
@@ -20,11 +18,9 @@
 #include "cmd/error.hpp"
 #include "acl/path.hpp"
 #include "fs/owner.hpp"
-#include "acl/credits.hpp"
 #include "util/asynccrc32.hpp"
 #include "util/crc32.hpp"
 #include "ftp/error.hpp"
-#include "db/user/userprofile.hpp"
 #include "acl/misc.hpp"
 #include "ftp/speedcontrol.hpp"
 #include "util/path/status.hpp"
@@ -64,7 +60,7 @@ void STORCommand::DupeMessage(const fs::VirtualPath& path)
   if (!hideOwner)
   {
     fs::Owner owner = fs::GetOwner(realPath);
-    std::string user = acl::UserCache::UIDToName(owner.UID());
+    std::string user = acl::UIDToName(owner.UID());
     if (incomplete)
       os << "File is being uploaded by " << user << ".";
     else
@@ -122,14 +118,14 @@ void STORCommand::Execute()
   
   if (!exec::PreCheck(client, path)) throw cmd::NoPostScriptError();
 
-  switch(ftp::Counter::Upload().Start(client.User().UID(), 
-         client.Profile().MaxSimUp(), 
-         client.User().CheckFlag(acl::Flag::Exempt)))
+  switch(ftp::Counter::Upload().Start(client.User().ID(), 
+         client.User().MaxSimUp(), 
+         client.User().HasFlag(acl::Flag::Exempt)))
   {
     case ftp::CounterResult::PersonalFail  :
     {
       std::ostringstream os;
-      os << "You have reached your maximum of " << client.Profile().MaxSimUp() 
+      os << "You have reached your maximum of " << client.User().MaxSimUp() 
          << " simultaneous uploads(s).";
       control.Reply(ftp::ActionNotOkay, os.str());
       throw cmd::NoPostScriptError();
@@ -144,7 +140,7 @@ void STORCommand::Execute()
       break;
   }  
   
-  scope_guard countGuard = make_guard([&]{ ftp::Counter::Upload().Stop(client.User().UID()); });  
+  scope_guard countGuard = make_guard([&]{ ftp::Counter::Upload().Stop(client.User().ID()); });  
 
   if (data.DataType() == ftp::DataType::ASCII &&
      !cfg::Get().AsciiUploads().Allowed(path.ToString()))
@@ -319,9 +315,8 @@ void STORCommand::Execute()
                       duration.total_milliseconds(),
                       nostats ? "" : section->Name());    
 
-    db::userprofile::IncrCredits(client.User().UID(), 
-            data.State().Bytes() / 1024 * stats::UploadRatio(client, path, section),
-            section && section->SeparateCredits() ? section->Name() : "");
+    client.User().IncrSectionCredits(section && section->SeparateCredits() ? section->Name() : "", 
+            data.State().Bytes() / 1024 * stats::UploadRatio(client, path, section));
   }
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed / 1024)); 

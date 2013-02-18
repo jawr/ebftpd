@@ -8,20 +8,15 @@
 namespace db
 {
 
-typedef std::vector<mongo::BSONObj> QueryResults;
-
-namespace dupe
-{
-
-DupeResult Unserialize(const mongo::BSONObj& obj)
+template <> dupe::DupeResult Unserialize<dupe::DupeResult>(const mongo::BSONObj& obj)
 {
   try
   {
     mongo::BSONElement oid;
     obj.getObjectID(oid);
-    return DupeResult(obj["directory"].String(),
-                      obj["section"].String(),
-                      db::ToPosixTime(oid.OID().asDateT()));
+    return dupe::DupeResult(obj["directory"].String(),
+                            obj["section"].String(),
+                            db::ToPosixTime(oid.OID().asDateT()));
   }
   catch (const mongo::DBException& e)
   {
@@ -29,6 +24,9 @@ DupeResult Unserialize(const mongo::BSONObj& obj)
     throw e;
   }
 }
+
+namespace dupe
+{
 
 void Add(const std::string& directory, const std::string& section)
 {

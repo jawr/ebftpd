@@ -1,10 +1,10 @@
-#ifndef __ACL_DBPROXY_HPP
-#define __ACL_DBPROXY_HPP
+#ifndef __DB_DBPROXY_HPP
+#define __DB_DBPROXY_HPP
 
 #include <boost/signals2.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-namespace acl
+namespace db
 {
 
 template <typename T, typename IDT, typename DBT>
@@ -17,37 +17,19 @@ class DBProxy
   
 public:
   
-  DBProxy(T& obj) : obj(&obj), db(new DBT(obj)) { }
-  DBProxy(const DBProxy& other) :
-    obj(other.obj),
-    db(new DBT(*other.db))
-  { }
-
-  ~DBProxy() { }
-
-  DBProxy& operator=(const DBProxy& rhs)
-  {
-    obj = rhs.obj;
-    db.reset(new DBT(*rhs.db));
-  }
+  DBProxy(T& obj);
+  DBProxy(const DBProxy& other);
+  ~DBProxy();
   
-  const DBT* operator->() const { return db.get(); }
-  DBT* operator->()
-  {
-    obj->modified = boost::posix_time::microsec_clock::local_time();
-    updated(obj->ID());
-    return db.get();
-  }
-  
-  static void ConnectUpdatedSlot(const std::function<void(IDT)>& slot)
-  {
-    updated.connect(slot);
-  }
+  DBProxy& operator=(const DBProxy& rhs);  
+  const DBT* operator->() const;
+  DBT* operator->();
+  static void ConnectUpdatedSlot(const std::function<void(IDT)>& slot);
 };
 
 template <typename T, typename IDT, typename DBT>
 boost::signals2::signal<void(IDT)> DBProxy<T, IDT, DBT>::updated;
 
-} /* acl namespace */
+} /* db namespace */
 
 #endif

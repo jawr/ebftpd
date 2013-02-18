@@ -37,7 +37,7 @@ public:
   }
 
   template <typename Enum, typename... Args>
-  Format& operator()(ReplyCode code, Enum e, Args... args)
+  Format& operator()(ReplyCode code, Enum e, const Args&... args)
   {
     this->code = code;
     format(e, args...);
@@ -52,7 +52,7 @@ public:
   }
 
   template <typename... Args>
-  Format& operator()(ReplyCode code, const char* s, Args... args)
+  Format& operator()(ReplyCode code, const char* s, const Args&... args)
   {
     this->code = code;
     format(s, args...);
@@ -67,7 +67,7 @@ public:
   }
 
   template <typename... Args>
-  Format& operator()(ReplyCode code, const std::string& s, Args... args)
+  Format& operator()(ReplyCode code, const std::string& s, const Args&... args)
   { 
     this->code = code;
     format(s.c_str(), args...);

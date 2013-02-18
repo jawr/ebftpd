@@ -3,8 +3,10 @@
 
 #include <mongo/client/dbclient.h>
 #include <sstream>
+#include <typeinfo>
 #include "logs/logs.hpp"
 #include "util/error.hpp"
+#include "util/debug.hpp"
 
 namespace db
 {
@@ -40,21 +42,21 @@ struct DBKeyError : public DBError
   DBKeyError(const std::string& message) : std::runtime_error(message) { }
 };
 
-void LogError(std::ostringstream& os, const std::string& errmsg)
+inline void LogError(std::ostringstream& os, const std::string& errmsg)
 {
   os << " : " << errmsg;
   logs::db << os.str() << logs::endl;
 }
 
 template <typename T, typename... Args>
-void LogError(std::ostringstream& os, const std::string& errmsg, const T& arg, Args... args)
+void LogError(std::ostringstream& os, const std::string& errmsg, const T& arg, const Args&... args)
 {
   os << " : " << arg;
-  LogError(os, errmsg, arg, args...);
+  LogError(os, errmsg, args...);
 }
 
 template <typename... Args>
-void LogError(const std::string& prefix, const std::string& errmsg, Args... args)
+void LogError(const std::string& prefix, const std::string& errmsg, const Args&... args)
 {
   std::ostringstream buf;
   buf << std::boolalpha << prefix << " failed";
@@ -62,15 +64,20 @@ void LogError(const std::string& prefix, const std::string& errmsg, Args... args
 }
 
 template <typename... Args>
-void LogException(const std::string& prefix, const std::exception& e, Args... args)
+void LogException(const std::string& prefix, const std::exception& e, const Args&... args)
 {
   LogError(prefix, e.what(), args...);
 }
 
 template <typename... Args>
-void LogLastError(const std::string& prefix, const mongo::BSONObj& obj, Args... args)
+void LogLastError(const std::string& prefix, const mongo::BSONObj& obj, const Args&... args)
 {
   LogError(prefix, obj["err"].String(), args...);
+}
+
+inline std::ostream& operator<<(std::ostream& os, const std::type_info& info)
+{
+  return (os << util::debug::Demangle(info.name()));
 }
 
 } /* db namespace */

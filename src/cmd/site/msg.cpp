@@ -11,7 +11,6 @@
 #include <boost/lexical_cast.hpp>
 #include "cmd/site/msg.hpp"
 #include "logs/logs.hpp"
-#include "db/user/user.hpp"
 #include "db/mail/mail.hpp"
 #include "db/mail/message.hpp"
 #include "util/string.hpp"
@@ -19,7 +18,7 @@
 #include "cmd/error.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 
 namespace cmd { namespace site
 {
@@ -75,7 +74,7 @@ void MSGCommand::Read()
     { throw cmd::SyntaxError(); }
   }
   
-  std::vector<db::mail::Message> mail(db::mail::Get(client.User().UID()));
+  std::vector<db::mail::Message> mail(db::mail::Get(client.User().ID()));
   if (mail.empty())
   {
     control.Reply(ftp::CommandOkay, "Your mail box is empty.");
@@ -144,31 +143,31 @@ void MSGCommand::Send()
   if (recipients.empty()) 
   {
     if (!acl::AllowSiteCmd(client.User(), "msg*")) throw cmd::PermissionError();
-    users = db::user::GetAll();
+    users = acl::User::GetUsers();
   }
   else
   {
     for (auto& recipient : recipients)
     {
-      auto tempUsers = db::user::GetByACL(recipient);
+      auto tempUsers = acl::User::GetUsers(recipient);
       users.insert(users.end(), tempUsers.begin(), tempUsers.end());
     }
       
     std::sort(users.begin(), users.end(), 
       [](const acl::User& u1, const acl::User& u2)
-      { return u1.UID() < u2.UID(); });
+      { return u1.ID() < u2.ID(); });
       
     users.erase(std::unique(users.begin(), users.end(), 
       [](const acl::User& u1, const acl::User& u2)
-      { return u1.UID() == u2.UID(); }), users.end());
+      { return u1.ID() == u2.ID(); }), users.end());
   }
     
   boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
   unsigned sentCount = 0;
   for (auto& user : users)
   {
-    if (user.Deleted()) continue;
-    if (user.ID() == client.User().UID()) continue;
+    if (user.HasFlag(acl::Flag::Deleted)) continue;
+    if (user.ID() == client.User().ID()) continue;
     db::mail::Send(db::mail::Message(client.User().Name(), user.ID(), body, now));
     ++sentCount;
   }
@@ -180,7 +179,7 @@ void MSGCommand::Send()
 
 void MSGCommand::SaveTrash()
 {
-  unsigned saved = db::mail::SaveTrash(client.User().UID());
+  unsigned saved = db::mail::SaveTrash(client.User().ID());
   std::ostringstream os;
   os << saved << " message(s) saved from your trash.";
   control.Reply(ftp::CommandOkay, os.str());
@@ -201,14 +200,14 @@ void MSGCommand::Save()
     throw cmd::SyntaxError();
   }
   
-  bool purged = db::mail::Save(client.User().UID(), index - 1);
+  bool purged = db::mail::Save(client.User().ID(), index - 1);
   if (!purged) control.Reply(ftp::ActionNotOkay, "Failed to saved message with index " + args[2] + ".");
   else control.Reply(ftp::CommandOkay, "Message " + args[2] + " saved.");
 }
 
 void MSGCommand::PurgeTrash()
 {
-  unsigned purged = db::mail::PurgeTrash(client.User().UID());
+  unsigned purged = db::mail::PurgeTrash(client.User().ID());
   std::ostringstream os;
   os << purged << " message(s) purged from your trash.";
   control.Reply(ftp::CommandOkay, os.str());
@@ -229,7 +228,7 @@ void MSGCommand::Purge()
     throw cmd::SyntaxError();
   }
   
-  bool purged = db::mail::Purge(client.User().UID(), index - 1);
+  bool purged = db::mail::Purge(client.User().ID(), index - 1);
   if (!purged) control.Reply(ftp::ActionNotOkay, "Failed to purge message with index " + args[2] + ".");
   else control.Reply(ftp::CommandOkay, "Message " + args[2] + " purged.");
 }
@@ -238,7 +237,7 @@ void MSGCommand::List()
 {
   if (args.size() != 2) throw cmd::SyntaxError();
   
-  std::vector<db::mail::Message> mail(db::mail::Get(client.User().UID()));
+  std::vector<db::mail::Message> mail(db::mail::Get(client.User().ID()));
   if (mail.empty())
   {
     control.Reply(ftp::CommandOkay, "Your mail box is empty.");

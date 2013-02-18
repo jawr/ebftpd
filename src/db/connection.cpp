@@ -151,7 +151,7 @@ int Connection::Remove(const std::string& collection, const mongo::Query& query)
 std::vector<mongo::BSONObj> Connection::Query(
       const std::string& collection, const mongo::Query& query, 
       int nToReturn = 0, int nToSkip = 0,
-      const mongo::BSONObj* fieldsToReturn = nullptr)
+      const mongo::BSONObj* fieldsToReturn)
 {
   std::vector<mongo::BSONObj> results;
   if (scopedConn)
@@ -213,10 +213,9 @@ void Connection::EnsureIndex(const std::string& collection,
 }
 
 
-unsigned long long Connection::Count(const std::string& collection, 
-        const mongo::BSONObj& query)
+long long Connection::Count(const std::string& collection, const mongo::BSONObj& query)
 {
-  unsigned long long count = 0;
+  long long count = -1;
   if (scopedConn) 
   {
     try
@@ -229,6 +228,7 @@ unsigned long long Connection::Count(const std::string& collection,
         {
           LogLastError("Count", err, collection, query);
           if (mode == ConnectionMode::Safe) throw DBReadError();
+          count = -1;
         }
       }
     }
@@ -236,6 +236,7 @@ unsigned long long Connection::Count(const std::string& collection,
     {
       LogException("Count", e, collection, query);
       if (mode == ConnectionMode::Safe) throw DBReadError();
+      count = -1;
     }
   }
   
@@ -270,7 +271,7 @@ bool Connection::RunCommand(const mongo::BSONObj& command, mongo::BSONObj& info,
   return ret;    
 }
 
-bool Connection::Eval(const std::string& javascript, mongo::BSONElement& retval, 
+bool Connection::Eval(const std::string& javascript, mongo::BSONObj& info, mongo::BSONElement& retval, 
       mongo::BSONObj* args)
 {
   bool ret = false;
@@ -278,7 +279,6 @@ bool Connection::Eval(const std::string& javascript, mongo::BSONElement& retval,
   {
     try
     {
-      mongo::BSONObj info;
       ret = scopedConn->conn().eval(database, javascript, info, retval, args);
       if (!ret && mode != ConnectionMode::Fast)
       {
@@ -301,43 +301,72 @@ int Connection::InsertAutoIncrement(const std::string& collection,
       const mongo::BSONObj& obj, const std::string& autoIncField)
 {
   if (!scopedConn) return -1;
+
+  while (true)
+  {
+    int id = NextAutoIncrement(collection, autoIncField);
+    if (id < 0) return -1;
+
+    mongo::BSONObjBuilder bab;
+    mongo::BSONObjIterator it(obj);
+    while (it.more())
+    {
+      auto e = it.next();
+      if (autoIncField != e.fieldName())
+        bab.append(e);
+    }
+    bab.append(autoIncField, id);
+    
+    try
+    {
+      scopedConn->conn().insert(Namespace(collection), bab.obj());
+      auto err = GetLastError();
+      if (!err.Okay())
+      {
+        if (err["code"].Number() == 11000)
+          continue;
+          
+        LogLastError("Insert", err, collection, obj);
+        if (mode == ConnectionMode::Safe) throw DBWriteError();
+        return -1;
+      }
+      
+      return id;
+    }
+    catch (const mongo::DBException& e)
+    {
+      LogException("Insert auto increment", e, collection, obj);
+      if (mode == ConnectionMode::Safe) throw DBWriteError();
+    }
+  }
+}
+
+int Connection::NextAutoIncrement(const std::string& collection, const std::string& autoIncField)
+{
+  if (!scopedConn) return -1;
   
   static const char* javascript =
-    "function autoIncInsert(colName, field, obj) {\n"
+    "function autoIncInsert(colName, field) {\n"
     "  var col = db[colName];\n"
     "  var fieldsToReturn = {};\n"
     "  fieldsToReturn[field] = 1;\n"
     "  var sort = {};\n"
     "  sort[field] = -1;\n"
-    "  while (1) {\n"
-    "    var cursor = col.find({}, fieldsToReturn).sort(sort).limit(1);\n"
-    "    obj[field] = cursor.hasNext() ? cursor.next()[field] + 1 : 0;\n"
-    "    col.insert(obj);\n"
-    "    var err = db.getLastErrorObj();\n"
-    "    if (err &&  err.code == 11000) {\n"
-    "      var query = {};\n"
-    "      query[field] = obj[field];\n"
-    "      if (col.findOne(query))\n"
-    "        continue;\n"
-    "      else\n"
-    "        return -1;\n"
-    "    }\n"
-    "    break;\n"
-    "  }\n"
-    "  return obj[field];\n"
+    "  var cursor = col.find({}, fieldsToReturn).sort(sort).limit(1);\n"
+    "  return NumberInt(cursor.hasNext() ? cursor.next()[field] + 1 : 0);\n"
     "}\n";
-  
+
   mongo::BSONArrayBuilder bab;
   bab.append(collection);
   bab.append(autoIncField);
-  bab.append(obj);
   auto args = bab.arr();
-  
-  mongo::BSONElement ret;
-  if (!Eval(javascript, ret, &args)) return -1;
-  return ret.Int();
-}
 
+  mongo::BSONObj info;
+  mongo::BSONElement ret;
+  if (!Eval(javascript, info, ret, &args)) return -1;
+
+  return static_cast<int>(ret["value"].Int());
+}
 std::ostream& operator<<(std::ostream& os, const mongo::BSONObj* obj)
 {
   if (obj) os << *obj;

@@ -24,7 +24,7 @@ class Database
   std::string password;
   
 public:
-  Database() : name("ebftpd"), address("localhost"), port(27017) { }
+  Database();
   Database(const std::vector<std::string>& toks);
   
   const std::string& Name() const { return name; }

@@ -4,7 +4,7 @@
 #include "cmd/splitargs.hpp"
 #include "cmd/site/factory.hpp"
 #include "logs/logs.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 #include "util/processreader.hpp"
 #include "exec/reader.hpp"
 #include "cmd/error.hpp"

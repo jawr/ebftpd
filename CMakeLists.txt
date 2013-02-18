@@ -10,8 +10,6 @@ find_package (OpenSSL REQUIRED)
 link_directories (${OpenSSL_LIBRARY_DIRS})
 include_directories (${OpenSSL_INCLUDE_DIRS})
 
-file(GLOB_RECURSE SRCS src/*.cpp) 
-add_executable(ebftpd ${SRCS})
 link_libraries(
   ${MongoDB_LIBRARIES}
   ${OPENSSL_LIBRARIES}
@@ -19,8 +17,9 @@ link_libraries(
   ${Execinfo_LIBRARIES}
   ${Pthread_LIBRARIES}
 )
-
-cotire(ebftpd)
+file(GLOB_RECURSE SRCS src/*.cpp) 
+add_executable(ebftpd ${SRCS})
 add_dependencies(ebftpd version)
+cotire(ebftpd)
 
 add_subdirectory(tools)

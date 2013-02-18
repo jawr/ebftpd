@@ -10,9 +10,9 @@ namespace cmd { namespace site
 
 class FLAGSCommand : public Command
 {
-  std::string CheckFlag(const acl::User& user, const acl::Flag& flag)
+  std::string HasFlag(const acl::User& user, const acl::Flag& flag)
   {
-    return user.CheckFlag(flag) ? "*" : " ";
+    return user.HasFlag(flag) ? "*" : " ";
   }
   
 public:

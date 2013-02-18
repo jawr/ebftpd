@@ -12,7 +12,7 @@ Permission* new_clone(Permission const& other)
 boost::tribool FlagPermission::Evaluate(const User& user) const
 {
   if (flags.find('*') != std::string::npos) return !negate;
-  if (user.CheckFlags(flags)) return !negate;
+  if (user.HasFlags(flags)) return !negate;
   return boost::indeterminate;
 }
 

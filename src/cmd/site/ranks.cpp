@@ -1,20 +1,17 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include "cmd/site/ranks.hpp"
-#include "db/stats/stat.hpp"
+#include "db/stats/stats.hpp"
 #include "stats/types.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
-#include "acl/usercache.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
-#include "acl/groupcache.hpp"
 #include "logs/logs.hpp"
 #include "acl/acl.hpp"
-#include "acl/allowsitecmd.hpp"
-#include "db/user/userprofile.hpp"
 #include "acl/misc.hpp"
 #include "stats/stat.hpp"
+#include "acl/group.hpp"
 
 namespace cmd { namespace site
 {
@@ -115,39 +112,18 @@ void RANKSCommand::Execute()
   long long totalFiles = 0;
   long long totalXfertime = 0;
 
-  acl::User user;
   int index = 0;
   for (const auto& u : users)
   {
     if (index < number)
     {
-      try
-      {
-        user = acl::UserCache::User(u.ID());
-      }
-      catch (const util::RuntimeError&)
-      {
-        // exclude user from stats
-        logs::error << "Unable to load user with uid from user cache: " 
-                    << u.ID() << logs::endl;
-        continue;
-      }
-      
-      std::string tagline;
-      try
-      {
-        tagline = db::userprofile::Get(u.ID()).Tagline();
-      }
-      catch (const util::RuntimeError&)
-      {
-      }
-      
-      if (!acl.Evaluate(user)) continue;
+      auto user = acl::User::Load(u.ID());      
+      if (!user || !acl.Evaluate(*user)) continue;
       
       body.RegisterValue("index", ++index);
-      body.RegisterValue("user", user.Name());
-      body.RegisterValue("group", acl::GroupCache::GIDToName(user.PrimaryGID()));
-      body.RegisterValue("tagline", tagline);
+      body.RegisterValue("user", user->Name());
+      body.RegisterValue("group", acl::GIDToName(user->PrimaryGID()));
+      body.RegisterValue("tagline", user->Tagline());
       body.RegisterValue("files", u.Files());
       body.RegisterSize("size", u.KBytes());
       body.RegisterSpeed("speed", u.Speed());

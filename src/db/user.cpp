@@ -1,8 +1,11 @@
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include "db/user.hpp"
 #include "db/connection.hpp"
 #include "acl/user.hpp"
 #include "db/serialization.hpp"
 #include "db/error.hpp"
+#include "db/group.hpp"
 
 namespace db
 {
@@ -16,12 +19,21 @@ acl::UserID User::Create()
 void User::SaveField(const std::string& field)
 {
   db::NoErrorConnection conn;
-  conn.SetField("users", QUERY("uid" << user.ID()), user, { field, "modified" });
+  conn.SetField("users", QUERY("uid" << user.id), user, { field, "modified" });
 }
 
-void User::SaveName()
+bool User::SaveName()
 {
-  SaveField("name");
+  try
+  {
+    SafeConnection conn;
+    conn.SetField("users", QUERY("uid" << user.id), user, { std::string("name"), "modified" });
+    return true;
+  }
+  catch (const db::DBError&)
+  {
+    return false;
+  }
 }
 
 void User::SaveIPMasks()
@@ -124,8 +136,7 @@ void User::SaveRatio()
   SaveField("ratio");
 }
 
-void User::IncrCredits(const std::string& section, long long kBytes, 
-                 long long& newCredits)
+void User::IncrCredits(const std::string& section, long long kBytes)
 {
   // in the old thread pool design this used be done in a separate thread
   // this may need to be changed to be async again.
@@ -135,7 +146,7 @@ void User::IncrCredits(const std::string& section, long long kBytes,
     {
       auto updateExisting = [&]() -> bool
         {
-          auto query = BSON("uid" << user.ID() << 
+          auto query = BSON("uid" << user.id << 
                             "credits" << BSON("$elemMatch" << BSON("section" << section)));
                             
           auto update = BSON("$inc" << BSON("credits.$.value" << kBytes));
@@ -151,7 +162,7 @@ void User::IncrCredits(const std::string& section, long long kBytes,
 
       auto doInsert = [&]() -> bool
       {
-        auto query = QUERY("uid" << user.ID() << "credits" << BSON("$not" << 
+        auto query = QUERY("uid" << user.id << "credits" << BSON("$not" << 
                            BSON("$elemMatch" << BSON("section" << section))));
         auto update = BSON("$push" << BSON("credits" << BSON("section" << section << "value" << kBytes)));
         return conn.Update("users", query, update, false) > 0;
@@ -161,7 +172,7 @@ void User::IncrCredits(const std::string& section, long long kBytes,
       if (doInsert()) return;
       if (updateExisting()) return;
 
-      logs::db << "Unable to increment credits for UID " << user.ID();
+      logs::db << "Unable to increment credits for UID " << user.id;
       if (!section.empty()) logs::db << " in section " << section;
       logs::db << logs::endl;
     };
@@ -169,16 +180,19 @@ void User::IncrCredits(const std::string& section, long long kBytes,
   doIncrement();
 }
 
+void User::Purge() const
+{
+  NoErrorConnection conn;
+  conn.Remove("users", QUERY("uid" << user.id));
+}
 
-
-bool User::DecrCredits(const std::string& section, long long kBytes, 
-                                bool force, long long& newCredits)
+bool User::DecrCredits(const std::string& section, long long kBytes, bool force)
 {
   mongo::BSONObjBuilder elemQuery;
   elemQuery.append("section", section);
   if (!force) elemQuery.append("value", BSON("$gte" << kBytes));
   
-  auto query = BSON("uid" << user.ID() << 
+  auto query = BSON("uid" << user.id << 
                     "credits" << BSON("$elemMatch" << elemQuery.obj()));
                     
   auto update = BSON("$inc" << BSON("credits.$.value" << -kBytes));
@@ -194,20 +208,20 @@ bool User::DecrCredits(const std::string& section, long long kBytes,
   return force || (ret && result["value"].type() != mongo::jstNULL);
 }
 
-mongo::BSONObj Serialize(const acl::User& user)
+template <> mongo::BSONObj Serialize<acl::UserData>(const acl::UserData& user)
 {
   mongo::BSONObjBuilder bob;
-  
+
   bob.append("modified", ToDateT(user.modified));
   bob.append("uid", user.id);
   bob.append("name", user.name);
-  bob.append("ip masks", Serialize(user.ipMasks));
+  bob.append("ip masks", SerializeContainer(user.ipMasks));
   bob.append("password", user.password);
   bob.append("salt", user.salt);
   bob.append("flags", user.flags);
   bob.append("primary gid", user.primaryGid);
-  bob.append("secondary gids", Serialize(user.secondaryGids));
-  bob.append("gadmin gids", Serialize(user.gadminGids));
+  bob.append("secondary gids", SerializeContainer(user.secondaryGids));
+  bob.append("gadmin gids", SerializeContainer(user.gadminGids));
   bob.append("creator", user.creator);
   bob.append("created", ToDateT(user.created));
   bob.append("weekly allotment", user.weeklyAllotment);
@@ -233,27 +247,27 @@ mongo::BSONObj Serialize(const acl::User& user)
   else
     bob.appendNull("last login");
     
-  bob.append("ratio", Serialize(user.ratio));
-  bob.append("credits", Serialize(user.credits));
+  bob.append("ratio", SerializeContainer(user.ratio));
+  bob.append("credits", SerializeContainer(user.credits));
   
   return bob.obj();
 }
 
-acl::User Unserialize(const mongo::BSONObj& obj)
+template <> acl::UserData Unserialize<acl::UserData>(const mongo::BSONObj& obj)
 {
   try
   { 
-    acl::User user;
+    acl::UserData user;
     user.modified = ToPosixTime(obj["modified"].Date());
     user.id = obj["uid"].Int();
     user.name = obj["name"].String();
-    user.ipMasks = Unserialize<decltype(user.ipMasks)>(obj["ip masks"].Array());
+    user.ipMasks = UnserializeContainer<decltype(user.ipMasks)>(obj["ip masks"].Array());
     user.password = obj["password"].String();
     user.salt = obj["salt"].String();
     user.flags = obj["flags"].String();
     user.primaryGid = obj["primary gid"].Int();
-    user.secondaryGids = Unserialize<decltype(user.secondaryGids)>(obj["secondary gids"].Array());
-    user.gadminGids = Unserialize<decltype(user.gadminGids)>(obj["gadmin gids"].Array());
+    user.secondaryGids = UnserializeContainer<decltype(user.secondaryGids)>(obj["secondary gids"].Array());
+    user.gadminGids = UnserializeContainer<decltype(user.gadminGids)>(obj["gadmin gids"].Array());
     user.creator = obj["creator"].Int();
 
     mongo::BSONElement oid;
@@ -279,8 +293,8 @@ acl::User Unserialize(const mongo::BSONObj& obj)
     if (obj["last login"].type() != mongo::jstNULL)
       user.lastLogin.reset(ToPosixTime(obj["last login"].Date()));
     
-    user.ratio = Unserialize<decltype(user.ratio)>(obj["ratio"].Array());
-    user.credits = Unserialize<decltype(user.credits)>(obj["credits"].Array());
+    user.ratio = UnserializeContainer<decltype(user.ratio)>(obj["ratio"].Array());
+    user.credits = UnserializeContainer<decltype(user.credits)>(obj["credits"].Array());
     
     return user;
   }
@@ -291,37 +305,38 @@ acl::User Unserialize(const mongo::BSONObj& obj)
   }
 }
 
-boost::optional<acl::User> User::Load(acl::UserID uid)
+boost::optional<acl::UserData> User::Load(acl::UserID uid)
 {
   db::NoErrorConnection conn;                  
-  return conn.QueryOne<acl::User>("users", QUERY("uid" << uid));
+  return conn.QueryOne<acl::UserData>("users", QUERY("uid" << uid));
 }
-
 
 namespace
 {
-
 std::shared_ptr<UserCache> cache;
+}
 
-struct UserPair
+struct UserTriple
 {
   std::string name;
   acl::UserID uid;
+  acl::GroupID primaryGID;
 };
 
-UserPair Unserialize(const mongo::BSONObj& obj)
+template <> UserTriple Unserialize<UserTriple>(const mongo::BSONObj& obj)
 {
-  UserPair pair;
+  UserTriple pair;
   pair.name = obj["name"].String();
   pair.uid = obj["uid"].Int();
+  pair.primaryGID = obj["primary gid"].Int();
   return pair;
 }
 
 std::string LookupNameByUID(acl::UserID uid)
 {
   NoErrorConnection conn;  
-  auto fields = BSON("uid" << 1 << "name" << 1);
-  auto pair = conn.QueryOne<UserPair>("users", QUERY("uid" << uid), &fields);
+  auto fields = BSON("uid" << 1 << "name" << 1 << "primary gid" << 1);
+  auto pair = conn.QueryOne<UserTriple>("users", QUERY("uid" << uid), &fields);
   if (!pair) return "unknown";
   return pair->name;
 }
@@ -329,13 +344,20 @@ std::string LookupNameByUID(acl::UserID uid)
 acl::UserID LookupUIDByName(const std::string& name)
 {
   NoErrorConnection conn;  
-  auto fields = BSON("uid" << 1 << "name" << 1);
-  auto pair = conn.QueryOne<UserPair>("users", QUERY("name" << name), &fields);
+  auto fields = BSON("uid" << 1 << "name" << 1 << "primary gid" << 1);
+  auto pair = conn.QueryOne<UserTriple>("users", QUERY("name" << name), &fields);
   if (!pair) return -1;
   return pair->uid;
 }
 
-} /* unnamed namespace */
+acl::GroupID LookupPrimaryGIDByUID(acl::UserID uid)
+{
+  NoErrorConnection conn;  
+  auto fields = BSON("uid" << 1 << "name" << 1 << "primary gid" << 1);
+  auto pair = conn.QueryOne<UserTriple>("users", QUERY("uid" << uid), &fields);
+  if (!pair) return -1;
+  return pair->primaryGID;
+}
 
 std::string UIDToName(acl::UserID uid)
 {
@@ -347,6 +369,67 @@ acl::UserID NameToUID(const std::string& name)
 {
   if (cache) return cache->NameToUID(name);
   return LookupUIDByName(name);
+}
+
+acl::GroupID UIDToPrimaryGID(acl::UserID uid)
+{
+  if (cache) return cache->UIDToPrimaryGID(uid);
+  return LookupPrimaryGIDByUID(uid);
+}
+
+namespace
+{
+
+template <typename T>
+std::vector<T> GetGeneric(const std::string& multiStr, const mongo::BSONObj* fields)
+{
+  std::vector<std::string> toks;
+  boost::split(toks, multiStr, boost::is_any_of(" "), boost::token_compress_on);
+  
+  mongo::Query query;
+  if (std::find(toks.begin(), toks.end(), "*") == toks.end())
+  {
+    mongo::BSONArrayBuilder namesBab;
+    mongo::BSONArrayBuilder gidsBab;
+    
+    for (std::string tok : toks)
+    {
+      if (tok[0] == '=')
+      {
+        acl::GroupID gid = db::NameToGID(tok.substr(1));
+        if (gid != -1)
+        {
+          gidsBab.append(gid);
+        }
+        continue;
+      }
+      
+      if (tok[0] == '-') tok.erase(0, 1);
+      namesBab.append(tok);
+    }
+    
+    auto gids = gidsBab.arr();
+    query = QUERY("$or" << 
+      BSON_ARRAY(BSON("name" << BSON("$in" << namesBab.arr())) <<
+                 BSON("primary gid" << BSON("$in" << gids)) <<
+                 BSON("secondary gids" << BSON("$in" << gids))));
+  }
+  
+  db::NoErrorConnection conn;
+  return conn.QueryMulti<T>("users", query, 0, 0, fields);
+}
+
+}
+
+std::vector<acl::UserID> GetUIDs(const std::string& multiStr)
+{
+  auto fields = BSON("uid" << 1);
+  return GetGeneric<acl::UserID>(multiStr, &fields);
+}
+
+std::vector<acl::UserData> GetUsers(const std::string& multiStr)
+{
+  return GetGeneric<acl::UserData>(multiStr, nullptr);
 }
 
 } /* db namespace */

@@ -7,20 +7,18 @@
 namespace db
 {
 
-typedef std::vector<mongo::BSONObj> QueryResults;
+template <> index::SearchResult Unserialize<index::SearchResult>(const mongo::BSONObj& obj)
+{
+  mongo::BSONElement oid;
+  obj.getObjectID(oid);
+  return index::SearchResult(obj["path"].String(),
+                             obj["section"].String(),
+                             ToPosixTime(oid.OID().asDateT()));
+}
 
 namespace index
 {
 
-
-SearchResult Unserialize(const mongo::BSONObj& obj)
-{
-  mongo::BSONElement oid;
-  obj.getObjectID(oid);
-  return SearchResult(obj["path"].String(),
-                      obj["section"].String(),
-                      ToPosixTime(oid.OID().asDateT()));
-}
 
 void Add(const std::string& path, const std::string& section)
 {

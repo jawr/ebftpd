@@ -18,7 +18,7 @@ public:
   { }
   
   template <typename... Args>
-  explicit GenericDirContainer(Args... args) : 
+  explicit GenericDirContainer(Args&&... args) : 
     it(std::forward<Args>(args)...)
   { }
 

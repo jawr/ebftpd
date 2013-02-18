@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include "acl/types.hpp"
+#include "db/serialization.hpp"
 
 namespace mongo
 {
@@ -29,7 +30,7 @@ public:
   Group(acl::Group& group) :  group(group) { }
   
   acl::GroupID Create();
-  void SaveName();
+  bool SaveName();
   void SaveDescription();
   void SaveComment();
   void SaveSlots();
@@ -38,15 +39,19 @@ public:
   void SaveMaxAllotmentSize();
   void SaveMaxLogins();
   
+  long long NumMembers() const;
+  void Purge() const;
+  
   static boost::optional<acl::Group> Load(acl::GroupID gid);
 };
 
 
-mongo::BSONObj Serialize(const acl::Group& group);
-acl::Group Unserialize(const mongo::BSONObj& obj);
+template <> mongo::BSONObj Serialize<acl::Group>(const acl::Group& group);
+template <> acl::Group Unserialize<acl::Group>(const mongo::BSONObj& obj);
 
 struct GroupCache
 {
+  virtual ~GroupCache() { }
   virtual std::string GIDToName(acl::GroupID gid) = 0;
   virtual acl::GroupID NameToGID(const std::string& name) = 0;
 };
@@ -55,6 +60,10 @@ void RegisterGroupCache(const std::shared_ptr<GroupCache>& cache);
 
 std::string GIDToName(acl::GroupID gid);
 acl::GroupID NameToGID(const std::string& name);
+
+std::vector<acl::GroupID> GetGIDs(const std::string& multiStr = "*");
+std::vector<acl::Group> GetGroups(const std::string& multiStr = "*");
+
 
 } /* db namespace */
 

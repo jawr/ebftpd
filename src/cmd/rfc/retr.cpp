@@ -2,8 +2,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/rfc/retr.hpp"
 #include "fs/file.hpp"
-#include "acl/usercache.hpp"
-#include "db/stats/stat.hpp"
+#include "db/stats/stats.hpp"
 #include "stats/util.hpp"
 #include "util/scopeguard.hpp"
 #include "ftp/counter.hpp"
@@ -12,9 +11,8 @@
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
 #include "acl/path.hpp"
-#include "acl/credits.hpp"
+#include "acl/misc.hpp"
 #include "ftp/error.hpp"
-#include "db/user/userprofile.hpp"
 #include "acl/misc.hpp"
 #include "ftp/speedcontrol.hpp"
 
@@ -34,14 +32,14 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  switch(ftp::Counter::Download().Start(client.User().UID(), 
-         client.Profile().MaxSimDown(), 
-         client.User().CheckFlag(acl::Flag::Exempt)))
+  switch(ftp::Counter::Download().Start(client.User().ID(), 
+         client.User().MaxSimDown(), 
+         client.User().HasFlag(acl::Flag::Exempt)))
   {
     case ftp::CounterResult::PersonalFail  :
     {
       std::ostringstream os;
-      os << "You have reached your maximum of " << client.Profile().MaxSimDown() 
+      os << "You have reached your maximum of " << client.User().MaxSimDown() 
          << " simultaneous download(s).";
       control.Reply(ftp::ActionNotOkay, os.str());
       throw cmd::NoPostScriptError();
@@ -56,7 +54,7 @@ void RETRCommand::Execute()
       break;
   }
   
-  scope_guard countGuard = make_guard([&]{ ftp::Counter::Download().Stop(client.User().UID()); });  
+  scope_guard countGuard = make_guard([&]{ ftp::Counter::Download().Stop(client.User().ID()); });  
   
   fs::VirtualPath path(fs::PathFromUser(argStr));
 
@@ -100,8 +98,8 @@ void RETRCommand::Execute()
   
   auto section = cfg::Get().SectionMatch(path.ToString());
   int ratio = stats::DownloadRatio(client, path, section);
-  if (!db::userprofile::DecrCredits(client.User().UID(), size * ratio, 
-          section && section->SeparateCredits() ? section->Name() : "", false))
+  if (!client.User().DecrSectionCredits(section && section->SeparateCredits() ? 
+          section->Name() : "", size * ratio))
   {
     control.Reply(ftp::ActionNotOkay, "Not enough credits to download that file.");
     throw cmd::NoPostScriptError();
@@ -140,17 +138,15 @@ void RETRCommand::Execute()
     if (size > data.State().Bytes())
     {
       // download failed short, give the remaining credits back
-      db::userprofile::IncrCredits(client.User().UID(), 
-              (size - data.State().Bytes()) / 1024 * ratio,
-              section && section->SeparateCredits() ? section->Name() : "");
+      client.User().IncrSectionCredits(section && section->SeparateCredits() ? 
+              section->Name() : "", (size - data.State().Bytes()) / 1024 * ratio);
     }
     else
     if (data.State().Bytes() > size)
     {
       // final download size was larger than at start, take some more credits
-      db::userprofile::DecrCredits(client.User().UID(), 
-              (data.State().Bytes() - size) * ratio, 
-              section && section->SeparateCredits() ? section->Name() : "", true);
+      client.User().DecrSectionCreditsForce(section && section->SeparateCredits() ? 
+              section->Name() : "", (data.State().Bytes() - size) * ratio);
     }
   });  
 

@@ -16,6 +16,16 @@ const boost::posix_time::seconds IdleTimeout::defaultMaximum(7200);
 const boost::posix_time::seconds IdleTimeout::defaultMinimum(1);
 const boost::posix_time::seconds IdleTimeout::defaultTimeout(900);
 
+Database::Database() :
+  name("ebftpd"), 
+  address("localhost"), 
+  port(27017)
+{
+  std::ostringstream os;
+  os << address << ":" << port;
+  host = os.str();
+}
+
 Database::Database(const std::vector<std::string>& toks) : port(-1)
 {
   name = toks[0];
@@ -43,7 +53,7 @@ Database::Database(const std::vector<std::string>& toks) : port(-1)
 
 bool Database::NeedAuth() const
 {
-  if (!login.empty()) return false;
+  if (login.empty()) return false;
   assert(!password.empty());
   return true;
 }

@@ -37,7 +37,7 @@ protected:
   }
   
   template <typename T, typename... Args>
-  void NextArg(const T& arg, Args... args)
+  void NextArg(const T& arg, const Args&... args)
   {
     format % arg;
     NextArg(args...);
@@ -58,7 +58,7 @@ public:
   }
 
   template <typename Enum, typename T, typename... Args>
-  Format& operator()(Enum e, const T& arg, Args... args)
+  Format& operator()(Enum e, const T& arg, const Args&... args)
   {
     format = CustomFormat(util::EnumToString(e)) % arg;
     NextArg(args...);
@@ -73,7 +73,7 @@ public:
   }
 
   template <typename T, typename... Args>
-  Format& operator()(const char* s, const T& arg, Args... args)
+  Format& operator()(const char* s, const T& arg, const Args&... args)
   {
     format = CustomFormat(s) % arg;
     NextArg(args...);
@@ -86,7 +86,7 @@ public:
   }
 
   template <typename T, typename... Args>
-  Format& operator()(const std::string& s, const T& arg, Args... args)
+  Format& operator()(const std::string& s, const T& arg, const Args&... args)
   {
     return operator()(s.c_str(), arg, args...);
   }

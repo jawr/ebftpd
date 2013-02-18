@@ -3,10 +3,10 @@
 #include "db/mail/message.hpp"
 #include "db/connection.hpp"
 
-namespace db { namespace mail
+namespace db
 {
 
-mongo::BSONObj Serialize(const Message& message)
+template <> mongo::BSONObj Serialize<mail::Message>(const mail::Message& message)
 {
   mongo::BSONObjBuilder bob;
   bob.append("recipient", message.recipient);
@@ -17,9 +17,9 @@ mongo::BSONObj Serialize(const Message& message)
   return bob.obj();
 }
 
-Message Unserialize(const mongo::BSONObj& obj)
+template <> mail::Message Unserialize<mail::Message>(const mongo::BSONObj& obj)
 {
-  Message message;
+  mail::Message message;
   message.recipient = obj["recipient"].Int();
   message.sender = obj["sender"].String();
   message.timeSent = ToPosixTime(obj["time sent"].Date());
@@ -32,10 +32,13 @@ Message Unserialize(const mongo::BSONObj& obj)
   return message;
 }
 
+namespace mail
+{
+
 void Send(const Message& message)
 {
   NoErrorConnection conn;
-  conn.Insert("mail", Serialize(message));
+  conn.Insert("mail", db::Serialize<mail::Message>(message));
 }
 
 std::vector<Message> Get(acl::UserID recipient)
@@ -48,11 +51,11 @@ boost::optional<mongo::OID> IndexToOID(acl::UserID recipient, int index)
 {
   NoErrorConnection conn;
   mongo::Query query = QUERY("recipient" << recipient);
-  auto cursor = conn.Query("mail", query, 1, index);
-  if (!cursor || !cursor->more()) return boost::optional<mongo::OID>();
+  auto results = conn.Query("mail", query, 1, index);
+  if (results.empty()) return boost::optional<mongo::OID>();
   
   mongo::BSONElement oidElem;
-  cursor->next().getObjectID(oidElem);
+  results.front().getObjectID(oidElem);
   return boost::optional<mongo::OID>(oidElem.OID());
 }
 

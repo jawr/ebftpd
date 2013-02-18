@@ -1,10 +1,8 @@
 #include <sstream>
 #include "cmd/site/addip.hpp"
 #include "util/error.hpp"
-#include "acl/usercache.hpp"
-#include "acl/secureip.hpp"
 #include "acl/ipstrength.hpp"
-#include "acl/allowsitecmd.hpp"
+#include "acl/misc.hpp"
 #include "cmd/error.hpp"
 
 namespace cmd { namespace site
@@ -17,7 +15,7 @@ void ADDIPCommand::Execute()
     if (args[1] != client.User().Name() ||
         !acl::AllowSiteCmd(client.User(), "addipown"))
     {
-      if (!client.User().HasGadminGID(acl::UserCache::PrimaryGID(acl::UserCache::NameToUID(args[1]))) ||
+      if (!client.User().HasGadminGID(acl::NameToPrimaryGID(args[1])) ||
           !acl::AllowSiteCmd(client.User(), "addipgadmin"))
       {
         throw cmd::PermissionError();
@@ -25,19 +23,15 @@ void ADDIPCommand::Execute()
     }
   }
   
-  acl::User user;
-  try
+  auto user = acl::User::Load(args[1]);
+  if (!user)
   {
-    user = acl::UserCache::User(args[1]);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
     return;
   }
   
   std::ostringstream os;
-  os << "Adding IPs to " << user.Name() << ":";
+  os << "Adding IPs to " << user->Name() << ":";
   
   acl::IPStrength strength;
   std::vector<std::string> deleted;
@@ -46,26 +40,21 @@ void ADDIPCommand::Execute()
     util::Error ok;
     if (!acl::SecureIP(client.User(), *it, strength))
     {
-      std::ostringstream errmsg;
-      errmsg << "Must contain " << strength.NumOctets() << " octets";
-      if (strength.HasIdent()) errmsg << ", have an ident";
-      if (!strength.IsHostname()) errmsg << ", not be a hostname";
-      errmsg << ".";
-      ok = util::Error::Failure(errmsg.str());
+      os << "\nIP " << *it << " not added: Must contain " << strength.String() << ".";
+      continue;
     }
-    else
-      ok = acl::UserCache::AddIPMask(user.Name(), *it, deleted);
-      
-    if (ok)
+
+    if (!user->AddIPMask(*it, &deleted))
     {
-      os << "\nIP " << *it << " added successfully.";
-      for (const std::string& del : deleted)
-      {
-        os << "\nAuto-removed unncessary IP " << del << "!";
-      }
+      os << "\nIP " << *it << " not added: Wider matching mask already exists.";
+      continue;
     }
-    else
-      os << "\nIP " << *it << " not added: " << ok.Message();
+      
+    os << "\nIP " << *it << " added successfully.";
+    for (const std::string& del : deleted)
+    {
+      os << "\nAuto-removed unncessary IP " << del << "!";
+    }
   }
 
   os << "\nCommand finished.";

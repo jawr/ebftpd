@@ -5,6 +5,11 @@
 #include <string>
 #include "cmd/command.hpp"
 
+namespace acl
+{
+class Group;
+}
+
 namespace cmd { namespace site
 {
 
@@ -12,7 +17,7 @@ class GRPCHANGECommand;
 
 class GRPCHANGECommand : public Command
 {
-  typedef std::function<void(acl::UserID)> SetFunction;
+  typedef std::function<void(acl::Group&)> SetFunction;
   typedef std::function<SetFunction(GRPCHANGECommand*)> CheckFunction;
 
   struct SettingDef

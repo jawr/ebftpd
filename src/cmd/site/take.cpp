@@ -5,10 +5,8 @@
 #include "cmd/site/take.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
-#include "acl/usercache.hpp"
 #include "acl/user.hpp"
 #include "util/error.hpp"
-#include "db/user/userprofile.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 
@@ -39,14 +37,10 @@ void TAKECommand::Execute()
     }
   }
 
-  acl::User user;
-  try
+  auto user = acl::User::Load(args[1]);
+  if (!user)
   {
-    user = acl::UserCache::User(args[1]);
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
     return;
   }
 
@@ -74,11 +68,11 @@ void TAKECommand::Execute()
   else if (type == "M")
     credits *= 1024 * 1024;
 
-  db::userprofile::DecrCredits(user.ID(), credits, section, true);
+  user->DecrSectionCreditsForce(section, credits);
   
   std::ostringstream os;
   os << "Taken " << std::fixed << std::setprecision(2) << credits / 1024.0
-     << "KB credits from " << user.Name() << ".";
+     << "KB credits from " << user->Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
 }
 

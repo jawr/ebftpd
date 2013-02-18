@@ -4,7 +4,7 @@
 #include "util/net/interfaces.hpp"
 #include "ftp/data.hpp"
 #include "logs/logs.hpp"
-#include "acl/allowfxp.hpp"
+#include "acl/misc.hpp"
 #include "acl/user.hpp"
 #include "ftp/client.hpp"
 #include "cfg/get.hpp"

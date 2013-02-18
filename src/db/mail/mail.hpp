@@ -23,10 +23,11 @@ int PurgeTrash(acl::UserID recipient);
 void LogOffPurgeTrash(acl::UserID recipient);
 void Trash(const Message& message);
 
-mongo::BSONObj Serialize(const Message& message);
-Message Unserialize(const mongo::BSONObj& obj);
-
 } /* mail namespace */
+/*
+template <> mongo::BSONObj Serialize<mail::Message>(const mail::Message& message);
+template <> mail::Message Unserialize<mail::Message>(const mongo::BSONObj& obj);
+*/
 } /* db namespace */
 
 #endif

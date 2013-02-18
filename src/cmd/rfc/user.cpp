@@ -1,5 +1,5 @@
 #include "cmd/rfc/user.hpp"
-#include "acl/usercache.hpp"
+#include "acl/user.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 
@@ -17,18 +17,24 @@ void USERCommand::Execute()
   
   try
   {
-    acl::User user(acl::UserCache::User(argStr));
-    if (cfg::Get().TLSControl().Evaluate(user) && !control.IsTLS())
+    auto user = acl::User::Load(argStr);
+    if (!user)
+    {
+      control.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
+      return;
+    }
+
+    if (cfg::Get().TLSControl().Evaluate(*user) && !control.IsTLS())
     {
       control.Reply(ftp::NotLoggedIn, "TLS is enforced on control connections.");
       return;
     }
     
-    client.SetWaitingPassword(user, kickLogin);
+    client.SetWaitingPassword(*user, kickLogin);
   }
   catch (const util::RuntimeError& e)
   {
-    control.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
+    control.Reply(ftp::NotLoggedIn, e.Message());
     return;
   }
   

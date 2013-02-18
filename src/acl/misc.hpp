@@ -7,12 +7,15 @@
 namespace cfg { namespace setting
 {
 class SpeedLimit;
+class Creditcheck;
+class Creditloss;
 }
 }
 
 namespace fs
 {
 class VirtualPath;
+class Path;
 }
 
 namespace acl

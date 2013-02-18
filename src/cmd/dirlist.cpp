@@ -11,9 +11,9 @@
 #include "ftp/client.hpp"
 #include "fs/direnumerator.hpp"
 #include "util/path/status.hpp"
-#include "acl/usercache.hpp"
-#include "acl/groupcache.hpp"
 #include "logs/logs.hpp"
+#include "acl/user.hpp"
+#include "acl/group.hpp"
 
 namespace cmd
 {
@@ -345,14 +345,14 @@ const std::string& DirectoryList::UIDToName(acl::UserID uid) const
 {
   auto it = userNameCache.find(uid);
   if (it != userNameCache.end()) return it->second;
-  return userNameCache[uid] = acl::UserCache::UIDToName(uid).substr(0, 10);
+  return userNameCache[uid] = acl::UIDToName(uid).substr(0, 10);
 }
 
 const std::string& DirectoryList::GIDToName(acl::GroupID gid) const
 {
   auto it = groupNameCache.find(gid);
   if (it != groupNameCache.end()) return it->second;
-  return groupNameCache[gid] = acl::GroupCache::GIDToName(gid).substr(0, 10);
+  return groupNameCache[gid] = acl::GIDToName(gid).substr(0, 10);
 }
   
 } /* cmd namespace */

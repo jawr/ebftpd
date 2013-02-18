@@ -5,7 +5,6 @@
 
 namespace acl
 {
-class GroupProfile;
 class Group;
 }
 
@@ -19,8 +18,7 @@ namespace cmd { namespace site
 
 class GROUPCommand : public Command
 {
-  void PopulateHeadOrFoot(const acl::Group& group, 
-        const acl::GroupProfile& profile, text::TemplateSection& tmpl);
+  void PopulateHeadOrFoot(const acl::Group& group, text::TemplateSection& tmpl);
 
 public:
   GROUPCommand(ftp::Client& client, const std::string& argStr, const Args& args) :

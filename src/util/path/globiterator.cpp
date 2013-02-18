@@ -164,7 +164,7 @@ void GlobIterator::SubIterator::Next()
 }
 
 template <typename... Args>
-DirIterator* GlobIterator::SubIterator::BeginIterator(bool recursive, Args... args)
+DirIterator* GlobIterator::SubIterator::BeginIterator(bool recursive, Args&&... args)
 {
   return recursive
           ? new RecursiveDirIterator(std::forward<Args>(args)...) 

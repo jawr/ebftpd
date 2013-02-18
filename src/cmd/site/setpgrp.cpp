@@ -2,8 +2,6 @@
 #include "cmd/site/setpgrp.hpp"
 #include "acl/user.hpp"
 #include "acl/group.hpp"
-#include "acl/usercache.hpp"
-#include "acl/groupcache.hpp"
 #include "util/error.hpp"
 
 namespace cmd { namespace site
@@ -11,28 +9,26 @@ namespace cmd { namespace site
 
 void SETPGRPCommand::Execute()
 {
-  acl::Group group;
-  try
+  auto user = acl::User::Load(args[1]);
+  if (!user)
   {
-    group = acl::GroupCache::Group(args[2]);
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
+    return;
   }
-  catch (const util::RuntimeError& e)
+
+  auto gid = acl::NameToGID(args[2]);
+  if (gid < 0)
   {
-    control.Reply(ftp::ActionNotOkay, e.Message());
+    control.Reply(ftp::ActionNotOkay, "Group " + args[2] + " doesn't exist.");
     return;
   }
   
-  acl::GroupID oldGID = -1;
-  util::Error ok = acl::UserCache::SetPrimaryGID(args[1], group.ID(), oldGID);
-  if (!ok)
-    control.Reply(ftp::ActionNotOkay, ok.Message());
-  else
-  {
-    std::ostringstream os;
-    if (oldGID != -1) os << "Moved old primary group " << acl::GroupCache::GIDToName(oldGID) << " to secondary.\n";
-    os << "Set primary group for " << args[1] << " to: " << group.Name();
-    control.Reply(ftp::CommandOkay, os.str());
-  }
+  acl::GroupID oldGID = user->PrimaryGID();
+  user->SetPrimaryGID(gid);
+  std::ostringstream os;
+  if (oldGID != -1) os << "Moved old primary group " << acl::GIDToName(oldGID) << " to secondary.\n";
+  os << "Set primary group for " << args[1] << " to: " << args[2];
+  control.Reply(ftp::CommandOkay, os.str());
 }
 
 }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cctype>
+#include <sstream>
 
 namespace acl
 {
@@ -51,6 +52,17 @@ public:
   unsigned LowerCase() const { return lowerCase; }
   unsigned Digits() const { return digits; }
   unsigned Others() const { return others; }
+  
+  std::string String() const
+  {
+    std::ostringstream os;
+    os << UpperCase() << " uppercase, "
+       << LowerCase() << " lowercase, "
+       << Digits() << " digits, "
+       << Others() << " others, "
+       << Length() << " length";
+    return os.str();
+  }
 };
 
 } /* acl namespace */

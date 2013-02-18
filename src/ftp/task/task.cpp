@@ -21,7 +21,7 @@ void KickUser::Execute(Server& server)
   unsigned kicked = 0;
   for (auto& client: server.clients)
   {
-    if (client.User().UID() == uid)
+    if (client.User().ID() == uid)
     {
       client.Interrupt();
       ++kicked;
@@ -37,7 +37,7 @@ void LoginKickUser::Execute(Server& server)
   Result result;
   for (auto& client: server.clients)
   {
-    if (client.User().UID() == uid && client.State() == ftp::ClientState::LoggedIn)
+    if (client.User().ID() == uid && client.State() == ftp::ClientState::LoggedIn)
     {
       if (!result.kicked)
       {
@@ -58,7 +58,7 @@ void GetOnlineUsers::Execute(Server& server)
   for (auto& client: server.clients)
   {
     if (client.State() != ClientState::LoggedIn) continue;
-    users.emplace_back(client.User().UID(), client.Data().State(), client.IdleTime(), 
+    users.emplace_back(client.User().ID(), client.Data().State(), client.IdleTime(), 
                        client.CurrentCommand(), client.Ident(), client.Hostname());
   }
   
@@ -103,7 +103,7 @@ void UserUpdate::Execute(Server& server)
 {
   for (auto& client: server.clients)
   {
-    if (client.User().UID() == uid) client.SetUserUpdated();
+    if (client.User().ID() == uid) client.SetUserUpdated();
   }
 }
 

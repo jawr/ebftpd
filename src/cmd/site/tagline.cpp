@@ -1,6 +1,5 @@
 #include <cctype>
 #include "cmd/site/tagline.hpp"
-#include "db/user/userprofile.hpp"
 #include "acl/util.hpp"
 
 namespace cmd { namespace site
@@ -14,7 +13,7 @@ void TAGLINECommand::Execute()
     return;
   }
 
-  db::userprofile::SetTagline(client.User().UID(), argStr);
+  client.User().SetTagline(argStr);
   control.Reply(ftp::CommandOkay, "New Tagline: " + argStr);
 }
 

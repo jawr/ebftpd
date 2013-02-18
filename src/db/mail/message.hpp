@@ -7,13 +7,22 @@
 #include "acl/types.hpp"
 #include "util/enumstrings.hpp"
 
-namespace db { namespace mail
+namespace db
 {
 
+namespace mail
+{
 class Message;
+}
 
-Message Unserialize(const mongo::BSONObj& obj);
-mongo::BSONObj Serialize(const Message& message);
+template <typename T> mongo::BSONObj Serialize(const mail::Message& message);
+template <> mongo::BSONObj Serialize<mail::Message>(const mail::Message& message);
+
+template <typename T> T Unserialize(const mongo::BSONObj& obj);
+template <> mail::Message Unserialize<mail::Message>(const mongo::BSONObj& obj);
+
+namespace mail
+{
 
 enum class Status : unsigned { Unread, Trash, Saved };
 
@@ -43,8 +52,8 @@ public:
   ::db::mail::Status Status() const { return status; }
   
   friend void Trash(const Message& message);
-  friend Message Unserialize(const mongo::BSONObj& obj);
-  friend mongo::BSONObj Serialize(const Message& message);
+  friend Message db::Unserialize<Message>(const mongo::BSONObj& obj);
+  friend mongo::BSONObj db::Serialize<Message>(const Message& message);
 };
 
 std::string StatusToString(Status status);

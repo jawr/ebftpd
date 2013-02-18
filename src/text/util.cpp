@@ -9,12 +9,12 @@
 #include "cfg/get.hpp"
 #include "fs/directory.hpp"
 #include "ftp/task/task.hpp"
-#include "acl/groupcache.hpp"
-#include "db/stats/stat.hpp"
+#include "db/stats/stats.hpp"
 #include "stats/stat.hpp"
 #include "acl/util.hpp"
 #include "text/parser.hpp"
 #include "util/path/status.hpp"
+#include "acl/group.hpp"
 
 namespace text
 {
@@ -58,13 +58,13 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   ts.RegisterValue("username", client.User().Name());
   if (ts.HasTag("groupname")) 
   {
-    ts.RegisterValue("groupname", acl::GroupCache::GIDToName(client.User().PrimaryGID()));
+    ts.RegisterValue("groupname", acl::GIDToName(client.User().PrimaryGID()));
   }
   ts.RegisterValue("flags", client.User().Flags());
-  ts.RegisterValue("ratio", acl::RatioString(client.UserProfile()));
+  ts.RegisterValue("ratio", acl::RatioString(client.User()));
   
-  ts.RegisterValue("tagline", client.UserProfile().Tagline());
-  ts.RegisterValue("credits", acl::CreditString(client.UserProfile()));
+  ts.RegisterValue("tagline", client.User().Tagline());
+  ts.RegisterValue("credits", acl::CreditString(client.User()));
   ts.RegisterValue("time_online", "");
 
   if (ts.HasTag("online_users") || ts.HasTag("all_online_users"))
@@ -88,7 +88,7 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
           ts.HasTag(prefix + "size") ||
           ts.HasTag(prefix + "speed"))
       {
-        auto stat = db::stats::CalculateSingleUser(client.User().UID(), "", tf, dir);
+        auto stat = db::stats::CalculateSingleUser(client.User().ID(), "", tf, dir);
         ts.RegisterValue(prefix + "files", stat.Files());
         ts.RegisterSize(prefix + "size", stat.KBytes());
         ts.RegisterSpeed(prefix + "speed", stat.Speed());

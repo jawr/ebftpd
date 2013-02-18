@@ -6,6 +6,7 @@
 #include "util/verify.hpp"
 #include "acl/user.hpp"
 #include "cfg/get.hpp"
+#include "acl/group.hpp"
 
 namespace acl
 {
@@ -22,24 +23,30 @@ boost::regex validationPatterns[] =
 
 }
 
-void CreateDefaults()
+bool CreateDefaults()
 {
-  if (!GIDExists(0))
+  try
   {
-    verify(Group::Create("ebftpd"));
-    verify(NameToGID("ebftpd") == 0);
-  }
+    if (!GIDExists(0))
+    {
+      auto group = Group::Create("ebftpd");
+      if (!group || group->ID() != 0) return false;
+    }
 
-  if (!UIDExists(0))
-  {
-    verify(User::Create("ebftpd", "ebftpd"));
-    verify(NameToUID("ebftpd") == 0);
-    
-    auto user = User::Load(0);
-    verify(user);
-    user->AddIPMask("*@localhost");
-    user->AddFlag(Flag::Siteop);
+    if (!UIDExists(0))
+    {
+      auto user = User::Create("ebftpd", "ebftpd", 0);
+      if (!user || user->ID() != 0) return false;      
+      user->AddIPMask("*@localhost");
+      user->AddFlag(Flag::Siteop);
+    }
   }
+  catch (const util::RuntimeError&)
+  {
+    return false;
+  }
+  
+  return true;
 }
 
 bool Validate(ValidationType type, const std::string& s)
@@ -59,12 +66,12 @@ std::string FormatRatio(int ratio)
 std::string RatioString(const User& user)
 {
   std::ostringstream os;
-  os << FormatRatio(user.Ratio(""));
+  os << FormatRatio(user.DefaultRatio());
   for (const auto& kv : cfg::Get().Sections())
   {
-    if (user.Ratio(kv.first) != -1)
+    if (user.SectionRatio(kv.first) != -1)
     {
-      os << " " << kv.first << "(" << FormatRatio(user.Ratio(kv.first)) << ")";
+      os << " " << kv.first << "(" << FormatRatio(user.SectionRatio(kv.first)) << ")";
     }
   }
   return os.str();
@@ -80,12 +87,12 @@ std::string FormatCredits(long long credits)
 std::string CreditString(const User& user)
 {
   std::ostringstream os;
-  os << FormatCredits(user.Credits(""));
+  os << FormatCredits(user.DefaultCredits());
   for (const auto& kv : cfg::Get().Sections())
   {
     if (kv.second.SeparateCredits())
     {
-      os << " " << kv.first << "(" << FormatCredits(user.Credits(kv.first)) << ")";
+      os << " " << kv.first << "(" << FormatCredits(user.SectionCredits(kv.first)) << ")";
     }
   }
   return os.str();
@@ -95,12 +102,12 @@ std::string GroupString(const User& user)
 {
   std::ostringstream os;
   if (user.HasGadminGID(user.PrimaryGID())) os << "+";
-  os << acl::GroupCache::GIDToName(user.PrimaryGID());
+  os << acl::GIDToName(user.PrimaryGID());
   for (acl::GroupID gid : user.SecondaryGIDs())
   {
     os << " ";
     if (user.HasGadminGID(gid)) os << "+";
-    os << acl::GroupCache::GIDToName(gid);
+    os << acl::GIDToName(gid);
   }
   return os.str();
 }

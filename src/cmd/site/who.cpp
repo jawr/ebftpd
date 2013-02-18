@@ -5,9 +5,7 @@
 #include "cmd/site/who.hpp"
 #include "acl/user.hpp"
 #include "acl/user.hpp"
-#include "db/user/userprofile.hpp"
 #include "acl/group.hpp"
-#include "acl/groupcache.hpp"
 #include "ftp/task/types.hpp"
 #include "ftp/task/task.hpp"
 #include "cfg/config.hpp"
@@ -19,7 +17,6 @@
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
-#include "acl/usercache.hpp"
 
 namespace cmd { namespace site
 {
@@ -54,34 +51,17 @@ void WHOCommand::Execute()
   head.RegisterValue("sitename_short", cfg.SitenameShort());
   os << head.Compile();
 
-  acl::User user;
   int count = 0;
   for (auto& whoUser: whoUsers)
   {
-    try
-    {
-      user = acl::UserCache::User(whoUser.uid);
-    }
-    catch (const util::RuntimeError&)
-    {
-      continue;
-    }
+    auto user = acl::User::Load(whoUser.uid);
+    if (!user) continue;
     
     ++count;
     
-    std::string tagline;
-    try
-    {
-      tagline = db::userprofile::Get(whoUser.uid).Tagline();
-    }
-    catch (const util::RuntimeError&)
-    {
-    }
-    
-    body.RegisterValue("user", user.Name());
-    body.RegisterValue("group", 
-      acl::GroupCache::GIDToName(user.PrimaryGID()));
-    body.RegisterValue("tagline", tagline);
+    body.RegisterValue("user", user->Name());
+    body.RegisterValue("group", acl::GIDToName(user->PrimaryGID()));
+    body.RegisterValue("tagline", user->Tagline());
     body.RegisterValue("action", whoUser.Action());
     os << body.Compile();
   }

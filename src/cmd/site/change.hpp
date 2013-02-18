@@ -12,7 +12,7 @@ class CHANGECommand;
 
 class CHANGECommand : public Command
 {
-  typedef std::function<void(acl::UserID)> SetFunction;
+  typedef std::function<void(acl::User&)> SetFunction;
   typedef std::function<SetFunction(CHANGECommand*)> CheckFunction;
 
   struct SettingDef
@@ -33,7 +33,7 @@ class CHANGECommand : public Command
   SetFunction CheckSectionRatio();
   SetFunction CheckWeeklyAllotment();
   SetFunction CheckHomeDir();
-  SetFunction CheckFlags();
+  SetFunction HasFlags();
   SetFunction CheckIdleTime();
   SetFunction CheckExpires();
   SetFunction CheckNumLogins();
@@ -43,10 +43,6 @@ class CHANGECommand : public Command
   SetFunction CheckMaxDownSpeed();
   SetFunction CheckMaxSimUp();
   SetFunction CheckMaxSimDown();
-  
-  void AddFlags(acl::UserID uid, const std::string& flags);
-  void DelFlags(acl::UserID uid, const std::string& flags);
-  void SetFlags(acl::UserID uid, const std::string& flags);
   
   SetFunction Check();
   

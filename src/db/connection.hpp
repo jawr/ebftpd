@@ -54,6 +54,10 @@ class Connection
   
 public:
   Connection(ConnectionMode mode);
+  ~Connection()
+  {
+    if (scopedConn) scopedConn->done();
+  }
   
   LastError GetLastError()
   {
@@ -79,7 +83,7 @@ public:
     }
     catch (const mongo::DBException& e)
     {
-      LogException("Set field", e, typeid(obj).name(), boost::join(fields, " "));
+      LogException("Set field", e, typeid(obj), boost::join(fields, " "));
       if (mode == ConnectionMode::Safe) 
         throw DBWriteError();
     }
@@ -136,7 +140,7 @@ public:
     }
     catch (const mongo::DBException& e)
     {
-      LogException("Insert multi", e, typeid(objects.front()).name());
+      LogException("Insert multi", e, typeid(objects.front()));
       if (mode == ConnectionMode::Safe) throw e;
     }    
   }
@@ -151,7 +155,7 @@ public:
     }
     catch (const mongo::DBException& e)
     {
-      LogException("Insert one", e, typeid(obj).name());
+      LogException("Insert one", e, typeid(obj));
       if (mode == ConnectionMode::Safe) throw e;
     }
   }
@@ -160,7 +164,7 @@ public:
   
   std::vector<mongo::BSONObj> Query(const std::string& collection, 
         const mongo::Query& query, int nToReturn, int nToSkip, 
-        const mongo::BSONObj* fieldsToReturn);
+        const mongo::BSONObj* fieldsToReturn = nullptr);
   
   template <typename T>
   std::vector<T> QueryMulti(const std::string& collection, const mongo::Query& query, 
@@ -201,12 +205,12 @@ public:
   }
   
   void EnsureIndex(const std::string& collection, const mongo::BSONObj& keys, bool unique);
-  unsigned long long Count(const std::string& collection, 
-        const mongo::BSONObj& query = mongo::BSONObj());  
+  long long Count(const std::string& collection, const mongo::BSONObj& query = mongo::BSONObj());  
           
   bool RunCommand(const mongo::BSONObj& command, mongo::BSONObj& info, int options = 0);
-  bool Eval(const std::string& javascript, mongo::BSONElement& ret, 
+  bool Eval(const std::string& javascript, mongo::BSONObj& info, mongo::BSONElement& ret, 
         mongo::BSONObj* args = nullptr);
+  int NextAutoIncrement(const std::string& collection, const std::string& autoIncField);
   int InsertAutoIncrement(const std::string& collection, const mongo::BSONObj& obj, 
         const std::string& autoIncField);
   
@@ -222,7 +226,7 @@ public:
       }
       catch (const mongo::DBException& e)
       {
-        LogException("Insert one", e, typeid(obj).name());
+        LogException("Insert auto increment", e, typeid(obj));
         if (mode == ConnectionMode::Safe) throw e;
       }
     }

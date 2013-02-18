@@ -6,7 +6,7 @@
 namespace acl
 {
 
-void CreateDefaults();
+bool CreateDefaults();
 
 enum class ValidationType
 {

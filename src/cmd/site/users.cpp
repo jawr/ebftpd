@@ -1,32 +1,23 @@
-#include <boost/optional/optional.hpp>
 #include <sstream>
+#include <boost/optional/optional.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "cmd/site/users.hpp"
 #include "util/error.hpp"
 #include "acl/types.hpp"
-#include "acl/groupcache.hpp"
-#include "db/user/user.hpp"
-#include "db/user/userprofile.hpp"
-#include "db/stats/stat.hpp"
+#include "db/stats/stats.hpp"
 #include "logs/logs.hpp"
 #include "stats/stat.hpp"
 #include "text/factory.hpp"
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/error.hpp"
+#include "acl/group.hpp"
 
 namespace cmd { namespace site
 {
 
 void USERSCommand::Execute()
 {
-  std::vector<acl::User> users;
-  
-  if (args.size() == 2)
-    users = db::user::GetByACL(args[1]);
-  else
-    users = db::user::GetAll();
-
   boost::optional<text::Template> templ;
   try
   {
@@ -38,8 +29,10 @@ void USERSCommand::Execute()
     return;
   }
 
-  std::ostringstream os;
+  std::string multiStr = args.size() == 2 ? args[1] : "*";
+  auto users = acl::User::GetUsers(multiStr);
 
+  std::ostringstream os;
   if (users.size() > 0)
   {
     text::TemplateSection& head = templ->Head();
@@ -60,7 +53,7 @@ void USERSCommand::Execute()
                             ::stats::Timeframe::Alltime, ::stats::Direction::Download);
 
       body.RegisterValue("user", user.Name());
-      body.RegisterValue("group", acl::GroupCache::GIDToName(user.PrimaryGID()));
+      body.RegisterValue("group", acl::GIDToName(user.PrimaryGID()));
       body.RegisterSize("upload", upStat.KBytes());
       body.RegisterSize("download", dnStat.KBytes());
 

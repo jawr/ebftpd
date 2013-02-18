@@ -40,7 +40,7 @@ private:
     void Next();
 
     template <typename... Args> 
-    DirIterator* BeginIterator(bool recursive, Args... args);
+    DirIterator* BeginIterator(bool recursive, Args&&... args);
     
     DirIterator* BeginIterator(bool recursive);
     DirIterator* EndIterator(bool recursive);

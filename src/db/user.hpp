@@ -13,6 +13,7 @@ class BSONObj;
 
 namespace acl
 {
+class UserData;
 class User;
 } 
 
@@ -21,15 +22,15 @@ namespace db
 
 class User
 {
-  acl::User& user;
+  acl::UserData& user;
 
   void SaveField(const std::string& field);
   
 public:
-  User(acl::User& user) :  user(user) { }
+  User(acl::UserData& user) :  user(user) { }
   
   acl::UserID Create();
-  void SaveName();
+  bool SaveName();
   void SaveIPMasks();
   void SavePassword();
   void SaveFlags();
@@ -50,27 +51,30 @@ public:
   void SaveLoggedIn();
   void SaveLastLogin();
   void SaveRatio();
-  void IncrCredits(const std::string& section, long long kBytes, 
-                   long long& newCredits);
-  bool DecrCredits(const std::string& section, long long kBytes, 
-                   bool force, long long& newCredits);
-                   
-  static boost::optional<acl::User> Load(acl::UserID uid);
+  void IncrCredits(const std::string& section, long long kBytes);
+  bool DecrCredits(const std::string& section, long long kBytes, bool force);
+  
+  void Purge() const;
+  
+  static boost::optional<acl::UserData> Load(acl::UserID uid);
 };
-
-mongo::BSONObj Serialize(const acl::User& user);
-acl::User Unserialize(const mongo::BSONObj& obj);
 
 struct UserCache
 {
+  virtual ~UserCache() { }
   virtual std::string UIDToName(acl::UserID uid) = 0;
   virtual acl::UserID NameToUID(const std::string& name) = 0;
+  virtual acl::GroupID UIDToPrimaryGID(acl::UserID uid) = 0;
 };
 
 void RegisterUserCache(const std::shared_ptr<UserCache>& cache);
 
 std::string UIDToName(acl::UserID uid);
 acl::UserID NameToUID(const std::string& name);
+acl::GroupID UIDToPrimaryGID(acl::UserID uid);
+
+std::vector<acl::UserID> GetUIDs(const std::string& multiStr = "*");
+std::vector<acl::UserData> GetUsers(const std::string& multiStr = "*");
 
 } /* db namespace */
 

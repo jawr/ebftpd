@@ -1,8 +1,7 @@
 #include <cctype>
 #include <boost/algorithm/string/trim.hpp>
 #include "cmd/site/grpnfo.hpp"
-#include "acl/groupcache.hpp"
-#include "db/group/groupprofile.hpp"
+#include "acl/group.hpp"
 #include "acl/util.hpp"
 
 namespace cmd { namespace site
@@ -19,14 +18,14 @@ void GRPNFOCommand::Execute()
     return;
   }
 
-  acl::GroupID gid = acl::GroupCache::NameToGID(args[1]);
-  if (gid == -1)
+  auto group = acl::Group::Load(args[1]);
+  if (!group)
   {
-    control.Reply(ftp::ActionNotOkay, "Group doesn't exist.");
+    control.Reply(ftp::ActionNotOkay, "Group " + args[1] + " doesn't exist.");
     return;
   }
 
-  db::groupprofile::SetDescription(gid, argStr);
+  group->SetDescription(argStr);
   control.Reply(ftp::CommandOkay, "New description for " + args[1] + ": " + argStr);
 }
 

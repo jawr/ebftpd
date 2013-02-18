@@ -5,23 +5,20 @@
 #include "acl/group.hpp"
 #include "acl/user.hpp"
 #include "acl/group.hpp"
-#include "db/user/user.hpp"
-#include "db/group/group.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
-#include "db/group/groupprofile.hpp"
 #include "logs/logs.hpp"
+#include "db/group.hpp"
+#include "db/user.hpp"
 
 namespace cmd { namespace site
 {
 
 void GROUPSCommand::Execute()
 {
-  std::vector<acl::Group> groups = db::group::GetAll();
-
   boost::optional<text::Template> templ;
   try
   {
@@ -33,6 +30,8 @@ void GROUPSCommand::Execute()
     return;
   }
 
+  auto groups = db::GetGroups();
+
   std::ostringstream os;
   text::TemplateSection& head = templ->Head();
   os << head.Compile();
@@ -40,23 +39,12 @@ void GROUPSCommand::Execute()
   text::TemplateSection& body = templ->Body();
 
   for (auto& group: groups)
-  {
-    std::string description;
-    try
-    {
-      description = db::groupprofile::Get(group.ID()).Description();
-    }
-    catch (const util::RuntimeError& e)
-    {
-      logs::error << "Unable to load group profile for: " 
-                  << group.Name() << logs::endl;
-    }
-    
-    std::vector<acl::User> users = db::user::GetByACL("=" + group.Name());
+  {    
+    size_t numUsers = acl::User::GetUIDs("=" + group.Name()).size();
 
-    body.RegisterValue("users", users.size());
+    body.RegisterValue("users", numUsers);
     body.RegisterValue("group", group.Name());
-    body.RegisterValue("descr", description);
+    body.RegisterValue("descr", group.Description());
     os << body.Compile();
   }
 

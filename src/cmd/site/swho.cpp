@@ -5,19 +5,16 @@
 #include "acl/user.hpp"
 #include "acl/user.hpp"
 #include "acl/group.hpp"
-#include "acl/groupcache.hpp"
 #include "ftp/task/types.hpp"
 #include "ftp/task/task.hpp"
 #include "cfg/config.hpp"
 #include "cfg/get.hpp"
-#include "db/user/userprofile.hpp"
 #include "stats/util.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
-#include "acl/usercache.hpp"
 
 namespace cmd { namespace site
 {
@@ -52,7 +49,7 @@ void SWHOCommand::Execute()
 
   for (auto& whoUser : whoUsers)
   {
-    body.RegisterValue("user", acl::UserCache::UIDToName(whoUser.uid));
+    body.RegisterValue("user", acl::UIDToName(whoUser.uid));
     body.RegisterValue("ident_address", whoUser.ident + "@" + whoUser.address);
     body.RegisterValue("action", whoUser.Action());
     os << body.Compile();

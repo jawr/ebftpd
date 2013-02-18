@@ -19,8 +19,6 @@
 #include "main.hpp"
 #include "util/net/identclient.hpp"
 #include "util/string.hpp"
-#include "db/user/user.hpp"
-#include "db/user/userprofile.hpp"
 #include "ftp/counter.hpp"
 #include "acl/flags.hpp"
 #include "db/mail/mail.hpp"
@@ -29,8 +27,7 @@
 #include "cmd/error.hpp"
 #include "exec/cscript.hpp"
 #include "util/net/resolver.hpp"
-#include "acl/usercache.hpp"
-#include "db/error.hpp"
+#include "acl/ipcheck.hpp"
 
 namespace ftp
 {
@@ -62,22 +59,22 @@ void Client::SetState(ClientState state)
   if (state == ClientState::Finished && 
       this->state == ClientState::LoggedIn) 
   {
-    Counter::Login().Stop(user.ID());
+    Counter::Login().Stop(user->ID());
   }
   this->state = state;
 }
 
-void Client::SetLoggedIn(const acl::UserProfile& profile, bool kicked)
+void Client::SetLoggedIn(bool kicked)
 {
   
-  auto result = Counter::Login().Start(user.ID(), profile.NumLogins(), kicked, 
-                               user.CheckFlag(acl::Flag::Exempt));
+  auto result = Counter::Login().Start(user->ID(), user->NumLogins(), kicked, 
+                               user->HasFlag(acl::Flag::Exempt));
   switch (result)
   {
     case CounterResult::PersonalFail  :
     {
       std::ostringstream os;
-      os << "You've reached your maximum of " << profile.NumLogins() << " login(s).";
+      os << "You've reached your maximum of " << user->NumLogins() << " login(s).";
       throw util::RuntimeError(os.str());
     }
     case CounterResult::GlobalFail    :
@@ -88,13 +85,12 @@ void Client::SetLoggedIn(const acl::UserProfile& profile, bool kicked)
       break;
   }
 
-  if (profile.IdleTime() == -1)
+  if (user->IdleTime() == -1)
     SetIdleTimeout(cfg::Get().IdleTimeout().Timeout());
   else
-    SetIdleTimeout(boost::posix_time::seconds(profile.IdleTime()));
+    SetIdleTimeout(boost::posix_time::seconds(user->IdleTime()));
   
   boost::lock_guard<boost::mutex> lock(mutex);
-  this->profile = std::move(profile);
   state = ClientState::LoggedIn;
   loggedInAt = boost::posix_time::second_clock::local_time();
 }
@@ -135,7 +131,7 @@ bool Client::CheckState(ClientState reqdState)
 bool Client::VerifyPassword(const std::string& password)
 {
   ++passwordAttemps;
-  return user.VerifyPassword(password);
+  return user->VerifyPassword(password);
 }
 
 bool Client::PasswordAttemptsExceeded() const
@@ -246,31 +242,16 @@ void Client::ReloadUser()
 {
   userUpdated = false;
 
-  try
-  {
-    {
-      boost::lock_guard<boost::mutex>  lock(mutex);
-      user = acl::UserCache::User(user.Name());
-    }    
-  }
-  catch (const util::RuntimeError& e)
+  auto optUser = acl::User::Load(user->ID());
+  if (!optUser)
   {
     logs::error << "Failed to reload user from cache for: " 
-                << user.Name() << logs::endl;
-  }  
-  
-  try
-  {
-    acl::UserProfile profile(db::userprofile::Get(user.ID()));
-  
-    boost::lock_guard<boost::mutex> lock(mutex);
-    this->profile = std::move(profile);
+                << user->Name() << logs::endl;
+    return;
   }
-  catch (const db::DBError& e)
-  {
-    logs::error << "Failed to reload user profile from cache for: " 
-                << user.Name() << logs::endl;
-  }
+  
+  boost::lock_guard<boost::mutex> lock(mutex);
+  user = std::move(*optUser);
 }
 
 void Client::Handle()
@@ -282,7 +263,7 @@ void Client::Handle()
   
   while (State() != ClientState::Finished)
   {
-    if (State() != ClientState::LoggedIn || profile.IdleTime() == 0) 
+    if (State() != ClientState::LoggedIn || user->IdleTime() == 0) 
       timeoutPtr = nullptr;
     else
     {     
@@ -338,20 +319,19 @@ bool Client::ConfirmCommand(const std::string& argStr)
 
 void Client::LogTraffic() const
 {
-  db::stats::ProtocolUpdate(user.ID(), (control.BytesWrite() + data.BytesWrite()) / 1024,
+  db::stats::ProtocolUpdate(user->ID(), (control.BytesWrite() + data.BytesWrite()) / 1024,
                             (control.BytesRead() + data.BytesRead()) / 1024);
 }
 
 bool Client::PostCheckAddress()
 {
-  return acl::UserCache::IdentIPAllowed(user.ID(), ident + "@" + IP()) ||
-        (IP() != Hostname() && acl::UserCache::IdentIPAllowed(user.ID(), ident + "@" + Hostname()));
+  return acl::IdentIPAllowed(user->ID(), ident + "@" + IP()) ||
+        (IP() != Hostname() && acl::IdentIPAllowed(user->ID(), ident + "@" + Hostname()));
 }
 
 bool Client::PreCheckAddress()
 {
-  if (!acl::UserCache::IPAllowed(IP()) &&
-        (IP() != Hostname() && !acl::UserCache::IPAllowed(Hostname())))
+  if (!acl::IPAllowed(IP()) && (IP() != Hostname() && !acl::IPAllowed(Hostname())))
   {
     logs::security << "Refused connection from unknown address: " 
                    << HostnameAndIP() << logs::endl;
@@ -491,7 +471,7 @@ void Client::Run()
   scope_guard finishedGuard = make_guard([&]
   {
     SetState(ClientState::Finished);
-    if (user.ID() != -1) db::mail::LogOffPurgeTrash(user.ID());
+    if (user->ID() != -1) db::mail::LogOffPurgeTrash(user->ID());
     LogTraffic();
   });
 

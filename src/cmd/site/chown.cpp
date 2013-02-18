@@ -8,12 +8,11 @@
 #include "cmd/site/chown.hpp"
 #include "fs/globiterator.hpp"
 #include "fs/dircontainer.hpp"
-#include "acl/usercache.hpp"
-#include "acl/groupcache.hpp"
 #include "cmd/error.hpp"
 #include "util/path/status.hpp"
 #include "util/enumbitwise.hpp"
 #include "util/string.hpp"
+#include "acl/group.hpp"
 
 namespace cmd { namespace site
 {
@@ -89,7 +88,7 @@ void CHOWNCommand::Execute()
   acl::UserID uid = -1;
   if (!user.empty())
   {
-    uid = acl::UserCache::NameToUID(user);
+    uid = acl::NameToUID(user);
     if (uid == -1)
     {
       control.Reply(ftp::ActionNotOkay, "User " + user + " doesn't exist.");
@@ -100,7 +99,7 @@ void CHOWNCommand::Execute()
   acl::GroupID gid = -1;
   if (!group.empty())
   {
-    gid = acl::GroupCache::NameToGID(group);
+    gid = acl::NameToGID(group);
     if (gid == -1)
     {
       control.Reply(ftp::ActionNotOkay, "Group " + group + " doesn't exist.");

@@ -1,7 +1,6 @@
 #include <sstream>
 #include "cmd/rfc/pass.hpp"
 #include "fs/directory.hpp"
-#include "db/user/userprofile.hpp"
 #include "db/error.hpp"
 #include "ftp/task/task.hpp"
 #include "logs/logs.hpp"
@@ -50,14 +49,14 @@ void PASSCommand::Execute()
     return;
   }
   
-  if (client.User().Deleted())
+  if (client.User().HasFlag(acl::Flag::Deleted))
   {
     control.Reply(ftp::ServiceUnavailable, "You have been deleted. Goodbye.");
     client.SetState(ftp::ClientState::Finished);
     return;
   }
 
-  if (ftp::Client::IsSiteopOnly() && !client.User().CheckFlag(acl::Flag::Siteop))
+  if (ftp::Client::IsSiteopOnly() && !client.User().HasFlag(acl::Flag::Siteop))
   {
     control.Reply(ftp::ServiceUnavailable, "Server has been shutdown.");
     return;
@@ -72,20 +71,8 @@ void PASSCommand::Execute()
     client.SetState(ftp::ClientState::Finished);
     return;
   }
-
-  boost::optional<acl::UserProfile> profile;
-  try
-  {
-    profile.reset(db::userprofile::Get(client.User().UID()));
-  }
-  catch (const db::DBError& e)
-  {
-    control.Reply(ftp::ServiceUnavailable, e.Message());
-    client.SetState(ftp::ClientState::Finished);
-    return;
-  }
   
-  if (profile->Expired())
+  if (client.User().Expired())
   {
     control.Reply(ftp::ServiceUnavailable, "Your account has expired.");
     client.SetState(ftp::ClientState::Finished);
@@ -97,14 +84,14 @@ void PASSCommand::Execute()
   {
     logs::debug << client.User().Name() << " requested a login kick." << logs::endl;
     boost::unique_future<ftp::task::LoginKickUser::Result> future;
-    std::make_shared<ftp::task::LoginKickUser>(client.User().UID(), future)->Push();    
+    std::make_shared<ftp::task::LoginKickUser>(client.User().ID(), future)->Push();    
     future.wait();
     kickResult = future.get();
   }
   
   try
   {
-    client.SetLoggedIn(*profile, kickResult.kicked);
+    client.SetLoggedIn(kickResult.kicked);
   }
   catch (const util::RuntimeError& e)
   {
@@ -120,7 +107,7 @@ void PASSCommand::Execute()
        << kickResult.idleTime << ") of " << kickResult.logins << " login(s).\n";
   }
   
-  db::userprofile::Login(client.User().UID());
+  client.User().SetLoggedIn();
 
   fs::Path welcomePath(acl::message::Choose<acl::message::Welcome>(client.User()));
   if (!welcomePath.IsEmpty())

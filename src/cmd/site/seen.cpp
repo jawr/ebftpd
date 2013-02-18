@@ -1,8 +1,6 @@
 #include <memory>
 #include "cmd/site/seen.hpp"
 #include "acl/user.hpp"
-#include "acl/usercache.hpp"
-#include "db/user/userprofile.hpp"
 #include "util/error.hpp"
 
 namespace cmd { namespace site
@@ -10,25 +8,23 @@ namespace cmd { namespace site
 
 void SEENCommand::Execute()
 {
-  acl::UserProfile profile;
-  try
-  {
-    profile = db::userprofile::Get(acl::UserCache::NameToUID(args[1]));
-  }
-  catch (const util::RuntimeError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, e.Message());
-    return;
-  }
-
   std::ostringstream os;
   if (args[1] == client.User().Name())
     os << "Looking at you right now!";
   else
-  if (!profile.LastLogin())
-    os << "User " << args[1] << " has never logged in.";
-  else
-    os << "Last saw " << args[1] << " on " << *profile.LastLogin();
+  {
+    auto user = acl::User::Load(args[1]);
+    if (!user)
+    {
+      control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
+      return;
+    }
+
+    if (!user->LastLogin())
+      os << "User " << args[1] << " has never logged in.";
+    else
+      os << "Last saw " << args[1] << " on " << *user->LastLogin();
+  }
       
   control.Reply(ftp::CommandOkay, os.str());
 }

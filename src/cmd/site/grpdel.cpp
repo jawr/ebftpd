@@ -1,29 +1,35 @@
 #include <sstream>
 #include "cmd/site/grpdel.hpp"
-#include "acl/groupcache.hpp"
-#include "db/user/user.hpp"
 #include "cmd/error.hpp"
+#include "acl/group.hpp"
 
 namespace cmd { namespace site
 {
 
 void GRPDELCommand::Execute()
 {
-  std::ostringstream acl;
-  acl << "=" << args[1];
-  std::vector<acl::User> users = db::user::GetByACL(acl.str());
-
-  if (!users.empty())
+  auto group = acl::Group::Load(args[1]);
+  if (!group)
   {
-    control.Reply(ftp::ActionNotOkay, "Unable to delete a group with members.");
+    control.Reply(ftp::ActionNotOkay, "Group " + args[1] + " doesn't exist.");
+    return;
+  }
+  
+  auto numMembers = group->NumMembers();
+  if (numMembers < 0)
+  {
+    control.Reply(ftp::ActionNotOkay, "Unable to determine number of memmbers.");
+    return;
+  }
+  
+  if (numMembers > 0)
+  {
+    control.Reply(ftp::ActionNotOkay, "Unable to delete group with members.");
     return;
   }
 
-  util::Error e = acl::GroupCache::Delete(args[1]);
-  if (!e)
-    control.Reply(ftp::ActionNotOkay, e.Message());
-  else
-    control.Reply(ftp::CommandOkay, "Group " + args[1] + " deleted.");
+  group->Purge();
+  control.Reply(ftp::CommandOkay, "Group " + args[1] + " deleted.");
 }
 
 } /* site namespace */
