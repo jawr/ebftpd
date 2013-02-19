@@ -20,6 +20,8 @@ class User;
 namespace db
 {
 
+struct UserCacheBase;
+
 class User
 {
   acl::UserData& user;
@@ -59,15 +61,7 @@ public:
   static boost::optional<acl::UserData> Load(acl::UserID uid);
 };
 
-struct UserCache
-{
-  virtual ~UserCache() { }
-  virtual std::string UIDToName(acl::UserID uid) = 0;
-  virtual acl::UserID NameToUID(const std::string& name) = 0;
-  virtual acl::GroupID UIDToPrimaryGID(acl::UserID uid) = 0;
-};
-
-void RegisterUserCache(const std::shared_ptr<UserCache>& cache);
+void RegisterUserCache(const std::shared_ptr<UserCacheBase>& cache);
 
 std::string UIDToName(acl::UserID uid);
 acl::UserID NameToUID(const std::string& name);

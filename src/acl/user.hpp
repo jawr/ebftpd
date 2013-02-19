@@ -69,6 +69,7 @@ private:
   User(UserData&& data);
 
   bool HasSecondaryGID(GroupID gid) const;
+  void SetPasswordNoSave(const std::string& password);
   
 public:
   User& operator=(User&& rhs);

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <boost/optional.hpp>
+#include "acl/types.hpp"
 
 namespace cfg { namespace setting
 {
@@ -77,6 +78,10 @@ bool SecureIP(const User& user, const std::string& ip, IPStrength& minimum);
 class PasswdStrength;
 
 bool SecurePass(const User& user, const std::string& password, PasswdStrength& minimum);
+
+bool IPAllowed(const std::string& address);
+bool IdentIPAllowed(UserID uid, const std::string& identAddress);
+
 
 } /* acl namespace */
 

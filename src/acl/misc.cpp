@@ -12,6 +12,7 @@
 #include "util/string.hpp"
 #include "acl/ipstrength.hpp"
 #include "acl/passwdstrength.hpp"
+#include "db/ipmasks.hpp"
 
 namespace acl { namespace message
 {
@@ -252,6 +253,16 @@ bool SecurePass(const User& user, const std::string& password , PasswdStrength& 
       }
     }
   return true;
+}
+
+bool IPAllowed(const std::string& address)
+{
+  return db::IdentIPAllowed("*@" + address);
+}
+
+bool IdentIPAllowed(acl::UserID uid, const std::string& identAddress)
+{
+  return db::IdentIPAllowed(identAddress, uid);
 }
 
 } /* acl namespace */

@@ -27,7 +27,7 @@
 #include "cmd/error.hpp"
 #include "exec/cscript.hpp"
 #include "util/net/resolver.hpp"
-#include "acl/ipcheck.hpp"
+#include "acl/misc.hpp"
 
 namespace ftp
 {
@@ -206,8 +206,9 @@ void Client::ExecuteCommand(const std::string& commandLine)
     control.Reply(ftp::SyntaxError, "Syntax: " + def->Syntax());
   }
   else if (CheckState(def->RequiredState()) &&
-           exec::Cscripts(*this, args[0], currentCommand, exec::CscriptType::PRE, 
-                def->FailCode()))
+           (state != ClientState::LoggedIn ||
+            exec::Cscripts(*this, args[0], currentCommand, exec::CscriptType::PRE, 
+                def->FailCode())))
   {
     cmd::CommandPtr command(def->Create(*this, argStr, args));
     if (!command)
@@ -219,8 +220,10 @@ void Client::ExecuteCommand(const std::string& commandLine)
       try
       {
         command->Execute();
-        exec::Cscripts(*this, args[0], currentCommand, exec::CscriptType::POST, 
-                ftp::ActionNotOkay);
+
+        if (state == ClientState::LoggedIn)
+          exec::Cscripts(*this, args[0], currentCommand, exec::CscriptType::POST, 
+                  ftp::ActionNotOkay);
       }
       catch (const cmd::SyntaxError&)
       {
@@ -319,7 +322,8 @@ bool Client::ConfirmCommand(const std::string& argStr)
 
 void Client::LogTraffic() const
 {
-  db::stats::ProtocolUpdate(user->ID(), (control.BytesWrite() + data.BytesWrite()) / 1024,
+  db::stats::ProtocolUpdate(user ? user->ID() : -1,
+                            (control.BytesWrite() + data.BytesWrite()) / 1024,
                             (control.BytesRead() + data.BytesRead()) / 1024);
 }
 
@@ -471,7 +475,7 @@ void Client::Run()
   scope_guard finishedGuard = make_guard([&]
   {
     SetState(ClientState::Finished);
-    if (user->ID() != -1) db::mail::LogOffPurgeTrash(user->ID());
+    if (user) db::mail::LogOffPurgeTrash(user->ID());
     LogTraffic();
   });
 

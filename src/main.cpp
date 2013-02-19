@@ -25,6 +25,7 @@
 #include "text/error.hpp"
 #include "db/replicator.hpp"
 #include "util/path/path.hpp"
+#include "db/util.hpp"
 
 #include "version.hpp"
 
@@ -201,7 +202,13 @@ int main(int argc, char** argv)
   }
   
   db::Replicator::Initialise(cfg::Get().CacheReplicate());
-
+  if (!db::EnsureIndexes())
+  {
+    logs::db << "Error while building database indexes" << logs::endl;
+    signals::Handler::StopThread();
+    return 1;    
+  }
+  
   if (!acl::CreateDefaults())
   {
     logs::error << "Error while creating default user and group" << logs::endl;

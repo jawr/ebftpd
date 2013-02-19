@@ -6,6 +6,7 @@
 #include "db/serialization.hpp"
 #include "db/error.hpp"
 #include "db/group.hpp"
+#include "db/usercache.hpp"
 
 namespace db
 {
@@ -313,68 +314,25 @@ boost::optional<acl::UserData> User::Load(acl::UserID uid)
 
 namespace
 {
-std::shared_ptr<UserCache> cache;
-}
-
-struct UserTriple
-{
-  std::string name;
-  acl::UserID uid;
-  acl::GroupID primaryGID;
-};
-
-template <> UserTriple Unserialize<UserTriple>(const mongo::BSONObj& obj)
-{
-  UserTriple pair;
-  pair.name = obj["name"].String();
-  pair.uid = obj["uid"].Int();
-  pair.primaryGID = obj["primary gid"].Int();
-  return pair;
-}
-
-std::string LookupNameByUID(acl::UserID uid)
-{
-  NoErrorConnection conn;  
-  auto fields = BSON("uid" << 1 << "name" << 1 << "primary gid" << 1);
-  auto pair = conn.QueryOne<UserTriple>("users", QUERY("uid" << uid), &fields);
-  if (!pair) return "unknown";
-  return pair->name;
-}
-
-acl::UserID LookupUIDByName(const std::string& name)
-{
-  NoErrorConnection conn;  
-  auto fields = BSON("uid" << 1 << "name" << 1 << "primary gid" << 1);
-  auto pair = conn.QueryOne<UserTriple>("users", QUERY("name" << name), &fields);
-  if (!pair) return -1;
-  return pair->uid;
-}
-
-acl::GroupID LookupPrimaryGIDByUID(acl::UserID uid)
-{
-  NoErrorConnection conn;  
-  auto fields = BSON("uid" << 1 << "name" << 1 << "primary gid" << 1);
-  auto pair = conn.QueryOne<UserTriple>("users", QUERY("uid" << uid), &fields);
-  if (!pair) return -1;
-  return pair->primaryGID;
+std::shared_ptr<UserCacheBase> cache(new UserNoCache());
 }
 
 std::string UIDToName(acl::UserID uid)
 {
-  if (cache) return cache->UIDToName(uid);
-  return LookupNameByUID(uid);
+  assert(cache);
+  return cache->UIDToName(uid);
 }
 
 acl::UserID NameToUID(const std::string& name)
 {
-  if (cache) return cache->NameToUID(name);
-  return LookupUIDByName(name);
+  assert(cache);
+  return cache->NameToUID(name);
 }
 
 acl::GroupID UIDToPrimaryGID(acl::UserID uid)
 {
-  if (cache) return cache->UIDToPrimaryGID(uid);
-  return LookupPrimaryGIDByUID(uid);
+  assert(cache);
+  return cache->UIDToPrimaryGID(uid);
 }
 
 namespace

@@ -76,7 +76,7 @@ void Connection::Create()
       throw DBError("Unable to authenticate with database");
   }
   
-  if (mode == ConnectionMode::Fast)
+  if (scopedConn && mode == ConnectionMode::Fast)
     scopedConn->conn().setWriteConcern(mongo::W_NONE);
 }
 

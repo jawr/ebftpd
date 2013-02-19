@@ -92,8 +92,6 @@ bool User::AddIPMask(const std::string& ipMask, std::vector<std::string>* delete
     return false;
   }
   
-  data.ipMasks.push_back(ipMask);
- 
   for (auto it = data.ipMasks.begin(); it != data.ipMasks.end();)
   {
     if (util::string::WildcardMatch(ipMask, *it, true))
@@ -105,6 +103,7 @@ bool User::AddIPMask(const std::string& ipMask, std::vector<std::string>* delete
       ++it;
   }
   
+  data.ipMasks.push_back(ipMask); 
   db->SaveIPMasks();
   return true;
 }
@@ -138,12 +137,17 @@ bool User::VerifyPassword(const std::string& password) const
   return HexEncode(HashPassword(password, HexDecode(data.salt))) == this->data.password;
 }
 
-void User::SetPassword(const std::string& password)
+void User::SetPasswordNoSave(const std::string& password)
 {
   using namespace util::passwd;  
   std::string rawSalt = GenerateSalt();
   this->data.password = HexEncode(HashPassword(password, rawSalt));
   data.salt = HexEncode(rawSalt);
+}
+
+void User::SetPassword(const std::string& password)
+{
+  SetPasswordNoSave(password);
   db->SavePassword();
 }
 
@@ -485,8 +489,8 @@ boost::optional<User> User::Create(const std::string& name, const std::string& p
     User user;
     user.data.name = name;
     user.data.creator = creator;
+    user.SetPasswordNoSave(password);
     user.data.id = user.db->Create();
-    user.SetPassword(password);
     return boost::optional<User>(user);
   }
   catch (const db::DBKeyError&)
