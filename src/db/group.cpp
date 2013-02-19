@@ -20,7 +20,7 @@ acl::GroupID Group::Create()
 void Group::SaveField(const std::string& field)
 {
   NoErrorConnection conn;
-  conn.SetField("groups", QUERY("gid" << group.ID()), group, { field, "modified" });
+  conn.SetField("groups", QUERY("gid" << group.ID()), group, field);
 }
 
 bool Group::SaveName()
@@ -28,7 +28,7 @@ bool Group::SaveName()
   try
   {
     SafeConnection conn;
-    conn.SetField("groups", QUERY("gid" << group.ID()), group, { std::string("name"), "modified" });
+    conn.SetField("groups", QUERY("gid" << group.ID()), group, "name");
     return true;
   }
   catch (const db::DBError&)
@@ -92,7 +92,6 @@ void Group::Purge() const
 template <> mongo::BSONObj Serialize<acl::Group>(const acl::Group& group)
 {
   mongo::BSONObjBuilder bob;
-  bob.append("modified", ToDateT(group.modified));
   bob.append("name", group.name);
   bob.append("gid", group.id);
   bob.append("description", group.description);
@@ -110,7 +109,6 @@ template <> acl::Group Unserialize<acl::Group>(const mongo::BSONObj& obj)
   try
   {
     acl::Group group;
-    group.modified = ToPosixTime(obj["modified"].Date());
     group.id = obj["gid"].Int();
     group.name = obj["name"].String();
     group.description = obj["description"].String();
@@ -134,55 +132,6 @@ boost::optional<acl::Group> Group::Load(acl::GroupID gid)
 {
   NoErrorConnection conn;
   return conn.QueryOne<acl::Group>("groups", QUERY("gid" << gid));
-}
-
-namespace
-{
-std::shared_ptr<GroupCache> cache;
-}
-
-struct GroupPair
-{
-  std::string name;
-  acl::GroupID gid;
-};
-
-template <> GroupPair Unserialize<GroupPair>(const mongo::BSONObj& obj)
-{
-  GroupPair pair;
-  pair.name = obj["name"].String();
-  pair.gid = obj["gid"].Int();
-  return pair;
-}
-
-std::string LookupNameByGID(acl::GroupID gid)
-{
-  NoErrorConnection conn;  
-  auto fields = BSON("gid" << 1 << "name" << 1);
-  auto pair = conn.QueryOne<GroupPair>("groups", QUERY("gid" << gid), &fields);
-  if (!pair) return "unknown";
-  return pair->name;
-}
-
-acl::GroupID LookupGIDByName(const std::string& name)
-{
-  NoErrorConnection conn;  
-  auto fields = BSON("gid" << 1 << "name" << 1);
-  auto pair = conn.QueryOne<GroupPair>("groups", QUERY("name" << name), &fields);
-  if (!pair) return -1;
-  return pair->gid;
-}
-
-std::string GIDToName(acl::GroupID gid)
-{
-  if (cache) return cache->GIDToName(gid);
-  return LookupNameByGID(gid);
-}
-
-acl::GroupID NameToGID(const std::string& name)
-{
-  if (cache) return cache->NameToGID(name);
-  return LookupGIDByName(name);
 }
 
 namespace

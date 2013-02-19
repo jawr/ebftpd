@@ -12,7 +12,7 @@
 #include "util/string.hpp"
 #include "acl/ipstrength.hpp"
 #include "acl/passwdstrength.hpp"
-#include "db/ipmasks.hpp"
+#include "db/userutil.hpp"
 
 namespace acl { namespace message
 {

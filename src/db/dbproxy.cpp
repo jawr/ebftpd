@@ -42,7 +42,6 @@ const DBT* DBProxy<T, IDT, DBT>::operator->() const
 template <typename T, typename IDT, typename DBT>
 DBT* DBProxy<T, IDT, DBT>::operator->()
 {
-  obj->modified = boost::posix_time::microsec_clock::local_time();
   updated(obj->id);
   return db.get();
 }

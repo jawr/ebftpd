@@ -68,7 +68,7 @@ public:
           const mongo::BSONObj& obj, bool upsert = false);
   
   template <typename T>
-  void SetField(const std::string& collection, const mongo::Query& query, 
+  void SetFields(const std::string& collection, const mongo::Query& query, 
           const T& obj, const std::vector<std::string>& fields)
   {
     try

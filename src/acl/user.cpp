@@ -7,12 +7,12 @@
 #include "db/error.hpp"
 #include "util/string.hpp"
 #include "util/verify.hpp"
+#include "db/userutil.hpp"
 
 namespace acl
 {
 
 UserData::UserData() :
-  modified(boost::posix_time::microsec_clock::local_time()),
   id(-1),  
   primaryGid(-1),
   creator(-1),

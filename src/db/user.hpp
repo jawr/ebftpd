@@ -26,12 +26,13 @@ class User
 {
   acl::UserData& user;
 
-  void SaveField(const std::string& field);
+  void UpdateLog() const;
+  void SaveField(const std::string& field) const;
   
 public:
   User(acl::UserData& user) :  user(user) { }
   
-  acl::UserID Create();
+  acl::UserID Create() const;
   bool SaveName();
   void SaveIPMasks();
   void SavePassword();
@@ -60,12 +61,6 @@ public:
   
   static boost::optional<acl::UserData> Load(acl::UserID uid);
 };
-
-void RegisterUserCache(const std::shared_ptr<UserCacheBase>& cache);
-
-std::string UIDToName(acl::UserID uid);
-acl::UserID NameToUID(const std::string& name);
-acl::GroupID UIDToPrimaryGID(acl::UserID uid);
 
 std::vector<acl::UserID> GetUIDs(const std::string& multiStr = "*");
 std::vector<acl::UserData> GetUsers(const std::string& multiStr = "*");

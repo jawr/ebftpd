@@ -1,26 +1,34 @@
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
 #include "db/user.hpp"
 #include "db/connection.hpp"
 #include "acl/user.hpp"
 #include "db/serialization.hpp"
 #include "db/error.hpp"
-#include "db/group.hpp"
-#include "db/usercache.hpp"
+#include "db/userutil.hpp"
+#include "db/grouputil.hpp"
 
 namespace db
 {
 
-acl::UserID User::Create()
+acl::UserID User::Create() const
 {
   db::SafeConnection conn;
   return conn.InsertAutoIncrement("users", user, "uid");
 }
 
-void User::SaveField(const std::string& field)
+void User::UpdateLog() const
+{
+  db::FastConnection conn;
+  auto entry = BSON("timestamp" << ToDateT(boost::posix_time::microsec_clock::local_time()) <<
+                    "collection" << "users" <<
+                    "id" << user.id);
+  conn.Insert("updatelog", entry);
+}
+
+void User::SaveField(const std::string& field) const
 {
   db::NoErrorConnection conn;
-  conn.SetField("users", QUERY("uid" << user.id), user, { field, "modified" });
+  conn.SetField("users", QUERY("uid" << user.id), user, field);
+  UpdateLog();
 }
 
 bool User::SaveName()
@@ -28,7 +36,8 @@ bool User::SaveName()
   try
   {
     SafeConnection conn;
-    conn.SetField("users", QUERY("uid" << user.id), user, { std::string("name"), "modified" });
+    conn.SetField("users", QUERY("uid" << user.id), user, "name" );
+    UpdateLog();
     return true;
   }
   catch (const db::DBError&)
@@ -181,12 +190,6 @@ void User::IncrCredits(const std::string& section, long long kBytes)
   doIncrement();
 }
 
-void User::Purge() const
-{
-  NoErrorConnection conn;
-  conn.Remove("users", QUERY("uid" << user.id));
-}
-
 bool User::DecrCredits(const std::string& section, long long kBytes, bool force)
 {
   mongo::BSONObjBuilder elemQuery;
@@ -209,11 +212,17 @@ bool User::DecrCredits(const std::string& section, long long kBytes, bool force)
   return force || (ret && result["value"].type() != mongo::jstNULL);
 }
 
+void User::Purge() const
+{
+  NoErrorConnection conn;
+  conn.Remove("users", QUERY("uid" << user.id));
+  UpdateLog();
+}
+
 template <> mongo::BSONObj Serialize<acl::UserData>(const acl::UserData& user)
 {
   mongo::BSONObjBuilder bob;
 
-  bob.append("modified", ToDateT(user.modified));
   bob.append("uid", user.id);
   bob.append("name", user.name);
   bob.append("ip masks", SerializeContainer(user.ipMasks));
@@ -259,7 +268,6 @@ template <> acl::UserData Unserialize<acl::UserData>(const mongo::BSONObj& obj)
   try
   { 
     acl::UserData user;
-    user.modified = ToPosixTime(obj["modified"].Date());
     user.id = obj["uid"].Int();
     user.name = obj["name"].String();
     user.ipMasks = UnserializeContainer<decltype(user.ipMasks)>(obj["ip masks"].Array());
@@ -312,28 +320,6 @@ boost::optional<acl::UserData> User::Load(acl::UserID uid)
   return conn.QueryOne<acl::UserData>("users", QUERY("uid" << uid));
 }
 
-namespace
-{
-std::shared_ptr<UserCacheBase> cache(new UserNoCache());
-}
-
-std::string UIDToName(acl::UserID uid)
-{
-  assert(cache);
-  return cache->UIDToName(uid);
-}
-
-acl::UserID NameToUID(const std::string& name)
-{
-  assert(cache);
-  return cache->NameToUID(name);
-}
-
-acl::GroupID UIDToPrimaryGID(acl::UserID uid)
-{
-  assert(cache);
-  return cache->UIDToPrimaryGID(uid);
-}
 
 namespace
 {

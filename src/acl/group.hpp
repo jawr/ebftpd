@@ -36,7 +36,6 @@ class Group
 {
   GroupProxy db;
   
-  boost::posix_time::ptime modified;
   acl::GroupID id;
   std::string name;
 

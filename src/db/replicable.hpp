@@ -3,20 +3,27 @@
 
 #include <string>
 
+namespace mongo
+{
+class BSONElement;
+}
+
 namespace db
 {
 
 class Replicable
 {
 private:
-  std::string name;
+  std::string collection;
   
 public:
-  Replicable(const std::string& name) : name(name) { }
+  Replicable(const std::string& collection) : collection(collection) { }
   virtual ~Replicable() { }
-  virtual bool Replicate() = 0;
+
+  virtual bool Replicate(const mongo::BSONElement& id) = 0;
+  virtual bool Populate() = 0;
   
-  const std::string& Name() const { return name; }
+  const std::string& Collection() const { return collection; }
 };
 
 } /* db namespace */

@@ -19,7 +19,6 @@ namespace acl
 
 struct UserData
 {
-  boost::posix_time::ptime modified;
   acl::UserID id;
   std::string name;
   std::vector<std::string> ipMasks;

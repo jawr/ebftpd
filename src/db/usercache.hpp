@@ -7,6 +7,11 @@
 #include "acl/types.hpp"
 #include "db/replicable.hpp"
 
+namespace mongo
+{
+class BSONElement;
+}
+
 namespace db
 {
 
@@ -16,6 +21,8 @@ struct UserCacheBase
   virtual std::string UIDToName(acl::UserID uid) = 0;
   virtual acl::UserID NameToUID(const std::string& name) = 0;
   virtual acl::GroupID UIDToPrimaryGID(acl::UserID uid) = 0;
+  virtual bool IdentIPAllowed(const std::string& identAddress) = 0;  
+  virtual bool IdentIPAllowed(const std::string& identAddress, acl::UserID uid) = 0;  
 };
 
 class UserCache : 
@@ -31,19 +38,28 @@ class UserCache :
   boost::mutex primaryGidsMutex;
   std::unordered_map<acl::UserID, acl::GroupID> primaryGids;
 
+  boost::mutex ipMasksMutex;
+  std::unordered_map<acl::UserID, std::vector<std::string>> ipMasks;
+  
 public:  
+  UserCache() : Replicable("users") { }
   std::string UIDToName(acl::UserID uid);
   acl::UserID NameToUID(const std::string& name);
   acl::GroupID UIDToPrimaryGID(acl::UserID uid);  
+  bool IdentIPAllowed(const std::string& identAddress);
+  bool IdentIPAllowed(const std::string& identAddress, acl::UserID uid);
 
-  bool Replicate();
+  bool Replicate(const mongo::BSONElement& id);
+  bool Populate();
 };
 
-class UserNoCache : public UserCacheBase
+struct UserNoCache : public UserCacheBase
 {
   std::string UIDToName(acl::UserID uid);
   acl::UserID NameToUID(const std::string& name);
   acl::GroupID UIDToPrimaryGID(acl::UserID uid);  
+  bool IdentIPAllowed(const std::string& identAddress);
+  bool IdentIPAllowed(const std::string& identAddress, acl::UserID uid);
 };
 
 } /* db namespace */

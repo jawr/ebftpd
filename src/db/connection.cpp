@@ -253,12 +253,14 @@ bool Connection::RunCommand(const mongo::BSONObj& command, mongo::BSONObj& info,
     try
     {
       ret = scopedConn->conn().runCommand(database, command, info, options);
-      if (!ret && mode != ConnectionMode::Fast)
+      if (mode != ConnectionMode::Fast)
       {
         auto err = GetLastError();
-        verify(!err.Okay()); // should be same as ret
-        LogLastError("Run command", err, command, "output ref", options);
-        if (mode == ConnectionMode::Safe) throw DBError();
+        if (!err.Okay())
+        {
+          LogLastError("Run command", err, command, "output ref", options);
+          if (mode == ConnectionMode::Safe) throw DBError();
+        }
       }
     }
     catch (const mongo::DBException& e)

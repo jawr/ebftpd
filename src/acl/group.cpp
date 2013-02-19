@@ -3,13 +3,13 @@
 #include "db/group.hpp"
 #include "util/error.hpp"
 #include "db/error.hpp"
+#include "db/grouputil.hpp"
 
 namespace acl
 {
 
 Group::Group() :
   db(*this),
-  modified(boost::posix_time::microsec_clock::local_time()),
   id(-1),
   slots(0),
   leechSlots(-2),

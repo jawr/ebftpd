@@ -4,7 +4,7 @@
 namespace db
 {
 
-bool EnsureIndexes();
+bool Initialise();
 
 } /* db namespace */
 

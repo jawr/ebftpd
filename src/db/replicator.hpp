@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <future>
+#include <memory>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 #include "db/replicable.hpp"
@@ -12,7 +13,7 @@ namespace db
 
 class Replicator
 {
-  std::vector<Replicable*> caches;
+  std::vector<std::shared_ptr<Replicable>> caches;
   int interval;
   
   std::atomic<bool> enabled;
@@ -34,7 +35,7 @@ class Replicator
 
   void InnerReplicate();
   void ResetTimer();
-  void LogFailed(const std::list<Replicable*>& failed);
+  void LogFailed(const std::list<std::shared_ptr<Replicable>>& failed);
   
 public:
 
@@ -50,7 +51,7 @@ public:
     if (instance.get()) instance->InnerCancel();
   }
   
-  static void Register(Replicable* cache)
+  static void Register(const std::shared_ptr<Replicable>& cache)
   {
     if (instance.get()) instance->caches.emplace_back(cache);
   }

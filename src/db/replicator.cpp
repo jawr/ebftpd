@@ -1,3 +1,4 @@
+#include <mongo/client/dbclient.h>
 #include <list>
 #include <csignal>
 #include "db/replicator.hpp"
@@ -20,27 +21,27 @@ void Replicator::ResetTimer()
   if (enabled) alarm(interval);
 }
 
-void Replicator::LogFailed(const std::list<Replicable*>& failed)
+void Replicator::LogFailed(const std::list<std::shared_ptr<Replicable>>& failed)
 {
   logs::db << "Exceeded maximum retries while replicating caches: ";
   for (auto it = failed.begin(); it != failed.end(); ++it)
   {
     if (it != failed.begin()) logs::db << ", ";
-    logs::db << (*it)->Name();
+    logs::db << (*it)->Collection();
   }
   logs::db << logs::endl;
 }
 
 void Replicator::Run(const std::shared_ptr<BusyGuard>& lock)
 {
-  std::list<Replicable*> notDone(caches.begin(), caches.end());
+  std::list<std::shared_ptr<Replicable>> notDone(caches.begin(), caches.end());
 
   for (int i = 0; i < maximumRetries && !notDone.empty() && enabled; ++i)
   {
     auto it = notDone.begin();
     while (it != notDone.end() && enabled)
     {
-      if ((*it)->Replicate()) notDone.erase(it++);
+      if ((*it)->Replicate(mongo::BSONElement(nullptr))) notDone.erase(it++);
       else ++it;
     }
   }
