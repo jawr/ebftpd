@@ -36,7 +36,7 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
     "Flags, prefixed with +|-|= to add/delete/set"                                      },
     
   { "idle_time",      1,  "change",               &CHANGECommand::CheckIdleTime,
-    "Idle time (-1 is disabled, 0 is unlimited)"                                        },
+    "Idle time (-1 site wide default, 0 is unlimited)"                                  },
     
   { "expires",        1,  "change",               &CHANGECommand::CheckExpires,
     "Expiration date in format YYYY-MM-DD or YYYY/MM/DD (never to disable)"             },
