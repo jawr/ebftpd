@@ -32,7 +32,7 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
   { "homedir",        1,  "changehomedir",        &CHANGECommand::CheckHomeDir,
     "Home directory"                                                                    },
     
-  { "flags",          1,  "changeflags",          &CHANGECommand::HasFlags,
+  { "flags",          1,  "changeflags",          &CHANGECommand::CheckFlags,
     "Flags, prefixed with +|-|= to add/delete/set"                                      },
     
   { "idle_time",      1,  "change",               &CHANGECommand::CheckIdleTime,
@@ -42,7 +42,7 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
     "Expiration date in format YYYY-MM-DD or YYYY/MM/DD (never to disable)"             },
     
   { "num_logins",     1,  "change",               &CHANGECommand::CheckNumLogins,
-    "Maximum number of simultaneous logins"                                             },
+    "Maximum number of simultaneous logins (-1 is unlimited, 0 to disallow)"            },
     
   { "tagline",        -1, "change",               &CHANGECommand::CheckTagline,
     "Tagline"                                                                           },
@@ -190,7 +190,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckHomeDir()
   return [path](acl::User& user) { user.SetHomeDir(path); };
 }
 
-CHANGECommand::SetFunction CHANGECommand::HasFlags()
+CHANGECommand::SetFunction CHANGECommand::CheckFlags()
 {
   char action = args[3][0];
   
@@ -278,8 +278,10 @@ CHANGECommand::SetFunction CHANGECommand::CheckNumLogins()
   try
   {
     int logins = boost::lexical_cast<int>(args[3]);
-    if (logins < 0) throw boost::bad_lexical_cast();
-    display = boost::lexical_cast<std::string>(logins);
+    if (logins < -1) throw boost::bad_lexical_cast();
+    
+    if (logins == -1) display = "Unlimited";
+    else display = boost::lexical_cast<std::string>(logins);
     
     return [logins](acl::User& user) { user.SetNumLogins(logins); };
   }

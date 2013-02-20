@@ -12,7 +12,7 @@ CounterResult LoginCounter::Start(acl::UserID uid, int limit, bool kickLogin, bo
   const cfg::Config& config = cfg::Get();
   boost::lock_guard<boost::mutex> lock(mutex);
   int& count = personal[uid];
-  if (count - kickLogin >= limit)
+  if (limit != -1 && count - kickLogin >= limit)
   {
     return CounterResult::PersonalFail;
   }
