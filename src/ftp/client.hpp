@@ -71,6 +71,7 @@ class Client : public util::Thread
   void Run();
   void LookupIdent();
   void IdleReset(std::string commandLine)  ;
+  bool ReloadUser();
   
 public:
   Client();
@@ -181,7 +182,6 @@ public:
   bool IdntParse(const std::string& command);
   
   void SetUserUpdated() { userUpdated = true; }
-  void ReloadUser();
 };
 
 } /* ftp namespace */

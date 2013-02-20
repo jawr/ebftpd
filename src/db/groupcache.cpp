@@ -101,7 +101,7 @@ bool GroupCache::Populate()
     gids[group.name] = group.id;
     names[group.id] = group.name;
   }
-  
+
   return true;
 }
 

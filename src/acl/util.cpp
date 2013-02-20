@@ -30,7 +30,7 @@ bool CreateDefaults()
     if (!GIDExists(0))
     {
       auto group = Group::Create("ebftpd");
-      if (!group || group->ID() != 0) { std::cout << "WTH" << std::endl;  return false; }
+      if (!group || group->ID() != 0) return false;
     }
 
     if (!UIDExists(0))

@@ -2,6 +2,7 @@
 #define __DB_USERCACHE_HPP
 
 #include <string>
+#include <functional>
 #include <unordered_map>
 #include <boost/thread/mutex.hpp>
 #include "acl/types.hpp"
@@ -41,8 +42,14 @@ class UserCache :
   boost::mutex ipMasksMutex;
   std::unordered_map<acl::UserID, std::vector<std::string>> ipMasks;
   
+  std::function<void(acl::UserID)> updatedCallback;
+  
 public:  
-  UserCache() : Replicable("users") { }
+  UserCache(const std::function<void(acl::UserID)>& updatedCallback) : 
+    Replicable("users"),
+    updatedCallback(updatedCallback)
+  { }
+  
   std::string UIDToName(acl::UserID uid);
   acl::UserID NameToUID(const std::string& name);
   acl::GroupID UIDToPrimaryGID(acl::UserID uid);  
@@ -50,7 +57,7 @@ public:
   bool IdentIPAllowed(const std::string& identAddress, acl::UserID uid);
 
   bool Replicate(const mongo::BSONElement& id);
-  bool Populate();
+  bool Populate();  
 };
 
 struct UserNoCache : public UserCacheBase

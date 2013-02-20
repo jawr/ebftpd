@@ -241,7 +241,7 @@ void Client::ExecuteCommand(const std::string& commandLine)
   currentCommand = "";
 }
 
-void Client::ReloadUser()
+bool Client::ReloadUser()
 {
   userUpdated = false;
 
@@ -250,11 +250,21 @@ void Client::ReloadUser()
   {
     logs::error << "Failed to reload user from cache for: " 
                 << user->Name() << logs::endl;
-    return;
+    
+    SetState(ClientState::Finished);
+    return false; 
   }
   
+  if (optUser->HasFlag(acl::Flag::Deleted))
+  {
+    SetState(ClientState::Finished);
+    return false;
+  }
+
   boost::lock_guard<boost::mutex> lock(mutex);
   user = std::move(*optUser);
+  
+  return true;
 }
 
 void Client::Handle()
@@ -275,7 +285,7 @@ void Client::Handle()
     }
     
     std::string command = control.NextCommand(timeoutPtr);
-    if (userUpdated) ReloadUser();
+    if (userUpdated && !ReloadUser()) break;
     ExecuteCommand(command);
     cfg::UpdateLocal();
   }
@@ -495,15 +505,15 @@ void Client::Run()
     logs::debug << "Client from " << control.RemoteEndpoint()
                 << " lost connection: " << e.Message() << logs::endl;
   }
-//  catch (const std::exception& e)
- // {
-//    logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
- // }
-/*  catch (...)
+  catch (const std::exception& e)
+  {
+    logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
+  }
+  catch (...)
   {
     throw;
     logs::error << "Unhandled error on client thread: Not descended from std::exception" << logs::endl;
-  }*/
+  }
   
   (void) finishedGuard; /* silence unused variable warning */
 }

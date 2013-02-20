@@ -5,6 +5,7 @@
 #include <boost/program_options/parsers.hpp>
 #include <unistd.h>
 #include "ftp/server.hpp"
+#include "ftp/task/task.hpp"
 #include "util/net/tlscontext.hpp"
 #include "util/net/error.hpp"
 #include "logs/logs.hpp"
@@ -150,7 +151,7 @@ int main(int argc, char** argv)
   }
   
   auto signalsExit = util::MakeScopeExit([]() { signals::Handler::StopThread(); });
-  
+
   cmd::rfc::Factory::Initialise();
   cmd::site::Factory::Initialise();
   cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
@@ -202,7 +203,12 @@ int main(int argc, char** argv)
     return 1;
   }
   
-  if (!db::Initialise()) return 1;
+  if (!db::Initialise([](acl::UserID uid)
+        { std::make_shared<ftp::task::UserUpdate>(uid)->Push(); }))
+  {
+    return 1;
+  }
+  
   auto dbExit = util::MakeScopeExit([]() { db::Cleanup(); });
   
   if (!acl::CreateDefaults())

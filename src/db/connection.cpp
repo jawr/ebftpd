@@ -174,7 +174,7 @@ std::vector<mongo::BSONObj> Connection::Query(
       
       while (cursor->more())
       {
-        results.emplace_back(cursor->next());
+        results.emplace_back(cursor->next().copy());
       }
     }
     catch (const mongo::DBException& e)

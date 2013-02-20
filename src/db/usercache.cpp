@@ -95,6 +95,8 @@ bool UserCache::Replicate(const mongo::BSONElement& id)
   if (id.type() != 16) return true;
   acl::UserID uid = id.Int();
 
+  updatedCallback(uid);
+  
   try
   {
     SafeConnection conn;  

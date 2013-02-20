@@ -17,14 +17,16 @@ namespace
 class Tail
 {
   std::string ns;
+  mongo::BSONObj lastObj;
   boost::optional<mongo::BSONElement> lastOID;
   mongo::DBClientConnection& conn;
   std::auto_ptr<mongo::DBClientCursor> cursor;
   
   void SetLastOID(const mongo::BSONObj& obj)
   {
+    lastObj = obj.copy();
     mongo::BSONElement oid;
-    obj.getObjectID(oid);
+    lastObj.getObjectID(oid);
     lastOID.reset(oid);
   }
   
@@ -48,10 +50,11 @@ public:
     {
       if (!cursor.get())
       {
-        mongo::Query query = (!lastOID ? mongo::Query() :
-                              QUERY("_id" << BSON("$gt" << *lastOID))).sort(BSON("$natural" << 1));
+        mongo::Query query;
+        if (lastOID) query = QUERY("_id" << BSON("$gt" << *lastOID));
+
         boost::this_thread::interruption_point();
-        cursor = conn.query(ns, query, 0, 0, nullptr, 
+        cursor = conn.query(ns, query.sort(BSON("$natural" << 1)), 0, 0, nullptr, 
                             mongo::QueryOption_CursorTailable | 
                             mongo::QueryOption_AwaitData);
         boost::this_thread::interruption_point();

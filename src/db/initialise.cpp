@@ -58,12 +58,12 @@ bool EnsureIndexes()
   return false;
 }
 
-bool StartReplication()
+bool StartReplication(const std::function<void(acl::UserID)>& userUpdatedCB)
 {
   try
   {
     auto& replicator = Replicator::Get();
-    auto userCache = std::make_shared<UserCache>();
+    auto userCache = std::make_shared<UserCache>(userUpdatedCB);
     if (!replicator.Register(userCache)) return false;
     SetUserCache(userCache);
     
@@ -83,7 +83,7 @@ bool StartReplication()
   return false;
 }
 
-bool Initialise()
+bool Initialise(const std::function<void(acl::UserID)>& userUpdatedCB)
 {
   if (!CreateUpdateLog())
   {
@@ -97,7 +97,7 @@ bool Initialise()
     return false;
   }
 
-  if (!StartReplication())
+  if (!StartReplication(userUpdatedCB))
   {
     logs::db << "Error while initialising database replication" << logs::endl;
     return false;
