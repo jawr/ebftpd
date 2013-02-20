@@ -2,6 +2,8 @@
 #include "db/groupcache.hpp"
 #include "db/connection.hpp"
 #include "util/string.hpp"
+#include "db/group.hpp"
+#include "acl/group.hpp"
 
 namespace db
 {
@@ -22,6 +24,7 @@ template <> GroupPair Unserialize<GroupPair>(const mongo::BSONObj& obj)
 
 std::string GroupCache::GIDToName(acl::GroupID gid)
 {
+  if (gid == -1) return "NoGroup";
   boost::lock_guard<boost::mutex> lock(namesMutex);
   auto it = names.find(gid);
   if (it == names.end()) return "unknown";
@@ -84,7 +87,22 @@ bool GroupCache::Replicate(const mongo::BSONElement& id)
 
 bool GroupCache::Populate()
 {
-  return false;
+  auto groups = GetGroups();
+  
+  boost::lock(namesMutex, gidsMutex);
+  boost::lock_guard<boost::mutex> namesLock(namesMutex, boost::adopt_lock);
+  boost::lock_guard<boost::mutex> gidsLock(gidsMutex, boost::adopt_lock);
+
+  gids.clear();
+  names.clear();
+  
+  for (const auto& group : groups)
+  {
+    gids[group.name] = group.id;
+    names[group.id] = group.name;
+  }
+  
+  return true;
 }
 
 std::string GroupNoCache::GIDToName(acl::GroupID gid)

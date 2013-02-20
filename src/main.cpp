@@ -23,9 +23,9 @@
 #include "signals/signal.hpp"
 #include "text/factory.hpp"
 #include "text/error.hpp"
-#include "db/replicator.hpp"
 #include "util/path/path.hpp"
 #include "db/initialise.hpp"
+#include "util/scopeguard.hpp"
 
 #include "version.hpp"
 
@@ -135,8 +135,10 @@ int main(int argc, char** argv)
   bool foreground; 
   
   if (!ParseOptions(argc, argv, foreground, configPath)) return 1;
+  
   logs::debug << "Starting " << programFullname << " .. " << logs::endl;
-
+  auto byeExit = util::MakeScopeExit([]() { logs::debug << "Bye!" << logs::endl; });
+  
   {
     util::Error e = signals::Initialise();
     if (!e)
@@ -146,6 +148,8 @@ int main(int argc, char** argv)
     }
     signals::Handler::StartThread();
   }
+  
+  auto signalsExit = util::MakeScopeExit([]() { signals::Handler::StopThread(); });
   
   cmd::rfc::Factory::Initialise();
   cmd::site::Factory::Initialise();
@@ -161,7 +165,6 @@ int main(int argc, char** argv)
   catch (const cfg::ConfigError& e)
   {
     logs::error << "Failed to load config: " << e.Message() << logs::endl;
-    signals::Handler::StopThread();
     return 1;
   }
 
@@ -184,7 +187,6 @@ int main(int argc, char** argv)
     catch (const util::net::NetworkError& e)
     {
       logs::error << "TLS failed to initialise: " << e.Message() << logs::endl;
-      signals::Handler::StopThread();
       return 1;
     }
   }
@@ -197,21 +199,15 @@ int main(int argc, char** argv)
   catch (const text::TemplateError& e)
   {
     logs::error << "Templates failed to initialise: " << e.Message() << logs::endl;
-    signals::Handler::StopThread();
     return 1;
   }
   
-  db::Replicator::Initialise(cfg::Get().CacheReplicate());
-  if (!db::Initialise())
-  {
-    signals::Handler::StopThread();
-    return 1;
-  }
+  if (!db::Initialise()) return 1;
+  auto dbExit = util::MakeScopeExit([]() { db::Cleanup(); });
   
   if (!acl::CreateDefaults())
   {
     logs::error << "Error while creating default user and group" << logs::endl;
-    signals::Handler::StopThread();
     return 1;
   }
   
@@ -221,18 +217,11 @@ int main(int argc, char** argv)
     logs::error << "Listener failed to initialise!" << logs::endl;
     exitStatus = 1;
   }
-  else
-  { 
-    if (Daemonise(foreground))
-    {
-      ftp::Server::StartThread();
-      ftp::Server::JoinThread();
-    }
+  else if (Daemonise(foreground))
+  {
+    ftp::Server::StartThread();
+    ftp::Server::JoinThread();
   }
-
-  db::Replicator::Cancel();
-
-  logs::debug << "Bye!" << logs::endl;
   
   return exitStatus;
 }

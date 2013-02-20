@@ -6,36 +6,16 @@
 #include "acl/types.hpp"
 #include "db/dbproxy.hpp"
 
-namespace mongo
-{
-class BSONObj;
-}
-
-namespace acl
-{
-class Group;
-}
-
 namespace db
 {
 class Group;
-
-template <typename T> mongo::BSONObj Serialize(const T& group);
-template <> mongo::BSONObj Serialize<acl::Group>(const acl::Group& group);
-
-template <typename T> T Unserialize(const mongo::BSONObj& obj);
-template <> acl::Group Unserialize<acl::Group>(const mongo::BSONObj& obj);
 }
 
 namespace acl
 {
 
-typedef db::DBProxy<Group, acl::GroupID, db::Group> GroupProxy;
-
-class Group
+struct GroupData
 {
-  GroupProxy db;
-  
   acl::GroupID id;
   std::string name;
 
@@ -48,35 +28,52 @@ class Group
   long long maxAllotmentSize;
   int maxLogins;
 
+  GroupData();
+};
+
+typedef db::DBProxy<GroupData, acl::GroupID, db::Group> GroupProxy;
+
+class Group
+{
+  GroupData data;
+  GroupProxy db;
+  
   Group();
+  Group(GroupData&& data_);
   
 public:
+  Group& operator=(Group&& rhs);
+  Group& operator=(const Group& rhs);
+  
+  Group(Group&& other);
+  Group(const Group& other);
+  
   ~Group();
 
-  acl::GroupID ID() const { return id; }
+  acl::GroupID ID() const { return data.id; }
   
-  const std::string& Name() const { return name; }
+  const std::string& Name() const { return data.name; }
   bool Rename(const std::string& name);
 
-  const std::string& Description() const { return description; }
+  const std::string& Description() const { return data.description; }
   void SetDescription(const std::string& description);
   
-  const std::string& Comment() const { return comment; }
+  const std::string& Comment() const { return data.comment; }
   void SetComment(const std::string& comment);
 
-  int Slots() const { return slots; }
+  int Slots() const { return data.slots; }
   void SetSlots(int slots);
   
-  int LeechSlots() const { return leechSlots; }
+  int LeechSlots() const { return data.leechSlots; }
   void SetLeechSlots(int leechSlots);
   
-  int AllotmentSlots() const { return allotmentSlots; }
+  int AllotmentSlots() const { return data.allotmentSlots; }
   void SetAllotmentSlots(int allotmentSlots);
   
-  long long MaxAllotmentSize() const { return maxAllotmentSize; }
+  long long MaxAllotmentSize() const { return data.maxAllotmentSize; }
   void SetMaxAllotmentSize(long long maxAllotmentSize);
   
-  int MaxLogins() const { return maxLogins; }
+  int MaxLogins() const { return data.maxLogins; }
   void SetMaxLogins(int maxLogins);
   
   long long NumMembers() const;
@@ -86,18 +83,16 @@ public:
   static boost::optional<Group> Load(acl::GroupID gid);
   static boost::optional<Group> Load(const std::string& name);
   static boost::optional<Group> Create(const std::string& name);
-  
-  friend class db::DBProxy<Group, acl::GroupID, db::Group>;
-  friend class db::Group;
-  friend mongo::BSONObj db::Serialize<acl::Group>(const Group& group);
-  friend Group db::Unserialize<acl::Group>(const mongo::BSONObj& obj);
+
+  static std::vector<acl::GroupID> GetGIDs(const std::string& multiStr = "*");
+  static std::vector<acl::Group> GetGroups(const std::string& multiStr = "*");
 };
 
 std::string GIDToName(acl::GroupID gid);
 acl::GroupID NameToGID(const std::string& name);
 
 inline bool GIDExists(acl::GroupID gid)
-{ return GIDToName(gid) == "unknown"; }
+{ return GIDToName(gid) != "unknown"; }
 
 inline bool GroupExists(const std::string& name)
 { return NameToGID(name) != -1; }

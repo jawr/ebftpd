@@ -8,8 +8,7 @@
 namespace acl
 {
 
-Group::Group() :
-  db(*this),
+GroupData::GroupData() :
   id(-1),
   slots(0),
   leechSlots(-2),
@@ -19,17 +18,52 @@ Group::Group() :
 {
 }
 
+Group::Group() :
+  db(data)
+{
+}
+
+Group::Group(GroupData&& data_) :
+  data(data_),
+  db(data)
+{
+}
+
+Group& Group::operator=(Group&& rhs)
+{
+  data = rhs.data;
+  return *this;
+}
+
+Group& Group::operator=(const Group& rhs)
+{
+  data = rhs.data;
+  return *this;
+}
+
+Group::Group(Group&& other) :
+  data(other.data),
+  db(data)
+{
+}
+
+Group::Group(const Group& other) :
+  data(other.data),
+  db(data)
+{
+}
+
 Group::~Group()
 {
 }
 
 bool Group::Rename(const std::string& name)
 {
-  std::string oldName = this->name;
-  this->name = name; 
+  std::string oldName = this->data.name;
+  this->data.name = name; 
   if (!db->SaveName())
   {
-    this->name.swap(oldName);
+    this->data.name.swap(oldName);
     return false;
   }
   return true;
@@ -37,43 +71,43 @@ bool Group::Rename(const std::string& name)
 
 void Group::SetDescription(const std::string& description)
 {
-  this->description = description;
+  this->data.description = description;
   db->SaveDescription();
 }
 
 void Group::SetComment(const std::string& comment)
 {
-  this->comment = comment;
+  this->data.comment = comment;
   db->SaveComment();
 }
 
 void Group::SetSlots(int slots)
 {
-  this->slots = slots;
+  this->data.slots = slots;
   db->SaveSlots();
 }
 
 void Group::SetLeechSlots(int leechSlots)
 {
-  this->leechSlots = leechSlots;
+  this->data.leechSlots = leechSlots;
   db->SaveLeechSlots();
 }
 
 void Group::SetAllotmentSlots(int allotmentSlots)
 {
-  this->allotmentSlots = allotmentSlots;
+  this->data.allotmentSlots = allotmentSlots;
   db->SaveAllotmentSlots();
 }
 
 void Group::SetMaxAllotmentSize(long long maxAllotmentSize)
 {
-  this->maxAllotmentSize = maxAllotmentSize;
+  this->data.maxAllotmentSize = maxAllotmentSize;
   db->SaveMaxAllotmentSize();
 }
 
 void Group::SetMaxLogins(int maxLogins)
 {
-  this->maxLogins = maxLogins;
+  this->data.maxLogins = maxLogins;
   db->SaveMaxLogins();
 }
 
@@ -89,12 +123,16 @@ void Group::Purge()
 
 boost::optional<Group> Group::Load(acl::GroupID gid)
 {
-  return db::Group::Load(gid);
+  auto data = db::Group::Load(gid);
+  if (!data) return boost::optional<Group>();
+  return boost::optional<Group>(Group(std::move(*data)));
 }
 
 boost::optional<Group> Group::Load(const std::string& name)
 {
-  return Load(NameToGID(name));
+  auto data = db::Group::Load(name);
+  if (!data) return boost::optional<Group>();
+  return boost::optional<Group>(Group(std::move(*data)));
 }
 
 boost::optional<Group> Group::Create(const std::string& name)
@@ -102,14 +140,32 @@ boost::optional<Group> Group::Create(const std::string& name)
   try
   {
     Group group;
-    group.name = name;
-    group.id = group.db->Create();
+    group.data.name = name;
+    group.data.id = group.db->Create();
+    std::cout << "NEW GID " << group.data.id << std::endl;
     return boost::optional<Group>(group);
   }
   catch (const db::DBKeyError&)
   {
     return boost::optional<Group>();
   }
+}
+
+std::vector<acl::GroupID> Group::GetGIDs(const std::string& multiStr)
+{
+  return db::GetGIDs(multiStr);
+}
+
+std::vector<acl::Group> Group::GetGroups(const std::string& multiStr)
+{
+  auto groupData = db::GetGroups(multiStr);
+  std::vector<acl::Group> groups;
+  groups.reserve(groupData.size());
+  for (auto& data : groupData)
+  {
+    groups.push_back(Group(std::move(data)));
+  }
+  return groups;
 }
 
 std::string GIDToName(acl::GroupID gid)

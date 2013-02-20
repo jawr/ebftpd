@@ -3,7 +3,7 @@ set (MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
 set (CMAKE_MODULE_PATH ${MODULES_DIR} ${CMAKE_MODULE_PATH})
 set (SCRIPTS_DIR ${CMAKE_CURRENT_LIST_DIR}/../scripts)
 set (UNITY_SCRIPT ${SCRIPTS_DIR}/unity.sh)
-set (CMAKE_CXX_FLAGS "-Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic -Winit-self")
+set (CMAKE_CXX_FLAGS "-Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=gnu++0x -pedantic -Winit-self -Wno-deprecated")
 set (SERVER_SRC ${CMAKE_CURRENT_LIST_DIR}/../src)
 
 # Configure BOOST libraries

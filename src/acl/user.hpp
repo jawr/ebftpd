@@ -3,10 +3,10 @@
 
 #include <unordered_set>
 #include <unordered_map>
+#include <memory>
 #include <boost/optional.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "acl/flags.hpp"
-#include "db/dbproxy.hpp"
 #include "acl/types.hpp"
 
 namespace db
@@ -56,16 +56,14 @@ struct UserData
   UserData();
 };
 
-typedef db::DBProxy<UserData, acl::UserID, db::User> UserProxy;
-
 class User
 {
 private:
   UserData data;
-  UserProxy db;
+  std::unique_ptr<db::User> db;
 
   User();
-  User(UserData&& data);
+  User(UserData&& data_);
 
   bool HasSecondaryGID(GroupID gid) const;
   void SetPasswordNoSave(const std::string& password);
@@ -87,7 +85,7 @@ public:
   const std::vector<std::string>& IPMasks() const { return data.ipMasks; }
   bool AddIPMask(const std::string& ipMask, std::vector<std::string>* deleted = nullptr);
   void DelIPMask(const std::string& ipMask);
-  void DelIPMask(size_t index);
+  std::string DelIPMask(size_t index);
   void ClearIPMasks();
 
   bool VerifyPassword(const std::string& password) const;

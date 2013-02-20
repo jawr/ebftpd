@@ -30,7 +30,7 @@ bool CreateDefaults()
     if (!GIDExists(0))
     {
       auto group = Group::Create("ebftpd");
-      if (!group || group->ID() != 0) return false;
+      if (!group || group->ID() != 0) { std::cout << "WTH" << std::endl;  return false; }
     }
 
     if (!UIDExists(0))
@@ -39,6 +39,7 @@ bool CreateDefaults()
       if (!user || user->ID() != 0) return false;      
       user->AddIPMask("*@localhost");
       user->AddFlag(Flag::Siteop);
+      user->SetPrimaryGID(0);
     }
   }
   catch (const util::RuntimeError&)

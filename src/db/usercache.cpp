@@ -2,6 +2,8 @@
 #include "db/usercache.hpp"
 #include "db/connection.hpp"
 #include "util/string.hpp"
+#include "db/user.hpp"
+#include "acl/user.hpp"
 
 namespace db
 {
@@ -18,7 +20,8 @@ std::vector<std::string> LookupIPMasks(Connection& conn, acl::UserID uid = -1)
   {
     try
     {
-      auto masks = UnserializeContainer<decltype(ipMasks)>(obj["ip masks"].Array());
+      std::vector<std::string> masks;
+      UnserializeContainer(obj["ip masks"].Array(), masks);
       ipMasks.insert(ipMasks.end(), masks.begin(), masks.end());
     }
     catch (const mongo::DBException& e)
@@ -159,7 +162,28 @@ bool UserCache::Replicate(const mongo::BSONElement& id)
 
 bool UserCache::Populate()
 {
-  return false;
+  auto users = GetUsers();
+  
+  boost::lock(namesMutex, uidsMutex, primaryGidsMutex, ipMasksMutex);
+  boost::lock_guard<boost::mutex> namesLock(namesMutex, boost::adopt_lock);
+  boost::lock_guard<boost::mutex> uidsLock(uidsMutex, boost::adopt_lock);
+  boost::lock_guard<boost::mutex> primaryGidsLock(primaryGidsMutex, boost::adopt_lock);
+  boost::lock_guard<boost::mutex> ipMasksLock(ipMasksMutex, boost::adopt_lock);
+  
+  uids.clear();
+  names.clear();
+  primaryGids.clear();
+  ipMasks.clear();
+  
+  for (const auto& user : users)
+  {
+    uids[user.name] = user.id;
+    names[user.id] = std::move(user.name);
+    primaryGids[user.id] = user.primaryGid;
+    ipMasks[user.id] = std::move(user.ipMasks);
+  }
+  
+  return true;
 }
 
 std::string UserNoCache::UIDToName(acl::UserID uid)

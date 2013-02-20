@@ -95,9 +95,6 @@ void STORCommand::Execute()
 {
   namespace pt = boost::posix_time;
 
-  using util::scope_guard;
-  using util::make_guard;
-
   fs::VirtualPath path(fs::PathFromUser(argStr));
   
   fs::Path messagePath;
@@ -140,7 +137,7 @@ void STORCommand::Execute()
       break;
   }  
   
-  scope_guard countGuard = make_guard([&]{ ftp::Counter::Upload().Stop(client.User().ID()); });  
+  auto countGuard = util::MakeScopeExit([&]{ ftp::Counter::Upload().Stop(client.User().ID()); });  
 
   if (data.DataType() == ftp::DataType::ASCII &&
      !cfg::Get().AsciiUploads().Allowed(path.ToString()))
@@ -174,7 +171,7 @@ void STORCommand::Execute()
   }
 
   bool fileOkay = data.RestartOffset() > 0;
-  scope_guard fileGuard = make_guard([&]
+  auto fileGuard = util::MakeScopeExit([&]
   {
     if (!fileOkay)
     {
@@ -209,7 +206,7 @@ void STORCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
-  scope_guard dataGuard = make_guard([&]
+  auto dataGuard = util::MakeScopeExit([&]
   {
     if (data.State().Type() != ftp::TransferType::None)
     {

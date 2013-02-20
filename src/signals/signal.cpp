@@ -2,39 +2,17 @@
 #include <cerrno>
 #include <stdexcept>
 #include <exception>
-
-#if !defined(__CYGWIN__)
-# include <sys/ptrace.h>
-#endif
+#include <sys/ptrace.h>
 
 #include "ftp/task/task.hpp"
 #include "signals/signal.hpp"
 #include "logs/logs.hpp"
-
-#if !defined(__CYGWIN__)
-# include "util/debug.hpp"
-#endif
+#include "util/debug.hpp"
 
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "cfg/error.hpp"
-#include "db/replicator.hpp"
 #include "cfg/get.hpp"
-
-#if defined(PTRACE_TRACEME)
-#warning "PTRACE?"
-#endif
-
-#if !defined(__CYGWIN__)
-#  define USE_PTRACE
-/*#  if !defined(PTRACE_TRACEME)
-#    if defined(PTRACE_TRACE_ME)
-#      define PTRACE_TRACEME PTRACE_TRACE_ME
-#    else
-#      undef USE_PTRACE
-#    endif
-#  endif*/
-#endif
 
 namespace signals
 {
@@ -43,11 +21,13 @@ Handler Handler::instance;
 
 void Handler::StartThread()
 {
+  logs::debug << "Starting signal handling thread.." << logs::endl;
   instance.Start();
 }
 
 void Handler::StopThread()
 {
+  logs::debug << "Stopping signal handling thread.." << logs::endl;
   instance.Stop();
 }
 
@@ -59,7 +39,6 @@ void Handler::Run()
   sigaddset(&mask, SIGINT);
   sigaddset(&mask, SIGQUIT);
   sigaddset(&mask, SIGTERM);
-  sigaddset(&mask, SIGALRM);
   
   int signo;
   while (true)
@@ -95,10 +74,6 @@ void Handler::Run()
         std::make_shared<ftp::task::Exit>()->Push();
         return;
       }
-      case SIGALRM  :
-      {
-        db::Replicator::Replicate();
-      }
     }
   }
 }
@@ -117,7 +92,6 @@ void PropogateSignal(int signo)
 }
 
 
-#if !defined(__CYGWIN__)
 void CrashHandler(int signo)
 {
   std::stringstream ss;
@@ -172,25 +146,20 @@ void TerminateHandler()
   PropogateSignal(SIGABRT);
 }
 
-#endif
-
 util::Error Initialise()
 {
   sigset_t set;
   sigfillset(&set);
 
   bool debugger = false;
-#if defined(USE_PTRACE)
   // allow interruption inside gdb
-  int ret = ptrace(PTRACE_TRACEME, 0, nullptr, 0);
+  int ret = ptrace(PT_TRACE_ME, 0, nullptr, 0);
   if (ret < 0 && errno == EPERM)
   {
     debugger = true;
     sigdelset(&set, SIGINT);
   }
-#endif
   
-#if !defined(__CYGWIN__)
   if (!debugger)
   {
     sigdelset(&set, SIGSEGV);
@@ -206,7 +175,6 @@ util::Error Initialise()
 
    std::set_terminate(TerminateHandler);
  }
-#endif
 
   if (pthread_sigmask(SIG_BLOCK, &set, nullptr) < 0)
     return util::Error::Failure(errno);  

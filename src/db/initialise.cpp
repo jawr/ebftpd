@@ -2,7 +2,9 @@
 #include "db/connection.hpp"
 #include "db/replicator.hpp"
 #include "db/usercache.hpp"
-#include "db/user.hpp"
+#include "db/groupcache.hpp"
+#include "db/userutil.hpp"
+#include "db/grouputil.hpp"
 
 namespace db
 {
@@ -60,9 +62,16 @@ bool StartReplication()
 {
   try
   {
-    /*auto userCache = std::make_shared<UserCache>();
-    Replicator::Register(userCache);
-    EnableUserCache(userCache);*/
+    auto& replicator = Replicator::Get();
+    auto userCache = std::make_shared<UserCache>();
+    if (!replicator.Register(userCache)) return false;
+    SetUserCache(userCache);
+    
+    auto groupCache = std::make_shared<GroupCache>();
+    if (!replicator.Register(groupCache)) return false;
+    SetGroupCache(groupCache);
+    
+    replicator.Start();
     
     return true;
   }
@@ -95,6 +104,11 @@ bool Initialise()
   }
   
   return true;
+}
+
+void Cleanup()
+{
+  Replicator::Get().Stop();
 }
 
 } /* db namespace */

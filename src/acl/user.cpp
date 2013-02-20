@@ -8,6 +8,7 @@
 #include "util/string.hpp"
 #include "util/verify.hpp"
 #include "db/userutil.hpp"
+#include "db/user.hpp"
 
 namespace acl
 {
@@ -31,13 +32,13 @@ UserData::UserData() :
 }
 
 User::User() :
-  db(data)
+  db(new db::User(data))
 {
 }
 
 User::User(UserData&& data_) :
   data(data_),
-  db(data)
+  db(new db::User(data))
 {
 }
 
@@ -55,13 +56,13 @@ User& User::operator=(const User& rhs)
 
 User::User(User&& other) :
   data(other.data),
-  db(data)
+  db(new db::User(data))
 {
 }
 
 User::User(const User& other) :
   data(other.data),
-  db(data)
+  db(new db::User(data))
 {
 }
 
@@ -118,11 +119,13 @@ void User::DelIPMask(const std::string& ipMask)
   }
 }
 
-void User::DelIPMask(size_t index)
+std::string User::DelIPMask(size_t index)
 {
   verify(index < data.ipMasks.size());
+  std::string mask = *(data.ipMasks.begin() + index);
   data.ipMasks.erase(data.ipMasks.begin() + index);
   db->SaveIPMasks();
+  return mask;
 }
 
 void User::ClearIPMasks()
@@ -461,7 +464,7 @@ bool User::DecrSectionCredits(const std::string& section, long long kBytes)
 
 void User::DecrSectionCreditsForce(const std::string& section, long long kBytes)
 {
-  (void) db->DecrCredits(section, kBytes, false);
+  (void) db->DecrCredits(section, kBytes, true);
 }
 
 void User::Purge() const
@@ -478,7 +481,9 @@ boost::optional<User> User::Load(acl::UserID uid)
 
 boost::optional<User> User::Load(const std::string& name)
 {
-  return Load(NameToUID(name));
+  auto data = db::User::Load(name);
+  if (!data) return boost::optional<User>();
+  return boost::optional<User>(User(std::move(*data)));
 }
 
 boost::optional<User> User::Create(const std::string& name, const std::string& password, 

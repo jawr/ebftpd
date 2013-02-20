@@ -11,8 +11,6 @@
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
 #include "logs/logs.hpp"
-#include "db/group.hpp"
-#include "db/user.hpp"
 
 namespace cmd { namespace site
 {
@@ -30,7 +28,7 @@ void GROUPSCommand::Execute()
     return;
   }
 
-  auto groups = db::GetGroups();
+  auto groups = acl::Group::GetGroups();
 
   std::ostringstream os;
   text::TemplateSection& head = templ->Head();
@@ -40,9 +38,7 @@ void GROUPSCommand::Execute()
 
   for (auto& group: groups)
   {    
-    size_t numUsers = acl::User::GetUIDs("=" + group.Name()).size();
-
-    body.RegisterValue("users", numUsers);
+    body.RegisterValue("users", group.NumMembers());
     body.RegisterValue("group", group.Name());
     body.RegisterValue("descr", group.Description());
     os << body.Compile();

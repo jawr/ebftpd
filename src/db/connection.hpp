@@ -93,7 +93,7 @@ public:
   void SetField(const std::string& collection, const mongo::Query& query, const T& obj, 
         const std::string& field)
   {
-    SetField(collection, query, obj, { field });
+    SetFields(collection, query, obj, { field });
   }
   
   template <typename BSONObject>

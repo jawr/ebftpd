@@ -10,6 +10,11 @@ find_package (OpenSSL REQUIRED)
 link_directories (${OpenSSL_LIBRARY_DIRS})
 include_directories (${OpenSSL_INCLUDE_DIRS})
 
+
+include(CheckSymbolExists)
+check_symbol_exists(PTRACE_TRACEME "sys/ptrace.h" HAVE_PTRACEME)
+check_symbol_exists(PTRACE_TRACE_ME "sys/ptrace.h" HAVE_PTRACE_ME)
+
 link_libraries(
   ${MongoDB_LIBRARIES}
   ${OPENSSL_LIBRARIES}

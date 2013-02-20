@@ -223,6 +223,7 @@ CreditLoss(const User& user, const fs::VirtualPath& path)
 
 bool SecureIP(const User& user, const std::string& ip, IPStrength& minimum)
 {
+  if (ip.find('@') == std::string::npos) return false;
   IPStrength strength(ip);
   for (auto& si : cfg::Get().SecureIp())
     if (si.ACL().Evaluate(user))

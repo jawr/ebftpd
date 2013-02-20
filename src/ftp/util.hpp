@@ -21,7 +21,7 @@ inline void ASCIITranscodeRETR(const char* source, size_t len, std::vector<char>
 
 inline void ASCIITranscodeSTOR(const char* source, size_t len, std::vector<char>& asciiBuf)
 {
-#if defined(__CYGWIN__)
+#if defined(__CYGWIN__) || defined(_WIN32) || defined(__WIN64)
   LFtoCRLF(source, len, asciiBuf);
 #else
   CRLFtoLF(source, len, asciiBuf);

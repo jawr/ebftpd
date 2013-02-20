@@ -53,6 +53,6 @@ void DBProxy<T, IDT, DBT>::ConnectUpdatedSlot(const std::function<void(IDT)>& sl
 }
 
 template class DBProxy<acl::UserData, acl::UserID, db::User>;
-template class DBProxy<acl::Group, acl::GroupID, db::Group>;
+template class DBProxy<acl::GroupData, acl::GroupID, db::Group>;
 
 } /* db namespace */

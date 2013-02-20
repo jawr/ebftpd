@@ -83,8 +83,7 @@ void DELIPCommand::Execute()
     std::string mask;
     for (int index : indexes)
     {
-      user->DelIPMask(index);
-      os << "\nIP " << mask << " deleted successfully.";
+      os << "\nIP " << user->DelIPMask(index) << " deleted successfully.";
     }
   }
 

@@ -18,9 +18,7 @@ acl::UserID User::Create() const
 void User::UpdateLog() const
 {
   db::FastConnection conn;
-  auto entry = BSON("timestamp" << ToDateT(boost::posix_time::microsec_clock::local_time()) <<
-                    "collection" << "users" <<
-                    "id" << user.id);
+  auto entry = BSON("collection" << "users" << "id" << user.id);
   conn.Insert("updatelog", entry);
 }
 
@@ -53,7 +51,9 @@ void User::SaveIPMasks()
 
 void User::SavePassword()
 {
-  SaveField("password");
+  db::NoErrorConnection conn;
+  conn.SetFields("users", QUERY("uid" << user.id), user, { "password", "salt" });
+  UpdateLog();
 }
 
 void User::SaveFlags()
@@ -257,8 +257,8 @@ template <> mongo::BSONObj Serialize<acl::UserData>(const acl::UserData& user)
   else
     bob.appendNull("last login");
     
-  bob.append("ratio", SerializeContainer(user.ratio));
-  bob.append("credits", SerializeContainer(user.credits));
+  bob.append("ratio", SerializeMap(user.ratio, "section", "value"));
+  bob.append("credits", SerializeMap(user.credits, "section", "value"));
   
   return bob.obj();
 }
@@ -270,15 +270,15 @@ template <> acl::UserData Unserialize<acl::UserData>(const mongo::BSONObj& obj)
     acl::UserData user;
     user.id = obj["uid"].Int();
     user.name = obj["name"].String();
-    user.ipMasks = UnserializeContainer<decltype(user.ipMasks)>(obj["ip masks"].Array());
+    UnserializeContainer(obj["ip masks"].Array(), user.ipMasks);
     user.password = obj["password"].String();
     user.salt = obj["salt"].String();
     user.flags = obj["flags"].String();
     user.primaryGid = obj["primary gid"].Int();
-    user.secondaryGids = UnserializeContainer<decltype(user.secondaryGids)>(obj["secondary gids"].Array());
-    user.gadminGids = UnserializeContainer<decltype(user.gadminGids)>(obj["gadmin gids"].Array());
+    UnserializeContainer(obj["secondary gids"].Array(), user.secondaryGids);
+    UnserializeContainer(obj["gadmin gids"].Array(), user.gadminGids);
+    
     user.creator = obj["creator"].Int();
-
     mongo::BSONElement oid;
     obj.getObjectID(oid);
     user.created = ToGregDate(oid.OID().asDateT());
@@ -298,12 +298,11 @@ template <> acl::UserData Unserialize<acl::UserData>(const mongo::BSONObj& obj)
     user.maxSimDown = obj["max sim down"].Int();
     user.maxSimUp = obj["max sim up"].Int();
     user.loggedIn = obj["logged in"].Int();
-
     if (obj["last login"].type() != mongo::jstNULL)
       user.lastLogin.reset(ToPosixTime(obj["last login"].Date()));
     
-    user.ratio = UnserializeContainer<decltype(user.ratio)>(obj["ratio"].Array());
-    user.credits = UnserializeContainer<decltype(user.credits)>(obj["credits"].Array());
+    UnserializeMap(obj["ratio"].Array(), "section", "value", user.ratio);
+    UnserializeMap(obj["credits"].Array(), "section", "value", user.credits);
     
     return user;
   }
@@ -320,6 +319,11 @@ boost::optional<acl::UserData> User::Load(acl::UserID uid)
   return conn.QueryOne<acl::UserData>("users", QUERY("uid" << uid));
 }
 
+boost::optional<acl::UserData> User::Load(const std::string& name)
+{
+  db::NoErrorConnection conn;                  
+  return conn.QueryOne<acl::UserData>("users", QUERY("name" << name));
+}
 
 namespace
 {

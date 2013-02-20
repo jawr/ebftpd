@@ -40,7 +40,7 @@ void Connection::AuthenticateHook::onCreate(mongo::DBClientBase* conn)
     std::string errmsg;
     if (!conn->auth(dbConfig.Name(), dbConfig.Login(), dbConfig.Password(), errmsg))
     {
-      throw db::DBError("Authentication error");
+      throw db::DBError(errmsg);
     }
   }
 }
@@ -369,6 +369,7 @@ int Connection::NextAutoIncrement(const std::string& collection, const std::stri
 
   return static_cast<int>(ret["value"].Int());
 }
+
 std::ostream& operator<<(std::ostream& os, const mongo::BSONObj* obj)
 {
   if (obj) os << *obj;

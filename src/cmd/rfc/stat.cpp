@@ -11,9 +11,6 @@ namespace cmd { namespace rfc
 
 void STATCommand::Execute()
 {
-  using util::scope_guard;
-  using util::make_guard;
-
   if (args.size() == 1)
   {
     std::ostringstream os;
@@ -27,7 +24,7 @@ void STATCommand::Execute()
   bool singleLineReplies = control.SingleLineReplies();
   control.SetSingleLineReplies(false);
   
-  scope_guard singleLineGuard = make_guard([&]{ control.SetSingleLineReplies(singleLineReplies); });  
+  auto singleLineGuard = util::MakeScopeExit([&]{ control.SetSingleLineReplies(singleLineReplies); });  
 
   std::string options;
   std::string::size_type optOffset = 0;

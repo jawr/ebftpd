@@ -7,13 +7,10 @@ namespace cmd { namespace rfc
 
 void FEATCommand::Execute()
 {
-  using util::scope_guard;
-  using util::make_guard;
-
   bool singleLineReplies = control.SingleLineReplies();
   control.SetSingleLineReplies(false);
   
-  scope_guard singleLineGuard = make_guard([&]{ control.SetSingleLineReplies(singleLineReplies); });  
+  auto singleLineGuard = util::MakeScopeExit([&]{ control.SetSingleLineReplies(singleLineReplies); });  
 
   control.PartReply(ftp::SystemStatus, "Extended feature support:");
   control.PartReply(ftp::NoCode, " AUTH TLS");

@@ -60,6 +60,7 @@ public:
   void Purge() const;
   
   static boost::optional<acl::UserData> Load(acl::UserID uid);
+  static boost::optional<acl::UserData> Load(const std::string& name);
 };
 
 std::vector<acl::UserID> GetUIDs(const std::string& multiStr = "*");

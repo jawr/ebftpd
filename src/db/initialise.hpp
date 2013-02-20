@@ -5,6 +5,7 @@ namespace db
 {
 
 bool Initialise();
+void Cleanup();
 
 } /* db namespace */
 

@@ -15,6 +15,7 @@ class Query;
 namespace acl
 {
 class Group;
+struct GroupData;
 } 
 
 namespace db
@@ -22,12 +23,12 @@ namespace db
 
 class Group
 {
-  acl::Group& group;
+  acl::GroupData& group;
   
   void SaveField(const std::string& field);
   
 public:
-  Group(acl::Group& group) :  group(group) { }
+  Group(acl::GroupData& group) :  group(group) { }
   
   acl::GroupID Create();
   bool SaveName();
@@ -42,15 +43,13 @@ public:
   long long NumMembers() const;
   void Purge() const;
   
-  static boost::optional<acl::Group> Load(acl::GroupID gid);
+  static boost::optional<acl::GroupData> Load(acl::GroupID gid);
+  static boost::optional<acl::GroupData> Load(const std::string& name);
 };
 
 
-//template <> mongo::BSONObj Serialize<acl::Group>(const acl::Group& group);
-//template <> acl::Group Unserialize<acl::Group>(const mongo::BSONObj& obj);
-
 std::vector<acl::GroupID> GetGIDs(const std::string& multiStr = "*");
-std::vector<acl::Group> GetGroups(const std::string& multiStr = "*");
+std::vector<acl::GroupData> GetGroups(const std::string& multiStr = "*");
 
 
 } /* db namespace */

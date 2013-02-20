@@ -469,10 +469,7 @@ void Client::InnerRun()
 
 void Client::Run()
 {
-  using util::scope_guard;
-  using util::make_guard;
-  
-  scope_guard finishedGuard = make_guard([&]
+  auto finishedGuard = util::MakeScopeExit([&]
   {
     SetState(ClientState::Finished);
     if (user) db::mail::LogOffPurgeTrash(user->ID());

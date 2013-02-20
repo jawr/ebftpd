@@ -4,6 +4,7 @@
 #include <atomic>
 #include <future>
 #include <memory>
+#include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 #include "db/replicable.hpp"
@@ -13,53 +14,30 @@ namespace db
 
 class Replicator
 {
+  boost::thread thread;
   std::vector<std::shared_ptr<Replicable>> caches;
-  int interval;
-  
-  std::atomic<bool> enabled;
-  boost::mutex busy;
-  typedef boost::lock_guard<boost::mutex> BusyGuard;
-  
+
   static std::shared_ptr<Replicator> instance;
   static const int maximumRetries = 20;
   
-  Replicator(int interval);
+  Replicator() = default;
   
-  void Run(const std::shared_ptr<BusyGuard>& lock);
-  
-  void InnerCancel()
-  {
-    enabled = false;
-    boost::lock_guard<boost::mutex> lock(busy);
-  }
-
-  void InnerReplicate();
-  void ResetTimer();
+  void Run();  
   void LogFailed(const std::list<std::shared_ptr<Replicable>>& failed);
+  void Replicate(const mongo::BSONObj& entry);
+  void Populate();
   
 public:
+  void Start();
+  void Stop();
+  
+  bool Register(const std::shared_ptr<Replicable>& cache);
 
-  static void Initialise(int interval)
+  static Replicator& Get()
   {
-    if (interval > 0) instance.reset(new Replicator(interval));
-  }
-
-  static std::shared_ptr<Replicator> Get() { return instance; }
-  
-  static void Cancel()
-  {
-    if (instance.get()) instance->InnerCancel();
-  }
-  
-  static void Register(const std::shared_ptr<Replicable>& cache)
-  {
-    if (instance.get()) instance->caches.emplace_back(cache);
-  }
-  
-  static void Replicate()
-  {
-    if (instance.get()) instance->InnerReplicate();
-  }
+    if (!instance) instance.reset(new Replicator());
+    return *instance;
+  }  
 };
 
 } /* db namespace */

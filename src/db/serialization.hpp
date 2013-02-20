@@ -48,64 +48,66 @@ mongo::BSONArray SerializeContainer(const Container& c,
 }
 
 template <typename Container>
-Container UnserializeContainer(const std::vector<mongo::BSONElement>& arr,
+void UnserializeContainer(const std::vector<mongo::BSONElement>& arr, Container& c,
   typename std::enable_if<util::is_iterable_non_map<Container>::value &&
                           !util::has_key_type<Container>::value>::type* dummy = nullptr)
 {
-  Container c;
+  c.clear();
   for (const auto& elem : arr)
   {
     typename Container::value_type value;
     elem.Val(value);
     c.push_back(value);
   }
-  return c;
   
   (void) dummy;
 }
 
 template <typename Container>
-Container UnserializeContainer(const std::vector<mongo::BSONElement>& arr,
+void UnserializeContainer(const std::vector<mongo::BSONElement>& arr, Container& c,
   typename std::enable_if<util::is_iterable_non_map<Container>::value &&
                           util::has_key_type<Container>::value>::type* dummy = nullptr)
 {
-  Container c;
+  c.clear();
   for (const auto& elem : arr)
   {
     typename Container::value_type value;
     elem.Val(value);
     c.insert(value);
   }
-  return c;
   
   (void) dummy;
 }
 
-template <typename Container>
-Container UnserializeContainer(const std::vector<mongo::BSONElement>& arr,
-  typename std::enable_if<util::is_iterable_map<Container>::value &&
-                          std::is_same<std::string, typename Container::key_type>::value>::type* dummy = nullptr)
+template <typename Map>
+mongo::BSONArray SerializeMap(const Map& map, 
+      const std::string& keyField, const std::string& valueField)
 {
-  Container c;
+  mongo::BSONArrayBuilder bab;
+  for (const auto& kv : map)
+  {
+    bab.append(BSON(keyField << kv.first << valueField << kv.second));
+  }
+  return bab.arr();
+}
+
+template <typename Map>
+void UnserializeMap(const std::vector<mongo::BSONElement>& arr, 
+      const std::string& keyField, const std::string& valueField, Map& map)
+{
+  map.clear();
   for (const auto& elem : arr)
   {
     auto elemObj = elem.Obj();
-    std::set<std::string> fieldNames;
-    elemObj.getFieldNames(fieldNames);
+ 
+    typename Map::key_type key;
+    elemObj[keyField].Val(key);
+      
+    typename Map::mapped_type value;
+    elemObj[valueField].Val(value);
     
-    if (fieldNames.size() != 1)
-      throw mongo::DBException("invalid bson object for mapped container element", 13111);
-
-    const std::string& key = *fieldNames.begin();
-    
-    typename Container::mapped_type value;
-    elemObj[key].Val(value);
-    
-    c.insert(std::make_pair(key, value));
+    map.insert(std::make_pair(key, value));
   }
-  return c;
-  
-  (void) dummy;
 }
 
 // very very ugly hack!!

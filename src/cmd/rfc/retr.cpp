@@ -22,8 +22,6 @@ namespace cmd { namespace rfc
 void RETRCommand::Execute()
 {
   namespace pt = boost::posix_time;
-  using util::scope_guard;
-  using util::make_guard;
   
   off_t offset = data.RestartOffset();
   if (offset > 0 && data.DataType() == ftp::DataType::ASCII)
@@ -54,7 +52,7 @@ void RETRCommand::Execute()
       break;
   }
   
-  scope_guard countGuard = make_guard([&]{ ftp::Counter::Download().Stop(client.User().ID()); });  
+  auto countGuard = util::MakeScopeExit([&]{ ftp::Counter::Download().Stop(client.User().ID()); });  
   
   fs::VirtualPath path(fs::PathFromUser(argStr));
 
@@ -126,7 +124,7 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
-  scope_guard dataGuard = make_guard([&]
+  auto dataGuard = util::MakeScopeExit([&]
   {
     if (data.State().Type() != ftp::TransferType::None)
     {

@@ -11,6 +11,46 @@
 namespace db
 {
 
+
+template <> mongo::BSONObj Serialize<acl::GroupData>(const acl::GroupData& group)
+{
+  mongo::BSONObjBuilder bob;
+  bob.append("name", group.name);
+  bob.append("gid", group.id);
+  bob.append("description", group.description);
+  bob.append("slots", group.slots);
+  bob.append("leech slots", group.leechSlots);
+  bob.append("allotment slots", group.allotmentSlots);
+  bob.append("max allotment size", group.maxAllotmentSize);
+  bob.append("max logins", group.maxLogins);
+  bob.append("comment", group.comment);
+  return bob.obj();
+}
+
+template <> acl::GroupData Unserialize<acl::GroupData>(const mongo::BSONObj& obj)
+{
+  try
+  {
+    acl::GroupData group;
+    group.id = obj["gid"].Int();
+    group.name = obj["name"].String();
+    group.description = obj["description"].String();
+    group.comment = obj["comment"].String();
+    group.slots = obj["slots"].Int();
+    group.leechSlots = obj["leech slots"].Int();
+    group.allotmentSlots = obj["allotment slots"].Int();
+    group.maxAllotmentSize = obj["max allotment size"].Long();
+    group.slots = obj["slots"].Int();
+    group.maxLogins = obj["max logins"].Int();
+    return group;
+  }
+  catch (const mongo::DBException& e)
+  {
+    LogException("Unserialize group", e, obj);
+    throw e;
+  }
+}
+
 acl::GroupID Group::Create()
 {
   SafeConnection conn;
@@ -20,7 +60,7 @@ acl::GroupID Group::Create()
 void Group::SaveField(const std::string& field)
 {
   NoErrorConnection conn;
-  conn.SetField("groups", QUERY("gid" << group.ID()), group, field);
+  conn.SetField("groups", QUERY("gid" << group.id), group, field);
 }
 
 bool Group::SaveName()
@@ -28,7 +68,7 @@ bool Group::SaveName()
   try
   {
     SafeConnection conn;
-    conn.SetField("groups", QUERY("gid" << group.ID()), group, "name");
+    conn.SetField("groups", QUERY("gid" << group.id), group, "name");
     return true;
   }
   catch (const db::DBError&)
@@ -75,63 +115,31 @@ void Group::SaveMaxLogins()
 long long Group::NumMembers() const
 {
   mongo::BSONArrayBuilder bab;
-  bab.append(group.ID());
-  
+  bab.append(group.id);
+  std::cout << group.name << std::endl;
+  auto query = BSON("$or" << BSON_ARRAY(BSON("primary gid" << group.id) <<
+                                        BSON("secondary gids" << BSON("$in" << bab.arr()))));
+  std::cout << query << std::endl;
   NoErrorConnection conn;
-  return conn.Count("users", BSON("$or" << 
-              BSON_ARRAY(BSON("primary gid" << group.ID()) <<
-                         BSON("secondary gids" << BSON("$in" << bab.arr())))));
+  return conn.Count("users", query);
 }
 
 void Group::Purge() const
 {
   NoErrorConnection conn;
-  conn.Remove("groups", QUERY("gid" << group.ID()));
+  conn.Remove("groups", QUERY("gid" << group.id));
 }
 
-template <> mongo::BSONObj Serialize<acl::Group>(const acl::Group& group)
-{
-  mongo::BSONObjBuilder bob;
-  bob.append("name", group.name);
-  bob.append("gid", group.id);
-  bob.append("description", group.description);
-  bob.append("slots", group.slots);
-  bob.append("leech slots", group.leechSlots);
-  bob.append("allotment slots", group.allotmentSlots);
-  bob.append("max allotment size", group.maxAllotmentSize);
-  bob.append("max logins", group.maxLogins);
-  bob.append("comment", group.comment);
-  return bob.obj();
-}
-
-template <> acl::Group Unserialize<acl::Group>(const mongo::BSONObj& obj)
-{
-  try
-  {
-    acl::Group group;
-    group.id = obj["gid"].Int();
-    group.name = obj["name"].String();
-    group.description = obj["description"].String();
-    group.comment = obj["comment"].String();
-    group.slots = obj["slots"].Int();
-    group.leechSlots = obj["leech slots"].Int();
-    group.allotmentSlots = obj["allotment slots"].Int();
-    group.maxAllotmentSize = obj["max allotment size"].Long();
-    group.slots = obj["slots"].Int();
-    group.maxLogins = obj["max logins"].Int();
-    return group;
-  }
-  catch (const mongo::DBException& e)
-  {
-    LogException("Unserialize group", e, obj);
-    throw e;
-  }
-}
-
-boost::optional<acl::Group> Group::Load(acl::GroupID gid)
+boost::optional<acl::GroupData> Group::Load(acl::GroupID gid)
 {
   NoErrorConnection conn;
-  return conn.QueryOne<acl::Group>("groups", QUERY("gid" << gid));
+  return conn.QueryOne<acl::GroupData>("groups", QUERY("gid" << gid));
+}
+
+boost::optional<acl::GroupData> Group::Load(const std::string& name)
+{
+  NoErrorConnection conn;
+  return conn.QueryOne<acl::GroupData>("groups", QUERY("name" << name));
 }
 
 namespace
@@ -169,9 +177,9 @@ std::vector<acl::GroupID> GetGIDs(const std::string& multiStr)
   return GetGeneric<acl::GroupID>(multiStr, &fields);
 }
 
-std::vector<acl::Group> GetGroups(const std::string& multiStr)
+std::vector<acl::GroupData> GetGroups(const std::string& multiStr)
 {
-  return GetGeneric<acl::Group>(multiStr, nullptr);
+  return GetGeneric<acl::GroupData>(multiStr, nullptr);
 }
 
 } /* acl namespace */
