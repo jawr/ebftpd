@@ -97,7 +97,7 @@ void RETRCommand::Execute()
   auto section = cfg::Get().SectionMatch(path.ToString());
   int ratio = stats::DownloadRatio(client, path, section);
   if (!client.User().DecrSectionCredits(section && section->SeparateCredits() ? 
-          section->Name() : "", size * ratio))
+          section->Name() : "", size / 1024 * ratio))
   {
     control.Reply(ftp::ActionNotOkay, "Not enough credits to download that file.");
     throw cmd::NoPostScriptError();
@@ -153,7 +153,7 @@ void RETRCommand::Execute()
     std::ostringstream os;
     os << "TLS is enforced on " << (data.IsFXP() ? "FXP" : "data") << " transfers.";
     control.Reply(ftp::ProtocolNotSupported, os.str());
-    return;
+    throw cmd::NoPostScriptError();
   }
   
   bool aborted = false;

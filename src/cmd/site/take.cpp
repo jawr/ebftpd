@@ -64,14 +64,14 @@ void TAKECommand::Execute()
   }
 
   if (type == "G")
-    credits *= 1024 * 1024 * 1024;
-  else if (type == "M")
     credits *= 1024 * 1024;
+  else if (type == "M")
+    credits *= 1024;
 
   user->DecrSectionCreditsForce(section, credits);
   
   std::ostringstream os;
-  os << "Taken " << std::fixed << std::setprecision(2) << credits / 1024.0
+  os << "Taken " << std::fixed << std::setprecision(2) << credits
      << "KB credits from " << user->Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
 }

@@ -87,7 +87,7 @@ class Transaction
   
 public:
   Transaction(T1& var) :
-    oldValue(std::move(var)),
+    oldValue(var),
     var(var),
     rollback(false)
   { }

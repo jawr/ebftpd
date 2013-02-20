@@ -1,3 +1,4 @@
+#include <future>
 #include "db/user.hpp"
 #include "db/connection.hpp"
 #include "acl/user.hpp"
@@ -5,6 +6,7 @@
 #include "db/error.hpp"
 #include "db/userutil.hpp"
 #include "db/grouputil.hpp"
+#include "util/futureminder.hpp"
 
 namespace db
 {
@@ -149,17 +151,37 @@ void User::SaveRatio()
   SaveField("ratio");
 }
 
+namespace
+{
+
+struct AsyncTasks : public util::FutureMinder
+{
+  ~AsyncTasks()
+  {
+    try
+    {
+      logs::debug << "Finalising asyncrhonous database tasks.." << logs::endl;
+    }
+    catch (...)
+    {
+    }
+  }
+};
+
+
+util::FutureMinder asyncTasks;
+}
+
 void User::IncrCredits(const std::string& section, long long kBytes)
 {
   // in the old thread pool design this used be done in a separate thread
   // this may need to be changed to be async again.
-  db::FastConnection conn;
-  
-  auto doIncrement = [&]()
+  auto doIncrement = [section, kBytes](acl::UserID uid)
     {
+      db::NoErrorConnection conn;
       auto updateExisting = [&]() -> bool
         {
-          auto query = BSON("uid" << user.id << 
+          auto query = BSON("uid" << uid << 
                             "credits" << BSON("$elemMatch" << BSON("section" << section)));
                             
           auto update = BSON("$inc" << BSON("credits.$.value" << kBytes));
@@ -175,7 +197,7 @@ void User::IncrCredits(const std::string& section, long long kBytes)
 
       auto doInsert = [&]() -> bool
       {
-        auto query = QUERY("uid" << user.id << "credits" << BSON("$not" << 
+        auto query = QUERY("uid" << uid << "credits" << BSON("$not" << 
                            BSON("$elemMatch" << BSON("section" << section))));
         auto update = BSON("$push" << BSON("credits" << BSON("section" << section << "value" << kBytes)));
         return conn.Update("users", query, update, false) > 0;
@@ -185,16 +207,18 @@ void User::IncrCredits(const std::string& section, long long kBytes)
       if (doInsert()) return;
       if (updateExisting()) return;
 
-      logs::db << "Unable to increment credits for UID " << user.id;
+      logs::db << "Unable to increment credits for UID " << uid;
       if (!section.empty()) logs::db << " in section " << section;
       logs::db << logs::endl;
     };
   
-  doIncrement();
+  asyncTasks.Assign(std::async(std::launch::async, doIncrement, user.id));
 }
 
 bool User::DecrCredits(const std::string& section, long long kBytes, bool force)
 {
+  if (!kBytes) return true;
+  
   mongo::BSONObjBuilder elemQuery;
   elemQuery.append("section", section);
   if (!force) elemQuery.append("value", BSON("$gte" << kBytes));
@@ -207,11 +231,9 @@ bool User::DecrCredits(const std::string& section, long long kBytes, bool force)
   auto cmd = BSON("findandmodify" << "users" <<
                   "query" << query <<
                   "update" << update);
-
   db::NoErrorConnection conn;                  
   mongo::BSONObj result;
   bool ret = conn.RunCommand(cmd, result);
-  
   return force || (ret && result["value"].type() != mongo::jstNULL);
 }
 

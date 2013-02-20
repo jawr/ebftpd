@@ -468,7 +468,7 @@ void User::SetSectionRatio(const std::string& section, int ratio)
 long long User::SectionCredits(const std::string& section) const
 {
   auto it = data.credits.find(section);
-  return it != data.credits.end() ? it->second : -1;
+  return it != data.credits.end() ? it->second : 0;
 }
 
 void User::IncrSectionCredits(const std::string& section, long long kBytes)

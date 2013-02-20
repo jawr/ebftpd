@@ -261,6 +261,9 @@ bool Client::ReloadUser()
     return false;
   }
 
+  
+  logs::debug << "Reloaded user profile" << logs::endl;
+  
   boost::lock_guard<boost::mutex> lock(mutex);
   user = std::move(*optUser);
   

@@ -81,7 +81,7 @@ std::string RatioString(const User& user)
 std::string FormatCredits(long long credits)
 {
   std::ostringstream os;
-  os << std::setprecision(2) << std::fixed << (credits / 1024 / 1024.0) << "MB";
+  os << std::setprecision(2) << std::fixed << (credits / 1024.0) << "MB";
   return os.str();
 }
 

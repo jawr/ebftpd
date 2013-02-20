@@ -70,16 +70,16 @@ int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path,
   if (section)
   {
     int ratio = client.User().SectionRatio(section->Name());
-    if (ratio >= 0) return ratio;
+    if (ratio == 0) return 0;
   }
   
-  auto cc = acl::CreditLoss(client.User(), path);
-  if (cc && cc->Ratio() >= 0) return cc->Ratio();
+  auto cl = acl::CreditLoss(client.User(), path);
+  if (cl && cl->Ratio() >= 0) return cl->Ratio();
   
   if (section &&  section->Ratio() >= 0) return section->Ratio();
   
   assert(client.User().DefaultRatio() >= 0);
-  return client.User().DefaultRatio();
+  return client.User().DefaultRatio() == 0 ? 0 : 1;
 }
 
 } /* stats namespace */

@@ -16,6 +16,7 @@ namespace cmd { namespace site
 void GIVECommand::Execute()
 {
   std::string section;
+  
   if (boost::to_lower_copy(args[1]) == "-s")
   {
     section = boost::to_upper_copy(args[2]);
@@ -65,9 +66,9 @@ void GIVECommand::Execute()
   }
 
   if (type == "G")
-    credits *= 1024 * 1024 * 1024;
-  else if (type == "M")
     credits *= 1024 * 1024;
+  else if (type == "M")
+    credits *= 1024;
 
   std::ostringstream os;
   if (acl::AllowSiteCmd(client.User(), "giveown") &&
@@ -93,7 +94,7 @@ void GIVECommand::Execute()
   
   // give user the credits
   user->IncrSectionCredits(section, credits);
-  os << "Given " << std::setprecision(2) << std::fixed << credits / 1024.0 
+  os << "Given " << std::setprecision(2) << std::fixed << credits
      << "KB credits to " << user->Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
 }

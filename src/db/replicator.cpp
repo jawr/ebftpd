@@ -163,7 +163,6 @@ void Replicator::Run()
       while (true)
       {
         auto entry = tail.Next();
-        logs::debug << entry << logs::endl;
         Replicate(entry);
       }
     }
