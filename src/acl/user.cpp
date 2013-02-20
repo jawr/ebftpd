@@ -193,15 +193,6 @@ void User::DelFlag(Flag flag)
   DelFlags(std::string(1, static_cast<char>(flag)));
 }
 
-bool User::HasFlags(const std::string& flags) const
-{
-  for (char ch: flags)
-  {
-    if (this->data.flags.find(ch) != std::string::npos) return true;
-  }
-  return false;
-}
-
 bool User::HasFlag(Flag flag) const
 {
   return this->data.flags.find(static_cast<char>(flag)) != std::string::npos;

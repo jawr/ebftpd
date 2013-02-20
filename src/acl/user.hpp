@@ -6,6 +6,7 @@
 #include <memory>
 #include <boost/optional.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "acl/flags.hpp"
 #include "acl/types.hpp"
 
@@ -92,7 +93,14 @@ public:
   void SetPassword(const std::string& password);
   
   const std::string& Flags() const { return data.flags; }
-  bool HasFlags(const std::string& flags) const;
+  bool HasFlags(const std::string& flags) const
+  {
+    for (char ch: flags)
+    {
+      if (this->data.flags.find(ch) != std::string::npos) return true;
+    }
+    return false;
+  }
   bool HasFlag(Flag flag) const;
 
   void SetFlags(const std::string& flags);

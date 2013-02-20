@@ -80,6 +80,17 @@ inline std::ostream& operator<<(std::ostream& os, const std::type_info& info)
   return (os << util::debug::Demangle(info.name()));
 }
 
+inline void LastErrorToException(const mongo::BSONObj& obj)
+{
+  if (!obj["err"].isNull()) throw mongo::DBException(obj["err"].String(), obj["code"].Int());
+}
+
+inline void LastErrorToException(mongo::DBClientConnection& conn)
+{
+  LastErrorToException(conn.getLastErrorDetailed());
+}
+
+
 } /* db namespace */
 
 #endif
