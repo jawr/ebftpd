@@ -191,9 +191,10 @@ public:
   static boost::optional<User> Load(acl::UserID uid);
   static boost::optional<User> Load(const std::string& name);
   static boost::optional<User> Create(const std::string& name, const std::string& password, 
-                                      acl::UserID creator);
-  static User FromTemplate(const std::string& name, const std::string& password,
-                           acl::UserID creator, const User& templateUser);
+                            acl::UserID creator);
+  static boost::optional<User> FromTemplate(const std::string& name, 
+                            const std::string& password, acl::UserID creator, 
+                            const User& templateUser);
   static std::vector<acl::UserID> GetUIDs(const std::string& multiStr = "*");
   static std::vector<acl::User> GetUsers(const std::string& multiStr = "*");
 };

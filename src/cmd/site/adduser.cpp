@@ -33,6 +33,12 @@ void ADDUSERCommand::Execute(const std::string& group)
   Execute();
 }
 
+void ADDUSERCommand::Execute(const acl::User& templateUser)
+{
+  this->templateUser.reset(templateUser);
+  Execute();
+}
+
 void ADDUSERCommand::Execute()
 {
   acl::GroupID gid = -1;
@@ -42,7 +48,7 @@ void ADDUSERCommand::Execute()
     if (gid == -1)
     {
       control.Reply(ftp::ActionNotOkay, "Group " + group + " doesn't exist.");
-      return;
+      throw cmd::NoPostScriptError();
     }
   }
   else
@@ -58,7 +64,7 @@ void ADDUSERCommand::Execute()
   if (!acl::Validate(acl::ValidationType::Username, args[1]))
   {
     control.Reply(ftp::ActionNotOkay, "Username contains invalid characters");
-    return;
+    throw cmd::NoPostScriptError();
   }
 
   acl::PasswdStrength strength;
@@ -71,7 +77,9 @@ void ADDUSERCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  auto user = acl::User::Create(args[1], args[2], client.User().ID());
+  auto user = templateUser ?
+              acl::User::FromTemplate(args[1], args[2], client.User().ID(), *templateUser) :
+              acl::User::Create(args[1], args[2], client.User().ID());
   if (!user)
   {
     control.Reply(ftp::ActionNotOkay, "User " + args[1] + " already exists.");
@@ -86,6 +94,8 @@ void ADDUSERCommand::Execute()
     user->SetPrimaryGID(gid);
     os << " to group " << group;
   }
+  
+  if (templateUser) os << " based on template " << templateUser->Name();
   
   os << ".";
 

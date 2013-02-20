@@ -4,6 +4,7 @@
 #include "util/error.hpp"
 #include "db/error.hpp"
 #include "db/grouputil.hpp"
+#include "util/scopeguard.hpp"
 
 namespace acl
 {
@@ -59,11 +60,11 @@ Group::~Group()
 
 bool Group::Rename(const std::string& name)
 {
-  std::string oldName = this->data.name;
-  this->data.name = name; 
+  std::string oldName = data.name;
+  data.name = name; 
   if (!db->SaveName())
   {
-    this->data.name.swap(oldName);
+    data.name.swap(oldName);
     return false;
   }
   return true;
@@ -71,43 +72,43 @@ bool Group::Rename(const std::string& name)
 
 void Group::SetDescription(const std::string& description)
 {
-  this->data.description = description;
+  auto trans = util::MakeTransaction(data.description, description);
   db->SaveDescription();
 }
 
 void Group::SetComment(const std::string& comment)
 {
-  this->data.comment = comment;
+  auto trans = util::MakeTransaction(data.description, comment);
   db->SaveComment();
 }
 
 void Group::SetSlots(int slots)
 {
-  this->data.slots = slots;
+  auto trans = util::MakeTransaction(data.slots, slots);
   db->SaveSlots();
 }
 
 void Group::SetLeechSlots(int leechSlots)
 {
-  this->data.leechSlots = leechSlots;
+  auto trans = util::MakeTransaction(data.leechSlots, leechSlots);
   db->SaveLeechSlots();
 }
 
 void Group::SetAllotmentSlots(int allotmentSlots)
 {
-  this->data.allotmentSlots = allotmentSlots;
+  auto trans = util::MakeTransaction(data.allotmentSlots, allotmentSlots);
   db->SaveAllotmentSlots();
 }
 
 void Group::SetMaxAllotmentSize(long long maxAllotmentSize)
 {
-  this->data.maxAllotmentSize = maxAllotmentSize;
+  auto trans = util::MakeTransaction(data.maxAllotmentSize, maxAllotmentSize);
   db->SaveMaxAllotmentSize();
 }
 
 void Group::SetMaxLogins(int maxLogins)
 {
-  this->data.maxLogins = maxLogins;
+  auto trans = util::MakeTransaction(data.maxLogins, maxLogins);
   db->SaveMaxLogins();
 }
 

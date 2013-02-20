@@ -2,7 +2,9 @@
 #define __CMD_SITE_ADDUSER_HPP
 
 #include <vector>
+#include <boost/optional.hpp>
 #include "cmd/command.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {
@@ -10,7 +12,8 @@ namespace cmd { namespace site
 class ADDUSERCommand : public Command
 {
   std::string group;
-
+  boost::optional<acl::User> templateUser;
+  
   void Addips(const std::string& user, const std::vector<std::string>& ips);
   
 public:
@@ -18,6 +21,7 @@ public:
     Command(client, client.Control(), client.Data(), argStr, args) { }
 
   void Execute(const std::string& group);
+  void Execute(const acl::User& templateUser);
   void Execute();
 };
 

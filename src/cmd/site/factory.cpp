@@ -60,6 +60,7 @@
 #include "cmd/site/new.hpp"
 #include "cmd/site/dupe.hpp"
 #include "cmd/site/chgadmin.hpp"
+#include "cmd/site/tadduser.hpp"
 
 namespace cmd { namespace site
 {
@@ -115,7 +116,7 @@ Factory::Factory()
                       "Syntax: SITE ADDUSER <user> <password> [<ident@ip>..]",
                       "Add new user" }, },
     { "TADDUSER",   { 3, -1,  "tadduser",
-                      nullptr,
+                      CreatorBasePtr(new Creator<TADDUSERCommand>()),
                       "Syntax: SITE TADDUSER <template> <user> <password> [<ident@ip>..]",
                       "Add new user based on a template" }, },
     { "ADDIP",      { 2, -1,  "addip|addipown|addipgadmin",
@@ -130,7 +131,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<DELIPCommand>()),
                       "Syntax: SITE DELIP <user> <ident@ip> [<ident@ip>..]",
                       "Delete ident@ip from user" }, },
-    { "CHANGE",     { 3,  4,  
+    { "CHANGE",     { 3,  -1,  
                       "change|changeflags|changegadmin|changehomedir", 
                       CreatorBasePtr(new Creator<CHANGECommand>()),  
                       CHANGECommand::Syntax(),
@@ -267,7 +268,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<GROUPCommand>()),
                       "Syntax: SITE GROUP <group>",
                       "Display detailed group info" }, },
-    { "GRPCHANGE",  { 3,  3,  "grpchange", 
+    { "GRPCHANGE",  { 3,  -1,  "grpchange", 
                       CreatorBasePtr(new Creator<GRPCHANGECommand>()),
                       GRPCHANGECommand::Syntax(),
                       "Change settings for a group or groups" }, },

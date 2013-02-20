@@ -9,6 +9,7 @@
 #include "util/verify.hpp"
 #include "db/userutil.hpp"
 #include "db/user.hpp"
+#include "util/scopeguard.hpp"
 
 namespace acl
 {
@@ -72,11 +73,11 @@ User::~User()
 
 bool User::Rename(const std::string& name)
 {
-  std::string oldName = this->data.name;
-  this->data.name = name; 
+  std::string oldName = data.name;
+  data.name = name; 
   if (!db->SaveName())
   {
-    this->data.name.swap(oldName);
+    data.name.swap(oldName);
     return false;
   }
   return true;
@@ -137,19 +138,20 @@ void User::ClearIPMasks()
 bool User::VerifyPassword(const std::string& password) const
 {
   using namespace util::passwd;
-  return HexEncode(HashPassword(password, HexDecode(data.salt))) == this->data.password;
+  return HexEncode(HashPassword(password, HexDecode(data.salt))) == data.password;
 }
 
 void User::SetPasswordNoSave(const std::string& password)
 {
   using namespace util::passwd;  
   std::string rawSalt = GenerateSalt();
-  this->data.password = HexEncode(HashPassword(password, rawSalt));
+  data.password = HexEncode(HashPassword(password, rawSalt));
   data.salt = HexEncode(rawSalt);
 }
 
 void User::SetPassword(const std::string& password)
 {
+  auto trans = util::MakeTransaction(data.password);
   SetPasswordNoSave(password);
   db->SavePassword();
 }
@@ -157,19 +159,20 @@ void User::SetPassword(const std::string& password)
 void User::SetFlags(const std::string& flags)
 {
   assert(ValidFlags(flags));
-  this->data.flags = flags;
+  auto trans = util::MakeTransaction(data.flags, flags);
   db->SaveFlags();
 }
 
 void User::AddFlags(const std::string& flags)
 {
   assert(ValidFlags(flags));
+  auto trans = util::MakeTransaction(data.flags);
   for (char ch: flags)
   {
-    if (this->data.flags.find(ch) == std::string::npos) this->data.flags += ch;
+    if (data.flags.find(ch) == std::string::npos) data.flags += ch;
   }
   
-  std::sort(this->data.flags.begin(), this->data.flags.end());
+  std::sort(data.flags.begin(), data.flags.end());
   db->SaveFlags();
 }
 
@@ -180,10 +183,11 @@ void User::AddFlag(Flag flag)
 
 void User::DelFlags(const std::string& flags)
 {
+  auto trans = util::MakeTransaction(data.flags);
   for (char ch: flags)
   {
-    std::string::size_type pos = this->data.flags.find(ch);
-    if (pos != std::string::npos) this->data.flags.erase(pos, 1);
+    std::string::size_type pos = data.flags.find(ch);
+    if (pos != std::string::npos) data.flags.erase(pos, 1);
   }
   db->SaveFlags();
 }
@@ -195,7 +199,7 @@ void User::DelFlag(Flag flag)
 
 bool User::HasFlag(Flag flag) const
 {
-  return this->data.flags.find(static_cast<char>(flag)) != std::string::npos;
+  return data.flags.find(static_cast<char>(flag)) != std::string::npos;
 }
 
 bool User::HasSecondaryGID(GroupID gid) const
@@ -211,9 +215,11 @@ bool User::HasGID(GroupID gid) const
 
 void User::SetPrimaryGID(acl::GroupID gid)
 {
+  auto trans1 = util::MakeTransaction(data.primaryGid);
   if (data.primaryGid == gid) return;
   if (data.primaryGid != -1)
   {
+    auto trans2 = util::MakeTransaction(data.secondaryGids);
     data.secondaryGids.insert(data.secondaryGids.begin(), data.primaryGid);
     db->SaveSecondaryGIDs();
   }
@@ -226,6 +232,9 @@ void User::AddGIDs(const std::vector<acl::GroupID>& gids)
 {
   if (gids.empty()) return;
   
+  auto trans1 = util::MakeTransaction(data.primaryGid);
+  auto trans2 = util::MakeTransaction(data.secondaryGids);
+
   size_t offset = 0;
   if (data.primaryGid == -1)
   {
@@ -248,6 +257,9 @@ void User::AddGIDs(const std::vector<acl::GroupID>& gids)
 
 void User::DelGIDs(const std::vector<acl::GroupID>& gids)
 {
+  auto trans1 = util::MakeTransaction(data.primaryGid);
+  auto trans2 = util::MakeTransaction(data.secondaryGids);
+
   auto preSize = data.secondaryGids.size();
   data.secondaryGids.erase(std::remove_if(data.secondaryGids.begin(), data.secondaryGids.end(),
       [&](acl::GroupID gid)
@@ -272,6 +284,9 @@ void User::DelGIDs(const std::vector<acl::GroupID>& gids)
 
 void User::SetGIDs(const std::vector<acl::GroupID>& gids)
 {
+  auto trans1 = util::MakeTransaction(data.primaryGid);
+  auto trans2 = util::MakeTransaction(data.secondaryGids);
+
   data.primaryGid = -1;
   data.secondaryGids.clear();
   
@@ -287,6 +302,9 @@ void User::SetGIDs(const std::vector<acl::GroupID>& gids)
 
 void User::ToggleGIDs(const std::vector<acl::GroupID>& gids)
 {
+  auto trans1 = util::MakeTransaction(data.primaryGid);
+  auto trans2 = util::MakeTransaction(data.secondaryGids);
+
   std::vector<acl::GroupID> diffGids;
   
   if (data.primaryGid != -1)
@@ -326,6 +344,7 @@ bool User::HasGadminGID(GroupID gid) const
 
 void User::AddGadminGID(GroupID gid)
 {
+  auto trans = util::MakeTransaction(data.gadminGids);
   data.gadminGids.insert(gid);
   db->SaveGadminGIDs();
   if (!HasFlag(Flag::Gadmin)) AddFlag(Flag::Gadmin);
@@ -333,6 +352,7 @@ void User::AddGadminGID(GroupID gid)
 
 void User::DelGadminGID(GroupID gid)
 {
+  auto trans = util::MakeTransaction(data.gadminGids);
   data.gadminGids.erase(gid);
   db->SaveGadminGIDs();
   if (data.gadminGids.empty()) DelFlag(Flag::Gadmin);
@@ -352,19 +372,19 @@ bool User::ToggleGadminGID(GroupID gid)
 
 void User::SetWeeklyAllotment(long long weeklyAllotment)
 {
-  this->data.weeklyAllotment = weeklyAllotment;
+  auto trans = util::MakeTransaction(data.weeklyAllotment, weeklyAllotment);
   db->SaveWeeklyAllotment();
 }
 
 void User::SetHomeDir(const std::string& homeDir)
 {
-  this->data.homeDir = homeDir;
+  auto trans = util::MakeTransaction(data.homeDir, homeDir);
   db->SaveHomeDir();
 }
 
 void User::SetIdleTime(int idleTime)
 {
-  this->data.idleTime = idleTime;
+  auto trans = util::MakeTransaction(data.idleTime, idleTime);
   db->SaveIdleTime();
 }
 
@@ -376,58 +396,59 @@ bool User::Expired() const
 
 void User::SetExpires(const boost::optional<boost::gregorian::date>& expires)
 {
-  this->data.expires = expires;
+  auto trans = util::MakeTransaction(data.expires, expires);
   db->SaveExpires();
 }
 
 void User::SetNumLogins(int numLogins)
 {
-  this->data.numLogins = numLogins;
+  auto trans = util::MakeTransaction(data.numLogins, numLogins);
   db->SaveNumLogins();
 }
 
 void User::SetComment(const std::string& comment)
 {
-  this->data.comment = comment;
+  auto trans = util::MakeTransaction(data.comment, comment);
   db->SaveComment();
 }
 
 void User::SetTagline(const std::string& tagline)
 {
-  this->data.tagline = tagline;
+  auto trans = util::MakeTransaction(data.tagline, tagline);
   db->SaveTagline();
 }
 
 void User::SetMaxDownSpeed(long long maxDownSpeed)
 {
-  this->data.maxDownSpeed = maxDownSpeed;
+  auto trans = util::MakeTransaction(data.maxDownSpeed, maxDownSpeed);
   db->SaveMaxDownSpeed();
 }
 
 void User::SetMaxUpSpeed(long long maxUpSpeed)
 {
-  this->data.maxUpSpeed = maxUpSpeed;
+  auto trans = util::MakeTransaction(data.maxUpSpeed, maxUpSpeed);
   db->SaveMaxUpSpeed();
 }
 
 void User::SetMaxSimDown(int maxSimDown)
 {
-  this->data.maxSimDown = maxSimDown;
+  auto trans = util::MakeTransaction(data.maxSimDown, maxSimDown);
   db->SaveMaxSimDown();
 }
 
 void User::SetMaxSimUp(int maxSimUp)
 {
-  this->data.maxSimUp = maxSimUp;
+  auto trans = util::MakeTransaction(data.maxSimUp, maxSimUp);
   db->SaveMaxSimUp();
 }
 
 void User::SetLoggedIn()
 {
-  ++data.loggedIn;
+  auto trans1 = util::MakeTransaction(data.loggedIn, data.loggedIn + 1);
   db->SaveLoggedIn();
 
-  data.lastLogin = boost::posix_time::microsec_clock::local_time();
+  auto trans2 = util::MakeTransaction(data.lastLogin,
+                  boost::posix_time::microsec_clock::local_time());
   db->SaveLastLogin();
 }
 
@@ -439,7 +460,8 @@ int User::SectionRatio(const std::string& section) const
 
 void User::SetSectionRatio(const std::string& section, int ratio)
 {
-  this->data.ratio[section] = ratio;
+  auto trans = util::MakeTransaction(data.ratio);
+  data.ratio[section] = ratio;
   db->SaveRatio();
 }
 
@@ -483,8 +505,8 @@ boost::optional<User> User::Load(const std::string& name)
   return boost::optional<User>(User(std::move(*data)));
 }
 
-boost::optional<User> User::Create(const std::string& name, const std::string& password, 
-                                   acl::UserID creator)
+boost::optional<User> User::Create(const std::string& name, 
+        const std::string& password, acl::UserID creator)
 {
   User user;
   user.data.name = name;
@@ -494,23 +516,17 @@ boost::optional<User> User::Create(const std::string& name, const std::string& p
   return boost::optional<User>(user);
 }
 
-User User::FromTemplate(const std::string& name, const std::string& password,
-                        acl::UserID creator, const User& templateUser)
+boost::optional<User> User::FromTemplate(const std::string& name, 
+        const std::string& password, acl::UserID creator, const User& templateUser)
 {
-  try
-  {
-    User user(templateUser);
-    user.data.name = name;
-    user.SetPassword(password);
-    user.data.creator = creator;
-    user.DelFlag(Flag::Template);
-    user.db->Create();
-    return user;
-  }
-  catch (const db::DBKeyError&)
-  {
-    throw util::RuntimeError("User already exists");
-  }
+  User user(templateUser);
+  user.data.id = -1;
+  user.data.name = name;
+  user.data.creator = creator;
+  user.SetPasswordNoSave(password);
+  user.DelFlag(Flag::Template);
+  if (!user.db->Create()) return boost::optional<User>();
+  return boost::optional<User>(user);
 }
 
 

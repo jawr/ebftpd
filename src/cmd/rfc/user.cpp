@@ -18,7 +18,7 @@ void USERCommand::Execute()
   try
   {
     auto user = acl::User::Load(argStr);
-    if (!user)
+    if (!user || user->HasFlag(acl::Flag::Template))
     {
       control.Reply(ftp::NotLoggedIn, "User " + argStr + " access denied.");
       return;

@@ -33,10 +33,10 @@ const std::vector<GRPCHANGECommand::SettingDef> GRPCHANGECommand::settings =
   { "max_logins",       1,  "grpchange",      &GRPCHANGECommand::CheckMaxLogins,
     "Maximum simultaneous logins (-1 is unlimited, 0 is disallow)"                  },
     
-  { "description",      1,  "grpchange",      &GRPCHANGECommand::CheckDescription,
+  { "description",      -1, "grpchange",      &GRPCHANGECommand::CheckDescription,
     "Description"                                                                   },
     
-  { "comment",          1,  "grpchange",      &GRPCHANGECommand::CheckComment,
+  { "comment",          -1, "grpchange",      &GRPCHANGECommand::CheckComment,
     "Comment"                                                                       }
 };
 
@@ -177,7 +177,8 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::Check()
   if (it == settings.end()) throw cmd::SyntaxError();
 
   if (!acl::AllowSiteCmd(client.User(), it->aclKeyword)) throw cmd::PermissionError();
-  if (static_cast<ssize_t>(args.size()) > it->maximumArgs + 3) throw cmd::SyntaxError();
+  if (it->maximumArgs != -1 &&
+      static_cast<ssize_t>(args.size()) > it->maximumArgs + 3) throw cmd::SyntaxError();
   
   return it->check(this);
 }

@@ -44,10 +44,10 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
   { "num_logins",     1,  "change",               &CHANGECommand::CheckNumLogins,
     "Maximum number of simultaneous logins"                                             },
     
-  { "tagline",        1,  "change",               &CHANGECommand::CheckTagline,
+  { "tagline",        -1, "change",               &CHANGECommand::CheckTagline,
     "Tagline"                                                                           },
     
-  { "comment",        1,  "change",               &CHANGECommand::CheckComment,
+  { "comment",        -1, "change",               &CHANGECommand::CheckComment,
     "Comment"                                                                           },
     
   { "max_up_speed",   1,  "change",               &CHANGECommand::CheckMaxUpSpeed,
@@ -388,8 +388,9 @@ CHANGECommand::SetFunction CHANGECommand::Check()
   if (it == settings.end()) throw cmd::SyntaxError();
 
   if (!acl::AllowSiteCmd(client.User(), it->aclKeyword)) throw cmd::PermissionError();
-  if (static_cast<ssize_t>(args.size()) > it->maximumArgs + 3) throw cmd::SyntaxError();
-  
+  if (it->maximumArgs != -1 && 
+      static_cast<ssize_t>(args.size()) > it->maximumArgs + 3) throw cmd::SyntaxError();
+
   return it->check(this);
 }
 
