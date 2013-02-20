@@ -94,8 +94,21 @@ void PropogateSignal(int signo)
 
 void CrashHandler(int signo)
 {
+  const char* signame = nullptr;
+  
+  switch (signo)
+  {
+    case SIGSEGV  : signame = "SIGSEGV"; break;
+    case SIGABRT  : signame = "SIGABRT"; break;
+    case SIGBUS   : signame = "SIGBUS"; break;
+    case SIGILL   : signame = "SIGILL"; break;
+    case SIGFPE   : signame = "SIGFPE"; break;
+  }
+  
   std::stringstream ss;
-  ss << "Critical error signal " << signo << " received, dumping backtrace: " << std::endl;
+  ss << "Critical error signal " << signo;
+  if (signame) ss << " (" << signame << ")";
+  ss << " received, dumping backtrace: " << std::endl;
 
   util::debug::DumpBacktrace(ss, 2);
   
@@ -151,19 +164,19 @@ util::Error Initialise()
   sigset_t set;
   sigfillset(&set);
 
-  bool debugger = false;
   // allow interruption inside gdb
   int ret = ptrace(PT_TRACE_ME, 0, nullptr, 0);
   if (ret < 0 && errno == EPERM)
   {
-    debugger = true;
     sigdelset(&set, SIGINT);
   }
-  
-  if (!debugger)
+  else
   {
     sigdelset(&set, SIGSEGV);
     sigdelset(&set, SIGABRT);
+    sigdelset(&set, SIGBUS);
+    sigdelset(&set, SIGILL);
+    sigdelset(&set, SIGFPE);
     
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
@@ -171,7 +184,12 @@ util::Error Initialise()
     sa.sa_handler = CrashHandler;
     if (sigaction(SIGSEGV, &sa, nullptr) < 0)
       return util::Error::Failure(errno);
-
+    if (sigaction(SIGBUS, &sa, nullptr) < 0)
+      return util::Error::Failure(errno);
+    if (sigaction(SIGILL, &sa, nullptr) < 0)
+      return util::Error::Failure(errno);
+    if (sigaction(SIGFPE, &sa, nullptr) < 0)
+      return util::Error::Failure(errno);
 
    std::set_terminate(TerminateHandler);
  }

@@ -25,12 +25,13 @@ class Group
 {
   acl::GroupData& group;
   
+  void UpdateLog() const;
   void SaveField(const std::string& field);
   
 public:
   Group(acl::GroupData& group) :  group(group) { }
   
-  acl::GroupID Create();
+  bool Create();
   bool SaveName();
   void SaveDescription();
   void SaveComment();

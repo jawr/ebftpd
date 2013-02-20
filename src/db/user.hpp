@@ -32,7 +32,7 @@ class User
 public:
   User(acl::UserData& user) :  user(user) { }
   
-  acl::UserID Create() const;
+  bool Create();
   bool SaveName();
   void SaveIPMasks();
   void SavePassword();

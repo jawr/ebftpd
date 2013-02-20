@@ -20,6 +20,12 @@ void CHGADMINCommand::Execute()
     control.Format(ftp::ActionNotOkay, "User %1% doesn't exist.", args[1]);
     return;
   }
+
+  if (!user->HasGID(gid))
+  {
+    control.Format(ftp::ActionNotOkay, "User %1% is not a member of %2%.", args[1], args[2]);
+    return;
+  }
   
   bool added = user->ToggleGadminGID(gid);
   control.Format(ftp::CommandOkay, "Gadmin flag %1% %2% for %3%.",

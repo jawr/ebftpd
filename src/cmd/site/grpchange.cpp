@@ -186,7 +186,7 @@ void GRPCHANGECommand::Execute()
 {
   SetFunction set = Check();
   
-  auto gids = db::GetGIDs(args[1]);
+  auto gids = acl::Group::GetGIDs(args[1]);
   if (gids.empty())
   {
     control.Format(ftp::ActionNotOkay, "No group's exist matching that criteria.");

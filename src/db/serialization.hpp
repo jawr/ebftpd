@@ -2,6 +2,7 @@
 #define __DB_SERIALIZATION_HPP
 
 #include <cstdint>
+#include <set>
 #include <mongo/client/dbclient.h>
 #include "util/typetraits.hpp"
 #include "util/verify.hpp"
@@ -113,15 +114,10 @@ void UnserializeMap(const std::vector<mongo::BSONElement>& arr,
 // very very ugly hack!!
 template <> inline int32_t Unserialize<int32_t>(const mongo::BSONObj& obj)
 {
-  try
-  {
-    return obj["uid"].Int();
-  }
-  catch (const mongo::DBException& e)
-  {
-    if (e.getCode() != 13111) throw e;
-    return obj["gid"].Int();
-  }
+  std::set<std::string> fields;
+  obj.getFieldNames(fields);
+  if (fields.find("uid") != fields.end()) return obj["uid"].Int();
+  else return obj["gid"].Int();
 }
 
 mongo::Date_t ToDateT(const boost::posix_time::ptime& t);

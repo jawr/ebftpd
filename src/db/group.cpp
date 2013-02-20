@@ -51,16 +51,29 @@ template <> acl::GroupData Unserialize<acl::GroupData>(const mongo::BSONObj& obj
   }
 }
 
-acl::GroupID Group::Create()
+bool Group::Create()
 {
   SafeConnection conn;
-  return conn.InsertAutoIncrement("groups", group, "gid");
+  group.id = conn.InsertAutoIncrement("groups", group, "gid");
+  if (group.id == -1) return false;
+  UpdateLog();
+  return true;
 }
+
+void Group::UpdateLog() const
+{
+  db::FastConnection conn;
+  auto entry = BSON("collection" << "groups" << "id" << group.id);
+  conn.Insert("updatelog", entry);
+}
+
 
 void Group::SaveField(const std::string& field)
 {
   NoErrorConnection conn;
+
   conn.SetField("groups", QUERY("gid" << group.id), group, field);
+  UpdateLog();
 }
 
 bool Group::SaveName()
@@ -69,6 +82,7 @@ bool Group::SaveName()
   {
     SafeConnection conn;
     conn.SetField("groups", QUERY("gid" << group.id), group, "name");
+    UpdateLog();
     return true;
   }
   catch (const db::DBError&)
@@ -116,10 +130,8 @@ long long Group::NumMembers() const
 {
   mongo::BSONArrayBuilder bab;
   bab.append(group.id);
-  std::cout << group.name << std::endl;
   auto query = BSON("$or" << BSON_ARRAY(BSON("primary gid" << group.id) <<
                                         BSON("secondary gids" << BSON("$in" << bab.arr()))));
-  std::cout << query << std::endl;
   NoErrorConnection conn;
   return conn.Count("users", query);
 }
@@ -128,6 +140,7 @@ void Group::Purge() const
 {
   NoErrorConnection conn;
   conn.Remove("groups", QUERY("gid" << group.id));
+  UpdateLog();
 }
 
 boost::optional<acl::GroupData> Group::Load(acl::GroupID gid)

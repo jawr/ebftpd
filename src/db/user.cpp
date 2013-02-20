@@ -9,10 +9,13 @@
 namespace db
 {
 
-acl::UserID User::Create() const
+bool User::Create()
 {
   db::SafeConnection conn;
-  return conn.InsertAutoIncrement("users", user, "uid");
+  user.id = conn.InsertAutoIncrement("users", user, "uid");
+  if (user.id == -1) return false;
+  UpdateLog();
+  return true;
 }
 
 void User::UpdateLog() const
@@ -362,7 +365,7 @@ std::vector<T> GetGeneric(const std::string& multiStr, const mongo::BSONObj* fie
                  BSON("primary gid" << BSON("$in" << gids)) <<
                  BSON("secondary gids" << BSON("$in" << gids))));
   }
-  
+
   db::NoErrorConnection conn;
   return conn.QueryMulti<T>("users", query, 0, 0, fields);
 }

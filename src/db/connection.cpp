@@ -194,7 +194,7 @@ void Connection::EnsureIndex(const std::string& collection,
   
   try
   {
-    scopedConn->conn().ensureIndex(collection, keys, unique);
+    scopedConn->conn().ensureIndex(Namespace(collection), keys, unique);
     if (mode != ConnectionMode::Fast)
     {
       auto err = GetLastError();
@@ -304,6 +304,7 @@ int Connection::InsertAutoIncrement(const std::string& collection,
 {
   if (!scopedConn) return -1;
 
+  std::string ns = Namespace(collection);
   while (true)
   {
     int id = NextAutoIncrement(collection, autoIncField);
@@ -318,15 +319,22 @@ int Connection::InsertAutoIncrement(const std::string& collection,
         bab.append(e);
     }
     bab.append(autoIncField, id);
-    
+
     try
     {
-      scopedConn->conn().insert(Namespace(collection), bab.obj());
+      scopedConn->conn().insert(ns, bab.obj());
       auto err = GetLastError();
-      if (!err.Okay())
+      if (!err["err"].isNull())
       {
         if (err["code"].Number() == 11000)
-          continue;
+        {
+          auto fields = BSON(autoIncField << 1);
+          auto cursor = scopedConn->conn().query(ns, QUERY(autoIncField << id), 1, 0, &fields);
+          if (cursor.get() && cursor->more())
+            continue;
+          else
+            return -1;
+        }
           
         LogLastError("Insert", err, collection, obj);
         if (mode == ConnectionMode::Safe) throw DBWriteError();

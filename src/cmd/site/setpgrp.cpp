@@ -24,6 +24,12 @@ void SETPGRPCommand::Execute()
   }
   
   acl::GroupID oldGID = user->PrimaryGID();
+  if (oldGID == gid)
+  {
+    control.Reply(ftp::ActionNotOkay, "Group " + args[2] + " is already primary for " + args[1] + ".");
+    return;
+  }
+  
   user->SetPrimaryGID(gid);
   std::ostringstream os;
   if (oldGID != -1) os << "Moved old primary group " << acl::GIDToName(oldGID) << " to secondary.\n";

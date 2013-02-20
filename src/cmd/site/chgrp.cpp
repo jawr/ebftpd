@@ -17,25 +17,16 @@ void CHGRPCommand::Execute()
     return;
   }
 
-  std::function<void(const std::vector<acl::GroupID>&)> go;
+  std::function<void()> go;
   std::vector<acl::GroupID> gids;
   auto it = args.begin() + 3;
 
-  if (args[2] == "-")
-  {
-    go = boost::bind(&acl::User::DelGIDs, user, boost::ref(gids));
-  }
-  else if (args[2] == "=") 
-  {
-    go = boost::bind(&acl::User::SetGIDs, user, boost::ref(gids));
-  }
-  else if (args[2] == "+")
-  {
-    go = boost::bind(&acl::User::AddGIDs, user, boost::ref(gids));
-  }
+  if (args[2] == "-") go = [&]() { user->DelGIDs(gids); };
+  else if (args[2] == "=") go = [&]() { user->SetGIDs(gids); };
+  else if (args[2] == "+") go = [&]() { user->AddGIDs(gids); };
   else
   {
-    go = boost::bind(&acl::User::ToggleGIDs, user, boost::ref(gids));
+    go = [&]() { user->ToggleGIDs(gids); };
     --it;
   }
   
@@ -52,8 +43,10 @@ void CHGRPCommand::Execute()
     gids.emplace_back(gid);
   }
   
+  go();
+  
   if (user->PrimaryGID() == -1)
-    control.Reply(ftp::CommandOkay, "User " + user->Name() + " not has no groups.");
+    control.Reply(ftp::CommandOkay, "User " + user->Name() + " now has no groups.");
   else
     control.Reply(ftp::CommandOkay, "User " + user->Name() + " now has groups: " + acl::GroupString(*user));
 }

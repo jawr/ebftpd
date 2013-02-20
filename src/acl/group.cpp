@@ -137,18 +137,10 @@ boost::optional<Group> Group::Load(const std::string& name)
 
 boost::optional<Group> Group::Create(const std::string& name)
 {
-  try
-  {
-    Group group;
-    group.data.name = name;
-    group.data.id = group.db->Create();
-    std::cout << "NEW GID " << group.data.id << std::endl;
-    return boost::optional<Group>(group);
-  }
-  catch (const db::DBKeyError&)
-  {
-    return boost::optional<Group>();
-  }
+  Group group;
+  group.data.name = name;
+  if (!group.db->Create()) return boost::optional<Group>();
+  return boost::optional<Group>(group);
 }
 
 std::vector<acl::GroupID> Group::GetGIDs(const std::string& multiStr)

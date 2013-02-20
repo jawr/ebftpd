@@ -9,6 +9,8 @@
 #include "cfg/get.hpp"
 #include "util/timepair.hpp"
 #include "cmd/error.hpp"
+#include "fs/owner.hpp"
+#include "acl/group.hpp"
 
 namespace cmd { namespace site
 {
@@ -89,15 +91,16 @@ void NEWCommand::Execute()
   unsigned index = 0;
   for (const auto& result : results)
   {
+    auto real = fs::MakeReal(fs::VirtualPath(result.path));
     long long kBytes;
-    std::cout << fs::MakeReal(fs::VirtualPath(result.path)) << std::endl;
-    auto e = fs::DirectorySize(fs::MakeReal(fs::VirtualPath(result.path)),
-                               cfg::Get().DirSizeDepth(), kBytes);
+    auto e = fs::DirectorySize(real, cfg::Get().DirSizeDepth(), kBytes);
     if (e.Errno() == ENOENT)
     {
       db::index::Delete(result.path);
       continue;
     }
+    
+    auto owner = fs::GetOwner(real);
     
     body.RegisterValue("index", ++index);
     body.RegisterValue("datetime", boost::lexical_cast<std::string>(result.dateTime));
@@ -105,6 +108,8 @@ void NEWCommand::Execute()
     body.RegisterValue("path", fs::Path(result.path).Basename().ToString());
     body.RegisterValue("section", result.section);
     body.RegisterSize("size", e ? kBytes : -1);
+    body.RegisterValue("user", acl::UIDToName(owner.UID()));
+    body.RegisterValue("group", acl::GIDToName(owner.GID()));
     os << body.Compile();
   }
 

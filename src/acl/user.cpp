@@ -220,6 +220,7 @@ bool User::HasGID(GroupID gid) const
 
 void User::SetPrimaryGID(acl::GroupID gid)
 {
+  if (data.primaryGid == gid) return;
   if (data.primaryGid != -1)
   {
     data.secondaryGids.insert(data.secondaryGids.begin(), data.primaryGid);
@@ -248,7 +249,7 @@ void User::AddGIDs(const std::vector<acl::GroupID>& gids)
         [&](acl::GroupID gid)
         {
           return std::find(data.secondaryGids.begin(), data.secondaryGids.end(), gid) == 
-                data.secondaryGids.end();
+                data.secondaryGids.end() && gid != data.primaryGid;
         });
     db->SaveSecondaryGIDs();
   }
@@ -297,21 +298,26 @@ void User::ToggleGIDs(const std::vector<acl::GroupID>& gids)
 {
   std::vector<acl::GroupID> diffGids;
   
-  data.secondaryGids.insert(data.secondaryGids.begin(), data.primaryGid);
+  if (data.primaryGid != -1)
+    data.secondaryGids.insert(data.secondaryGids.begin(), data.primaryGid);
   
   std::copy_if(data.secondaryGids.begin(), data.secondaryGids.end(), std::back_inserter(diffGids),
       [&](acl::GroupID gid)
       {
         return std::find(gids.begin(), gids.end(), gid) == gids.end();
       });
-      
+
   std::copy_if(gids.begin(), gids.end(), std::back_inserter(diffGids),
       [&](acl::GroupID gid)
       {
         return std::find(data.secondaryGids.begin(), data.secondaryGids.end(), gid) == data.secondaryGids.end();
       });
   
-  if (diffGids.empty()) data.primaryGid = -1;
+  if (diffGids.empty())
+  {
+    data.primaryGid = -1;
+    data.secondaryGids.clear();
+  }
   else
   {
     data.primaryGid = diffGids.front();
@@ -489,19 +495,12 @@ boost::optional<User> User::Load(const std::string& name)
 boost::optional<User> User::Create(const std::string& name, const std::string& password, 
                                    acl::UserID creator)
 {
-  try
-  {
-    User user;
-    user.data.name = name;
-    user.data.creator = creator;
-    user.SetPasswordNoSave(password);
-    user.data.id = user.db->Create();
-    return boost::optional<User>(user);
-  }
-  catch (const db::DBKeyError&)
-  {
-    return boost::optional<User>();
-  }
+  User user;
+  user.data.name = name;
+  user.data.creator = creator;
+  user.SetPasswordNoSave(password);
+  if (!user.db->Create()) return boost::optional<User>();
+  return boost::optional<User>(user);
 }
 
 User User::FromTemplate(const std::string& name, const std::string& password,
@@ -514,7 +513,7 @@ User User::FromTemplate(const std::string& name, const std::string& password,
     user.SetPassword(password);
     user.data.creator = creator;
     user.DelFlag(Flag::Template);
-    user.data.id = user.db->Create();
+    user.db->Create();
     return user;
   }
   catch (const db::DBKeyError&)
