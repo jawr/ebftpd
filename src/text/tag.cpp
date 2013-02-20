@@ -120,7 +120,6 @@ std::string Tag::CompileString() const
   {
     // no value registered for tag, continue with empty string
   }
-  
   return Format(format + "s", value);
 }
 
