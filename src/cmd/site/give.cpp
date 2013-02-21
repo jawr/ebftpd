@@ -9,6 +9,7 @@
 #include "acl/misc.hpp"
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -70,6 +71,7 @@ void GIVECommand::Execute()
   else if (type == "M")
     credits *= 1024;
 
+  bool own = false;
   std::ostringstream os;
   if (acl::AllowSiteCmd(client.User(), "giveown") &&
       !acl::AllowSiteCmd(client.User(), "give"))
@@ -90,6 +92,7 @@ void GIVECommand::Execute()
     }
     
     os << "Taken " << credits << "KB credits from you!\n";
+    own = true;
   }
   
   // give user the credits
@@ -97,6 +100,9 @@ void GIVECommand::Execute()
   os << "Given " << std::setprecision(2) << std::fixed << credits
      << "KB credits to " << user->Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
+  
+  if (!own)
+    logs::Siteop(client.User().Name(), "GIVE", user->Name(), credits);
 }
 
 // end

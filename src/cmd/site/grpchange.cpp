@@ -12,6 +12,7 @@
 #include "acl/misc.hpp"
 #include "acl/util.hpp"
 #include "db/group.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -197,7 +198,11 @@ void GRPCHANGECommand::Execute()
   for (auto gid : gids)
   {
     auto group = acl::Group::Load(gid);
-    if (group) set(*group);
+    if (group)
+    {
+      set(*group);
+      logs::Siteop(client.User().Name(), "GROUP_" + args[2], group->Name(), display);
+    }
   }
 
   assert(!display.empty());

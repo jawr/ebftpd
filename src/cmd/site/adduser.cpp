@@ -10,6 +10,7 @@
 #include "acl/util.hpp"
 #include "acl/misc.hpp"
 #include "acl/group.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -89,9 +90,15 @@ void ADDUSERCommand::Execute()
   std::ostringstream os;
   os << "Added user " << args[1];
   
+  if (templateUser)
+    logs::Siteop(client.User().Name(), "TADDUSER", user->Name(), templateUser->Name());
+  else
+    logs::Siteop(client.User().Name(), "ADDUSER", user->Name());
+  
   if (gid != -1)
   {
     user->SetPrimaryGID(gid);
+    logs::Siteop(client.User().Name(), "SETPGRP", user->Name(), user->PrimaryGroup());
     os << " to group " << group;
   }
   

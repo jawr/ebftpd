@@ -2,6 +2,7 @@
 #include "cmd/site/grpdel.hpp"
 #include "cmd/error.hpp"
 #include "acl/group.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -30,6 +31,7 @@ void GRPDELCommand::Execute()
 
   group->Purge();
   control.Reply(ftp::CommandOkay, "Group " + args[1] + " deleted.");
+  logs::Siteop(client.User().Name(), "GRPDEL", args[1]);
 }
 
 } /* site namespace */

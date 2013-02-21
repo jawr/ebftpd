@@ -14,6 +14,7 @@
 #include "cfg/get.hpp"
 #include "acl/util.hpp"
 #include "db/user.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -420,7 +421,11 @@ void CHANGECommand::Execute()
   for (auto uid : uids)
   {
     auto user = acl::User::Load(uid);
-    if (user) set(*user);
+    if (user)
+    {
+      set(*user);
+      logs::Siteop(client.User().Name(), "USER_" + args[2], user->Name(), display);
+    }
   }
 
   assert(!display.empty());

@@ -5,6 +5,7 @@
 #include "ftp/task/types.hpp"
 #include "cmd/error.hpp"
 #include "acl/misc.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -37,6 +38,7 @@ void DELUSERCommand::Execute()
   if (kicked) os << " (" << kicked << " login(s) kicked)";
 
   control.Reply(ftp::CommandOkay, os.str());
+  logs::Siteop(client.User().Name(), "DELUSER", user->Name());
 }
 
 } /* site namespace */

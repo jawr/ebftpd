@@ -10,6 +10,7 @@
 #include "db/userutil.hpp"
 #include "db/user.hpp"
 #include "util/scopeguard.hpp"
+#include "acl/group.hpp"
 
 namespace acl
 {
@@ -202,6 +203,11 @@ bool User::HasFlag(Flag flag) const
   return data.flags.find(static_cast<char>(flag)) != std::string::npos;
 }
 
+std::string User::PrimaryGroup() const
+{
+  return GIDToName(data.primaryGid);
+}
+
 bool User::HasSecondaryGID(GroupID gid) const
 {
   return std::find(data.secondaryGids.begin(), data.secondaryGids.end(), gid) != 
@@ -216,16 +222,16 @@ bool User::HasGID(GroupID gid) const
 void User::SetPrimaryGID(acl::GroupID gid)
 {
   auto trans1 = util::MakeTransaction(data.primaryGid);
+  auto trans2 = util::MakeTransaction(data.secondaryGids);
+
   if (data.primaryGid == gid) return;
   if (data.primaryGid != -1)
   {
-    auto trans2 = util::MakeTransaction(data.secondaryGids);
     data.secondaryGids.insert(data.secondaryGids.begin(), data.primaryGid);
-    db->SaveSecondaryGIDs();
   }
   
   data.primaryGid = gid;
-  db->SavePrimaryGID();
+  db->SaveGIDs();
 }
 
 void User::AddGIDs(const std::vector<acl::GroupID>& gids)
@@ -240,7 +246,6 @@ void User::AddGIDs(const std::vector<acl::GroupID>& gids)
   {
     data.primaryGid = gids.front();
     ++offset;
-    db->SavePrimaryGID();
   }
   
   if (gids.size() > offset)
@@ -251,7 +256,26 @@ void User::AddGIDs(const std::vector<acl::GroupID>& gids)
           return std::find(data.secondaryGids.begin(), data.secondaryGids.end(), gid) == 
                 data.secondaryGids.end() && gid != data.primaryGid;
         });
-    db->SaveSecondaryGIDs();
+  }
+  
+  db->SaveGIDs();
+}
+
+void User::CleanGadminGIDs()
+{
+  auto end = data.gadminGids.end();
+  for (auto it = data.gadminGids.begin(); it != end; )
+  {
+    if (*it != data.primaryGid &&
+        std::find(data.secondaryGids.begin(), data.secondaryGids.end(), *it) ==
+        data.secondaryGids.end())
+    {
+      data.gadminGids.erase(it++);
+    }
+    else
+    {
+      ++it;
+    }
   }
 }
 
@@ -259,8 +283,8 @@ void User::DelGIDs(const std::vector<acl::GroupID>& gids)
 {
   auto trans1 = util::MakeTransaction(data.primaryGid);
   auto trans2 = util::MakeTransaction(data.secondaryGids);
-
-  auto preSize = data.secondaryGids.size();
+  auto trans3 = util::MakeTransaction(data.gadminGids);
+  
   data.secondaryGids.erase(std::remove_if(data.secondaryGids.begin(), data.secondaryGids.end(),
       [&](acl::GroupID gid)
       {
@@ -275,17 +299,17 @@ void User::DelGIDs(const std::vector<acl::GroupID>& gids)
       data.primaryGid = data.secondaryGids.front();
       data.secondaryGids.erase(data.secondaryGids.begin());
     }
-    
-    db->SavePrimaryGID();
   }
-  
-  if (data.secondaryGids.size() < preSize) db->SaveSecondaryGIDs();
+
+  CleanGadminGIDs();
+  db->SaveGIDs();
 }
 
 void User::SetGIDs(const std::vector<acl::GroupID>& gids)
 {
   auto trans1 = util::MakeTransaction(data.primaryGid);
   auto trans2 = util::MakeTransaction(data.secondaryGids);
+  auto trans3 = util::MakeTransaction(data.gadminGids);
 
   data.primaryGid = -1;
   data.secondaryGids.clear();
@@ -296,14 +320,15 @@ void User::SetGIDs(const std::vector<acl::GroupID>& gids)
     data.secondaryGids.assign(gids.begin() + 1, gids.end());
   }
   
-  db->SavePrimaryGID();
-  db->SaveSecondaryGIDs();
+  CleanGadminGIDs();
+  db->SaveGIDs();
 }
 
 void User::ToggleGIDs(const std::vector<acl::GroupID>& gids)
 {
   auto trans1 = util::MakeTransaction(data.primaryGid);
   auto trans2 = util::MakeTransaction(data.secondaryGids);
+  auto trans3 = util::MakeTransaction(data.gadminGids);
 
   std::vector<acl::GroupID> diffGids;
   
@@ -332,9 +357,9 @@ void User::ToggleGIDs(const std::vector<acl::GroupID>& gids)
     data.primaryGid = diffGids.front();
     data.secondaryGids.assign(diffGids.begin() + 1, diffGids.end());
   }
-  
-  db->SavePrimaryGID();
-  db->SaveSecondaryGIDs();
+
+  CleanGadminGIDs();
+  db->SaveGIDs();
 }
 
 bool User::HasGadminGID(GroupID gid) const

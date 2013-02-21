@@ -68,6 +68,7 @@ private:
 
   bool HasSecondaryGID(GroupID gid) const;
   void SetPasswordNoSave(const std::string& password);
+  void CleanGadminGIDs();
   
 public:
   User& operator=(User&& rhs);
@@ -110,6 +111,7 @@ public:
   void DelFlag(Flag flag);
 
   acl::GroupID PrimaryGID() const { return data.primaryGid; }
+  std::string PrimaryGroup() const;
   const std::vector<GroupID> SecondaryGIDs() const { return data.secondaryGids; }
   bool HasGID(GroupID gid) const;
 

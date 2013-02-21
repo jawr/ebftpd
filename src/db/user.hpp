@@ -37,8 +37,7 @@ public:
   void SaveIPMasks();
   void SavePassword();
   void SaveFlags();
-  void SavePrimaryGID();
-  void SaveSecondaryGIDs();
+  void SaveGIDs();
   void SaveGadminGIDs();
   void SaveWeeklyAllotment();
   void SaveHomeDir();

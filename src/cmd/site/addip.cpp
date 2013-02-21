@@ -4,6 +4,7 @@
 #include "acl/ipstrength.hpp"
 #include "acl/misc.hpp"
 #include "cmd/error.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -51,15 +52,18 @@ void ADDIPCommand::Execute()
     }
       
     os << "\nIP " << *it << " added successfully.";
+    logs::Siteop(client.User().Name(), "ADDIP", user->Name(), *it);
     for (const std::string& del : deleted)
     {
       os << "\nAuto-removed unncessary IP " << del << "!";
+      logs::Siteop(client.User().Name(), "DELIP", user->Name(), del);
     }
   }
 
   os << "\nCommand finished.";
   
   control.Reply(ftp::CommandOkay, os.str());
+  
 } 
 
 // end 

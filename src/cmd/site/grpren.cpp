@@ -2,6 +2,7 @@
 #include "cmd/site/grpren.hpp"
 #include "acl/util.hpp"
 #include "acl/group.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -28,6 +29,7 @@ void GRPRENCommand::Execute()
   }
   
   control.Reply(ftp::CommandOkay, "Group " + args[1] + " renamed to: " + args[2]);
+  logs::Siteop(client.User().Name(), "GRPREN", args[1], args[2]);
 }
 
 } /* site namespace */

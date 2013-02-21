@@ -82,7 +82,7 @@ void LOGSCommand::Execute()
 
   if (log == "error") Show(logs::error.Path());
   else if (log == "security") Show(logs::security.Path());
-  else if (log == "sysop") Show(logs::sysop.Path());
+  else if (log == "siteop") Show(logs::siteop.Path());
   else if (log == "events") Show(logs::events.Path());
   else if (log == "db") Show(logs::db.Path());
   else if (log == "debug") Show(logs::debug.Path());

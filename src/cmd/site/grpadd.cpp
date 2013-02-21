@@ -2,6 +2,7 @@
 #include "cmd/site/grpadd.hpp"
 #include "acl/util.hpp"
 #include "acl/group.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -35,6 +36,7 @@ void GRPADDCommand::Execute()
   
   if (args.size() > 2) group->SetDescription(argStr);  
   control.Reply(ftp::CommandOkay, "Group " + args[1] + " successfully added.");
+  logs::Siteop(client.User().Name(), "GRPADD", group->Name(), group->Description());
 }
 
 // end

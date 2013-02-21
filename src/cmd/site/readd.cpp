@@ -1,6 +1,7 @@
 #include "cmd/site/readd.hpp"
 #include "acl/misc.hpp"
 #include "cmd/error.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -32,6 +33,7 @@ void READDCommand::Execute()
   
   user->DelFlag(acl::Flag::Deleted);
   control.Reply(ftp::CommandOkay, "User " + args[1] + " has been readded.");
+  logs::Siteop(client.User().Name(), "READD", user->Name());
 }
 
 } /* site namespace */

@@ -1,6 +1,7 @@
 #include "cmd/site/chgadmin.hpp"
 #include "acl/user.hpp"
 #include "acl/group.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -30,6 +31,8 @@ void CHGADMINCommand::Execute()
   bool added = user->ToggleGadminGID(gid);
   control.Format(ftp::CommandOkay, "Gadmin flag %1% %2% for %3%.",
                  added ? "added to" : "removed from", args[1], args[2]);
+  std::string what = added ? "SET_GADMIN" : "UNSET_GADMIN";
+  logs::Siteop(client.User().Name(), what, user->Name(), args[2]);
 }
 
 } /* site namespace */

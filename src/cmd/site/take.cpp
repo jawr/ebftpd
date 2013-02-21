@@ -9,6 +9,7 @@
 #include "util/error.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -74,6 +75,7 @@ void TAKECommand::Execute()
   os << "Taken " << std::fixed << std::setprecision(2) << credits
      << "KB credits from " << user->Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
+  logs::Siteop(client.User().Name(), "TAKE", user->Name(), credits);
 }
 
 // end

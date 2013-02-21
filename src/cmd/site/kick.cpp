@@ -6,6 +6,7 @@
 #include "ftp/task/types.hpp"
 #include "util/error.hpp"
 #include "cmd/error.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -35,6 +36,8 @@ void KICKCommand::Execute()
   os << "Kicked " << future.get() << " of " << args[1] << "'s login(s).";
   control.Reply(ftp::CommandOkay, os.str());
   if (kicked == 0) throw cmd::NoPostScriptError();
+
+  logs::Siteop(client.User().Name(), "KICK", user->Name(), kicked);
 }
 
 }

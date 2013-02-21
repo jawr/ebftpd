@@ -39,7 +39,6 @@
 #include "cmd/site/groups.hpp"
 #include "cmd/site/grpdel.hpp"
 #include "cmd/site/grpchange.hpp"
-#include "cmd/site/grpnfo.hpp"
 #include "cmd/site/grpren.hpp"
 #include "cmd/site/reload.hpp"
 #include "cmd/site/shutdown.hpp"
@@ -284,10 +283,6 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<GRPRENCommand>()),
                       "Syntax: SITE GRPREN <old group> <new group>",
                       "Rename a group" }, },
-    { "GRPNFO",     { 2,  -1, "grpnfo",
-                      CreatorBasePtr(new Creator<GRPNFOCommand>()),
-                      "Syntax: SITE GRPNFO <group> <description>",
-                      "Change group description" }, },
     { "HELP",       { 0,  1,  "help",
                       CreatorBasePtr(new Creator<HELPCommand>()),
                       "Syntax: SITE HELP [<command>]",
@@ -416,7 +411,6 @@ std::unordered_set<std::string> Factory::ACLKeywords()
     boost::split(curKeywords, kv.second.ACLKeyword(), boost::is_any_of("|"));
     keywords.insert(curKeywords.begin(), curKeywords.end());
   }
-  
   return keywords;
 }
 

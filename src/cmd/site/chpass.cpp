@@ -3,6 +3,7 @@
 #include "acl/passwdstrength.hpp"
 #include "acl/misc.hpp"
 #include "cmd/error.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -36,6 +37,7 @@ void CHPASSCommand::Execute()
   
   user->SetPassword(args[2]);
   control.Reply(ftp::CommandOkay, "Password changed.");
+  logs::Siteop(client.User().Name(), "CHPASS", user->Name());
 }
 
 } /* site namespace */

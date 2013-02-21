@@ -1,6 +1,8 @@
 #include <cctype>
 #include "cmd/site/tagline.hpp"
 #include "acl/util.hpp"
+#include "acl/group.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -15,6 +17,8 @@ void TAGLINECommand::Execute()
 
   client.User().SetTagline(argStr);
   control.Reply(ftp::CommandOkay, "New Tagline: " + argStr);
+
+  logs::Event("TAGLINE", client.User().Name(), client.User().PrimaryGroup(), client.User().Tagline());
 }
 
 } /* site namespace */

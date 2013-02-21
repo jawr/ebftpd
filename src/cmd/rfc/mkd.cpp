@@ -6,6 +6,8 @@
 #include "db/index/index.hpp"
 #include "db/dupe/dupe.hpp"
 #include "cfg/get.hpp"
+#include "logs/logs.hpp"
+#include "acl/group.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -32,19 +34,26 @@ void MKDCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  if (cfg::Get().IsIndexed(path.ToString()))
+  const cfg::Config& config = cfg::Get();
+  
+  if (config.IsIndexed(path.ToString()))
   {
-    auto section = cfg::Get().SectionMatch(path.ToString());
+    auto section = config.SectionMatch(path.ToString());
     db::index::Add(path.ToString(), section ? section->Name() : "");
   }
   
-  if (cfg::Get().IsDupeLogged(path.ToString()))
+  if (config.IsDupeLogged(path.ToString()))
   {
-    auto section = cfg::Get().SectionMatch(path.ToString());
+    auto section = config.SectionMatch(path.ToString());
     db::dupe::Add(path.Basename().ToString(), section ? section->Name() : "");    
   }
   
-  control.Reply(ftp::PathCreated, "MKD command successful."); 
+  if (config.IsEventLogged(path.ToString()))
+  {
+    logs::Event("NEWDIR", path, client.User().Name(), client.User().PrimaryGroup(), client.User().Tagline());
+  }
+  
+  control.Reply(ftp::PathCreated, "MKD command successful.");  
 }
 
 } /* rfc namespace */

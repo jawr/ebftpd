@@ -13,6 +13,8 @@
 #include "util/path/status.hpp"
 #include "cfg/get.hpp"
 #include "util/enumbitwise.hpp"
+#include "acl/group.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -103,13 +105,17 @@ void WIPECommand::Execute()
     throw cmd::NoPostScriptError();
   }
 
-  Process(fs::PathFromUser(patharg));
+  auto path = fs::PathFromUser(patharg);
+  Process(path);
   
   std::ostringstream os;
   os << "WIPE finished (okay on: "
      << dirs << " directories, " << files 
      << " files / failures: " << failed << ").";
   control.Reply(ftp::CommandOkay, os.str());
+  
+  logs::Event(recursive ? "WIPE-r" : "WIPE", path, client.User().Name(),
+              client.User().PrimaryGroup(), client.User().Tagline());
 }
 
 } /* site namespace */

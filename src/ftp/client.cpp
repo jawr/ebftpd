@@ -28,6 +28,7 @@
 #include "exec/cscript.hpp"
 #include "util/net/resolver.hpp"
 #include "acl/misc.hpp"
+#include "acl/group.hpp"
 
 namespace ftp
 {
@@ -89,10 +90,15 @@ void Client::SetLoggedIn(bool kicked)
     SetIdleTimeout(cfg::Get().IdleTimeout().Timeout());
   else
     SetIdleTimeout(boost::posix_time::seconds(user->IdleTime()));
-  
-  boost::lock_guard<boost::mutex> lock(mutex);
-  state = ClientState::LoggedIn;
-  loggedInAt = boost::posix_time::second_clock::local_time();
+
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    state = ClientState::LoggedIn;
+    loggedInAt = boost::posix_time::second_clock::local_time();
+  }
+
+  logs::Event("LOGIN", Ident() + '@' + Hostname(), IP(), user->Name(), 
+              acl::GIDToName(user->PrimaryGID()), user->Tagline());
 }
 
 void Client::SetWaitingPassword(const acl::User& user, bool kickLogin)
@@ -478,6 +484,9 @@ void Client::InnerRun()
     
   DisplayBanner();
   Handle();
+  
+  logs::Event("LOGOUT", Ident() + '@' + Hostname(), IP(), user->Name(), 
+              acl::GIDToName(user->PrimaryGID()), user->Tagline());
 }
 
 void Client::Run()

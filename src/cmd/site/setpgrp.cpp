@@ -3,6 +3,7 @@
 #include "acl/user.hpp"
 #include "acl/group.hpp"
 #include "util/error.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -35,6 +36,7 @@ void SETPGRPCommand::Execute()
   if (oldGID != -1) os << "Moved old primary group " << acl::GIDToName(oldGID) << " to secondary.\n";
   os << "Set primary group for " << args[1] << " to: " << args[2];
   control.Reply(ftp::CommandOkay, os.str());
+  logs::Siteop(client.User().Name(), "SETPGRP", user->Name(), user->PrimaryGroup());
 }
 
 }

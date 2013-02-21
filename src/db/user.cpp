@@ -66,14 +66,11 @@ void User::SaveFlags()
   SaveField("flags");
 }
 
-void User::SavePrimaryGID()
+void User::SaveGIDs()
 {
-  SaveField("primary gid");
-}
-
-void User::SaveSecondaryGIDs()
-{
-  SaveField("secondary gids");
+  db::NoErrorConnection conn;
+  conn.SetFields("users", QUERY("uid" << user.id), user, { "primary gid", "secondary gids", "gadmin gids" });
+  UpdateLog();
 }
 
 void User::SaveGadminGIDs()
@@ -153,29 +150,11 @@ void User::SaveRatio()
 
 namespace
 {
-
-struct AsyncTasks : public util::FutureMinder
-{
-  ~AsyncTasks()
-  {
-    try
-    {
-      logs::debug << "Finalising asyncrhonous database tasks.." << logs::endl;
-    }
-    catch (...)
-    {
-    }
-  }
-};
-
-
 util::FutureMinder asyncTasks;
 }
 
 void User::IncrCredits(const std::string& section, long long kBytes)
 {
-  // in the old thread pool design this used be done in a separate thread
-  // this may need to be changed to be async again.
   auto doIncrement = [section, kBytes](acl::UserID uid)
     {
       db::NoErrorConnection conn;

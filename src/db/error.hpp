@@ -14,7 +14,7 @@ namespace db
 struct LastError : public mongo::BSONObj
 {
   explicit LastError(const mongo::BSONObj& errObj) : mongo::BSONObj(errObj) { }
-  bool Okay() const { return (*this)["ok"].Number() == 1.0; }
+  bool Okay() const { return (*this)["err"].isNull(); }
   int NumChanged() const { return (*this)["n"].Int(); }
 };
 

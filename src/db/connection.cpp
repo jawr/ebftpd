@@ -324,7 +324,7 @@ int Connection::InsertAutoIncrement(const std::string& collection,
     {
       scopedConn->conn().insert(ns, bab.obj());
       auto err = GetLastError();
-      if (!err["err"].isNull())
+      if (!err.Okay())
       {
         if (err["code"].Number() == 11000)
         {

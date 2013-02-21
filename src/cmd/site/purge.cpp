@@ -1,4 +1,5 @@
 #include "cmd/site/purge.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace site
 {
@@ -15,6 +16,7 @@ void PURGECommand::Execute()
   {
     user->Purge();
     control.Reply(ftp::CommandOkay, "User " + args[1] + " has been purged.");
+    logs::Siteop(client.User().Name(), "PURGE", user->Name());
   }
 }
 
