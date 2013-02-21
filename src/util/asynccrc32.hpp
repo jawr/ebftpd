@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <algorithm>
-#include <atomic>
 #include <cassert>
 #include <string>
 #include <cstdint>
@@ -23,7 +22,7 @@ class AsyncCRC32 : public CRC32
   struct Buffer
   {
     size_t len;
-    std::atomic<bool> empty;
+    bool empty;
     DataVec data;
     
     Buffer(size_t bufferSize) : 
@@ -35,8 +34,8 @@ class AsyncCRC32 : public CRC32
 
   typedef std::vector<Buffer*> QueueVec;
   
-  std::atomic<bool> finished;
-  std::atomic<unsigned> pending;
+  bool finished;
+  unsigned pending;
   mutable boost::mutex mutex;
   mutable boost::condition_variable readCond;
   mutable boost::condition_variable writeCond;
@@ -55,13 +54,17 @@ class AsyncCRC32 : public CRC32
         {
           if (finished) break;
           readCond.wait(lock);
+          if (finished) break;
         }
       }
-
+      
       CRC32::Update((*readIt)->data.data(), (*readIt)->len);
 
+      mutex.lock();
       (*readIt)->empty = true;
       --pending;
+      mutex.unlock();
+
       writeCond.notify_one();
       if (++readIt == queue.end()) readIt = queue.begin();
     }
@@ -90,7 +93,10 @@ public:
   
   ~AsyncCRC32()
   {
+    mutex.lock();
     finished = true;
+    mutex.unlock();
+    
     readCond.notify_one();
     thread.join();
     for (auto buf : queue) delete buf;
@@ -102,14 +108,18 @@ public:
     
     {
       boost::unique_lock<boost::mutex> lock(mutex);
-      if (!(*writeIt)->empty) writeCond.wait(lock);
+      while (!(*writeIt)->empty) writeCond.wait(lock);
     }
 
     std::copy(&bytes[0], &bytes[len], (*writeIt)->data.begin());
 
     (*writeIt)->len = len;
-    (*writeIt)->empty = false;
+
+    mutex.lock();
+    (*writeIt)->empty = false;    
     ++pending;
+    mutex.unlock();
+    
     readCond.notify_one();
     if (++writeIt == queue.end()) writeIt = queue.begin();
   }

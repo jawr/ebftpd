@@ -113,8 +113,10 @@ void RANKSCommand::Execute()
   long long totalXfertime = 0;
 
   int index = 0;
+  unsigned total = 0;
   for (const auto& u : users)
   {
+    if (u.Files() <= 0) break;
     if (index < number)
     {
       auto user = acl::User::Load(u.ID());      
@@ -133,10 +135,11 @@ void RANKSCommand::Execute()
     totalBytes += u.KBytes();
     totalFiles += u.Files();
     totalXfertime += u.Xfertime();
+    ++total;
   }
   
   text::TemplateSection& foot = templ->Foot();
-  foot.RegisterValue("users", users.size());
+  foot.RegisterValue("users", total);
   foot.RegisterSize("size", totalBytes);
   foot.RegisterValue("files" ,totalFiles);
   foot.RegisterSpeed("speed", totalXfertime == 0 ? totalBytes : totalBytes / (totalXfertime / 1000.0));

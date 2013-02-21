@@ -228,7 +228,7 @@ void STORCommand::Execute()
 
   bool calcCrc = CalcCRC(path);
   std::unique_ptr<util::CRC32> crc32(cfg::Get().AsyncCRC() ? 
-                                     new util::AsyncCRC32(bufferSize, 3) :
+                                     new util::AsyncCRC32(bufferSize, 10) :
                                      new util::CRC32());
   bool aborted = false;
   fileOkay = false;

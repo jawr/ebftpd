@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <functional>
+#include <cmath>
 #include <mongo/client/dbclient.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "db/stats/stats.hpp"
@@ -48,7 +49,7 @@ void Update(const acl::User& user, long long kBytes, long long xfertime,
 
 void UploadDecr(const acl::User& user, long long kBytes, time_t modTime, const std::string& section)
 {
-  long long xfertime = 0;
+  long long xfertime = -1;
   util::Time t(modTime);
 
   auto cmd = BSON("aggregate" << "transfers" << "pipeline" << 
@@ -73,25 +74,25 @@ void UploadDecr(const acl::User& user, long long kBytes, time_t modTime, const s
       {
         long long totalXfertime = elems[0]["total xfertime"].Long();
         if (totalXfertime > 0)
-          xfertime = kBytes / elems[0]["total kbytes"].Long() / totalXfertime;
+          xfertime = std::ceil(static_cast<double>(totalXfertime) / elems[0]["total kbytes"].Long() * kBytes);
         else
-          xfertime = kBytes / elems[0]["total kbytes"].Long();
+          xfertime = 0;
       }
       catch (const mongo::DBException& e)
       {
-        LogException("Unserialize uploa decr avg speed", e, result);
+        LogException("Unserialize upload decr avg speed", e, result);
       }
     }
 
-    if (xfertime < 0) xfertime = 0;
   }
 
-  if (!xfertime)
+  if (xfertime < 0)
   {
     namespace pt = boost::posix_time;
     logs::db << "Failed to adjust xfertime on file deletion, "
              << "no data available for that date: " 
              << pt::to_simple_string(pt::from_time_t(modTime)) << logs::endl;
+    xfertime = 0;
   }
 
   assert(!section.empty());

@@ -105,8 +105,10 @@ void GPRANKSCommand::Execute()
   long long totalXfertime = 0;
 
   int index = 0;
+  unsigned total = 0;
   for (const auto& g : groups)
   {
+    if (g.Files() <= 0) break;
     if (index < number)
     {
       auto group = acl::Group::Load(g.ID());
@@ -123,10 +125,11 @@ void GPRANKSCommand::Execute()
     totalKBytes += g.KBytes();
     totalFiles += g.Files();
     totalXfertime += g.Xfertime();
+    ++total;
   }
   
   text::TemplateSection& foot = templ->Foot();
-  foot.RegisterValue("groups", groups.size());
+  foot.RegisterValue("groups", total);
   foot.RegisterSize("size", totalKBytes);
   foot.RegisterValue("files" ,totalFiles);
   foot.RegisterSpeed("speed", totalXfertime == 0 ? totalKBytes : totalKBytes / (totalXfertime / 1000.0));
