@@ -4,14 +4,13 @@
 {% body %}
 | User: {{ user|left|15 }} Logged in: {{ logged_in }} times.
 | Created: {{ created }}
-| Last login: {{ last_login|8 }}
+| Last login: {{ last_login }}
 | Expires: {{ expires }}
 | Created by: {{ creator }}
 | Flags: {{ flags }}
 | Ratio: {{ ratio }}
 | Credits: {{ credits|gb }}
-| Primary group: {{ primary_group }}
-| Secondary groups: {{ secondary_groups }}
+| Groups: {{ groups }}
 | Tagline: {{ tagline }}
 | Comment: {{ comment }}
 | Weekly allotment: {{ weekly_allot }}

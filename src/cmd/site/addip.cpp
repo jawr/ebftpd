@@ -39,6 +39,13 @@ void ADDIPCommand::Execute()
   for (auto it = args.begin() + 2; it != args.end(); ++it)
   {
     util::Error ok;
+    
+    if (it->find('@') == std::string::npos)
+    {
+      os << "\nIP " << *it << " not added. Must be in format ident@address.";
+      continue;
+    }
+
     if (!acl::SecureIP(client.User(), *it, strength))
     {
       os << "\nIP " << *it << " not added: Must contain " << strength.String() << ".";
