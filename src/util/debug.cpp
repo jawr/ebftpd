@@ -16,15 +16,15 @@ bool DebuggerAttached()
 	{
 		pid_t ppid = getppid();
 		
-		if (ptrace(PTRACE_ATTACH, ppid, nullptr, nullptr) < 0)
+		if (ptrace(PT_ATTACH, ppid, 0, 0) < 0)
 		{
 			if (errno == EPERM) _exit(1);
 		}
 		else
 		{
-			waitpid(ppid, nullptr, 0);
-			ptrace(PTRACE_CONT, ppid, nullptr);
-			ptrace(PTRACE_DETACH, ppid, nullptr, nullptr);
+			waitpid(ppid, 0, 0);
+			ptrace(PT_CONTINUE, ppid, 0);
+			ptrace(PT_DETACH, ppid, 0, 0);
 		}
 		
 		_exit(0);
