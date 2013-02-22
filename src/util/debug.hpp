@@ -95,6 +95,8 @@ inline std::string Demangle(const char* mangled)
   return std::string(mangled);
 }
 
+bool DebuggerAttached();
+
 } /* debug namespace */
 } /* util namespace */
 

@@ -2,13 +2,10 @@
 #include <cerrno>
 #include <stdexcept>
 #include <exception>
-#include <sys/ptrace.h>
-
 #include "ftp/task/task.hpp"
 #include "signals/signal.hpp"
 #include "logs/logs.hpp"
 #include "util/debug.hpp"
-
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "cfg/error.hpp"
@@ -165,8 +162,7 @@ util::Error Initialise()
   sigfillset(&set);
 
   // allow interruption inside gdb
-  int ret = ptrace(PT_TRACE_ME, 0, nullptr, 0);
-  if (ret < 0 && errno == EPERM)
+  if (util::debug::DebuggerAttached())
   {
     sigdelset(&set, SIGINT);
   }
