@@ -12,42 +12,42 @@ namespace db
 
 namespace
 {
-std::shared_ptr<UserCacheBase> cache(new UserNoCache());
+std::shared_ptr<UserCacheBase> userCache(new UserNoCache());
 }
 
-void SetUserCache(const std::shared_ptr<UserCacheBase>& newCache)
+void SetUserCache(const std::shared_ptr<UserCacheBase>& cache)
 {
-  cache = newCache;
+  userCache = cache;
 }
 
 std::string UIDToName(acl::UserID uid)
 {
-  assert(cache);
-  return cache->UIDToName(uid);
+  assert(userCache);
+  return userCache->UIDToName(uid);
 }
 
 acl::UserID NameToUID(const std::string& name)
 {
-  assert(cache);
-  return cache->NameToUID(name);
+  assert(userCache);
+  return userCache->NameToUID(name);
 }
 
 acl::GroupID UIDToPrimaryGID(acl::UserID uid)
 {
-  assert(cache);
-  return cache->UIDToPrimaryGID(uid);
+  assert(userCache);
+  return userCache->UIDToPrimaryGID(uid);
 }
 
 bool IdentIPAllowed(const std::string& identAddress)
 {
-  assert(cache);
-  return cache->IdentIPAllowed(identAddress);
+  assert(userCache);
+  return userCache->IdentIPAllowed(identAddress);
 }
 
 bool IdentIPAllowed(const std::string& identAddress, acl::UserID uid)
 {
-  assert(cache);
-  return cache->IdentIPAllowed(identAddress, uid);
+  assert(userCache);
+  return userCache->IdentIPAllowed(identAddress, uid);
 }
 
 } /* db namespace */

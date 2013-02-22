@@ -333,7 +333,7 @@ namespace
 {
 
 template <typename T>
-std::vector<T> GetGeneric(const std::string& multiStr, const mongo::BSONObj* fields)
+std::vector<T> GetUsersGeneric(const std::string& multiStr, const mongo::BSONObj* fields)
 {
   std::vector<std::string> toks;
   boost::split(toks, multiStr, boost::is_any_of(" "), boost::token_compress_on);
@@ -376,12 +376,12 @@ std::vector<T> GetGeneric(const std::string& multiStr, const mongo::BSONObj* fie
 std::vector<acl::UserID> GetUIDs(const std::string& multiStr)
 {
   auto fields = BSON("uid" << 1);
-  return GetGeneric<acl::UserID>(multiStr, &fields);
+  return GetUsersGeneric<acl::UserID>(multiStr, &fields);
 }
 
 std::vector<acl::UserData> GetUsers(const std::string& multiStr)
 {
-  return GetGeneric<acl::UserData>(multiStr, nullptr);
+  return GetUsersGeneric<acl::UserData>(multiStr, nullptr);
 }
 
 } /* db namespace */

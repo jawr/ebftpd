@@ -159,7 +159,7 @@ namespace
 {
 
 template <typename T>
-std::vector<T> GetGeneric(const std::string& multiStr, const mongo::BSONObj* fields)
+std::vector<T> GetGroupsGeneric(const std::string& multiStr, const mongo::BSONObj* fields)
 {
   std::vector<std::string> toks;
   boost::split(toks, multiStr, boost::is_any_of(" "), boost::token_compress_on);
@@ -187,12 +187,12 @@ std::vector<T> GetGeneric(const std::string& multiStr, const mongo::BSONObj* fie
 std::vector<acl::GroupID> GetGIDs(const std::string& multiStr)
 {
   auto fields = BSON("gid" << 1);
-  return GetGeneric<acl::GroupID>(multiStr, &fields);
+  return GetGroupsGeneric<acl::GroupID>(multiStr, &fields);
 }
 
 std::vector<acl::GroupData> GetGroups(const std::string& multiStr)
 {
-  return GetGeneric<acl::GroupData>(multiStr, nullptr);
+  return GetGroupsGeneric<acl::GroupData>(multiStr, nullptr);
 }
 
 } /* acl namespace */

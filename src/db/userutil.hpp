@@ -16,7 +16,7 @@ namespace db
 
 struct UserCacheBase;
 
-void SetUserCache(const std::shared_ptr<UserCacheBase>& newCache);
+void SetUserCache(const std::shared_ptr<UserCacheBase>& cache);
 
 std::string UIDToName(acl::UserID uid);
 acl::UserID NameToUID(const std::string& name);

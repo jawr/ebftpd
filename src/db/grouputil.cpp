@@ -7,24 +7,24 @@ namespace db
 
 namespace
 {
-std::shared_ptr<GroupCacheBase> cache(new GroupNoCache());
+std::shared_ptr<GroupCacheBase> groupCache(new GroupNoCache());
 }
 
-void SetGroupCache(const std::shared_ptr<GroupCacheBase>& newCache)
+void SetGroupCache(const std::shared_ptr<GroupCacheBase>& cache)
 {
-  cache = newCache;
+  groupCache = cache;
 }
 
 std::string GIDToName(acl::GroupID gid)
 {
-  assert(cache);
-  return cache->GIDToName(gid);
+  assert(groupCache);
+  return groupCache->GIDToName(gid);
 }
 
 acl::GroupID NameToGID(const std::string& name)
 {
-  assert(cache);
-  return cache->NameToGID(name);
+  assert(groupCache);
+  return groupCache->NameToGID(name);
 }
 
 } /* db namespace */
