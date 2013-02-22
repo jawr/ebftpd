@@ -67,6 +67,7 @@ util::Error Daemonise()
   std::cout.setstate(std::ios::failbit);
   std::cerr.setstate(std::ios::failbit);
   std::cin.setstate(std::ios::failbit);
+  std::clog.setstate(std::ios::failbit);
   
   return util::Error::Success();
 }

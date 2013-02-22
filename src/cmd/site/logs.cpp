@@ -73,7 +73,7 @@ void LOGSCommand::Show(const std::string& path)
   }
   catch (const util::SystemError& e)
   {
-    control.Reply(ftp::ActionNotOkay, "Unable to open log: " + e.Message());
+    control.Format(ftp::ActionNotOkay, "Unable to open log: %1%: %2%", path, e.Message());
     return;
   }
 }
@@ -86,15 +86,14 @@ void LOGSCommand::Execute()
   
   std::string filename;  
   if (log == "error") filename = config.ErrorLog().Name();
-  else if (log == "security") filename = config.ErrorLog().Name();
+  else if (log == "security") filename = config.SecurityLog().Name();
   else if (log == "siteop") filename = config.SiteopLog().Name();
   else if (log == "events") filename = config.EventLog().Name();
   else if (log == "db") filename = config.DatabaseLog().Name();
   else if (log == "debug") filename = config.DebugLog().Name();
   else throw cmd::SyntaxError();
   
-  filename += ".log";  
-  Show(util::path::Join(config.Datapath(), filename));
+  Show(util::path::Join(config.Datapath(), "logs/" + filename + ".log"));
 }
 
 } /* site namespace */

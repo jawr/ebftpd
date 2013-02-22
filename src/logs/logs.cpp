@@ -17,33 +17,38 @@ Logger error;
 Logger debug;
 Logger db;
 
+std::shared_ptr<StreamSink> consoleSink;
+
 Format Database([](const std::string& message) { db.Write("message", message); });
 Format Error([](const std::string& message) { error.Write("message", message); });
 Format Debug([](const std::string& message) { debug.Write("message", message); });
 
 void InitialisePreConfig()
 {
-  error.PushSink(std::make_shared<StreamSink>(Stream(&std::clog, false)));
-  debug.PushSink(std::make_shared<StreamSink>(Stream(&std::clog, false)));
+  consoleSink = std::make_shared<StreamSink>(Stream(&std::clog, false));
+  error.PushSink(consoleSink);
+  debug.PushSink(consoleSink);
 }
 
 void InitialiseLog(Logger& logger, const cfg::setting::Log& config)
 {
   if (config.Console())
   {
-    logger.PushSink(std::make_shared<StreamSink>(Stream(&std::clog, false)));
+    logger.PushSink(consoleSink);
   }
   
   if (config.File())
   {
-    Stream stream(new std::ofstream(util::path::Join(cfg::Get().Datapath(), config.Name() + ".log").c_str()), true);
+    Stream stream(new std::ofstream(util::path::Join(cfg::Get().Datapath(), 
+              "/logs/" + config.Name() + ".log").c_str()), true);
     logger.PushSink(std::make_shared<StreamSink>(stream));
   }
   
-#if !defined(EXTERNAL_TOOL)
+#ifndef EXTERNAL_TOOL
   if (config.Database())
   {
-    logger.PushSink(std::make_shared<db::LogSink>("log." + config.Name(), config.CollectionSize()));
+    logger.PushSink(std::make_shared<db::LogSink>("log." + config.Name(), 
+              config.CollectionSize()));
   }
 #endif
 }
@@ -75,10 +80,6 @@ bool InitialisePostConfig()
 #endif
   
   return true;
-}
-
-void DisableConsole()
-{
 }
 
 } /* logger namespace */

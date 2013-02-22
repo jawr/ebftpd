@@ -113,8 +113,6 @@ bool Daemonise(bool foreground)
       logs::Error("Failed to daemonise server process: %1%", e.Message());
       return false;
     }
-    else
-      logs::DisableConsole();
   }
   
   if (!pidfile.empty())

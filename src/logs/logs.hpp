@@ -12,7 +12,6 @@ namespace logs
 {
 
 void Initialise(const std::string& logsPath);
-void DisableConsole();
 
 /*
  * log types:
