@@ -62,7 +62,7 @@ bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
   }
   catch (const util::net::NetworkError& e)
   {
-    logs::Error("Unable to listen for clients on %1% : %2%", ep, e.Message());
+    logs::Error("Unable to listen for clients on %1%: %2%", ep, e.Message());
     return false;
   }
   

@@ -327,7 +327,7 @@ void Client::LookupIdent()
   }
   catch (util::net::NetworkError& e)
   {
-    logs::Error("Unable to lookup ident for connection from %1 : %2%",
+    logs::Error("Unable to lookup ident for connection from %1%: %2%",
                 control.RemoteEndpoint(), e.Message());
   }
 }

@@ -24,7 +24,7 @@ Reader::~Reader()
   }
   catch (const util::SystemError& e)
   {
-    logs::Error("Error while closing child process executed by %1% : %2%", 
+    logs::Error("Error while closing child process executed by %1%: %2%", 
                 client.User().Name(), boost::join(argv, " "));
   }
 }

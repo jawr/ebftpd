@@ -49,7 +49,7 @@ bool Cscript(ftp::Client& client, const std::string& group,
   {
     if (type == CscriptType::PRE)
       client.Control().Reply(failCode, "Unable to execute cscript: " + e.Message());
-    logs::Error("Failed to execute cscript: %1% : %2%",
+    logs::Error("Failed to execute cscript: %1%: %2%",
                 boost::join(argv, " "), e.Message());
     return false;
   }

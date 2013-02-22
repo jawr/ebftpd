@@ -97,12 +97,12 @@ Config::Config(const std::string& configPath, bool tool) :
     } 
     catch (const ConfigError& e)
     {
-      logs::Error("Error in config at line %1% : %2%", i, e.Message());
+      logs::Error("Error in config at line %1%: %2%", i, e.Message());
       okay = false;
     }
     catch (const std::bad_cast& e)
     {
-      logs::Error("Error in config at line %1% : Invalid value", i);
+      logs::Error("Error in config at line %1%: Invalid value", i);
       okay = false;
     }
   }

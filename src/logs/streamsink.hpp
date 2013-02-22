@@ -5,6 +5,7 @@
 #include <ostream>
 #include <boost/thread/tss.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 #include "logs/sink.hpp"
 
 namespace logs
