@@ -4,7 +4,7 @@
 #include <memory>
 #include <cstdio>
 #include <sys/types.h>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <boost/noncopyable.hpp>
 #include "util/timepair.hpp"
 #include "util/net/endpoint.hpp"
@@ -40,7 +40,7 @@ private:
   static const size_t defaultBufferSize = BUFSIZ;
 
   int socket;
-  boost::mutex socketMutex;
+  std::mutex socketMutex;
   std::unique_ptr<TLSSocket> tls;
   util::TimePair timeout;
   Endpoint localEndpoint;

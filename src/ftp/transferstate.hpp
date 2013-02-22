@@ -2,9 +2,7 @@
 #define __FTP_TRANSFERSTATE_HPP
 
 #include <ios>
-#include <boost/thread/mutex.hpp>
-//#include <boost/thread/lock_algorithms.hpp>
-#include <boost/thread/locks.hpp>
+#include <mutex>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace ftp
@@ -20,7 +18,7 @@ enum class TransferType
 
 class TransferState
 {
-  mutable boost::mutex mutex;
+  mutable std::mutex mutex;
   TransferType type;
   std::streamsize bytes;
   boost::posix_time::ptime startTime;
@@ -38,15 +36,15 @@ public:
   TransferState& operator=(const TransferState& rhs)
   {
     boost::lock(mutex, rhs.mutex);
-    boost::lock_guard<boost::mutex> lock1(mutex, boost::adopt_lock);
-    boost::lock_guard<boost::mutex> lock2(rhs.mutex, boost::adopt_lock);
+    std::lock_guard<std::mutex> lock1(mutex, std::adopt_lock);
+    std::lock_guard<std::mutex> lock2(rhs.mutex, std::adopt_lock);
     Assign(rhs);
     return *this;
   }
 
   TransferState(const TransferState& other)
   {
-    boost::lock_guard<boost::mutex> lock(other.mutex);
+    std::lock_guard<std::mutex> lock(other.mutex);
     Assign(other);
   }
 
@@ -55,7 +53,7 @@ public:
   
   void Start(TransferType type)
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     this->type = type;
     bytes = 0;
     startTime = boost::posix_time::microsec_clock::local_time();
@@ -63,14 +61,14 @@ public:
 
   void Stop()
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     type = TransferType::None;
     endTime = boost::posix_time::microsec_clock::local_time();
   }
 
   void Update(std::streamsize bytes)
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     this->bytes += bytes;
   }
   
@@ -79,19 +77,19 @@ public:
   
   boost::posix_time::ptime StartTime() const
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return startTime;
   }
   
   boost::posix_time::ptime EndTime() const
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return endTime;
   }
   
   boost::posix_time::time_duration Duration() const
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (type == TransferType::None) return endTime - startTime;
     else return boost::posix_time::microsec_clock::local_time() - startTime;
   }

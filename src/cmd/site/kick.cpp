@@ -26,7 +26,7 @@ void KICKCommand::Execute()
     throw cmd::NoPostScriptError();
   } 
 
-  boost::unique_future<unsigned> future;
+  std::future<unsigned> future;
   std::make_shared<ftp::task::KickUser>(user->ID(), future)->Push();
 
   future.wait();

@@ -6,14 +6,14 @@
 #include <future>
 #include <chrono>
 #include <boost/thread/once.hpp>
-#include <boost/thread/future.hpp>
+#include <future>
 
 namespace util
 {
 
 class FutureMinder
 {
-  boost::mutex mutex;
+  std::mutex mutex;
   boost::once_flag initOnce;
   std::vector<std::future<void>> futures;
 
@@ -54,7 +54,7 @@ public:
 
   void Assign(std::future<void>&& future)
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     futures.emplace_back(std::move(future));
     EraseReady();
   }

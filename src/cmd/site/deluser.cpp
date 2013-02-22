@@ -28,7 +28,7 @@ void DELUSERCommand::Execute()
   
   user->AddFlag(acl::Flag::Deleted);
 
-  boost::unique_future<unsigned> future;
+  std::future<unsigned> future;
   std::make_shared<ftp::task::KickUser>(user->ID(), future)->Push();
   
   future.wait();

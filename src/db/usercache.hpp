@@ -4,7 +4,7 @@
 #include <string>
 #include <functional>
 #include <unordered_map>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include "acl/types.hpp"
 #include "db/replicable.hpp"
 
@@ -30,16 +30,16 @@ class UserCache :
   public UserCacheBase,
   public Replicable
 {
-  boost::mutex namesMutex;
+  std::mutex namesMutex;
   std::unordered_map<acl::UserID, std::string> names;
 
-  boost::mutex uidsMutex;
+  std::mutex uidsMutex;
   std::unordered_map<std::string, acl::UserID> uids;
   
-  boost::mutex primaryGidsMutex;
+  std::mutex primaryGidsMutex;
   std::unordered_map<acl::UserID, acl::GroupID> primaryGids;
 
-  boost::mutex ipMasksMutex;
+  std::mutex ipMasksMutex;
   std::unordered_map<acl::UserID, std::vector<std::string>> ipMasks;
   
   std::function<void(acl::UserID)> updatedCallback;

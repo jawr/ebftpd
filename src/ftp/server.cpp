@@ -1,7 +1,6 @@
 #include <cassert>
 #include <memory>
 #include <boost/thread/thread.hpp>
-#include <boost/thread/locks.hpp>
 #include <sys/select.h>
 #include "ftp/server.hpp"
 #include "ftp/client.hpp"
@@ -37,7 +36,7 @@ void Server::HandleTasks()
   while (true)
   {
     {
-      boost::lock_guard<boost::mutex> lock(taskMtx);
+      std::lock_guard<std::mutex> lock(taskMtx);
       if (queue.empty()) break;
       task = queue.front();
       queue.pop();
@@ -71,7 +70,7 @@ bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
 
 void Server::HandleClients()
 {
-  boost::lock_guard<boost::mutex> lock(clientMtx);
+  std::lock_guard<std::mutex> lock(clientMtx);
   for (ClientList::iterator it = clients.begin();
        it != clients.end();)
   {
@@ -110,7 +109,7 @@ void Server::AcceptClient(util::net::TCPListener& server)
   if (client->Accept(server)) 
   {
     client->Start();
-    boost::lock_guard<boost::mutex> lock(clientMtx);
+    std::lock_guard<std::mutex> lock(clientMtx);
     clients.push_back(client.release());
   }
 }

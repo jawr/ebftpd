@@ -86,7 +86,7 @@ void PASSCommand::Execute()
   if (client.KickLogin())
   {
     logs::Debug("%1% requested a login kick.", client.User().Name());
-    boost::unique_future<ftp::task::LoginKickUser::Result> future;
+    std::future<ftp::task::LoginKickUser::Result> future;
     std::make_shared<ftp::task::LoginKickUser>(client.User().ID(), future)->Push();    
     future.wait();
     kickResult = future.get();

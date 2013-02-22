@@ -4,8 +4,7 @@
 #include <cassert>
 #include <vector>
 #include <cstdint>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
+#include <mutex>
 #include "util/net/endpoint.hpp"
 #include "cfg/get.hpp"
 
@@ -23,7 +22,7 @@ class AddrAllocator;
 
 class AddrAllocatorImpl
 {
-  boost::mutex mutex;
+  std::mutex mutex;
   std::vector<std::string> addresses;
   std::vector<std::string>::const_iterator it;
   
@@ -32,7 +31,7 @@ class AddrAllocatorImpl
 public:
   void SetAddrs(const std::vector<std::string>& addresses)
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     this->addresses = addresses;
     it  = this->addresses.begin();
   }

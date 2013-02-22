@@ -59,7 +59,7 @@ void Client::SetState(ClientState state)
   bool logout;
   
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     logout = state == ClientState::Finished && this->state == ClientState::LoggedIn;
     this->state = state;
   }
@@ -99,7 +99,7 @@ void Client::SetLoggedIn(bool kicked)
     SetIdleTimeout(boost::posix_time::seconds(user->IdleTime()));
 
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     state = ClientState::LoggedIn;
     loggedInAt = boost::posix_time::second_clock::local_time();
   }
@@ -111,7 +111,7 @@ void Client::SetLoggedIn(bool kicked)
 void Client::SetWaitingPassword(const acl::User& user, bool kickLogin)
 {
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     state = ClientState::WaitingPassword;
     this->user = std::move(user);
     this->kickLogin = kickLogin;
@@ -276,7 +276,7 @@ bool Client::ReloadUser()
   
   logs::Debug("Reloaded user profile");
   
-  boost::lock_guard<boost::mutex> lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   user = std::move(*optUser);
   
   return true;
@@ -379,14 +379,14 @@ void Client::HostnameLookup()
     std::string hostname = util::net::ReverseResolve(util::net::IPAddress(ip));
     
     {
-      boost::lock_guard<boost::mutex> lock(mutex);
+      std::lock_guard<std::mutex> lock(mutex);
       this->hostname = hostname;
     }
   }
   catch (const util::net::NetworkError&)
   {
     {
-      boost::lock_guard<boost::mutex> lock(mutex);
+      std::lock_guard<std::mutex> lock(mutex);
       this->hostname = ip;
     }
   }
@@ -394,7 +394,7 @@ void Client::HostnameLookup()
 
 std::string Client::HostnameAndIP() const
 {
-  boost::lock_guard<boost::mutex> lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   std::ostringstream os;
   os << hostname;
   if (ip != hostname)
@@ -416,7 +416,7 @@ bool Client::IdntUpdate(const std::string& ident, std::string ip,
   }
   
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     this->ident = ident;
     this->ip = ip;
     if (ip != hostname) this->hostname = hostname;

@@ -8,7 +8,7 @@ namespace cmd { namespace site
 void RELOADCommand::Execute()
 {
   typedef ftp::task::ReloadConfig::Result Result;
-  boost::unique_future<std::pair<Result, Result>> future;
+  std::future<std::pair<Result, Result>> future;
   std::make_shared<ftp::task::ReloadConfig>(future)->Push();
   
   future.wait();

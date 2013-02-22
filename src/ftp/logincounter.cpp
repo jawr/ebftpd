@@ -1,5 +1,4 @@
 #include <cassert>
-#include <boost/thread/locks.hpp>
 #include "ftp/logincounter.hpp"
 #include "cfg/get.hpp"
 #include "ftp/counter.hpp"
@@ -10,7 +9,7 @@ namespace ftp
 CounterResult LoginCounter::Start(acl::UserID uid, int limit, bool kickLogin, bool exempt)
 {
   const cfg::Config& config = cfg::Get();
-  boost::lock_guard<boost::mutex> lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   int& count = personal[uid];
   if (limit != -1 && count - kickLogin >= limit)
   {
@@ -29,7 +28,7 @@ CounterResult LoginCounter::Start(acl::UserID uid, int limit, bool kickLogin, bo
 
 void LoginCounter::Stop(acl::UserID uid)
 {
-  boost::lock_guard<boost::mutex> lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   int& count = personal[uid];
   assert(count > 0);
   --count;

@@ -5,8 +5,7 @@
 #include <future>
 #include <memory>
 #include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
+#include <mutex>
 #include "db/replicable.hpp"
 
 namespace db

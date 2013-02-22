@@ -4,8 +4,7 @@
 #include <memory>
 #include <ostream>
 #include <boost/thread/tss.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
+#include <mutex>
 #include "logs/sink.hpp"
 
 namespace logs
@@ -13,13 +12,13 @@ namespace logs
 
 class Stream
 {
-  std::shared_ptr<boost::mutex> mutex;
+  std::shared_ptr<std::mutex> mutex;
   std::shared_ptr<std::ostream> stream;
   bool takeOwnership;
   
 public:
   Stream(std::ostream* stream, bool takeOwnership = true) :
-    mutex(new boost::mutex())
+    mutex(new std::mutex())
   {
     if (takeOwnership) this->stream.reset(stream);
     else this->stream.reset(stream, [](void*){});
@@ -27,7 +26,7 @@ public:
   
   void Write(const std::string& line)
   {
-    boost::lock_guard<boost::mutex> lock(*mutex);
+    std::lock_guard<std::mutex> lock(*mutex);
     *stream << line << std::endl;
   }
 };

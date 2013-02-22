@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <boost/thread/locks.hpp>
 #include "ftp/speedcounter.hpp"
 #include "stats/util.hpp"
 #include "cfg/setting.hpp"
@@ -11,7 +10,7 @@ boost::posix_time::time_duration
 SpeedCounter::Update(const SpeedInfoOpt& last, const SpeedInfo& current, const SpeedLimitList& limits)
 {
   boost::posix_time::time_duration sleep = boost::posix_time::microseconds(0);
-  boost::lock_guard<boost::mutex> lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   for (const auto& limit : limits)
   {
     auto it = speeds.find(limit->Path());
@@ -39,7 +38,7 @@ void SpeedCounter::Clear(const SpeedInfoOpt& last, const SpeedLimitList& limits)
 {
   if (!last) return;
   
-  boost::lock_guard<boost::mutex> lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   for (const auto& limit : limits)
   {
     auto it = speeds.find(limit->Path());

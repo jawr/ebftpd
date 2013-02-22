@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <utility>
-#include <boost/thread/future.hpp>
+#include <future>
 #include "ftp/task/types.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
@@ -30,10 +30,10 @@ class KickUser : public Task
 {
   acl::UserID uid;
   bool oneOnly;
-  boost::promise<unsigned> promise;
+  std::promise<unsigned> promise;
   
 public:
-  KickUser(acl::UserID uid, boost::unique_future<unsigned>& future, bool oneOnly = false) : 
+  KickUser(acl::UserID uid, std::future<unsigned>& future, bool oneOnly = false) : 
     uid(uid), oneOnly(oneOnly) { future = promise.get_future(); }
   void Execute(Server& server);
 };
@@ -51,10 +51,10 @@ public:
   
 private:
   acl::UserID uid;
-  boost::promise<Result> promise;
+  std::promise<Result> promise;
   
 public:
-  LoginKickUser(acl::UserID uid, boost::unique_future<Result>& future) : uid(uid)
+  LoginKickUser(acl::UserID uid, std::future<Result>& future) : uid(uid)
   { future = promise.get_future(); }
   void Execute(Server& server);
 };
@@ -62,10 +62,10 @@ public:
 class GetOnlineUsers : public Task
 {
   std::vector<ftp::task::WhoUser>& users;
-  boost::promise<bool> promise;
+  std::promise<bool> promise;
   
 public:
-  GetOnlineUsers(std::vector<ftp::task::WhoUser>& users, boost::unique_future<bool>& future) : 
+  GetOnlineUsers(std::vector<ftp::task::WhoUser>& users, std::future<bool>& future) : 
     users(users) { future = promise.get_future(); }
     
   void Execute(Server& server);
@@ -75,10 +75,10 @@ class OnlineUserCount : public Task
 {
   int count;
   int allCount;
-  boost::promise<void> promise;
+  std::promise<void> promise;
   
 public:
-  OnlineUserCount(boost::unique_future<void>& future) :
+  OnlineUserCount(std::future<void>& future) :
     count(0), allCount(0)
   {
     future = promise.get_future();
@@ -98,10 +98,10 @@ public:
   enum class Result { Okay, Fail, StopStart };
 
 private:
-  boost::promise<std::pair<Result, Result>> promise;
+  std::promise<std::pair<Result, Result>> promise;
   
 public:
-  ReloadConfig(boost::unique_future<std::pair<Result, Result>>& future)
+  ReloadConfig(std::future<std::pair<Result, Result>>& future)
   { future = promise.get_future(); }
   
   void Execute(Server& server);

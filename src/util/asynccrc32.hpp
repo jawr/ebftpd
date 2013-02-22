@@ -8,8 +8,8 @@
 #include <cstdint>
 #include <array>
 #include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition_variable.hpp>
+#include <mutex>
+#include <condition_variable>
 #include "util/crc32.hpp"
 
 namespace util
@@ -36,9 +36,9 @@ class AsyncCRC32 : public CRC32
   
   bool finished;
   unsigned pending;
-  mutable boost::mutex mutex;
-  mutable boost::condition_variable readCond;
-  mutable boost::condition_variable writeCond;
+  mutable std::mutex mutex;
+  mutable std::condition_variable readCond;
+  mutable std::condition_variable writeCond;
   QueueVec queue;
   typename QueueVec::iterator readIt;
   typename QueueVec::iterator writeIt;
@@ -49,7 +49,7 @@ class AsyncCRC32 : public CRC32
     while (true)
     {
       {
-        boost::unique_lock<boost::mutex> lock(mutex);
+        std::unique_lock<std::mutex> lock(mutex);
         if ((*readIt)->empty)
         {
           if (finished) break;
@@ -72,7 +72,7 @@ class AsyncCRC32 : public CRC32
   
    void WaitPending() const
   {
-    boost::unique_lock<boost::mutex> lock(mutex);
+    std::unique_lock<std::mutex> lock(mutex);
     while (pending > 0) writeCond.wait(lock);
   }
   
@@ -107,7 +107,7 @@ public:
     assert(len <= (*writeIt)->data.size());
     
     {
-      boost::unique_lock<boost::mutex> lock(mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       while (!(*writeIt)->empty) writeCond.wait(lock);
     }
 

@@ -1,5 +1,5 @@
 #include <vector>
-#include <boost/thread/future.hpp>
+#include <future>
 #include <boost/optional.hpp>
 #include "cmd/site/swho.hpp"
 #include "acl/user.hpp"
@@ -21,7 +21,7 @@ namespace cmd { namespace site
 
 void SWHOCommand::Execute()
 {
-  boost::unique_future<bool> future;
+  std::future<bool> future;
   std::vector<ftp::task::WhoUser> whoUsers;
 
   std::make_shared<ftp::task::GetOnlineUsers>(whoUsers, future)->Push();

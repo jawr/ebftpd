@@ -1,4 +1,3 @@
-#include <boost/thread/locks.hpp>
 #include "db/groupcache.hpp"
 #include "db/connection.hpp"
 #include "util/string.hpp"
@@ -25,7 +24,7 @@ template <> GroupPair Unserialize<GroupPair>(const mongo::BSONObj& obj)
 std::string GroupCache::GIDToName(acl::GroupID gid)
 {
   if (gid == -1) return "NoGroup";
-  boost::lock_guard<boost::mutex> lock(namesMutex);
+  std::lock_guard<std::mutex> lock(namesMutex);
   auto it = names.find(gid);
   if (it == names.end()) return "unknown";
   return it->second;
@@ -33,7 +32,7 @@ std::string GroupCache::GIDToName(acl::GroupID gid)
 
 acl::GroupID GroupCache::NameToGID(const std::string& name)
 {
-  boost::lock_guard<boost::mutex> lock(gidsMutex);
+  std::lock_guard<std::mutex> lock(gidsMutex);
   auto it = gids.find(name);
   if (it == gids.end()) return -1;
   return it->second;
@@ -53,12 +52,12 @@ bool GroupCache::Replicate(const mongo::BSONElement& id)
     {
       // group found, refresh cached data
       {
-        boost::lock_guard<boost::mutex> lock(gidsMutex);
+        std::lock_guard<std::mutex> lock(gidsMutex);
         gids[data->name] = data->gid;
       }
       
       {
-        boost::lock_guard<boost::mutex> lock(namesMutex);
+        std::lock_guard<std::mutex> lock(namesMutex);
         names[data->gid] = data->name;
       }
     }
@@ -66,8 +65,8 @@ bool GroupCache::Replicate(const mongo::BSONElement& id)
     {
       // group not found, must be deleted, remove from cache
       boost::lock(gidsMutex, namesMutex);
-      boost::lock_guard<boost::mutex> gidsLock(gidsMutex, boost::adopt_lock);
-      boost::lock_guard<boost::mutex> namesLock(namesMutex, boost::adopt_lock);
+      std::lock_guard<std::mutex> gidsLock(gidsMutex, std::adopt_lock);
+      std::lock_guard<std::mutex> namesLock(namesMutex, std::adopt_lock);
       
       auto it = names.find(gid);
       if (it != names.end())
@@ -90,8 +89,8 @@ bool GroupCache::Populate()
   auto groups = GetGroups();
   
   boost::lock(namesMutex, gidsMutex);
-  boost::lock_guard<boost::mutex> namesLock(namesMutex, boost::adopt_lock);
-  boost::lock_guard<boost::mutex> gidsLock(gidsMutex, boost::adopt_lock);
+  std::lock_guard<std::mutex> namesLock(namesMutex, std::adopt_lock);
+  std::lock_guard<std::mutex> gidsLock(gidsMutex, std::adopt_lock);
 
   gids.clear();
   names.clear();

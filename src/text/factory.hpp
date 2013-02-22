@@ -4,8 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
+#include <mutex>
 #include "text/template.hpp"
 #include "text/parser.hpp"
 #include "text/templatesection.hpp"
@@ -18,7 +17,7 @@ class Factory
 {
   std::unordered_map<std::string, Template> templates;
   
-  static boost::mutex mutex;
+  static std::mutex mutex;
   static std::unique_ptr<Factory> instance;
 
   Factory() = default;
@@ -28,7 +27,7 @@ public:
   static util::Error Initialize();
   static int Size()
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return instance->templates.size();
   }
   static Template GetTemplate(const std::string& templ);

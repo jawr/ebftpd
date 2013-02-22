@@ -288,7 +288,7 @@ void TCPSocket::Getline(std::string& buffer, bool stripCRLF)
 
 void TCPSocket::Close()
 {
-  boost::lock_guard<boost::mutex> lock(socketMutex);
+  std::lock_guard<std::mutex> lock(socketMutex);
   if (socket != -1)
   {
     if (tls.get()) 
@@ -304,7 +304,7 @@ void TCPSocket::Close()
 
 void TCPSocket::Shutdown()
 {
-  boost::lock_guard<boost::mutex> lock(socketMutex);
+  std::lock_guard<std::mutex> lock(socketMutex);
   if (socket != -1)  shutdown(socket, SHUT_RDWR);
 }
 

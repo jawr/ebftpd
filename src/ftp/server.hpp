@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <queue>
 #include <atomic>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "ftp/client.hpp"
@@ -29,11 +29,11 @@ class Server : public util::Thread
   int32_t port;
   util::InterruptPipe interruptPipe;
 
-  boost::mutex clientMtx;
+  std::mutex clientMtx;
   boost::ptr_list<Client> clients;
 
   std::queue<TaskPtr> queue;
-  boost::mutex taskMtx;
+  std::mutex taskMtx;
   
   std::atomic_bool isShutdown;
   
@@ -55,7 +55,7 @@ class Server : public util::Thread
   static void PushTask(const TaskPtr& task)
   {
     { 
-      boost::lock_guard<boost::mutex> lock(instance.taskMtx); 
+      std::lock_guard<std::mutex> lock(instance.taskMtx); 
       instance.queue.push(task);
     }
     instance.interruptPipe.Interrupt();

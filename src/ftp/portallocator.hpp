@@ -4,8 +4,7 @@
 #include <cassert>
 #include <vector>
 #include <cstdint>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
+#include <mutex>
 #include "util/net/endpoint.hpp"
 #include "cfg/get.hpp"
 
@@ -23,7 +22,7 @@ class PortAllocator;
 
 class PortAllocatorImpl
 {
-  boost::mutex mutex;
+  std::mutex mutex;
   cfg::setting::Ports ports;
   std::vector<cfg::setting::PortRange>::const_iterator it;
   uint16_t nextPort;
@@ -33,14 +32,14 @@ class PortAllocatorImpl
 public:
   void SetPorts(const cfg::setting::Ports& ports)
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     this->ports = ports;
     it = this->ports.Ranges().begin();
   }
 
   uint16_t inline NextPort()
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     if (ports.Ranges().empty()) return util::net::Endpoint::AnyPort();
     if (!nextPort) 
     {

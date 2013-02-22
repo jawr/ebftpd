@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 #include <boost/lexical_cast.hpp>
 #include "util/error.hpp"
 
@@ -69,6 +70,9 @@ std::string Join(const Container& cont, const std::string& delim)
 {
   return Join(cont.begin(), cont.end(), delim);
 }
+
+void Split(std::vector<std::string>& cont, const std::string& s, 
+           const std::string& delims, bool tokenCompress = false);
 
 } /* string namespace */
 } /* util namespace */

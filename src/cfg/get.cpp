@@ -1,9 +1,8 @@
 #include <memory>
 #include <cassert>
 #include <boost/thread/tss.hpp>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <boost/signals2.hpp>
-#include <boost/thread/locks.hpp>
 #include "cfg/get.hpp"
 #include "cfg/config.hpp"
 #include "logs/logs.hpp"
@@ -15,7 +14,7 @@ namespace
 {
 
 boost::thread_specific_ptr<Config> thisThread;
-boost::mutex sharedMutex;
+std::mutex sharedMutex;
 std::shared_ptr<Config> shared;
 boost::signals2::signal<void()> updated;
 
@@ -24,7 +23,7 @@ boost::signals2::signal<void()> updated;
 void UpdateShared(const std::shared_ptr<Config> newShared)
 {
   {
-    boost::lock_guard<boost::mutex> lock(sharedMutex);
+    std::lock_guard<std::mutex> lock(sharedMutex);
     shared = newShared;
   }
   
@@ -34,7 +33,7 @@ void UpdateShared(const std::shared_ptr<Config> newShared)
 void UpdateLocal()
 {
   Config* config = thisThread.get();
-  boost::lock_guard<boost::mutex> lock(sharedMutex);
+  std::lock_guard<std::mutex> lock(sharedMutex);
   if (config && shared->Version() <= config->Version()) return;
   thisThread.reset(new Config(*shared));
 }

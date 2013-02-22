@@ -69,7 +69,7 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
 
   if (ts.HasTag("online_users") || ts.HasTag("all_online_users"))
   {
-    boost::unique_future<void> oucFuture;
+    std::future<void> oucFuture;
     auto ocuTask = std::make_shared<ftp::task::OnlineUserCount>(oucFuture);
     ocuTask->Push();
     oucFuture.wait();

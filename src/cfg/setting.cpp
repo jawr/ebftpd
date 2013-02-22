@@ -5,16 +5,14 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/regex.hpp>
 #include "cfg/setting.hpp"
 #include "cfg/error.hpp"
 #include "util/string.hpp"
 
 namespace cfg { namespace setting
 {
-
-const boost::posix_time::seconds IdleTimeout::defaultMaximum(7200);
-const boost::posix_time::seconds IdleTimeout::defaultMinimum(1);
-const boost::posix_time::seconds IdleTimeout::defaultTimeout(900);
 
 Database::Database() :
   name("ebftpd"), 
@@ -192,12 +190,42 @@ Right::Right(std::vector<std::string> toks)
                path.find("[:groupname:]") != std::string::npos;
 }
 
+PathFilter& PathFilter::operator=(const PathFilter& rhs)
+{
+  messagePath = rhs.messagePath;
+  regex.reset(new boost::regex(*rhs.regex));
+  acl = rhs.acl;
+  return *this;
+}
+
+PathFilter& PathFilter::operator=(PathFilter&& rhs)
+{
+  messagePath = std::move(rhs.messagePath);
+  regex = std::move(rhs.regex);
+  acl = std::move(rhs.acl);
+  return *this;
+}
+
+PathFilter::PathFilter(const PathFilter& other) :
+  messagePath(other.messagePath),
+  regex(new boost::regex(*other.regex)),
+  acl(other.acl)
+{
+}
+
+PathFilter::PathFilter(PathFilter&& other) :
+  messagePath(other.messagePath),
+  regex(std::move(other.regex)),
+  acl(std::move(other.acl))
+{
+}
+
 PathFilter::PathFilter(std::vector<std::string> toks)   
 {
   messagePath = toks[0];
   try
   {
-    regex = boost::regex(toks[1]);
+    regex.reset(new boost::regex(toks[1]));
   }
   catch (const boost::regex_error&)
   {
@@ -206,6 +234,8 @@ PathFilter::PathFilter(std::vector<std::string> toks)
   toks.erase(toks.begin(), toks.begin() + 2);
   acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
 }
+
+const boost::regex& PathFilter::Regex() const { return *regex; }
 
 MaxUsers::MaxUsers(const std::vector<std::string>& toks)   
 {
@@ -365,24 +395,91 @@ Cscript::Cscript(const std::vector<std::string>& toks)
   path = toks[2];
 }
 
-IdleTimeout::IdleTimeout(const std::vector<std::string>& toks) :
-  maximum(defaultMaximum),
-  minimum(defaultMinimum),
-  timeout(defaultTimeout)
+struct IdleTimeoutImpl
 {
-  namespace pt = boost::posix_time;
-  timeout = pt::seconds(boost::lexical_cast<long>(toks[0]));
-  minimum = pt::seconds(boost::lexical_cast<long>(toks[1]));
-  maximum = pt::seconds(boost::lexical_cast<long>(toks[2]));
-  
-  if (timeout.total_seconds() < 1 || minimum.total_seconds() < 1 || maximum.total_seconds() < 1)
-    throw ConfigError("Times in idle_timeout must be larger than zero");
-  if (minimum >= maximum)
-    throw ConfigError("Mnimum must be smaller than maximum in idle_timeout");
-  if (timeout < minimum || timeout > maximum)
-    throw ConfigError("Default timeout must be larger than or equal to minimum "
-                      "and smaller than or equal to maximum in idle_timeout");
+  boost::posix_time::seconds maximum;
+  boost::posix_time::seconds minimum;
+  boost::posix_time::seconds timeout;
+
+  static const std::unique_ptr<IdleTimeoutImpl> defaults;
+
+  IdleTimeoutImpl() :
+    maximum(defaults->maximum), minimum(defaults->minimum),
+    timeout(defaults->timeout)
+  { }
+
+  IdleTimeoutImpl(const boost::posix_time::seconds& maximum,
+                  const boost::posix_time::seconds& minimum,
+                  const boost::posix_time::seconds& timeout) :
+    maximum(maximum), minimum(minimum),
+    timeout(timeout)
+  { }
+
+  IdleTimeoutImpl(const std::vector<std::string>& toks) :
+    maximum(defaults->maximum),
+    minimum(defaults->minimum),
+    timeout(defaults->timeout)
+  {
+    namespace pt = boost::posix_time;
+    timeout = pt::seconds(boost::lexical_cast<long>(toks[0]));
+    minimum = pt::seconds(boost::lexical_cast<long>(toks[1]));
+    maximum = pt::seconds(boost::lexical_cast<long>(toks[2]));
+    
+    if (timeout.total_seconds() < 1 || minimum.total_seconds() < 1 || maximum.total_seconds() < 1)
+      throw ConfigError("Times in idle_timeout must be larger than zero");
+    if (minimum >= maximum)
+      throw ConfigError("Mnimum must be smaller than maximum in idle_timeout");
+    if (timeout < minimum || timeout > maximum)
+      throw ConfigError("Default timeout must be larger than or equal to minimum "
+                        "and smaller than or equal to maximum in idle_timeout");
+  }
+};
+
+const std::unique_ptr<IdleTimeoutImpl> IdleTimeoutImpl::defaults(new IdleTimeoutImpl(
+  boost::posix_time::seconds(72000),
+  boost::posix_time::seconds(1),
+  boost::posix_time::seconds(900)
+));
+
+IdleTimeout::IdleTimeout() :
+  pimpl(new IdleTimeoutImpl())
+{
 }
+
+IdleTimeout::IdleTimeout(const std::vector<std::string>& toks) :
+  pimpl(new IdleTimeoutImpl(toks))
+{
+}
+
+IdleTimeout::~IdleTimeout()
+{
+}
+
+IdleTimeout& IdleTimeout::operator=(const IdleTimeout& rhs)
+{
+  pimpl.reset(new IdleTimeoutImpl(*rhs.pimpl));
+  return *this;
+}
+
+IdleTimeout& IdleTimeout::operator=(IdleTimeout&& rhs)
+{
+  pimpl = std::move(rhs.pimpl);
+  return *this;
+}
+
+IdleTimeout::IdleTimeout(const IdleTimeout& other) :
+  pimpl(new IdleTimeoutImpl(*other.pimpl))
+{
+}
+
+IdleTimeout::IdleTimeout(IdleTimeout&& other) :
+  pimpl(std::move(other.pimpl))
+{
+}
+
+boost::posix_time::seconds IdleTimeout::Maximum() const { return pimpl->maximum; }
+boost::posix_time::seconds IdleTimeout::Minimum() const { return pimpl->minimum; }
+boost::posix_time::seconds IdleTimeout::Timeout() const { return pimpl->timeout; }
 
 CheckScript::CheckScript(const std::vector<std::string>& toks) :
   path(toks[0]), mask(toks.size() == 2 ? toks[1] : "*"), disabled(toks[0] == "none")

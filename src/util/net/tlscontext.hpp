@@ -8,7 +8,7 @@
 #include <openssl/rand.h>
 #include <openssl/crypto.h>
 #include <openssl/rsa.h>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <boost/shared_array.hpp>
 
 namespace util { namespace net
@@ -27,11 +27,11 @@ protected:
    // dummy prevents the static mutexes 
    // going out of scope before the contexts do
    // a nicer solution for this would be nice
-  boost::shared_array<boost::mutex> dummyMutexes;
+  boost::shared_array<std::mutex> dummyMutexes;
     
   static std::unique_ptr<TLSServerContext> server;
   static std::unique_ptr<TLSClientContext> client;
-  static boost::shared_array<boost::mutex> mutexes;
+  static boost::shared_array<std::mutex> mutexes;
   
   
   virtual ~TLSContext();

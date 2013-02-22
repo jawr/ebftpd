@@ -3,13 +3,19 @@
 
 #include <string>
 #include <vector>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/regex.hpp>
+#include <memory>
+#include <boost/regex_fwd.hpp>
 #include <sys/types.h>
 #include "acl/acl.hpp"
 #include "acl/passwdstrength.hpp"
 #include "acl/ipstrength.hpp"
 #include "main.hpp"
+
+namespace boost { namespace posix_time
+{
+class seconds;
+}
+}
 
 namespace cfg { namespace setting
 {
@@ -196,13 +202,18 @@ public:
 class PathFilter
 {
   std::string messagePath;
-  boost::regex regex;
+  std::unique_ptr<boost::regex> regex;
   acl::ACL acl;
   
 public:
+  PathFilter& operator=(const PathFilter& rhs);
+  PathFilter& operator=(PathFilter&& rhs);
+  PathFilter(const PathFilter& other);
+  PathFilter(PathFilter&& other);
+
   PathFilter(std::vector<std::string> toks);
   const std::string& MessagePath() const { return messagePath; }
-  const boost::regex& Regex() const { return regex; }
+  const boost::regex& Regex() const;
   const acl::ACL& ACL() const { return acl; }
   
 };
@@ -385,26 +396,25 @@ public:
   Type GetType() const { return type; }
 };
 
+class IdleTimeoutImpl;
+
 class IdleTimeout
 {
-  boost::posix_time::seconds maximum;
-  boost::posix_time::seconds minimum;
-  boost::posix_time::seconds timeout;
-  
-  static const boost::posix_time::seconds defaultMaximum;
-  static const boost::posix_time::seconds defaultMinimum;
-  static const boost::posix_time::seconds defaultTimeout;
+  std::unique_ptr<IdleTimeoutImpl> pimpl;
   
 public:
-  IdleTimeout() :
-    maximum(defaultMaximum), minimum(defaultMinimum),
-    timeout(defaultTimeout) { }
-    
+  IdleTimeout& operator=(const IdleTimeout& rhs);
+  IdleTimeout& operator=(IdleTimeout&& rhs);
+  IdleTimeout(const IdleTimeout& other);
+  IdleTimeout(IdleTimeout&& other);
+
+  IdleTimeout();
   IdleTimeout(const std::vector<std::string>& toks);
+  ~IdleTimeout();
     
-  boost::posix_time::seconds Maximum() const { return maximum; }
-  boost::posix_time::seconds Minimum() const { return minimum; }
-  boost::posix_time::seconds Timeout() const { return timeout; }
+  boost::posix_time::seconds Maximum() const;
+  boost::posix_time::seconds Minimum() const;
+  boost::posix_time::seconds Timeout() const;
 };
 
 class CheckScript

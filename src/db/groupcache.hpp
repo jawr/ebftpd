@@ -3,7 +3,7 @@
 
 #include <string>
 #include <unordered_map>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include "acl/types.hpp"
 #include "db/replicable.hpp"
 
@@ -26,10 +26,10 @@ class GroupCache :
   public GroupCacheBase,
   public Replicable
 {
-  boost::mutex namesMutex;
+  std::mutex namesMutex;
   std::unordered_map<acl::GroupID, std::string> names;
 
-  boost::mutex gidsMutex;
+  std::mutex gidsMutex;
   std::unordered_map<std::string, acl::GroupID> gids;
   
 public:  

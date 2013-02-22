@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdint>
 #include <atomic>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include "acl/user.hpp"
@@ -34,7 +34,7 @@ enum class ClientState
 
 class Client : public util::Thread
 {
-  mutable boost::mutex mutex;
+  mutable std::mutex mutex;
   
   ::ftp::Control control;
   ::ftp::Data data;
@@ -124,13 +124,13 @@ public:
   
   const std::string& CurrentCommand() const
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return currentCommand; 
   }
   
   ClientState State() const
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return state;
   }
 
@@ -160,19 +160,19 @@ public:
   
   std::string IP() const
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return ip;
   }
   
   std::string Ident() const
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return ident;
   }
   
   std::string Hostname() const
   {
-    boost::lock_guard<boost::mutex> lock(mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     return hostname;
   }
   void HostnameLookup();

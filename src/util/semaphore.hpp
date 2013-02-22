@@ -1,8 +1,8 @@
 #ifndef __SEMAPHORE_HPP
 #define __SEMAPHORE_HPP
 
-#include <boost/thread/condition_variable.hpp>
-#include <boost/thread/mutex.hpp>
+#include <condition_variable>
+#include <mutex>
 #include <boost/noncopyable.hpp>
 
 namespace util
@@ -11,8 +11,8 @@ namespace util
   {
   private:
     unsigned int count;
-    boost::mutex mutex;
-    boost::condition_variable cond;
+    std::mutex mutex;
+    std::condition_variable cond;
     
   public:
     explicit semaphore(unsigned int count) :
@@ -24,14 +24,14 @@ namespace util
     
     void signal()
     {
-      boost::lock_guard<boost::mutex> lock(mutex);
+      std::lock_guard<std::mutex> lock(mutex);
       ++count;
       cond.notify_one();
     }
     
     void wait()
     {
-      boost::unique_lock<boost::mutex> lock(mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       while (!count) cond.wait(lock);
       --count;
     }

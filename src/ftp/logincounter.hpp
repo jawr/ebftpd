@@ -1,7 +1,7 @@
 #ifndef __LOGINCOUNTER_HPP
 #define __LOGINCOUNTER_HPP
 
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <unordered_map>
 #include <functional>
 #include "acl/types.hpp"
@@ -13,7 +13,7 @@ enum class CounterResult : int;
 
 class LoginCounter
 {
-  boost::mutex mutex;
+  std::mutex mutex;
   int global;
   std::unordered_map<acl::UserID, int> personal;
 

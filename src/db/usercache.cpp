@@ -1,4 +1,3 @@
-#include <boost/thread/locks.hpp>
 #include "db/usercache.hpp"
 #include "db/connection.hpp"
 #include "util/string.hpp"
@@ -50,7 +49,7 @@ template <> UserTriple Unserialize<UserTriple>(const mongo::BSONObj& obj)
 
 std::string UserCache::UIDToName(acl::UserID uid)
 {
-  boost::lock_guard<boost::mutex> lock(namesMutex);
+  std::lock_guard<std::mutex> lock(namesMutex);
   auto it = names.find(uid);
   if (it == names.end()) return "unknown";
   return it->second;
@@ -58,7 +57,7 @@ std::string UserCache::UIDToName(acl::UserID uid)
 
 acl::UserID UserCache::NameToUID(const std::string& name)
 {
-  boost::lock_guard<boost::mutex> lock(uidsMutex);
+  std::lock_guard<std::mutex> lock(uidsMutex);
   auto it = uids.find(name);
   if (it == uids.end()) return -1;
   return it->second;
@@ -66,7 +65,7 @@ acl::UserID UserCache::NameToUID(const std::string& name)
 
 acl::GroupID UserCache::UIDToPrimaryGID(acl::UserID uid)
 {
-  boost::lock_guard<boost::mutex> lock(primaryGidsMutex);
+  std::lock_guard<std::mutex> lock(primaryGidsMutex);
   auto it = primaryGids.find(uid);
   if (it == primaryGids.end()) return -1;
   return it ->second;
@@ -74,7 +73,7 @@ acl::GroupID UserCache::UIDToPrimaryGID(acl::UserID uid)
 
 bool UserCache::IdentIPAllowed(const std::string& identAddress)
 {
-  boost::lock_guard<boost::mutex> lock(ipMasksMutex);
+  std::lock_guard<std::mutex> lock(ipMasksMutex);
   return std::find_if(ipMasks.begin(), ipMasks.end(), 
               [&](const std::pair<acl::UserID, std::vector<std::string>>& kv)
               {
@@ -84,7 +83,7 @@ bool UserCache::IdentIPAllowed(const std::string& identAddress)
 
 bool UserCache::IdentIPAllowed(const std::string& identAddress, acl::UserID uid)
 {
-  boost::lock_guard<boost::mutex> lock(ipMasksMutex);
+  std::lock_guard<std::mutex> lock(ipMasksMutex);
   auto it = ipMasks.find(uid);
   if (it == ipMasks.end()) return false;
   return util::string::WildcardMatch(it->second, identAddress, true);
@@ -106,24 +105,24 @@ bool UserCache::Replicate(const mongo::BSONElement& id)
     {
       // user found, refresh cached data
       {
-        boost::lock_guard<boost::mutex> lock(uidsMutex);
+        std::lock_guard<std::mutex> lock(uidsMutex);
         uids[data->name] = data->uid;
       }
       
       {
-        boost::lock_guard<boost::mutex> lock(namesMutex);
+        std::lock_guard<std::mutex> lock(namesMutex);
         names[data->uid] = data->name;
       }
       
       {
-        boost::lock_guard<boost::mutex> lock(primaryGidsMutex);
+        std::lock_guard<std::mutex> lock(primaryGidsMutex);
         primaryGids[data->uid] = data->primaryGid;
       }
       
       auto masks = LookupIPMasks(conn, uid);
       
       {
-        boost::lock_guard<boost::mutex> lock(ipMasksMutex);
+        std::lock_guard<std::mutex> lock(ipMasksMutex);
         ipMasks[data->uid] = std::move(masks);
       }
     }
@@ -132,8 +131,8 @@ bool UserCache::Replicate(const mongo::BSONElement& id)
       // user not found, must be deleted, remove from cache
       {
         boost::lock(uidsMutex, namesMutex);
-        boost::lock_guard<boost::mutex> uidsLock(uidsMutex, boost::adopt_lock);
-        boost::lock_guard<boost::mutex> namesLock(namesMutex, boost::adopt_lock);
+        std::lock_guard<std::mutex> uidsLock(uidsMutex, std::adopt_lock);
+        std::lock_guard<std::mutex> namesLock(namesMutex, std::adopt_lock);
         
         auto it = names.find(uid);
         if (it != names.end())
@@ -144,12 +143,12 @@ bool UserCache::Replicate(const mongo::BSONElement& id)
       }
       
       {
-        boost::lock_guard<boost::mutex> lock(primaryGidsMutex);
+        std::lock_guard<std::mutex> lock(primaryGidsMutex);
         primaryGids.erase(uid);
       }
       
       {
-        boost::lock_guard<boost::mutex> lock(ipMasksMutex);
+        std::lock_guard<std::mutex> lock(ipMasksMutex);
         ipMasks.erase(uid);
       }
     }
@@ -167,10 +166,10 @@ bool UserCache::Populate()
   auto users = GetUsers();
   
   boost::lock(namesMutex, uidsMutex, primaryGidsMutex, ipMasksMutex);
-  boost::lock_guard<boost::mutex> namesLock(namesMutex, boost::adopt_lock);
-  boost::lock_guard<boost::mutex> uidsLock(uidsMutex, boost::adopt_lock);
-  boost::lock_guard<boost::mutex> primaryGidsLock(primaryGidsMutex, boost::adopt_lock);
-  boost::lock_guard<boost::mutex> ipMasksLock(ipMasksMutex, boost::adopt_lock);
+  std::lock_guard<std::mutex> namesLock(namesMutex, std::adopt_lock);
+  std::lock_guard<std::mutex> uidsLock(uidsMutex, std::adopt_lock);
+  std::lock_guard<std::mutex> primaryGidsLock(primaryGidsMutex, std::adopt_lock);
+  std::lock_guard<std::mutex> ipMasksLock(ipMasksMutex, std::adopt_lock);
   
   uids.clear();
   names.clear();

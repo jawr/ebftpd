@@ -1,6 +1,8 @@
 #include <cctype>
 #include <fnmatch.h>
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include "util/string.hpp"
 
 namespace util { namespace string
@@ -121,6 +123,14 @@ bool IsASCIIOnly(const std::string& s)
   }
   return true;
 }
+
+void Split(std::vector<std::string>& cont, const std::string& s, 
+           const std::string& delims, bool tokenCompress)
+{
+  boost::split(cont, s, boost::is_any_of(delims), tokenCompress ? 
+               boost::token_compress_on : boost::token_compress_off);
+}
+
 
 } /* string namespace */
 } /* util namespace */

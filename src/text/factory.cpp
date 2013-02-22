@@ -8,7 +8,7 @@
 
 namespace text
 {
-boost::mutex Factory::mutex;
+std::mutex Factory::mutex;
 std::unique_ptr<Factory> Factory::instance;
 
 util::Error Factory::Initialize()
@@ -59,7 +59,7 @@ util::Error Factory::Initialize()
     return util::Error::Failure(e.Message());
   }
 
-  boost::lock_guard<boost::mutex> lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   instance = std::move(factory);
   return util::Error::Success();
 }
@@ -68,7 +68,7 @@ Template Factory::GetTemplate(const std::string& templ)
 {
   std::string name = boost::to_lower_copy(templ);
   
-  boost::lock_guard<boost::mutex> lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   if (!instance.get() || instance->templates.find(name) == instance->templates.end())
     throw TemplateError("No such template (" + templ + ")");
   return instance->templates.at(name);

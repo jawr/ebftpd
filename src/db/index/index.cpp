@@ -1,5 +1,5 @@
 #include <boost/regex.hpp>
-#include <boost/thread/future.hpp>
+#include <future>
 #include "db/index/index.hpp"
 #include "util/misc.hpp"
 #include "db/connection.hpp"

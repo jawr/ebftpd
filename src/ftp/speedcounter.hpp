@@ -2,7 +2,7 @@
 #define __SPEEDCOUNTER_HPP
 
 #include <cassert>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <unordered_map>
 #include <functional>
@@ -65,7 +65,7 @@ typedef boost::optional<SpeedInfo> SpeedInfoOpt;
 
 class SpeedCounter
 {
-  boost::mutex mutex;
+  std::mutex mutex;
   std::unordered_map<std::string, std::pair<int, SpeedInfo>> speeds;
   std::function<int(const cfg::setting::SpeedLimit&)> getSpeedLimit;
 
