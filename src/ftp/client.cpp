@@ -55,14 +55,20 @@ void Client::SetState(ClientState state)
   assert(state != ClientState::LoggedIn); // these 2 states have own setter
   assert(state != ClientState::WaitingPassword);
   
- 
-  boost::lock_guard<boost::mutex> lock(mutex);
-  if (state == ClientState::Finished && 
-      this->state == ClientState::LoggedIn) 
+  bool logout;
+  
+  {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    logout = state == ClientState::Finished && this->state == ClientState::LoggedIn;
+    this->state = state;
+  }
+
+  if (logout)
   {
     Counter::Login().Stop(user->ID());
+    logs::Event("LOGOUT", Ident() + '@' + Hostname(), IP(), user->Name(), 
+              acl::GIDToName(user->PrimaryGID()), user->Tagline());
   }
-  this->state = state;
 }
 
 void Client::SetLoggedIn(bool kicked)
@@ -356,8 +362,7 @@ bool Client::PreCheckAddress()
 {
   if (!acl::IPAllowed(IP()) && (IP() != Hostname() && !acl::IPAllowed(Hostname())))
   {
-    logs::security << "Refused connection from unknown address: " 
-                   << HostnameAndIP() << logs::endl;
+    logs::Security("BADADDRESS", "Refused connection from unknown address: %1%", HostnameAndIP());
     return false;
   }
   
@@ -447,8 +452,7 @@ void Client::InnerRun()
   {
     if (cfg::Get().BouncerOnly() && !control.RemoteEndpoint().IP().IsLoopback())
     {
-      logs::security << "Refused connection not from a bouncer ip: " 
-                     << HostnameAndIP() << logs::endl;
+      logs::Security("NONBOUNCER", "Refused connection not from a bouncer address: %1%", HostnameAndIP());
       return;
     }
   }
@@ -459,16 +463,14 @@ void Client::InnerRun()
     {
       if (cfg::Get().BouncerOnly())
       {
-        logs::security << "Timeout while waiting for IDNT command from bouncer: "
-                       << HostnameAndIP() << logs::endl;
+        logs::Security("IDNTTIMEOUT", "Timeout while waiting for IDNT command from bouncer: ", HostnameAndIP());
         return;
       }
     }
     else
     if (!IdntParse(command))
     {
-      logs::security << "Malformed IDNT Command from bouncer: "
-                     << HostnameAndIP() << logs::endl;
+      logs::Security("BADIDNT", "Malformed IDNT command from bouncer: ", HostnameAndIP());
       return;
     }
   }
@@ -484,9 +486,6 @@ void Client::InnerRun()
     
   DisplayBanner();
   Handle();
-  
-  logs::Event("LOGOUT", Ident() + '@' + Hostname(), IP(), user->Name(), 
-              acl::GIDToName(user->PrimaryGID()), user->Tagline());
 }
 
 void Client::Run()

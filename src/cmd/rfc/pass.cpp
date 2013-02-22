@@ -31,6 +31,7 @@ void PASSCommand::Execute()
     }
     else
     {
+      logs::Security("BADPASS", "Login failure by '%1%', bad password", client.User().Name());
       control.Reply(ftp::NotLoggedIn, "Login incorrect.");
       client.SetState(ftp::ClientState::LoggedOut);
     }
@@ -41,8 +42,8 @@ void PASSCommand::Execute()
   {
     std::ostringstream identAtAddress;
     identAtAddress << client.Ident() << "@" << client.HostnameAndIP();
-    logs::security << "Refusing login from unknown ident@ip: " 
-                   << identAtAddress.str() << logs::endl;
+    logs::Security("BADIDENTADDRESS", "Refusing login attempt by '%1%' from unknown ident@address: %2%'",
+                   client.User().Name(), identAtAddress.str());
     control.Reply(ftp::ServiceUnavailable, "Login not allowed from " + 
           identAtAddress.str() + ".");
     client.SetState(ftp::ClientState::Finished);
@@ -51,6 +52,7 @@ void PASSCommand::Execute()
   
   if (client.User().HasFlag(acl::Flag::Deleted))
   {
+    logs::Security("LOGINDELETED", "'%1%' attempted to login while deleted", client.User().Name());
     control.Reply(ftp::ServiceUnavailable, "You have been deleted. Goodbye.");
     client.SetState(ftp::ClientState::Finished);
     return;
@@ -74,6 +76,7 @@ void PASSCommand::Execute()
   
   if (client.User().Expired())
   {
+    logs::Security("LOGINEXPIRED", "'%1' attempted to login while expired", client.User().Name());
     control.Reply(ftp::ServiceUnavailable, "Your account has expired.");
     client.SetState(ftp::ClientState::Finished);
     return;

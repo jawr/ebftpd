@@ -18,8 +18,8 @@ void NoStdout();
  *
  * events   - for user events, mkdir, rmdir, login, logout 
  * security - bad password, connect from unknown host and other access / security errors
- * siteop    - user and group management events
- * error    - any kind of exceptional failure, config parse error, unable to write owner file, etc
+ * siteop   - user and group management events, other siteop tasks / changes
+ * error    - any kind of exceptional failure, config parse error, etc
  * db       - any database related event or failure
  * debug    - miscellaneous debugging output
  */
@@ -62,6 +62,15 @@ void Event(const std::string& what, const Args&... args)
   extern util::logger::Logger events;
   events << boost::to_upper_copy(what) << ":";
   Log(events, args...);
+}
+
+template <typename... Args>
+void Security(const std::string& what, const std::string& format, const Args&... args)
+{
+  extern util::logger::Logger security;
+  std::ostringstream os;
+  os << boost::to_upper_copy(what) << ": " << format;
+  security << util::Format()(os.str(), args...) << endl;
 }
 
 }

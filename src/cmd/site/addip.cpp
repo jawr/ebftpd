@@ -49,6 +49,8 @@ void ADDIPCommand::Execute()
     if (!acl::SecureIP(client.User(), *it, strength))
     {
       os << "\nIP " << *it << " not added: Must contain " << strength.String() << ".";
+      logs::Security("INSECUREIP", "'%1%' attempted to add insecure ip '%2%' to '%3%'", 
+                     client.User().Name(), *it, user->Name());
       continue;
     }
 

@@ -174,11 +174,10 @@ void Data::Open(TransferType transferType)
         !acl::AllowFxpSend(client.User(), logging))
     {
       socket.Close();
-      std::string type = transferType == TransferType::Upload ? "upload" : "download";
+      std::string type = transferType == TransferType::Upload ? "upload from" : "download to";
       if (logging)
-      {
-        logs::security << "User " << client.User().Name() << " attempted to fxp " << type
-                       << " to " << socket.RemoteEndpoint() << logs::endl;
+      { 
+        logs::Security("FXP", "'%1%' attempted to fxp %2% '%3%'", client.User().Name(), socket.RemoteEndpoint());
       }
       
       throw util::net::NetworkError("FXP " + type + " not allowed.");

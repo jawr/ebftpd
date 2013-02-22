@@ -8,6 +8,7 @@
 #include "cmd/error.hpp"
 #include "exec/cscript.hpp"
 #include "util/string.hpp"
+#include "logs/logs.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -31,6 +32,8 @@ void SITECommand::Execute()
   else if (!acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
   {
     control.Reply(ftp::ActionNotOkay,  "SITE " + args[0] + ": Permission denied");
+    logs::Security("COMMANDACL", "'%1%' attempted to run command without permission: %2%",
+                   client.User().Name(), fullCommand);
   }
   else if (!def->CheckArgs(args))
   {
@@ -65,6 +68,8 @@ void SITECommand::Execute()
       catch (const cmd::PermissionError&)
       {
         control.Reply(ftp::ActionNotOkay, "SITE " + args[0] + ": Permission denied");
+        logs::Security("COMMANDACL", "'%1%' attempted to run command without permission: %2%",
+                       client.User().Name(), fullCommand);
       }
     }
   }
