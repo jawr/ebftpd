@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <string>
-#include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <sys/types.h>
 

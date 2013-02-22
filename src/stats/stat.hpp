@@ -2,7 +2,6 @@
 #define __STATS_DAY_HPP
 
 #include <cstdint>
-#include <type_traits>
 #include "stats/types.hpp"
 #include "acl/types.hpp"
 
@@ -23,11 +22,6 @@ class Stat
   long long kBytes;
   long long xfertime;
   mutable double speed;
-
-/*  static_assert(std::is_same<decltype(id), acl::UserID>::value, 
-                "id must be same as acl::UserID");
-  static_assert(std::is_same<decltype(id), acl::GroupID>::value, 
-                "id must be same as acl::GroupID");*/
   
 public:
   Stat() : id(-1), files(0), kBytes(0), xfertime(0), speed(-1) { }  
