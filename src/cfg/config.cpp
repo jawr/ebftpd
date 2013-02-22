@@ -58,6 +58,12 @@ Config::Config(const std::string& configPath, bool tool) :
   sitenameShort("SN"),
   datapath("data"),
   bouncerOnly(false),
+  securityLog("security", true, true, 0),
+  databaseLog("database", true, true, 0),
+  eventLog("events", true, true, 0),
+  errorLog("errors", true, true, 0),
+  debugLog("debug", true, true, 0),
+  siteopLog("siteop", true, true, 0),
   dlIncomplete(true),
   totalUsers(20),
   multiplierMax(10),
@@ -91,12 +97,13 @@ Config::Config(const std::string& configPath, bool tool) :
     } 
     catch (const ConfigError& e)
     {
-      logs::error << "Error in config at line " << i << ": " << e.Message() << logs::endl;
+      logs::Error("Error in config at line %1% : %2%", i, e.Message());
       okay = false;
     }
     catch (const std::bad_cast& e)
     {
-      logs::error << "Error in config at line " << i << ": " << e.what() << logs::endl;
+      logs::Error("Error in config at line %1% : Invalid value", i);
+      okay = false;
     }
   }
   
@@ -287,6 +294,36 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1, -1);
     bouncerIp.insert(bouncerIp.end(), toks.begin(), toks.end());
   }
+  else if (opt == "security_log")
+  {
+    ParameterCheck(opt, toks, 3, 3);
+    securityLog = setting::Log("security", toks);
+  }
+  else if (opt == "database_log")
+  {
+    ParameterCheck(opt, toks, 2, 2);
+    databaseLog = setting::Log("database", toks);
+  }
+  else if (opt == "event_log")
+  {
+    ParameterCheck(opt, toks, 3, 3);
+    eventLog = setting::Log("events", toks);
+  }
+  else if (opt == "debug_log")
+  {
+    ParameterCheck(opt, toks, 3, 3);
+    debugLog = setting::Log("debug", toks);
+  }
+  else if (opt == "error_log")
+  {
+    ParameterCheck(opt, toks, 3, 3);
+    errorLog = setting::Log("errors", toks);
+  }
+  else if (opt == "siteop_log")
+  {
+    ParameterCheck(opt, toks, 3, 3);
+    siteopLog = setting::Log("siteop", toks);
+  }
   else if (opt == "bouncer_only")
   {
     ParameterCheck(opt, toks, 1);
@@ -456,21 +493,22 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 2, -1);
     nuke.emplace_back(toks);
   }
-  else if (opt == "eventlog")
+  else if (opt == "event_path")
   {
     ParameterCheck(opt, toks, 1);
-    eventlog.emplace_back(toks[0]);
+    eventpath.emplace_back(toks[0]);
   }
-  else if (opt == "dupelog")
+  else if (opt == "dupe_path")
   {
     ParameterCheck(opt, toks, 1);
-    dupelog.emplace_back(toks[0]);
+    dupepath.emplace_back(toks[0]);
   }
-  else if (opt == "indexed")
+  else if (opt == "index_path")
   {
     ParameterCheck(opt, toks, 1);
-    indexed.emplace_back(toks[0]);
-  }  else if (opt == "hideinwho")
+    indexpath.emplace_back(toks[0]);
+  } 
+  else if (opt == "hideinwho")
   {
     ParameterCheck(opt, toks, 2, -1);
     hideinwho.emplace_back(toks);
@@ -741,7 +779,7 @@ void Config::Parse(std::string line)
 
 void Config::NotImplemented(const std::string& opt)
 {
-  logs::error << "Ignoring not implemented config option: " << opt << logs::endl;
+  logs::Error("Ignoring not implemented config option: %1%", opt);
 }
 
 void Config::ParameterCheck(const std::string& opt,
@@ -823,17 +861,17 @@ ConfigPtr Config::Load(std::string configPath, bool tool)
 bool Config::IsEventLogged(const std::string& path) const
 {
   if (path.empty()) return false;
-  return util::string::WildcardMatch(eventlog, path + (path.back() != '/' ? "/" : ""));
+  return util::string::WildcardMatch(eventpath, path + (path.back() != '/' ? "/" : ""));
 }
 
 bool Config::IsDupeLogged(const std::string& path) const
 {
-  return util::string::WildcardMatch(dupelog, path + (path.back() != '/' ? "/" : ""));
+  return util::string::WildcardMatch(dupepath, path + (path.back() != '/' ? "/" : ""));
 }
 
 bool Config::IsIndexed(const std::string& path) const
 {
-  return util::string::WildcardMatch(dupelog, path + (path.back() != '/' ? "/" : ""));
+  return util::string::WildcardMatch(indexpath, path + (path.back() != '/' ? "/" : ""));
 }
 
 // end namespace

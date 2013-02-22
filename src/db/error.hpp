@@ -45,7 +45,7 @@ struct DBKeyError : public DBError
 inline void LogError(std::ostringstream& os, const std::string& errmsg)
 {
   os << " : " << errmsg;
-  logs::db << os.str() << logs::endl;
+  logs::Database(os.str());
 }
 
 template <typename T, typename... Args>

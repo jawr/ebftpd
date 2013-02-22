@@ -13,7 +13,7 @@ void WELCOMECommand::Execute()
   {
     std::string welcome;
     auto e = text::GenericTemplate(client, welcomePath, welcome);
-    if (!e) logs::error << "Failed to display welcome message : " << e.Message() << logs::endl;
+    if (!e) logs::Error("Failed to display welcome message: %1%", e.Message());
     else
     {
       control.Reply(ftp::CommandOkay, welcome);

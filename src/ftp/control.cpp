@@ -23,11 +23,12 @@ void Control::SendReply(ReplyCode code, bool part, const std::string& message)
   
   std::ostringstream reply;
   if (code != NoCode) reply << std::setw(3) << code << (part ? "-" : " ");
-  reply << message << "\r\n";
+  reply << message;
+  logs::Debug(reply.str());
+  reply << "\r\n";
   
   const std::string& str = reply.str();
   Write(str.c_str(), str.length());
-  logs::debug << str << logs::endl;
 
   if (lastCode != code && lastCode != CodeNotSet && code != ftp::NoCode)
     throw ProtocolError("Invalid reply code sequence.");
@@ -111,20 +112,14 @@ std::string Control::NextCommand(const boost::posix_time::time_duration* timeout
   if (!n) throw util::net::TimeoutError();
   if (n < 0) throw util::net::NetworkSystemError(errno);
   
-  if (FD_ISSET(socket.Socket(), &readSet))
-  {
-    std::string commandLine;
-    socket.Getline(commandLine, false);
-    bytesRead += commandLine.length();
-    boost::trim_right_if(commandLine, boost::is_any_of("\n"));
-    boost::trim_right_if(commandLine, boost::is_any_of("\r"));
-    StripTelnetChars(commandLine);
-    logs::debug << commandLine << logs::endl;    
-    return commandLine;
-  }
-
-  verify(false); // should never get here!!
-  return "";
+  std::string commandLine;
+  socket.Getline(commandLine, false);
+  bytesRead += commandLine.length();
+  boost::trim_right_if(commandLine, boost::is_any_of("\n"));
+  boost::trim_right_if(commandLine, boost::is_any_of("\r"));
+  StripTelnetChars(commandLine);
+  logs::Debug(commandLine);
+  return commandLine;
 }
 
 std::string Control::WaitForIdnt()

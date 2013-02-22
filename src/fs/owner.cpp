@@ -50,8 +50,8 @@ int32_t GetAttribute(const std::string& path, const char* attribute)
   {
     if (errno != ENOATTR && errno != ENODATA)
     {
-      logs::error << "Error while reading filesystem attribute " << attribute 
-                  << ": " << path << " : " << util::Error::Failure(errno).Message() << logs::endl;
+      logs::Error("Error while reading filesystem attribute %1% : %2% : %3%", 
+                  attribute, path, util::Error::Failure(errno).Message());
     }
     return 0;
   }
@@ -61,8 +61,8 @@ int32_t GetAttribute(const std::string& path, const char* attribute)
   int32_t id;
   if (sscanf(buf, "%i", &id) != 1)
   {
-    logs::error << "Invalid filesystem ownership attribute " << attribute 
-                << ", resetting to 0: " << path << " : " << buf << logs::endl;
+    logs::Error("Invalid filesystem ownership attribute %1%, resetting to 0: %2% : %3%", 
+                attribute, path, buf);
   }
   return id;
 }
@@ -74,8 +74,8 @@ util::Error SetAttribute(const std::string& path, const char* attribute, int32_t
   if (setxattr(path.c_str(), attribute, buf, len, 0) < 0)
   {
     auto e = util::Error::Failure(errno);
-    logs::error << "Error while setting filesystem ownership attribute " << attribute 
-                << ": " << path << " : " << e.Message() << logs::endl;
+    logs::Error("Error while setting filesystem ownership attribute %1% : %2% : %3%", 
+                attribute, path, e.Message());
     return e;
   }  
   return util::Error::Success();

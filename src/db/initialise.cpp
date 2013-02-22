@@ -87,19 +87,19 @@ bool Initialise(const std::function<void(acl::UserID)>& userUpdatedCB)
 {
   if (!CreateUpdateLog())
   {
-    logs::db << "Error while creating update log" << logs::endl;
+    logs::Database("Error while creating update log");
     return false;
   }
 
   if (!EnsureIndexes())
   {
-    logs::db << "Error while building database indexes" << logs::endl;
+    logs::Database("Error while building database indexes");
     return false;
   }
 
   if (!StartReplication(userUpdatedCB))
   {
-    logs::db << "Error while initialising database replication" << logs::endl;
+    logs::Database("Error while initialising database replication");
     return false;
   }
   

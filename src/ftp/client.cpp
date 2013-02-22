@@ -164,7 +164,7 @@ bool Client::Accept(util::net::TCPListener& server)
   catch(const util::net::NetworkError& e)
   {
     SetState(ClientState::Finished);
-    logs::error << "Error while accepting new client: " << e.Message() << logs::endl;
+    logs::Error("Error while accepting new client: %1%", e.Message());
     return false;
   }
 }
@@ -260,8 +260,7 @@ bool Client::ReloadUser()
   auto optUser = acl::User::Load(user->ID());
   if (!optUser)
   {
-    logs::error << "Failed to reload user from cache for: " 
-                << user->Name() << logs::endl;
+    logs::Error("Failed to reload user from cache for: %1%", user->Name());
     
     SetState(ClientState::Finished);
     return false; 
@@ -274,7 +273,7 @@ bool Client::ReloadUser()
   }
 
   
-  logs::debug << "Reloaded user profile" << logs::endl;
+  logs::Debug("Reloaded user profile");
   
   boost::lock_guard<boost::mutex> lock(mutex);
   user = std::move(*optUser);
@@ -327,8 +326,8 @@ void Client::LookupIdent()
   }
   catch (util::net::NetworkError& e)
   {
-    logs::error << "Unable to lookup ident for connection from "
-                  << control.RemoteEndpoint() << ":  " << e.Message();
+    logs::Error("Unable to lookup ident for connection from %1 : %2%",
+                control.RemoteEndpoint(), e.Message());
   }
 }
 
@@ -481,8 +480,7 @@ void Client::InnerRun()
   
   LookupIdent();
   
-  logs::debug << "Servicing client connected from "
-              << ident << "@" << HostnameAndIP() << logs::endl;
+  logs::Debug("Servicing client connected from %1%@%2%", ident, HostnameAndIP());
     
   DisplayBanner();
   Handle();
@@ -508,22 +506,20 @@ void Client::Run()
       control.Reply(ftp::ServiceUnavailable, "Idle timeout exceeded, closing connection.");
     }
     catch (const util::net::NetworkError&) { }
-    logs::debug << "Client from " << control.RemoteEndpoint()
-                  << " connection timed out" << logs::endl;
+    logs::Debug("Client from %1% connection timed out", control.RemoteEndpoint());
   }
   catch (const util::net::NetworkError& e)
   {
-    logs::debug << "Client from " << control.RemoteEndpoint()
-                << " lost connection: " << e.Message() << logs::endl;
+    logs::Debug("Client from %1% lost connection: %2%", control.RemoteEndpoint(), e.Message());
   }
   catch (const std::exception& e)
   {
-    logs::error << "Unhandled error on client thread: " << e.what() << logs::endl;
+    logs::Error("Unhandled error on client thread: %1%", e.what());
   }
   catch (...)
   {
     throw;
-    logs::error << "Unhandled error on client thread: Not descended from std::exception" << logs::endl;
+    logs::Error("Unhandled error on client thread: Not descended from std::exception");
   }
   
   (void) finishedGuard; /* silence unused variable warning */

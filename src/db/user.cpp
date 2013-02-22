@@ -186,9 +186,9 @@ void User::IncrCredits(const std::string& section, long long kBytes)
       if (doInsert()) return;
       if (updateExisting()) return;
 
-      logs::db << "Unable to increment credits for UID " << uid;
-      if (!section.empty()) logs::db << " in section " << section;
-      logs::db << logs::endl;
+      logs::Database("Unable to increment credits for UID %1%%2%", uid,
+                     !section.empty() ? " in section " + section : 
+                     std::string(""));
     };
   
   asyncTasks.Assign(std::async(std::launch::async, doIncrement, user.id));

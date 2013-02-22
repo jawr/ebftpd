@@ -21,13 +21,13 @@ Handler Handler::instance;
 
 void Handler::StartThread()
 {
-  logs::debug << "Starting signal handling thread.." << logs::endl;
+  logs::Debug("Starting signal handling thread..");
   instance.Start();
 }
 
 void Handler::StopThread()
 {
-  logs::debug << "Stopping signal handling thread.." << logs::endl;
+  logs::Debug("Stopping signal handling thread..");
   instance.Stop();
 }
 
@@ -54,7 +54,7 @@ void Handler::Run()
         }
         catch (const cfg::ConfigError& e)
         {
-          logs::error << "Failed to load config: " + e.Message() << logs::endl;
+          logs::Error("Failed to load config: %1%", e.Message());
         }
         try
         {
@@ -62,7 +62,7 @@ void Handler::Run()
         }
         catch (const text::TemplateError& e)
         {
-          logs::error << "Templates failed to initialise: " << e.Message() << logs::endl;
+          logs::Error("Templates failed to initialise: %1%", e.Message());
         }
         break;
       }
@@ -70,7 +70,7 @@ void Handler::Run()
       case SIGQUIT  :
       case SIGINT   :
       {
-        logs::debug << "Server interrupted!" << logs::endl;
+        logs::Debug("Server interrupted!");
         std::make_shared<ftp::task::Exit>()->Push();
         return;
       }
@@ -115,7 +115,7 @@ void CrashHandler(int signo)
   std::string line; 
   while (std::getline(ss, line))
   {
-    logs::error << line << logs::endl;
+    logs::Error(line);
   }
   
   PropogateSignal(signo);
@@ -153,7 +153,7 @@ void TerminateHandler()
   std::string line; 
   while (std::getline(ss, line))
   {
-    logs::error << line << logs::endl;
+    logs::Error(line);
   }
   
   PropogateSignal(SIGABRT);

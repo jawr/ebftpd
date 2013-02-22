@@ -181,7 +181,7 @@ void STORCommand::Execute()
       }
       catch (std::exception& e)
       {
-        logs::error << "Failed to delete failed upload: " << e.what() << logs::endl;
+        logs::Error("Failed to delete failed upload: %1%", e.what());
       }
     }
   });  
@@ -279,9 +279,10 @@ void STORCommand::Execute()
   }
   catch (const ftp::MinimumSpeedError& e)
   {
-    logs::debug << "Aborted slow upload by " << client.User().Name() << ". "
-                << stats::AutoUnitSpeedString(e.Speed()) << " lower than " 
-                << stats::AutoUnitSpeedString(e.Limit()) << logs::endl;
+    logs::Debug("Aborted slow upload by %1%. %2% lower than %3%", 
+                client.User().Name(),
+                stats::AutoUnitSpeedString(e.Speed()),
+                stats::AutoUnitSpeedString(e.Limit()));
     aborted = true;
   }
 

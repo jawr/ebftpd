@@ -15,7 +15,7 @@ Server Server::instance;
 
 void Server::StartThread()
 {
-  logs::debug << "Starting listener thread.." << logs::endl;
+  logs::Debug("Starting listener thread..");
   instance.Start();
 }
 
@@ -26,13 +26,13 @@ void Server::JoinThread()
 
 void Server::SetShutdown()
 {   
-  logs::debug << "Stopping listener thread.." << logs::endl;
+  logs::Debug("Stopping listener thread..");
   instance.InnerSetShutdown();
 }
 
 void Server::HandleTasks()
 {
-  //logs::debug << "Handling listener tasks.." << logs::endl;
+  //logs::Debug("Handling listener tasks..");
   TaskPtr task;
   while (true)
   {
@@ -57,13 +57,12 @@ bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
     {
       ep = util::net::Endpoint(ip, port);
       instance.servers.push_back(new util::net::TCPListener(ep));
-      logs::debug << "Listening for clients on " << ep << logs::endl;
+      logs::Debug("Listening for clients on %1%", ep);
     }
   }
   catch (const util::net::NetworkError& e)
   {
-    logs::error << "Unable to listen for clients on " << ep
-                  << ": " << e.Message() << logs::endl;
+    logs::Error("Unable to listen for clients on %1% : %2%", ep, e.Message());
     return false;
   }
   
@@ -82,7 +81,7 @@ void Server::HandleClients()
       if (client.TryJoin())
       {
         clients.erase(it++);
-        logs::debug << "Client finished" << logs::endl;
+        logs::Debug("Client finished");
       }
       else
         ++it;
@@ -95,7 +94,7 @@ void Server::HandleClients()
 
 void Server::StopClients()
 {
-  logs::debug << "Stopping all connected clients.." << logs::endl;
+  logs::Debug("Stopping all connected clients..");
   for (auto& client : clients)
     client.Interrupt();
     
@@ -137,7 +136,7 @@ void Server::AcceptClients()
   int n = select(max + 1, &readSet, nullptr, nullptr, &tv);
   if (n < 0)
   {
-    logs::error << "Server select failed: " << util::Error::Failure(errno).Message() << logs::endl;
+    logs::Error("Server select failed: %1%", util::Error::Failure(errno).Message());
     // ensure we don't poll rapidly on repeated select failures
     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
   }

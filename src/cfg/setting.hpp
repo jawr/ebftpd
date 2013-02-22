@@ -421,6 +421,26 @@ public:
   bool Disabled() const { return disabled; }
 };
 
+class Log
+{
+  std::string filename;
+  bool console;
+  bool file;
+  long database;
+  
+public:
+  Log(const std::string& filename, bool console, bool file, long database) : 
+    filename(filename), console(console), file(file), database(database)
+  { }
+  
+  Log(const std::string& filename, const std::vector<std::string>& toks);
+  
+  const std::string& Filename() const { return filename; }
+  bool Console() const { return console; }
+  bool File() const { return file; }
+  long Database() const { return database; };
+};
+
 // end namespace
 }
 }

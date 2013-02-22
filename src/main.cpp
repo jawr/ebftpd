@@ -97,25 +97,24 @@ bool Daemonise(bool foreground)
     if (!e)
     {
       if (e.ValidErrno())
-        logs::error << "Failed to read the pidfile: " << e.Message() << logs::endl;
+        logs::Error("Failed to read the pidfile: %1%", e.Message());
       else
-        logs::error << "Server already running. If it's not, delete the pid file at: " << pidfile << logs::endl;
+        logs::Error("Server already running. If it's not, delete the pid file at: %1%", pidfile);
       return false;
     }
   }
   
   if (!foreground)
   {
-    logs::debug << "Forking into the background.." << logs::endl;
+    logs::Debug("Forking into the background..");
     util::Error e = util::daemonise::Daemonise();
     if (!e)
     {
-      logs::error << "Failed to daemonise server process: " 
-                  << e.Message() << logs::endl;
+      logs::Error("Failed to daemonise server process: %1%", e.Message());
       return false;
     }
     else
-      logs::NoStdout();
+      logs::DisableConsole();
   }
   
   if (!pidfile.empty())
@@ -123,7 +122,7 @@ bool Daemonise(bool foreground)
     util::Error e = util::daemonise::CreatePIDFile(pidfile);
     if (!e)
     {
-      logs::error << "Failed to create pid file: " << e.Message() << logs::endl;
+      logs::Error("Failed to create pid file: %1%", e.Message());
     }
   }
   
@@ -136,15 +135,17 @@ int main(int argc, char** argv)
   bool foreground; 
   
   if (!ParseOptions(argc, argv, foreground, configPath)) return 1;
+
+  logs::InitialisePreConfig();
   
-  logs::debug << "Starting " << programFullname << " .. " << logs::endl;
-  auto byeExit = util::MakeScopeExit([]() { logs::debug << "Bye!" << logs::endl; });
+  logs::Debug("Starting %1%..", programFullname);
+  auto byeExit = util::MakeScopeExit([]() { logs::Debug("Bye!"); });
   
   {
     util::Error e = signals::Initialise();
     if (!e)
     {
-      logs::error << "Failed to setup signal handlers: " << e.Message() << logs::endl;
+      logs::Error("Failed to setup signal handlers: %1%", e.Message());
       return 1;
     }
     signals::Handler::StartThread();
@@ -160,26 +161,26 @@ int main(int argc, char** argv)
   
   try
   {
-    logs::debug << "Loading config file.." << logs::endl;
+    logs::Debug("Loading config file..");
     cfg::UpdateShared(cfg::Config::Load(configPath));
   }
   catch (const cfg::ConfigError& e)
   {
-    logs::error << "Failed to load config: " << e.Message() << logs::endl;
+    logs::Error("Failed to load config: %1%", e.Message());
     return 1;
   }
-
-  logs::Initialise(util::path::Join(cfg::Get().Datapath(), "logs"));
+  
+  logs::InitialisePostConfig();
   
   if (cfg::Get().TlsCertificate().empty())
   {
-    logs::debug << "No TLS certificate set in config, TLS disabled." << logs::endl;
+    logs::Debug("No TLS certificate set in config, TLS disabled.");
   }
   else
   {
     try
     {
-      logs::debug << "Initialising TLS context.." << logs::endl;
+      logs::Debug("Initialising TLS context..");
       util::net::TLSServerContext::Initialise(
           cfg::Get().TlsCertificate(), cfg::Get().TlsCiphers());
       util::net::TLSClientContext::Initialise(
@@ -187,19 +188,19 @@ int main(int argc, char** argv)
     }
     catch (const util::net::NetworkError& e)
     {
-      logs::error << "TLS failed to initialise: " << e.Message() << logs::endl;
+      logs::Error("TLS failed to initialise: %1%", e.Message());
       return 1;
     }
   }
 
-  logs::debug << "Initialising Templates.." << logs::endl;
+  logs::Debug("Initialising Templates..");
   try
   {
     text::Factory::Initialize();
   }
   catch (const text::TemplateError& e)
   {
-    logs::error << "Templates failed to initialise: " << e.Message() << logs::endl;
+    logs::Error("Templates failed to initialise: %1%", e.Message());
     return 1;
   }
   
@@ -213,14 +214,14 @@ int main(int argc, char** argv)
   
   if (!acl::CreateDefaults())
   {
-    logs::error << "Error while creating default user and group" << logs::endl;
+    logs::Error("Error while creating default user and group");
     return 1;
   }
   
   int exitStatus = 0;
   if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
   {
-    logs::error << "Listener failed to initialise!" << logs::endl;
+    logs::Error("Listener failed to initialise!");
     exitStatus = 1;
   }
   else if (Daemonise(foreground))

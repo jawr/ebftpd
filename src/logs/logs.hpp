@@ -2,8 +2,10 @@
 #define __LOGGER_LOGGER_HPP
 
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <boost/algorithm/string/case_conv.hpp>
-#include "util/logger.hpp"
+#include "logs/logger.hpp"
 #include "util/format.hpp"
 
 namespace logs
@@ -11,7 +13,7 @@ namespace logs
 
 void Initialise(const std::string& logsPath);
 
-void NoStdout();
+void DisableConsole();
 
 /*
  * log types:
@@ -24,54 +26,66 @@ void NoStdout();
  * debug    - miscellaneous debugging output
  */
 
-#ifndef __LOGGER_LOGGER_CPP
-extern util::logger::Logger security;
-extern util::logger::Logger error;
-extern util::logger::Logger debug;
-extern util::logger::Logger db;
-extern util::logger::Logger events;
-extern util::logger::Logger siteop;
-#endif
-
-using util::logger::flush;
-using util::logger::endl;
-
-inline void Log(util::logger::Logger& logger)
+struct Format : public util::Format
 {
-  logger << endl;
+  Format& operator=(Format&&) = delete;
+  Format& operator=(const Format&) = delete;
+  Format(Format&&) = delete;
+  Format(const Format&) = delete;
+  
+  Format(const util::Format::OutputFunction& output) :
+    util::Format(output)
+  { }
+};
+ 
+
+inline void Log(Logger& logger, std::ostringstream& os)
+{
+  logger.Write("message", os.str());
 }
 
 template <typename T, typename... Args>
-void Log(util::logger::Logger& logger, const T& arg, const Args&... args)
+void Log(Logger& logger, std::ostringstream& os, const T& arg, const Args&... args)
 {
-  logger << " \"" << arg << "\"";
-  Log(logger, args...);
+  os << " \"" << arg << "\"";
+  Log(logger, os, args...);
 }
 
 template <typename... Args>
 void Siteop(const std::string& who, const std::string& what, const Args&... args)
 {
-  extern util::logger::Logger siteop;
-  siteop << '[' << std::left << std::setw(15) << who << "] " << boost::to_upper_copy(what) << ":";
-  Log(siteop, args...);
+  extern Logger siteop;
+  std::ostringstream os;
+  os << '[' << std::left << std::setw(15) << who << "] " << boost::to_upper_copy(what) << ":";
+  Log(siteop, os, args...);
 }
 
 template <typename... Args>
 void Event(const std::string& what, const Args&... args)
 {
-  extern util::logger::Logger events;
-  events << boost::to_upper_copy(what) << ":";
-  Log(events, args...);
+  extern Logger events;
+  std::ostringstream os;
+  os << boost::to_upper_copy(what) << ":";
+  Log(events, os, args...);
 }
 
 template <typename... Args>
 void Security(const std::string& what, const std::string& format, const Args&... args)
 {
-  extern util::logger::Logger security;
+  extern Logger security;
   std::ostringstream os;
   os << boost::to_upper_copy(what) << ": " << format;
-  security << util::Format()(os.str(), args...) << endl;
+  security.Write("message", util::Format()(os.str(), args...).String());
 }
+
+#ifndef __LOGS_LOGS_CPP
+extern Format Database;
+extern Format Error;
+extern Format Debug;
+#endif
+
+void InitialisePreConfig();
+void InitialisePostConfig();
 
 }
 

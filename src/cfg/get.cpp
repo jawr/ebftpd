@@ -59,32 +59,32 @@ bool RequireStopStart()
   
   if (shared->ValidIp() != old.ValidIp())
   {
-    logs::error << "'valid_ip' config option changed, full stop start required." << logs::endl;
+    logs::Error("'valid_ip' config option changed, full stop start required.");
     required = true;
   }
   
   if (shared->Port() != old.Port())
   {
-    logs::error << "'port' config option changed, full stop start required." << logs::endl;
+    logs::Error("'port' config option changed, full stop start required.");
     required = true;
   }
   
   if (shared->TlsCertificate() != old.TlsCertificate())
   {
-    logs::error << "'tls_certificate' option changed, full stop start required." << logs::endl;
+    logs::Error("'tls_certificate' option changed, full stop start required.");
     required = true;
   }
-  
+
   if (shared->TlsCiphers() != old.TlsCiphers())
   {
-    logs::error << "'tls_ciphers' option changed, full stop start required." << logs::endl;
+    logs::Error("'tls_ciphers' option changed, full stop start required.");
     required = true;
   }
 
   if (shared->Database().Address() != old.Database().Address() ||   
       shared->Database().Port() != old.Database().Port())
   {
-    logs::error << "'database' option changed, full stop start required." << logs::endl;
+    logs::Error("'database' option changed, full stop start required.");
     required = true;
   }
       

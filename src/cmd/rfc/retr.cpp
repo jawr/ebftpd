@@ -210,9 +210,10 @@ void RETRCommand::Execute()
   }
   catch (const ftp::MinimumSpeedError& e)
   {
-    logs::debug << "Aborted slow download by " << client.User().Name() << ". "
-                << stats::AutoUnitSpeedString(e.Speed()) << " lower than " 
-                << stats::AutoUnitSpeedString(e.Limit()) << logs::endl;
+    logs::Debug("Aborted slow download by %1%. %2% lower than %3%", 
+                client.User().Name(),
+                stats::AutoUnitSpeedString(e.Speed()),
+                stats::AutoUnitSpeedString(e.Limit()));
     aborted = true;
   }
   

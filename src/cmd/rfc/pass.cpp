@@ -85,7 +85,7 @@ void PASSCommand::Execute()
   ftp::task::LoginKickUser::Result kickResult;
   if (client.KickLogin())
   {
-    logs::debug << client.User().Name() << " requested a login kick." << logs::endl;
+    logs::Debug("%1% requested a login kick.", client.User().Name());
     boost::unique_future<ftp::task::LoginKickUser::Result> future;
     std::make_shared<ftp::task::LoginKickUser>(client.User().ID(), future)->Push();    
     future.wait();
@@ -117,7 +117,7 @@ void PASSCommand::Execute()
   {
     std::string welcome;
     e = text::GenericTemplate(client, welcomePath, welcome);
-    if (!e) logs::error << "Failed to display welcome message : " << e.Message() << logs::endl;
+    if (!e) logs::Error("Failed to display welcome message: %1%", e.Message());
     else os << welcome;
   }
   

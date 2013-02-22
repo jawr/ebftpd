@@ -228,7 +228,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
   
   if (options.LongFormat())
   {
-    message << "total " << std::floor(dirEnum.TotalBytes() / 1024) << "\r\n";
+    message << "total " << static_cast<long long>(dirEnum.TotalBytes() / 1024) << "\r\n";
   }
   
   std::string mask;
@@ -250,7 +250,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
       {
         if (options.SizeName())
         {
-          message << std::left << std::setw(8) << de.Status().Size() << ' '
+          message << std::left << std::setw(10) << de.Status().Size() << ' '
                   << de.Path();
         }
         else
@@ -264,7 +264,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
             message << std::left << std::setw(10) 
                     << GIDToName(de.Owner().GID()) << ' ';
                   
-          message << std::right << std::setw(8) << de.Status().Size() << ' '
+          message << std::right << std::setw(10) << de.Status().Size() << ' '
                   << Timestamp(de.Status()) << ' '
                   << de.Path();
         }

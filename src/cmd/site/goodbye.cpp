@@ -13,7 +13,7 @@ void GOODBYECommand::Execute()
   {
     std::string goodbye;
     auto e = text::GenericTemplate(client, goodbyePath, goodbye);
-    if (!e) logs::error << "Failed to display goodbye message : " << e.Message() << logs::endl;
+    if (!e) logs::Error("Failed to display goodbye message : %1%", e.Message());
     else
     {
       control.Reply(ftp::CommandOkay, goodbye);

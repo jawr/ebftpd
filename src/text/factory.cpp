@@ -41,7 +41,7 @@ util::Error Factory::Initialize()
       }
       catch (const text::TemplateError& e)
       {
-        logs::error << "Template Initialize error (" << *it << "): " << e.Message() << logs::endl;
+        logs::Error("Template Initialize error (%1%): %2%", *it, e.Message());
         ++errors;
       }
     }
@@ -55,7 +55,7 @@ util::Error Factory::Initialize()
   }
   catch (const util::SystemError& e)
   {
-    logs::error << "Unable to open template directory: " << e.Message() << logs::endl;
+    logs::Error("Unable to open template directory: %1%", e.Message());
     return util::Error::Failure(e.Message());
   }
 

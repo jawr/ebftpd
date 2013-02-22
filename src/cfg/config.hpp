@@ -13,12 +13,10 @@
 #include "cfg/section.hpp"
 #include "util/enumstrings.hpp"
 
-
 namespace cfg
 {
 
 enum class WeekStart { Sunday, Monday };
-
 enum class EPSVFxp { Allow, Deny, Force };
 
 class Config;
@@ -79,6 +77,14 @@ class Config
   std::vector<setting::Alias> alias;
   std::vector<std::string> cdpath;
   std::vector<std::string> ignoreType;
+  
+  setting::Log securityLog;
+  setting::Log databaseLog;
+  setting::Log eventLog;
+  setting::Log errorLog;
+  setting::Log debugLog;
+  setting::Log siteopLog;
+  
   // ind rights
   std::vector<setting::Right> delete_; // delete is reserved
   std::vector<setting::Right> deleteown;
@@ -96,9 +102,9 @@ class Config
   std::vector<setting::Right> nostats;
   std::vector<setting::Right> hideowner;
 
-  std::vector<std::string> eventlog;
-  std::vector<std::string> dupelog;
-  std::vector<std::string> indexed;
+  std::vector<std::string> eventpath;
+  std::vector<std::string> dupepath;
+  std::vector<std::string> indexpath;
 
   // end rights
   std::vector<setting::PathFilter> pathFilter;
@@ -215,6 +221,13 @@ public:
   const std::vector<std::string>& Cdpath() const { return cdpath; }
   const std::vector<std::string>& IgnoreType() const { return ignoreType; }
   
+  const setting::Log SecurityLog() const { return securityLog; }
+  const setting::Log DatabaseLog() const { return databaseLog; }
+  const setting::Log EventLog() const { return eventLog; }
+  const setting::Log ErrorLog() const { return errorLog; }
+  const setting::Log DebugLog() const { return debugLog; }
+  const setting::Log SiteopLog() const { return siteopLog; }
+
   // rights section
   const std::vector<setting::Right>& Delete() const { return delete_; } 
   const std::vector<setting::Right>& Deleteown() const { return deleteown; } 
@@ -235,7 +248,7 @@ public:
   bool IsEventLogged(const std::string& path) const;
   bool IsDupeLogged(const std::string& path) const;
   bool IsIndexed(const std::string& path) const;
-  const std::vector<std::string>& Indexed() const { return indexed; }
+  const std::vector<std::string>& Indexed() const { return indexpath; }
 
   const std::vector<setting::PathFilter>& PathFilter() const { return pathFilter; }
   const setting::MaxUsers& MaxUsers() const { return maxUsers; }

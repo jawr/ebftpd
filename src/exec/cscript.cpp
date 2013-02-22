@@ -26,8 +26,8 @@ bool Cscript(ftp::Client& client, const std::string& group,
     {
       if (!messages.empty())
       {
-        logs::error << "Post cscript for command " << cscript.Command()
-                    << " produced output which is being discarded." << logs::endl;
+        logs::Error("Post cscript for command %1% produced output which is being discarded.",
+                    cscript.Command());
       }
       
       return exitStatus == 0;
@@ -49,9 +49,8 @@ bool Cscript(ftp::Client& client, const std::string& group,
   {
     if (type == CscriptType::PRE)
       client.Control().Reply(failCode, "Unable to execute cscript: " + e.Message());
-    logs::error << "Failed to execute cscript: " 
-                << boost::join(argv, " ") 
-                << ": " << e.Message() << logs::endl;
+    logs::Error("Failed to execute cscript: %1% : %2%",
+                boost::join(argv, " "), e.Message());
     return false;
   }
   

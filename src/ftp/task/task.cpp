@@ -74,7 +74,7 @@ void ReloadConfig::Execute(Server&)
   }
   catch (const cfg::ConfigError& e)
   {
-    logs::error << "Failed to load config: " + e.Message() << logs::endl;
+    logs::Error("Failed to load config: %1%", e.Message());
     configResult = Result::Fail;
   }
   
@@ -86,7 +86,7 @@ void ReloadConfig::Execute(Server&)
   }
   catch (const text::TemplateError& e)
   {
-    logs::error << "Templates failed to initialise: " << e.Message() << logs::endl;
+    logs::Error("Templates failed to initialise: %1%", e.Message());
     templatesResult = Result::Fail;
   }
 

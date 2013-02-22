@@ -89,9 +89,9 @@ void UploadDecr(const acl::User& user, long long kBytes, time_t modTime, const s
   if (xfertime < 0)
   {
     namespace pt = boost::posix_time;
-    logs::db << "Failed to adjust xfertime on file deletion, "
-             << "no data available for that date: " 
-             << pt::to_simple_string(pt::from_time_t(modTime)) << logs::endl;
+    logs::Database("Failed to adjust xfertime on file deletion, "
+                   "no data available for that date: %1%",
+                   pt::to_simple_string(pt::from_time_t(modTime)));
     xfertime = 0;
   }
 

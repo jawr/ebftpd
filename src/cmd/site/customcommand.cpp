@@ -31,9 +31,8 @@ void CustomEXECCommand::Execute()
     catch (const util::SystemError& e)
     {
       control.Reply(ftp::CommandOkay, "Error while reading from pipe: " + e.Message());
-      logs::error << "Error while reading from child process pipe: "
-                  << boost::join(argv, " ") 
-                  << ": " << e.Message() << logs::endl;
+      logs::Error("Error while reading from child process pipe: %1% : %2%",
+                  boost::join(argv, " "), e.Message());
       return;
     }
     reader.Close();
@@ -41,9 +40,8 @@ void CustomEXECCommand::Execute()
   catch (const util::SystemError& e)
   {
     control.Reply(ftp::ActionNotOkay, "Unable to execute command: " + e.Message());
-    logs::error << "Failed to execute custom site command: " 
-                << boost::join(argv, " ") 
-                << ": " << e.Message() << logs::endl;
+    logs::Error("Failed to execute custom site command: %1% : %2%",
+                boost::join(argv, " "), e.Message());
     return;
   }
   

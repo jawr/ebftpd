@@ -5,6 +5,8 @@
 #include "logs/logs.hpp"
 #include "util/reverselogreader.hpp"
 #include "cmd/error.hpp"
+#include "util/path/path.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace site
 {
@@ -80,15 +82,19 @@ void LOGSCommand::Execute()
 { 
   if (!ParseArgs()) throw cmd::SyntaxError();
 
-  if (log == "error") Show(logs::error.Path());
-  else if (log == "security") Show(logs::security.Path());
-  else if (log == "siteop") Show(logs::siteop.Path());
-  else if (log == "events") Show(logs::events.Path());
-  else if (log == "db") Show(logs::db.Path());
-  else if (log == "debug") Show(logs::debug.Path());
+  const cfg::Config& config = cfg::Get();
+  
+  std::string filename;  
+  if (log == "error") filename = config.ErrorLog().Filename();
+  else if (log == "security") filename = config.ErrorLog().Filename();
+  else if (log == "siteop") filename = config.SiteopLog().Filename();
+  else if (log == "events") filename = config.EventLog().Filename();
+  else if (log == "db") filename = config.DatabaseLog().Filename();
+  else if (log == "debug") filename = config.DebugLog().Filename();
   else throw cmd::SyntaxError();
   
-  return;
+  filename += ".log";  
+  Show(util::path::Join(config.Datapath(), filename));
 }
 
 } /* site namespace */

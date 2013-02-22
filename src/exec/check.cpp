@@ -65,7 +65,7 @@ bool PreCheck(ftp::Client& client, const fs::VirtualPath& path)
   catch (const util::SystemError& e)
   {
     client.Control().Reply(ftp::ActionNotOkay, "Unable to execute pre check script: " + e.Message());
-    logs::error << "Unable to execute pre check script: " + e.Message() << logs::endl;
+    logs::Error("Unable to execute pre check script: %1%", e.Message());
     return false;
   }
 
@@ -110,7 +110,7 @@ bool PreDirCheck(ftp::Client& client, const fs::VirtualPath& path)
   catch (const util::SystemError& e)
   {
     client.Control().Reply(ftp::ActionNotOkay, "Unable to execute pre dir check script: " + e.Message());
-    logs::error << "Unable to execute pre dir check script: " + e.Message() << logs::endl;
+    logs::Error("Unable to execute pre dir check script: %1%", e.Message());
     return false;
   }
 
@@ -151,7 +151,7 @@ bool PostCheck(ftp::Client& client, const fs::VirtualPath& path,
   catch (const util::SystemError& e)
   {
     client.Control().Reply(ftp::ActionNotOkay, "Unable to execute post check script: " + e.Message());
-    logs::error << "Unable to execute post check script: " + e.Message() << logs::endl;
+    logs::Error("Unable to execute post check script: %1%", e.Message());
     return false;
   }
 }

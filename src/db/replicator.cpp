@@ -88,13 +88,14 @@ std::shared_ptr<Replicator> Replicator::instance;
 
 void Replicator::LogFailed(const std::list<std::shared_ptr<Replicable>>& failed)
 {
-  logs::db << "Exceeded maximum retries while replicating caches: ";
+  std::ostringstream os;
+  os << "Exceeded maximum retries while replicating caches: ";
   for (auto it = failed.begin(); it != failed.end(); ++it)
   {
-    if (it != failed.begin()) logs::db << ", ";
-    logs::db << (*it)->Collection();
+    if (it != failed.begin()) os << ", ";
+    os << (*it)->Collection();
   }
-  logs::db << logs::endl;
+  logs::Database(os.str());
 }
 
 void Replicator::Replicate(const mongo::BSONObj& entry)
@@ -117,12 +118,12 @@ void Replicator::Replicate(const mongo::BSONObj& entry)
 
 void Replicator::Populate()
 {
-  logs::debug << "Populating caches.." << logs::endl;
+  logs::Debug("Populating caches..");
   for (auto& cache : caches)
   {
     if (!cache->Populate())
     {
-      logs::db << "Error while populating " << cache->Collection() << " cache." << logs::endl;
+      logs::Database("Error while populating %1% cache.", cache->Collection());
     }
   }
 }
@@ -184,7 +185,7 @@ bool Replicator::Register(const std::shared_ptr<Replicable>& cache)
 void Replicator::Start()
 {
   verify(!thread.joinable());
-  logs::debug << "Starting cache replication thread.." << logs::endl;
+  logs::Debug("Starting cache replication thread..");
   thread = boost::thread(&Replicator::Run, this);
 }
 
@@ -192,18 +193,18 @@ void Replicator::Stop()
 {
   if (thread.joinable())
   {
-    logs::debug << "Stopping cache replication thread.." << logs::endl;
+    logs::Debug("Stopping cache replication thread..");
     thread.interrupt();
     bool firstWait = true;
     while (!thread.timed_join(boost::posix_time::milliseconds(1000)))
     {
       if (firstWait)
       {
-        logs::debug << "Waiting for replication thread.." << logs::endl;
+        logs::Debug("Waiting for replication thread..");
         firstWait = false;
       }
       else
-        logs::debug << "Still waiting ror replication thread.." << logs::endl;
+        logs::Debug("Still waiting ror replication thread..");
     }
   }
 }

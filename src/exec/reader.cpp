@@ -24,8 +24,8 @@ Reader::~Reader()
   }
   catch (const util::SystemError& e)
   {
-    logs::error << "Error while closing child process executed by " << client.User().Name() 
-                << ": " << boost::join(argv, " ") << logs::endl;
+    logs::Error("Error while closing child process executed by %1% : %2%", 
+                client.User().Name(), boost::join(argv, " "));
   }
 }
 
@@ -41,23 +41,20 @@ void Reader::Close()
     if (client.Child().Close(util::TimePair(1, 0))) return;
     if (client.Child().Kill(util::TimePair(1, 0)))
     {
-      logs::debug << "Child process executed by " << client.User().Name() 
-                  << " needed SIGTERM to be closed: " 
-                  << boost::join(argv, " ") << logs::endl;
+      logs::Debug("Child process executed by %1% needed SIGTERM to be closed: %2%",
+                  client.User().Name(), boost::join(argv, " "));
       return;
     }
     
     if (client.Child().Kill(SIGKILL, util::TimePair(1, 0)))
     {
-      logs::error << "Child process executed by " << client.User().Name() 
-                  << " needed SIGKILL to be closed: " 
-                  << boost::join(argv, " ") << logs::endl;
+      logs::Error("Child process executed by %1% needed SIGKILL to be closed: %2%",
+                  client.User().Name(), boost::join(argv, " "));
     }
     else
     {
-      logs::error << "Child process executed by " << client.User().Name() 
-                  << " failed to close even with SIGKILL: " 
-                  << boost::join(argv, " ") << logs::endl;
+      logs::Error("Child process executed by %1% failed to close even with SIGKILL: ",
+                  client.User().Name(), boost::join(argv, " "));
     }
     open = false;
   }
