@@ -85,12 +85,12 @@ void LOGSCommand::Execute()
   const cfg::Config& config = cfg::Get();
   
   std::string filename;  
-  if (log == "error") filename = config.ErrorLog().Filename();
-  else if (log == "security") filename = config.ErrorLog().Filename();
-  else if (log == "siteop") filename = config.SiteopLog().Filename();
-  else if (log == "events") filename = config.EventLog().Filename();
-  else if (log == "db") filename = config.DatabaseLog().Filename();
-  else if (log == "debug") filename = config.DebugLog().Filename();
+  if (log == "error") filename = config.ErrorLog().Name();
+  else if (log == "security") filename = config.ErrorLog().Name();
+  else if (log == "siteop") filename = config.SiteopLog().Name();
+  else if (log == "events") filename = config.EventLog().Name();
+  else if (log == "db") filename = config.DatabaseLog().Name();
+  else if (log == "debug") filename = config.DebugLog().Name();
   else throw cmd::SyntaxError();
   
   filename += ".log";  

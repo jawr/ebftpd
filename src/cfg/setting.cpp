@@ -389,8 +389,8 @@ CheckScript::CheckScript(const std::vector<std::string>& toks) :
 {
 }
 
-Log::Log(const std::string& filename, const std::vector<std::string>& toks) :
-  filename(filename),
+Log::Log(const std::string& name, const std::vector<std::string>& toks) :
+  name(name),
   console(util::string::BoolLexicalCast(toks[0])),
   file(util::string::BoolLexicalCast(toks[1])),
   database(toks.size() == 3 && boost::lexical_cast<long>(toks[2]))

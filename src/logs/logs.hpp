@@ -1,5 +1,5 @@
-#ifndef __LOGGER_LOGGER_HPP
-#define __LOGGER_LOGGER_HPP
+#ifndef __LOGS_LOGS_HPP
+#define __LOGS_LOGS_HPP
 
 #include <string>
 #include <sstream>
@@ -12,7 +12,6 @@ namespace logs
 {
 
 void Initialise(const std::string& logsPath);
-
 void DisableConsole();
 
 /*
@@ -38,7 +37,6 @@ struct Format : public util::Format
   { }
 };
  
-
 inline void Log(Logger& logger, std::ostringstream& os)
 {
   logger.Write("message", os.str());
@@ -78,14 +76,12 @@ void Security(const std::string& what, const std::string& format, const Args&...
   security.Write("message", util::Format()(os.str(), args...).String());
 }
 
-#ifndef __LOGS_LOGS_CPP
 extern Format Database;
 extern Format Error;
 extern Format Debug;
-#endif
 
 void InitialisePreConfig();
-void InitialisePostConfig();
+bool InitialisePostConfig();
 
 }
 

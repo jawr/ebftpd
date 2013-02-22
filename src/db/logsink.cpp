@@ -5,6 +5,25 @@
 namespace db
 {
 
+void LogSink::CreateCollection(long size)
+{
+  try
+  {
+    SafeConnection conn;
+    mongo::BSONObj info;
+    conn.RunCommand(BSON("create" << collection << 
+                         "capped" << true << 
+                         "size" << static_cast<long long>(size * 1024)), info);
+    return;
+  }
+  catch (const mongo::DBException&)
+  { }
+  catch (const DBError&)
+  { }
+  
+  throw LogCreationError();
+}
+
 mongo::BSONObjBuilder* LogSink::Builder()
 {
   mongo::BSONObjBuilder* bab = buffer.get();

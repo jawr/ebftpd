@@ -170,7 +170,7 @@ int main(int argc, char** argv)
     return 1;
   }
   
-  logs::InitialisePostConfig();
+  if (!logs::InitialisePostConfig()) return 1;
   
   if (cfg::Get().TlsCertificate().empty())
   {

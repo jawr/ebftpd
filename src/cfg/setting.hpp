@@ -423,22 +423,23 @@ public:
 
 class Log
 {
-  std::string filename;
+  std::string name;
   bool console;
   bool file;
   long database;
   
 public:
-  Log(const std::string& filename, bool console, bool file, long database) : 
-    filename(filename), console(console), file(file), database(database)
+  Log(const std::string& name, bool console, bool file, long database) : 
+    name(name), console(console), file(file), database(database)
   { }
   
-  Log(const std::string& filename, const std::vector<std::string>& toks);
+  Log(const std::string& name, const std::vector<std::string>& toks);
   
-  const std::string& Filename() const { return filename; }
+  const std::string& Name() const { return name; }
   bool Console() const { return console; }
   bool File() const { return file; }
-  long Database() const { return database; };
+  bool Database() const { return database > 0; };
+  long CollectionSize() const { return database; }
 };
 
 // end namespace

@@ -4,6 +4,7 @@
 #include <string>
 #include <boost/thread/tss.hpp>
 #include "logs/sink.hpp"
+#include "db/error.hpp"
 
 namespace mongo
 {
@@ -13,17 +14,26 @@ class BSONObjBuilder;
 namespace db
 {
 
+struct LogCreationError : public DBError
+{
+  LogCreationError() : std::runtime_error("Failed to create log database collection") { }
+};
+
 class LogSink : public logs::Sink
 {
   std::string collection;
   boost::thread_specific_ptr<mongo::BSONObjBuilder> buffer;
 
   mongo::BSONObjBuilder* Builder();
+
+  void CreateCollection(long size);
   
 public:
-  LogSink(const std::string& collection) :
+  LogSink(const std::string& collection, long size) :
     collection(collection)
-  { }
+  {
+    CreateCollection(size);
+  }
 
   void Write(const char* field, int value);
   void Write(const char* field, long long value);

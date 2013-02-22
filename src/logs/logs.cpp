@@ -1,11 +1,9 @@
-#define __LOGS_LOGS_CPP
-
 #include <fstream>
 #include "logs/logs.hpp"
 #include "util/path/path.hpp"
 #include "cfg/get.hpp"
 #include "logs/streamsink.hpp"
-#if !defined(EXTERNAL_TOOL)
+#ifndef EXTERNAL_TOOL
 #include "db/logsink.hpp"
 #endif
 
@@ -35,28 +33,48 @@ void InitialiseLog(Logger& logger, const cfg::setting::Log& config)
   {
     logger.PushSink(std::make_shared<StreamSink>(Stream(&std::clog, false)));
   }
+  
   if (config.File())
   {
-    Stream stream(new std::ofstream(util::path::Join(cfg::Get().Datapath(), config.Filename()).c_str()), true);
+    Stream stream(new std::ofstream(util::path::Join(cfg::Get().Datapath(), config.Name() + ".log").c_str()), true);
     logger.PushSink(std::make_shared<StreamSink>(stream));
   }
+  
 #if !defined(EXTERNAL_TOOL)
-  if (config.Database()) logger.PushSink(std::make_shared<db::LogSink>(config.Filename()));
+  if (config.Database())
+  {
+    logger.PushSink(std::make_shared<db::LogSink>("log." + config.Name(), config.CollectionSize()));
+  }
 #endif
 }
 
-void InitialisePostConfig()
+bool InitialisePostConfig()
 {
   error = Logger();
   debug = Logger();
   
   const cfg::Config& config = cfg::Get();
-  InitialiseLog(events,config.EventLog()); 
-  InitialiseLog(security, config.SecurityLog());
-  InitialiseLog(siteop, config.SiteopLog());
-  InitialiseLog(error, config.ErrorLog());
-  InitialiseLog(debug, config.DebugLog());
   InitialiseLog(db, config.DatabaseLog());
+
+#ifndef EXTERNAL_TOOL
+  try
+  {
+#endif
+    InitialiseLog(events,config.EventLog()); 
+    InitialiseLog(security, config.SecurityLog());
+    InitialiseLog(siteop, config.SiteopLog());
+    InitialiseLog(error, config.ErrorLog());
+    InitialiseLog(debug, config.DebugLog());
+#ifndef EXTERNAL_TOOL
+  }
+  catch (const db::LogCreationError&)
+  {
+    Database("Creation of one or more database log collections failed.");
+    return false;
+  }
+#endif
+  
+  return true;
 }
 
 void DisableConsole()
