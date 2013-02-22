@@ -161,34 +161,26 @@ util::Error Initialise()
   sigset_t set;
   sigfillset(&set);
 
-  // allow interruption inside gdb
-  if (util::debug::DebuggerAttached())
-  {
-    sigdelset(&set, SIGINT);
-  }
-  else
-  {
-    sigdelset(&set, SIGSEGV);
-    sigdelset(&set, SIGABRT);
-    sigdelset(&set, SIGBUS);
-    sigdelset(&set, SIGILL);
-    sigdelset(&set, SIGFPE);
-    
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_flags = 0;
-    sa.sa_handler = CrashHandler;
-    if (sigaction(SIGSEGV, &sa, nullptr) < 0)
-      return util::Error::Failure(errno);
-    if (sigaction(SIGBUS, &sa, nullptr) < 0)
-      return util::Error::Failure(errno);
-    if (sigaction(SIGILL, &sa, nullptr) < 0)
-      return util::Error::Failure(errno);
-    if (sigaction(SIGFPE, &sa, nullptr) < 0)
-      return util::Error::Failure(errno);
+  sigdelset(&set, SIGSEGV);
+  sigdelset(&set, SIGABRT);
+  sigdelset(&set, SIGBUS);
+  sigdelset(&set, SIGILL);
+  sigdelset(&set, SIGFPE);
+  
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_flags = 0;
+  sa.sa_handler = CrashHandler;
+  if (sigaction(SIGSEGV, &sa, nullptr) < 0)
+    return util::Error::Failure(errno);
+  if (sigaction(SIGBUS, &sa, nullptr) < 0)
+    return util::Error::Failure(errno);
+  if (sigaction(SIGILL, &sa, nullptr) < 0)
+    return util::Error::Failure(errno);
+  if (sigaction(SIGFPE, &sa, nullptr) < 0)
+    return util::Error::Failure(errno);
 
-   std::set_terminate(TerminateHandler);
- }
+ std::set_terminate(TerminateHandler);
 
   if (pthread_sigmask(SIG_BLOCK, &set, nullptr) < 0)
     return util::Error::Failure(errno);  
