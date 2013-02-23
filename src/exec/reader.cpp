@@ -4,6 +4,7 @@
 #include "ftp/client.hpp"
 #include "exec/util.hpp"
 #include "logs/logs.hpp"
+#include "acl/user.hpp"
 
 namespace exec
 {

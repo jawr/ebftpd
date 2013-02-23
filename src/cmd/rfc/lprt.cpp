@@ -1,5 +1,6 @@
 #include "cmd/rfc/lprt.hpp"
 #include "util/net/ftp.hpp"
+#include "ftp/data.hpp"
 
 namespace cmd { namespace rfc
 {

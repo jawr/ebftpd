@@ -5,6 +5,7 @@
 #include "acl/misc.hpp"
 #include "cmd/error.hpp"
 #include "logs/logs.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

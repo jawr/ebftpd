@@ -9,6 +9,7 @@
 #include "util/enumbitwise.hpp"
 #include "util/string.hpp"
 #include "acl/group.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

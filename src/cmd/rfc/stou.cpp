@@ -4,6 +4,7 @@
 #include "fs/directory.hpp"
 #include "logs/logs.hpp"
 #include "cmd/error.hpp"
+#include "fs/path.hpp"
 
 namespace cmd { namespace rfc
 {

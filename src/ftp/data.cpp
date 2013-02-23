@@ -9,6 +9,7 @@
 #include "ftp/client.hpp"
 #include "cfg/get.hpp"
 #include "ftp/error.hpp"
+#include "ftp/control.hpp"
 
 namespace util
 {

@@ -1,6 +1,7 @@
 #include "cmd/site/renuser.hpp"
 #include "acl/util.hpp"
 #include "logs/logs.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

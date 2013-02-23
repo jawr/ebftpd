@@ -6,6 +6,8 @@
 #include "logs/logs.hpp"
 #include "exec/script.hpp"
 #include "acl/group.hpp"
+#include "acl/user.hpp"
+#include "ftp/control.hpp"
 
 namespace exec
 {

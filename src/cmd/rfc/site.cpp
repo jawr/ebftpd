@@ -7,6 +7,7 @@
 #include "exec/cscript.hpp"
 #include "util/string.hpp"
 #include "logs/logs.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace rfc
 {

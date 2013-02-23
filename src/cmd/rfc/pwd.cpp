@@ -1,5 +1,6 @@
 #include "cmd/rfc/pwd.hpp"
 #include "fs/directory.hpp"
+#include "fs/path.hpp"
 
 namespace cmd { namespace rfc
 {

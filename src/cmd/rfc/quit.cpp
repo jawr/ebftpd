@@ -1,6 +1,7 @@
 #include "cmd/rfc/quit.hpp"
 #include "text/util.hpp"
 #include "acl/misc.hpp"
+#include "fs/path.hpp"
 
 namespace cmd { namespace rfc
 {

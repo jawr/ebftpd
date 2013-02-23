@@ -2,6 +2,7 @@
 #include "text/util.hpp"
 #include "logs/logs.hpp"
 #include "acl/misc.hpp"
+#include "fs/path.hpp"
 
 namespace cmd { namespace site
 {

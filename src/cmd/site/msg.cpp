@@ -15,6 +15,7 @@
 #include "text/factory.hpp"
 #include "acl/misc.hpp"
 #include "acl/flags.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

@@ -3,6 +3,7 @@
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
 #include "util/string.hpp"
+#include "ftp/data.hpp"
 
 namespace cmd { namespace rfc
 {

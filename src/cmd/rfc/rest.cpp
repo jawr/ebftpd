@@ -1,5 +1,6 @@
 #include <sstream>
 #include "cmd/rfc/rest.hpp"
+#include "ftp/data.hpp"
 
 namespace cmd { namespace rfc
 {

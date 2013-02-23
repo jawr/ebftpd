@@ -3,6 +3,7 @@
 #include "cmd/error.hpp"
 #include "logs/logs.hpp"
 #include "acl/flags.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

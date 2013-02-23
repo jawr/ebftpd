@@ -1,84 +1,62 @@
 #ifndef __FTP_CLIENT_HPP
 #define __FTP_CLIENT_HPP
 
+#include <memory>
 #include <string>
-#include <cstdint>
-#include <atomic>
-#include <mutex>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/optional.hpp>
-#include "acl/user.hpp"
-#include "util/net/tcpsocket.hpp"
-#include "util/net/tcplistener.hpp"
-#include "util/thread.hpp"
-#include "util/error.hpp"
-#include "fs/path.hpp"
-#include "ftp/replycodes.hpp"
-#include "ftp/data.hpp"
-#include "ftp/control.hpp"
-#include "ftp/xdupe.hpp"
-#include "util/processreader.hpp"
+#include "acl/types.hpp"
+#include "ftp/clientstate.hpp"
+
+namespace boost
+{
+namespace posix_time
+{
+class ptime;
+class seconds;
+}
+}
+
+namespace acl
+{
+class User;
+}
+
+namespace fs
+{
+class VirtualPath;
+}
+
+namespace util
+{
+class ProcessReader;
+namespace net
+{
+class TCPListener;
+class Endpoint;
+}
+}
 
 namespace ftp 
 {
 
-enum class ClientState
+namespace xdupe
 {
-  LoggedOut,
-  WaitingPassword,
-  LoggedIn,
-  Finished,
-  NotBeforeAuth,
-  AnyState
-};
+enum class Mode : unsigned;
+}
 
-class Client : public util::Thread
+class ClientImpl;
+class Control;
+class Data;
+
+class Client
 {
-  mutable std::mutex mutex;
-  
-  ::ftp::Control control;
-  ::ftp::Data data;
-  util::ProcessReader child;
-  
-  std::atomic<bool> userUpdated;
-  boost::optional<acl::User> user;
-  ::ftp::ClientState state;
-  int passwordAttemps;
-  fs::VirtualPath renameFrom;
-  xdupe::Mode xdupeMode;
-  std::string confirmCommand;
-  std::string currentCommand;
-  bool kickLogin;
-
-  boost::posix_time::ptime loggedInAt;
-  boost::posix_time::ptime idleExpires;
-  boost::posix_time::seconds idleTimeout;
-  boost::posix_time::ptime idleTime;
-
-  std::string ident;
-  std::string ip;
-  std::string hostname;
-  
-  static std::atomic_bool siteopOnly;
-  
-  static const int maxPasswordAttemps = 3;
-  
-  void DisplayBanner();
-  void ExecuteCommand(const std::string& commandLine);
-  void Handle();
-  bool CheckState(ClientState reqdState);
-  void InnerRun();
-  void Run();
-  void LookupIdent();
-  void IdleReset(std::string commandLine)  ;
-  bool ReloadUser();
+  std::unique_ptr<ClientImpl> pimpl;
   
 public:
   Client();
   ~Client();
      
-  acl::User& User() { return *user; }
-  const acl::User& User() const { return *user; }
+  acl::User& User();
+  const acl::User& User() const;
   
   bool Accept(util::net::TCPListener& server);
   bool IsFinished() const;
@@ -86,102 +64,54 @@ public:
   void SetWaitingPassword(const acl::User& user, bool kickLogin);
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
-  void SetRenameFrom(const fs::VirtualPath& path) { this->renameFrom = path; }
-  const fs::VirtualPath& RenameFrom() const { return renameFrom; }
+  void SetRenameFrom(const fs::VirtualPath& path);
+  const fs::VirtualPath& RenameFrom() const;
   
-  bool KickLogin() const { return kickLogin; }
+  bool KickLogin() const;
   
-  ::ftp::Control& Control() { return control; }
-  const ::ftp::Control& Control() const { return control; }
+  ::ftp::Control& Control();
+  const ::ftp::Control& Control() const;
   
-  ::ftp::Data& Data() { return data; }
-  const ::ftp::Data& Data() const { return data; }
+  ::ftp::Data& Data();
+  const ::ftp::Data& Data() const;
   
-  util::ProcessReader& Child() { return child; }
+  util::ProcessReader& Child();
 
-  void SetIdleTimeout(const boost::posix_time::seconds& idleTimeout)
-  { this->idleTimeout = idleTimeout; }
-  const boost::posix_time::seconds& IdleTimeout() const
-  { return idleTimeout; }
+  void SetIdleTimeout(const boost::posix_time::seconds& idleTimeout);
+  const boost::posix_time::seconds& IdleTimeout() const;
   
-  const boost::posix_time::ptime LoggedInAt() const
-  { return loggedInAt; }
-  
-  void SetXDupeMode(xdupe::Mode xdupeMode)
-  { this->xdupeMode = xdupeMode; }
-  xdupe::Mode XDupeMode() const { return xdupeMode; }
+  const boost::posix_time::ptime LoggedInAt() const;
+  void SetXDupeMode(xdupe::Mode xdupeMode);
+  xdupe::Mode XDupeMode() const;
   
   bool IsFxp(const util::net::Endpoint& ep) const;
   
   bool ConfirmCommand(const std::string& argStr);
 
-  boost::posix_time::seconds IdleTime() const 
-  { 
-    namespace pt = boost::posix_time;
-    pt::time_duration diff = pt::second_clock::local_time() - idleTime;
-    return pt::seconds(diff.total_seconds());
-  }
-  
-  const std::string& CurrentCommand() const
-  {
-    std::lock_guard<std::mutex> lock(mutex);
-    return currentCommand; 
-  }
-  
-  ClientState State() const
-  {
-    std::lock_guard<std::mutex> lock(mutex);
-    return state;
-  }
-
+  boost::posix_time::seconds IdleTime() const;
+  const std::string& CurrentCommand() const;
+  ClientState State() const;
   void SetState(ClientState state);
-  
   void Interrupt();
-  
   void LogTraffic() const;
-  
-  static bool SetSiteopOnly()
-  {
-    bool expected = false;
-    return siteopOnly.compare_exchange_strong(expected, true);
-  }
-  
-  static bool SetReopen()
-  {
-    bool expected = true; 
-    return siteopOnly.compare_exchange_strong(expected, false);
-  }
-  
-  static bool IsSiteopOnly()
-  { return siteopOnly; }
-  
+  static bool SetSiteopOnly();
+  static bool SetReopen();
+  static bool IsSiteopOnly();
   bool PostCheckAddress();
   bool PreCheckAddress();
-  
-  std::string IP() const
-  {
-    std::lock_guard<std::mutex> lock(mutex);
-    return ip;
-  }
-  
-  std::string Ident() const
-  {
-    std::lock_guard<std::mutex> lock(mutex);
-    return ident;
-  }
-  
-  std::string Hostname() const
-  {
-    std::lock_guard<std::mutex> lock(mutex);
-    return hostname;
-  }
+  std::string IP() const;  
+  std::string Ident() const;
+  std::string Hostname() const;
   void HostnameLookup();
   std::string HostnameAndIP() const;
   bool IdntUpdate(const std::string& ident, std::string ip,
                   const std::string& hostname);
   bool IdntParse(const std::string& command);
+  void SetUserUpdated();
   
-  void SetUserUpdated() { userUpdated = true; }
+  void Start();
+  void Join();
+  bool TryJoin();
 };
 
 } /* ftp namespace */

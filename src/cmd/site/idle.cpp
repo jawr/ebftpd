@@ -4,6 +4,7 @@
 #include "cmd/site/idle.hpp"
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

@@ -8,6 +8,8 @@
 #include "cfg/get.hpp"
 #include "acl/group.hpp"
 #include "logs/logs.hpp"
+#include "ftp/control.hpp"
+#include "acl/user.hpp"
 
 namespace exec
 {

@@ -11,6 +11,7 @@
 #include "acl/util.hpp"
 #include "db/group.hpp"
 #include "logs/logs.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

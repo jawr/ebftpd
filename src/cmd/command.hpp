@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include "ftp/client.hpp"
+#include "ftp/control.hpp"
 
 namespace ftp
 {

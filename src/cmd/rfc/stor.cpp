@@ -25,6 +25,7 @@
 #include "ftp/speedcontrol.hpp"
 #include "util/path/status.hpp"
 #include "acl/flags.hpp"
+#include "ftp/xdupe.hpp"
 
 namespace cmd { namespace rfc
 {

@@ -3,6 +3,7 @@
 #include "util/string.hpp"
 #include "cmd/site/passwd.hpp"
 #include "cmd/site/chpass.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

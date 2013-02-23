@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
+#include "ftp/replycodes.hpp"
 
 namespace cmd { namespace rfc
 {

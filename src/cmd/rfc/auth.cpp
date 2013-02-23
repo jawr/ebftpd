@@ -1,5 +1,6 @@
 #include "cmd/rfc/auth.hpp"
 #include "util/net/tlscontext.hpp"
+#include "ftp/data.hpp"
 
 namespace cmd { namespace rfc
 {

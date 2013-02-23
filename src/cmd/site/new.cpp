@@ -11,6 +11,7 @@
 #include "fs/owner.hpp"
 #include "acl/group.hpp"
 #include "util/string.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

@@ -12,6 +12,9 @@
 #include "stats/util.hpp"
 #include "ftp/client.hpp"
 #include "acl/misc.hpp"
+#include "ftp/data.hpp"
+#include "acl/user.hpp"
+#include "fs/path.hpp"
 
 namespace ftp
 {

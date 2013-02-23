@@ -4,6 +4,7 @@
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
 #include "util/path/status.hpp"
+#include "fs/path.hpp"
 
 namespace cmd { namespace rfc
 {

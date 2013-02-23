@@ -8,6 +8,7 @@
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
 #include "util/string.hpp"
+#include "fs/path.hpp"
 
 namespace cmd { namespace site
 {

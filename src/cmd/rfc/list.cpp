@@ -4,6 +4,7 @@
 #include "fs/directory.hpp"
 #include "cmd/dirlist.hpp"
 #include "util/string.hpp"
+#include "ftp/data.hpp"
 
 namespace cmd { namespace rfc
 {

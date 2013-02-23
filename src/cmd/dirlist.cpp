@@ -14,6 +14,7 @@
 #include "logs/logs.hpp"
 #include "acl/user.hpp"
 #include "acl/group.hpp"
+#include "ftp/data.hpp"
 
 namespace cmd
 {

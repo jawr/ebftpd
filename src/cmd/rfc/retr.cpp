@@ -16,6 +16,8 @@
 #include "acl/misc.hpp"
 #include "ftp/speedcontrol.hpp"
 #include "acl/flags.hpp"
+#include "ftp/data.hpp"
+#include "fs/path.hpp"
 
 namespace cmd { namespace rfc
 {
