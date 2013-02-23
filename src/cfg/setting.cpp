@@ -186,6 +186,10 @@ Right::Right(std::vector<std::string> toks)
                path.find("[:groupname:]") != std::string::npos;
 }
 
+PathFilter::~PathFilter()
+{
+}
+
 PathFilter& PathFilter::operator=(const PathFilter& rhs)
 {
   messagePath = rhs.messagePath;

@@ -2,9 +2,16 @@
 #define __UTIL_NET_FTP_HPP
 
 #include <string>
-#include "util/net/endpoint.hpp"
 
-namespace util { namespace net { namespace ftp
+namespace util
+{
+class Error;
+
+namespace net
+{ 
+class Endpoint;
+
+namespace ftp
 {
 
 util::Error EndpointFromPORT(const std::string& portString, util::net::Endpoint& ep);

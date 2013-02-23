@@ -4,6 +4,7 @@
 #include <string>
 #include <functional>
 #include <unordered_map>
+#include <vector>
 #include <mutex>
 #include "acl/types.hpp"
 #include "db/replicable.hpp"

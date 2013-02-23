@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <string>
-#include <net/if.h>
 #include <map>
 #include "util/net/ipaddress.hpp"
 

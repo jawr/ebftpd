@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include "cfg/config.hpp"
 #include "cfg/error.hpp"
 #include "cfg/setting.hpp"
@@ -763,7 +764,7 @@ void Config::Parse(std::string line)
   
   // remove setting from args
   toks.erase(toks.begin());    
-  boost::algorithm::to_lower(opt);
+  util::ToLower(opt);
 
   // update cache for sanity check
   settingsCache[opt]++; 

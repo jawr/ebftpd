@@ -1,5 +1,6 @@
 #include <sstream>
 #include <cassert>
+#include <iomanip>
 #include <boost/regex.hpp>
 #include "acl/util.hpp"
 #include "util/error.hpp"

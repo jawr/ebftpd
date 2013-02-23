@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include "util/net/ftp.hpp"
 #include "util/error.hpp"
+#include "util/net/endpoint.hpp"
 
 namespace util { namespace net { namespace ftp
 {

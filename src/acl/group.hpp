@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <string>
+#include <vector>
+#include <boost/optional/optional_fwd.hpp>
 #include "acl/types.hpp"
 
 namespace db

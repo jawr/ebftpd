@@ -1,4 +1,6 @@
+#include <sstream>
 #include <memory>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/site/seen.hpp"
 #include "acl/user.hpp"
 #include "util/error.hpp"

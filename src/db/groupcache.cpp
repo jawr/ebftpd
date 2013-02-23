@@ -64,7 +64,7 @@ bool GroupCache::Replicate(const mongo::BSONElement& id)
     else
     {
       // group not found, must be deleted, remove from cache
-      boost::lock(gidsMutex, namesMutex);
+      std::lock(gidsMutex, namesMutex);
       std::lock_guard<std::mutex> gidsLock(gidsMutex, std::adopt_lock);
       std::lock_guard<std::mutex> namesLock(namesMutex, std::adopt_lock);
       
@@ -88,7 +88,7 @@ bool GroupCache::Populate()
 {
   auto groups = GetGroups();
   
-  boost::lock(namesMutex, gidsMutex);
+  std::lock(namesMutex, gidsMutex);
   std::lock_guard<std::mutex> namesLock(namesMutex, std::adopt_lock);
   std::lock_guard<std::mutex> gidsLock(gidsMutex, std::adopt_lock);
 

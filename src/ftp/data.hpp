@@ -5,7 +5,7 @@
 #include "util/net/tcplistener.hpp"
 #include "util/net/tcpsocket.hpp"
 #include "util/net/endpoint.hpp"
-#include "ftp/readwriteable.hpp"
+#include "ftp/writeable.hpp"
 #include "ftp/transferstate.hpp"
 #include "util/enumstrings.hpp"
 
@@ -47,7 +47,7 @@ enum class SSCNMode
   Client
 };
 
-class Data : public ReadWriteable
+class Data : public Writeable
 {
   Client& client;
   util::net::TCPListener listener;

@@ -4,6 +4,7 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "util/string.hpp"
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include "cmd/site/change.hpp"
 #include "acl/user.hpp"
 #include "acl/misc.hpp"

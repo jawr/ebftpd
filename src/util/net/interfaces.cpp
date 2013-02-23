@@ -3,6 +3,7 @@
 #include <ifaddrs.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <net/if.h>
 #include "util/net/interfaces.hpp"
 #include "util/net/error.hpp"
 

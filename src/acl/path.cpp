@@ -1,3 +1,5 @@
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/regex.hpp>
 #include "acl/path.hpp"
 #include "fs/owner.hpp"
 #include "cfg/get.hpp"

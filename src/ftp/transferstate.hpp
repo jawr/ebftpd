@@ -35,7 +35,7 @@ class TransferState
 public:
   TransferState& operator=(const TransferState& rhs)
   {
-    boost::lock(mutex, rhs.mutex);
+    std::lock(mutex, rhs.mutex);
     std::lock_guard<std::mutex> lock1(mutex, std::adopt_lock);
     std::lock_guard<std::mutex> lock2(rhs.mutex, std::adopt_lock);
     Assign(rhs);

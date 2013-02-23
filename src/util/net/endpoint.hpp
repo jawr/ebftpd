@@ -1,7 +1,6 @@
 #ifndef __UTIL_NET_ENDPOINT_HPP
 #define __UTIL_NET_ENDPOINT_HPP
 
-#include <algorithm>
 #include <cstring>
 #include <ostream>
 #include <sys/socket.h>

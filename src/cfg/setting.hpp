@@ -210,7 +210,8 @@ public:
   PathFilter& operator=(PathFilter&& rhs);
   PathFilter(const PathFilter& other);
   PathFilter(PathFilter&& other);
-
+  ~PathFilter();
+  
   PathFilter(std::vector<std::string> toks);
   const std::string& MessagePath() const { return messagePath; }
   const boost::regex& Regex() const;

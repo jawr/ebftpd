@@ -1,12 +1,9 @@
 #ifndef __FTP_UTIL_HPP
 #define __FTP_UTIL_HPP
 
-#include <algorithm>
 #include <vector>
 #include <string>
 #include <sys/types.h>
-#include <boost/thread/thread.hpp>
-#include "ftp/transferstate.hpp"
 
 namespace ftp
 {

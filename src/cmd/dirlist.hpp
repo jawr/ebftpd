@@ -8,12 +8,12 @@
 #include "fs/path.hpp"
 #include "util/path/status.hpp"
 #include "acl/types.hpp"
-#include "ftp/readwriteable.hpp"
+#include "ftp/writeable.hpp"
 
 namespace ftp
 {
 class Client;
-class ReadWriteable;
+class Writeable;
 }
 
 namespace fs
@@ -57,7 +57,7 @@ public:
 class DirectoryList
 {
   ftp::Client& client;
-  ftp::ReadWriteable& socket;
+  ftp::Writeable& socket;
   fs::Path path;
   ListOptions options;
   int maxRecursion;
@@ -85,7 +85,7 @@ class DirectoryList
 
 public:
   DirectoryList(ftp::Client& client,
-                ftp::ReadWriteable& socket,
+                ftp::Writeable& socket,
                 const fs::Path& path,
                 const ListOptions& options,
                 int maxRecursion);

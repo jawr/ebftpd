@@ -130,7 +130,7 @@ bool UserCache::Replicate(const mongo::BSONElement& id)
     {
       // user not found, must be deleted, remove from cache
       {
-        boost::lock(uidsMutex, namesMutex);
+        std::lock(uidsMutex, namesMutex);
         std::lock_guard<std::mutex> uidsLock(uidsMutex, std::adopt_lock);
         std::lock_guard<std::mutex> namesLock(namesMutex, std::adopt_lock);
         
@@ -165,7 +165,7 @@ bool UserCache::Populate()
 {
   auto users = GetUsers();
   
-  boost::lock(namesMutex, uidsMutex, primaryGidsMutex, ipMasksMutex);
+  std::lock(namesMutex, uidsMutex, primaryGidsMutex, ipMasksMutex);
   std::lock_guard<std::mutex> namesLock(namesMutex, std::adopt_lock);
   std::lock_guard<std::mutex> uidsLock(uidsMutex, std::adopt_lock);
   std::lock_guard<std::mutex> primaryGidsLock(primaryGidsMutex, std::adopt_lock);

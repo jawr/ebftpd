@@ -108,7 +108,7 @@ GlobIterator::Tokens GlobIterator::TokenizePathMask(const std::string& pathMask)
 {
   bool trailingSlash = pathMask.back() == '/';
   Tokens pathTokens;
-  util::Split(pathTokens, pathMask, "/",  boost::token_compress_on);
+  util::Split(pathTokens, pathMask, "/",  true);
   if (trailingSlash)
   {
     pathTokens.pop_back();

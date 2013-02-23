@@ -19,6 +19,12 @@ double CalculateSpeed(long long bytes, const boost::posix_time::time_duration& d
   return seconds == 0.0 ? bytes : bytes / seconds;
 }
 
+double CalculateSpeed(long long bytes, const boost::posix_time::ptime& start, 
+        const boost::posix_time::ptime& end)
+{
+  return CalculateSpeed(bytes, end - start);
+}
+
 boost::posix_time::time_duration SpeedLimitSleep(
       const boost::posix_time::time_duration& xfertime, 
       long long bytes, long limit)
@@ -61,6 +67,12 @@ std::string HighResSecondsString(const boost::posix_time::time_duration& duratio
   }
   
   return os.str();
+}
+
+std::string HighResSecondsString(const boost::posix_time::ptime& start, 
+        const boost::posix_time::ptime& end)
+{
+  return HighResSecondsString(end - start);
 }
 
 int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path, 

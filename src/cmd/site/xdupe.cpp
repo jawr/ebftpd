@@ -1,4 +1,5 @@
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 #include "cmd/site/xdupe.hpp"
 #include "ftp/xdupe.hpp"
 #include "cmd/error.hpp"

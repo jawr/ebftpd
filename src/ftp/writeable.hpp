@@ -6,11 +6,10 @@
 namespace ftp
 {
 
-class ReadWriteable
+class Writeable
 {
 public:
-  virtual ~ReadWriteable() { }
-  virtual size_t Read(char* buffer, size_t size) = 0;
+  virtual ~Writeable() { }
   virtual void Write(const char* buffer, size_t len) = 0;
 };
 

@@ -263,7 +263,7 @@ size_t Data::Read(char* buffer, size_t size)
 {
   fd_set readSet;
   struct timeval tv;
-  int controlSock = client.Control().socket.Socket();
+  int controlSock = client.Control().socket->Socket();
   int max = std::max(socket.Socket(), controlSock);
   
   while (true)
@@ -294,7 +294,7 @@ void Data::Write(const char* buffer, size_t len)
   fd_set readSet;
   fd_set writeSet;
   struct timeval tv;
-  int controlSock = client.Control().socket.Socket();
+  int controlSock = client.Control().socket->Socket();
   int max = std::max(socket.Socket(), controlSock);
   
   while (true)

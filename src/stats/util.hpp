@@ -35,11 +35,8 @@ namespace stats
 {
 
 double CalculateSpeed(long long bytes, const boost::posix_time::time_duration& duration);
-inline double CalculateSpeed(long long bytes, const boost::posix_time::ptime& start, 
-        const boost::posix_time::ptime& end)
-{
-  return CalculateSpeed(bytes, end - start);
-}
+double CalculateSpeed(long long bytes, const boost::posix_time::ptime& start, 
+        const boost::posix_time::ptime& end);
 
 boost::posix_time::time_duration SpeedLimitSleep(
       const boost::posix_time::time_duration& xfertime, 
@@ -48,12 +45,8 @@ boost::posix_time::time_duration SpeedLimitSleep(
 std::string AutoUnitSpeedString(double speed);
 std::string AutoUnitString(double kBytes);
 std::string HighResSecondsString(const boost::posix_time::time_duration& duration);
-inline std::string HighResSecondsString(const boost::posix_time::ptime& start, 
-        const boost::posix_time::ptime& end)
-{
-  return HighResSecondsString(end - start);
-}
-
+std::string HighResSecondsString(const boost::posix_time::ptime& start, 
+        const boost::posix_time::ptime& end);
 int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
     const boost::optional<const cfg::Section&>& section);
 int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path, 

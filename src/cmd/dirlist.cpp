@@ -126,7 +126,7 @@ void ListOptions::ParseOption(char option)
 }
 
 DirectoryList::DirectoryList(ftp::Client& client,
-                             ftp::ReadWriteable& socket,
+                             ftp::Writeable& socket,
                              const fs::Path& path,
                              const ListOptions& options,
                              int maxRecursion) :
