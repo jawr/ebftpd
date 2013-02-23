@@ -1,9 +1,9 @@
-#include <boost/algorithm/string/trim.hpp>
 #include "cmd/rfc/list.hpp"
 #include "cfg/get.hpp"
 #include "stats/util.hpp"
 #include "fs/directory.hpp"
 #include "cmd/dirlist.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -45,7 +45,7 @@ void LISTCommand::Execute()
       optOffset += args[1].length();
     }
     
-    path = fs::Path(boost::trim_copy(std::string(argStr, optOffset)));
+    path = fs::Path(util::TrimCopy(std::string(argStr, optOffset)));
   }
   
   const cfg::Config& config = cfg::Get();

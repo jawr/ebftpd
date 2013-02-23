@@ -8,7 +8,7 @@ namespace cmd { namespace site
 
 void SHUTDOWNCommand::Execute()
 {
-  boost::to_lower(args[1]);
+  util::ToLower(args[1]);
   if (args[1] == "siteop")
   {
     if (!ftp::Client::SetSiteopOnly()) 

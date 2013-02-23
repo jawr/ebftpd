@@ -1,7 +1,6 @@
 #include <sys/stat.h>
 #include <cerrno>
 #include <cassert>
-#include <boost/algorithm/string/predicate.hpp>
 #include <boost/thread/tss.hpp>
 #include "fs/directory.hpp"
 #include "util/path/status.hpp"
@@ -14,6 +13,7 @@
 #include "util/path/dircontainer.hpp"
 #include "fs/path.hpp"
 #include "util/error.hpp"
+#include "util/string.hpp"
 
 namespace PP = acl::path;
 
@@ -60,7 +60,7 @@ util::Error ChangeAlias(const acl::User& user, const Path& path, VirtualPath& ma
 {
   if (path.Basename() != path) return util::Error::Failure(ENOENT);
   
-  std::string name = boost::to_lower_copy(path.ToString());
+  std::string name = util::ToLowerCopy(path.ToString());
   for (auto& alias : cfg::Get().Alias())
   {
     if (alias.Name() == name)
@@ -75,7 +75,7 @@ util::Error ChangeAlias(const acl::User& user, const Path& path, VirtualPath& ma
 
 util::Error ChangeMatch(const acl::User& user, const VirtualPath& path, VirtualPath& match)
 {
-  std::string lcBasename(boost::to_lower_copy(path.Basename().ToString()));
+  std::string lcBasename(util::ToLowerCopy(path.Basename().ToString()));
 
   util::Error e(PP::DirAllowed<PP::View>(user, path));
   if (!e) return e;
@@ -84,7 +84,7 @@ util::Error ChangeMatch(const acl::User& user, const VirtualPath& path, VirtualP
   {
     for (auto& entry : DirContainer(user, path.Dirname()))
     {
-      if (!boost::starts_with(boost::to_lower_copy(entry), lcBasename)) continue;
+      if (!util::StartsWith(util::ToLowerCopy(entry), lcBasename)) continue;
       match = path.Dirname() / entry;
       e = ChangeDirectory(user, match);
       if (e || (e.Errno() != ENOENT && e.Errno() != ENOTDIR))

@@ -13,7 +13,7 @@ namespace cmd { namespace site
 
 void HELPCommand::Syntax()
 {
-  boost::to_upper(args[1]);
+  util::ToUpper(args[1]);
   cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(args[1]));
   if (!def) control.Reply(ftp::CommandUnrecognised, "Command not understood");
   else

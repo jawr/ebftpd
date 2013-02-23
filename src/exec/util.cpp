@@ -1,7 +1,5 @@
 #include <sstream>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include "exec/util.hpp"
 #include "ftp/client.hpp"
 #include "acl/group.hpp"
@@ -22,7 +20,7 @@ std::vector<std::string> BuildEnv(ftp::Client& client)
   
   std::string envStr(os.str());
   std::vector<std::string> env;
-  boost::split(env, envStr, boost::is_any_of("\n"), boost::token_compress_on);
+  util::Split(env, envStr, "\n", true);
   return env;
 }
 

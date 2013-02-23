@@ -1,10 +1,10 @@
-#include <boost/algorithm/string/trim.hpp>
 #include "cmd/rfc/stat.hpp"
 #include "cfg/get.hpp"
 #include "main.hpp"
 #include "stats/util.hpp"
 #include "util/scopeguard.hpp"
 #include "cmd/dirlist.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -34,7 +34,7 @@ void STATCommand::Execute()
     optOffset += args[1].length();
   }
   
-  fs::Path path(boost::trim_copy(std::string(argStr, optOffset)));
+  fs::Path path(util::TrimCopy(std::string(argStr, optOffset)));
   
   const cfg::Config& config = cfg::Get();
   std::string forcedOptions = "l" + config.Lslong().Options();

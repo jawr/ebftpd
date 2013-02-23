@@ -1,7 +1,4 @@
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -190,11 +187,11 @@ void TemplateBuffer::ParseLogic()
   /* cleanup */
   var.str(std::string());
 
-  boost::trim(logic);
-  boost::to_lower(logic);
+  util::Trim(logic);
+  util::ToLower(logic);
  
   std::vector<std::string> args; 
-  boost::split(args, logic, boost::is_any_of(" "));
+  util::Split(args, logic, " ");
   logic = args[0];
   
 
@@ -221,8 +218,8 @@ void TemplateBuffer::ParseLogic()
     if (args.size() != 2)
       throw TemplateMalform(linePos, charPos, "(include requires file to import!)");
     std::string file = args[1];
-    boost::trim_left_if(file, boost::is_any_of("\""));
-    boost::trim_right_if(file, boost::is_any_of("\""));
+    util::TrimLeftIf(file, "\"");
+    util::TrimRightIf(file, "\"");
     ParseInclude(file);
   }
   else
@@ -237,8 +234,8 @@ void TemplateBuffer::ParseFilter()
   /* cleanup */
   var.str(std::string());
 
-  boost::trim(filter);
-  boost::to_lower(filter);
+  util::Trim(filter);
+  util::ToLower(filter);
 
   buffer << "{{";
 

@@ -1,4 +1,3 @@
-#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/gpranks.hpp"
 #include "db/stats/stats.hpp"
 #include "stats/types.hpp"
@@ -60,7 +59,7 @@ void GPRANKSCommand::Execute()
   std::string section;
   if (args.size() >= 6)
   {
-    section = boost::to_upper_copy(args[5]);
+    section = util::ToUpperCopy(args[5]);
     if (config.Sections().find(section) == config.Sections().end())
     {
       control.Reply(ftp::ActionNotOkay, "Section " + section + " doesn't exist.");

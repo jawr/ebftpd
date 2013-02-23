@@ -1,7 +1,5 @@
 #include <sstream>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/trim.hpp>
+#include "util/string.hpp"
 #include "util/net/identclient.hpp"
 #include "util/net/tcpsocket.hpp"
 
@@ -47,10 +45,10 @@ void IdentClient::Request()
   socket.Getline(response, true);
 
   std::vector<std::string> toks;
-  boost::split(toks, response, boost::is_any_of(":"));
+  util::Split(toks, response, ":");
   if (toks.size() < 3) throw NetworkError("Malformed ident response");
   
-  boost::trim(toks[0]);
+  util::Trim(toks[0]);
   std::stringstream is(toks[0]);
 
   uint16_t remotePort;
@@ -63,14 +61,14 @@ void IdentClient::Request()
   if (!is.eof() || comma != ',')
     throw NetworkError("Malformed ident response");
     
-  boost::to_upper(toks[1]);
-  boost::trim(toks[1]);
+  util::ToUpper(toks[1]);
+  util::Trim(toks[1]);
   if (toks[1] == "ERROR") throw NetworkError("Ident error: " + toks[2]);
   if (toks[1] != "USERID" || toks.size() != 4)
     throw NetworkError("Malformed ident response");
   
-  os = boost::trim_copy(toks[2]);
-  ident = boost::trim_copy(toks[3]);
+  os = util::TrimCopy(toks[2]);
+  ident = util::TrimCopy(toks[3]);
 }
 
 } /* net namespace */

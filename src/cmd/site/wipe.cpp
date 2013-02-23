@@ -1,7 +1,5 @@
 #include <sstream>
 #include <string>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/wipe.hpp"
 #include "fs/globiterator.hpp"
 #include "fs/dircontainer.hpp"
@@ -15,6 +13,7 @@
 #include "util/enumbitwise.hpp"
 #include "acl/group.hpp"
 #include "logs/logs.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace site
 {
@@ -80,7 +79,7 @@ void WIPECommand::Process(fs::VirtualPath pathmask)
 void WIPECommand::ParseArgs()
 {
   int n = 1;
-  boost::to_lower(args[1]);
+  util::ToLower(args[1]);
   if (args[1] == "-r") 
   {
     ++n;
@@ -90,7 +89,7 @@ void WIPECommand::ParseArgs()
   else
     patharg = argStr;
   
-  boost::trim(patharg);
+  util::Trim(patharg);
 }
 
 void WIPECommand::Execute()

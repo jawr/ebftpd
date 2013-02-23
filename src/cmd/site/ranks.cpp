@@ -1,5 +1,4 @@
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/join.hpp>
+#include "util/string.hpp"
 #include "cmd/site/ranks.hpp"
 #include "db/stats/stats.hpp"
 #include "stats/types.hpp"
@@ -61,7 +60,7 @@ void RANKSCommand::Execute()
   std::string section;
   if (args.size() >= 6)
   {
-    section = boost::to_upper_copy(args[5]);
+    section = util::ToUpperCopy(args[5]);
     if (config.Sections().find(section) == config.Sections().end())
     {
       control.Reply(ftp::ActionNotOkay, "Section " + section + " doesn't exist.");
@@ -73,7 +72,7 @@ void RANKSCommand::Execute()
   if (args.size() >= 7)
   {
     std::vector<std::string> aclArgs(args.begin() + 6, args.end());
-    acl = acl::ACL::FromString(boost::join(aclArgs, " "));
+    acl = acl::ACL::FromString(util::Join(aclArgs, " "));
   }
   
   auto users = ::db::stats::CalculateUserRanks(section, tf, dir, sf);

@@ -1,5 +1,3 @@
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/trim.hpp>
 #include "cmd/rfc/site.hpp"
 #include "cmd/site/factory.hpp"
 #include "cfg/get.hpp"
@@ -16,9 +14,9 @@ namespace cmd { namespace rfc
 void SITECommand::Execute()
 {
   cmd::SplitArgs(argStr, args);
-  boost::to_upper(args[0]);
+  util::ToUpper(args[0]);
   argStr = argStr.substr(args[0].length());
-  boost::trim(argStr);
+  util::Trim(argStr);
 
   std::string shortCommand = "SITE " + args[0];
   std::string fullCommand = shortCommand;
@@ -49,7 +47,7 @@ void SITECommand::Execute()
     }
     else
     {
-      if (!util::string::IsASCIIOnly(argStr))
+      if (!util::IsASCIIOnly(argStr))
       {
         control.Reply(ftp::SyntaxError, "SITE command arguments must contain ASCII characters only");
         return;

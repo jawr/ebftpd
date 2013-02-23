@@ -2,10 +2,7 @@
 #include <string>
 #include <vector>
 #include <boost/regex.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 
 /*
  
@@ -17,7 +14,7 @@
  
  */
 
-namespace util { namespace string
+namespace util
 {
 
 namespace
@@ -57,7 +54,7 @@ std::string TitleCase(const std::string& s)
     if (isAllCaps)
     {
       if (boost::regex_match(word, ucInitials)) continue;
-      boost::to_lower(word);
+      util::ToLower(word);
     }
     
     if (boost::regex_match(word, aposSecond))
@@ -86,15 +83,15 @@ std::string TitleCase(const std::string& s)
         word.find("//") == std::string::npos)
     {
       std::vector<std::string> slashed;
-      boost::split(slashed, word, boost::is_any_of("/"));
+      util::Split(slashed, word, "/");
       for (std::string& subWord : slashed)
         subWord[0] = std::toupper(subWord[0]);
-      word = boost::join(slashed, "/");
+      word = util::Join(slashed, "/");
       continue;
     }
     
     std::vector<std::string> hyphenated;
-    boost::split(hyphenated, word, boost::is_any_of("-"));
+    util::Split(hyphenated, word, "-");
     for (std::string& subWord : hyphenated)
       for (auto it = subWord.begin(); it != subWord.end(); ++it)
         if (std::isalnum(*it))
@@ -103,10 +100,10 @@ std::string TitleCase(const std::string& s)
           break;
         }
         
-    word = boost::join(hyphenated, "-");
+    word = util::Join(hyphenated, "-");
   }
   
-  std::string result = boost::join(words, " ");
+  std::string result = util::Join(words, " ");
   
   boost::smatch match;
   if (boost::regex_search(result, match, smallFirst))
@@ -134,5 +131,4 @@ std::string TitleCase(const std::string& s)
   return result;
 }
 
-} /* string namespace */
 } /* util namespace */

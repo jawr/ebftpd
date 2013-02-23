@@ -1,10 +1,6 @@
 #include <sstream>
 #include <vector>
 #include <string>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/chown.hpp"
 #include "fs/globiterator.hpp"
 #include "fs/dircontainer.hpp"
@@ -53,24 +49,24 @@ void CHOWNCommand::Process(fs::VirtualPath pathmask)
 void CHOWNCommand::ParseArgs()
 {
   int n = 1;
-  if (boost::to_lower_copy(args[1]) == "-r") 
+  if (util::ToLowerCopy(args[1]) == "-r") 
   {
     ++n;
     recursive = true;
   }
   
   std::vector<std::string> owners;
-  boost::split(owners, args[n], boost::is_any_of(":"));
+  util::Split(owners, args[n], ":");
   if (owners.empty() || owners.size() > 2) throw cmd::SyntaxError();
   user = owners[0];
   if (owners.size() == 2) group = owners[1];
   
   std::string::size_type pos =
-      util::string::FindNthNonConsecutiveChar(argStr, ' ', n);
+      util::FindNthNonConsecutiveChar(argStr, ' ', n);
   if (pos == std::string::npos) throw cmd::SyntaxError();
   
   patharg = argStr.substr(pos);
-  boost::trim(patharg);
+  util::Trim(patharg);
 }
 
 void CHOWNCommand::Execute()

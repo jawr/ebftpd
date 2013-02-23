@@ -5,9 +5,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <boost/optional.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
+#include "util/string.hpp"
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 #include "cfg/setting.hpp"
@@ -57,7 +55,7 @@ public:
     // rebuild args
     std::vector<std::string> cArgs;
     if (!cArgStr.empty())
-      boost::split(cArgs, cArgStr, boost::is_any_of(" "), boost::token_compress_on);
+      util::Split(cArgs, cArgStr, " ", true);
     cArgs.insert(cArgs.begin(), custSiteCmd.Command());
     
     return new CommandT(custSiteCmd, client, cArgStr, cArgs);

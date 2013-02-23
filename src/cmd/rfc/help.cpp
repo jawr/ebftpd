@@ -1,5 +1,6 @@
 #include "cmd/rfc/help.hpp"
 #include "cmd/rfc/factory.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -8,7 +9,7 @@ void HELPCommand::Execute()
 {
   if (args.size() == 2)
   {
-    boost::to_upper(args[1]);
+    util::ToUpper(args[1]);
     CommandDefOptRef def(Factory::Lookup(args[1]));
     if (!def) control.Reply(ftp::CommandUnrecognised, "Command not understood");
     else control.Reply(ftp::CommandOkay, "Syntax: " + def->Syntax());

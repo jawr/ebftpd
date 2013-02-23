@@ -2,7 +2,7 @@
 #define __ACL_ACL_HPP
 
 #include <string>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 #include <boost/optional.hpp>
 #include "acl/permission.hpp"
 
@@ -13,12 +13,19 @@ class User;
 
 class ACL
 {
-  boost::ptr_vector<Permission> perms;
+  std::vector<Permission*> perms;
   mutable boost::optional<bool> finalResult;
 
   void FromStringArg(const std::string& arg);
   
 public:
+  ACL() = default;
+  ACL& operator=(const ACL& rhs);
+  ACL& operator=(ACL&& rhs);
+  ACL(const ACL& other);
+  ACL(ACL&& other);
+  ~ACL();
+
   bool Evaluate(const User& user) const;
   static ACL FromString(const std::string& str);
 };

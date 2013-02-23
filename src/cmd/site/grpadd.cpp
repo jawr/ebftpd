@@ -1,8 +1,8 @@
-#include <boost/algorithm/string/trim.hpp>
 #include "cmd/site/grpadd.hpp"
 #include "acl/util.hpp"
 #include "acl/group.hpp"
 #include "logs/logs.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace site
 {
@@ -18,7 +18,7 @@ void GRPADDCommand::Execute()
   if (args.size() > 2)
   {
     argStr.erase(0, args[1].length());
-    boost::trim(argStr);
+    util::Trim(argStr);
 
     if (!acl::Validate(acl::ValidationType::Tagline, argStr))
     {

@@ -18,7 +18,7 @@ void UPDATECommand::Execute()
   auto pathMask = fs::PathFromUser(pathStr);
   try
   {
-    using util::string::WildcardMatch;
+    using util::WildcardMatch;
   
     unsigned addedCount = 0;
     for (const auto& entry : fs::GlobContainer(client.User(), pathMask))

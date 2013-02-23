@@ -1,7 +1,6 @@
 #include <cassert>
 #include <boost/thread/once.hpp>
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 #include "util/string.hpp"
 #include "db/connection.hpp"
 #include "cfg/get.hpp"
@@ -16,8 +15,8 @@ namespace
 std::string SimplifyJavascript(const std::string& javascript)
 {
   std::string simple = boost::replace_all_copy(javascript, "\n", " ");
-  util::string::CompressWhitespace(simple);
-  if (boost::starts_with(simple, "function "))
+  util::CompressWhitespace(simple);
+  if (util::StartsWith(simple, "function "))
   {
     auto pos = simple.find_first_of("\t {", 9);
     if (pos != std::string::npos)

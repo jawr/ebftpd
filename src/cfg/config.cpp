@@ -2,11 +2,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/split.hpp>
 #include <boost/lexical_cast.hpp>
 #include "cfg/config.hpp"
 #include "cfg/error.hpp"
@@ -121,21 +116,21 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     if (aclKeywords.find(keyword) == aclKeywords.end() && !tool)
       throw ConfigError("Invalid command acl keyword: " + keyword);
     commandACLs.insert(std::make_pair(keyword, 
-        acl::ACL::FromString(boost::join(toks, " "))));
+        acl::ACL::FromString(util::Join(toks, " "))));
   }
   else
-  if (boost::starts_with(opt, "custom-"))
+  if (util::StartsWith(opt, "custom-"))
   {
     ParameterCheck(opt, toks, 1, -1);
-    std::string command(boost::to_upper_copy(opt.substr(7)));
+    std::string command(util::ToUpperCopy(opt.substr(7)));
     if (std::find_if(siteCmd.begin(), siteCmd.end(), 
         [&](const setting::SiteCmd& sc)
         { return command == sc.Command();}) == siteCmd.end() && !tool)
     {
       throw ConfigError("Invalid custom command acl keyword: " + command);
     }
-    commandACLs.insert(std::make_pair(boost::to_lower_copy(opt), 
-        acl::ACL::FromString(boost::join(toks, " "))));
+    commandACLs.insert(std::make_pair(util::ToLowerCopy(opt), 
+        acl::ACL::FromString(util::Join(toks, " "))));
   }
   else
   if (opt == "database")
@@ -244,7 +239,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "hideuser")
   {
     ParameterCheck(opt, toks, 1, -1);
-    hideuser = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+    hideuser = acl::ACL::FromString(util::Join(toks, " "));
   }
   else if (opt == "use_dir_size")
   {
@@ -258,7 +253,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "dl_incomplete")
   {
     ParameterCheck(opt, toks, 1);
-    dlIncomplete = util::string::BoolLexicalCast(toks[0]);
+    dlIncomplete = util::BoolLexicalCast(toks[0]);
   }
   else if (opt == "file_dl_count")
   {
@@ -327,7 +322,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "bouncer_only")
   {
     ParameterCheck(opt, toks, 1);
-    bouncerOnly = util::string::BoolLexicalCast(toks[0]);
+    bouncerOnly = util::BoolLexicalCast(toks[0]);
   }
   else if (opt == "calc_crc")
   {
@@ -367,7 +362,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1, -1);
     idleCommands.insert(idleCommands.end(), toks.begin(), toks.end());
-    for (auto& cmd : idleCommands) boost::to_upper(cmd);
+    for (auto& cmd : idleCommands) util::ToUpper(cmd);
   }
   else if (opt == "noretrieve")
   {
@@ -616,7 +611,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "week_start")
   {
     ParameterCheck(opt, toks, 1);
-    boost::to_lower(toks[0]);
+    util::ToLower(toks[0]);
     if (toks[0] == "sunday") weekStart = ::cfg::WeekStart::Sunday;
     else if (toks[0] == "monday") weekStart = ::cfg::WeekStart::Monday;
     else throw ConfigError("week_start must be either sunday or monday.");
@@ -639,7 +634,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "section")
   {
     ParameterCheck(opt, toks, 1);
-    boost::to_upper(toks[0]);
+    util::ToUpper(toks[0]);
     auto result = sections.insert(std::make_pair(toks[0], Section(toks[0])));
     if (!result.second) throw ConfigError("Section " + toks[0] + " already exists.");
     currentSection = &result.first->second;
@@ -647,7 +642,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "epsv_fxp")
   {
     ParameterCheck(opt, toks, 1);
-    boost::to_lower(toks[0]);
+    util::ToLower(toks[0]);
     if (toks[0] == "allow") epsvFxp = ::cfg::EPSVFxp::Allow;
     else if (toks[0] == "deny") epsvFxp = ::cfg::EPSVFxp::Deny;
     else if (toks[0] == "force") epsvFxp = ::cfg::EPSVFxp::Force;
@@ -695,23 +690,23 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "async_crc")
   {
     ParameterCheck(opt, toks, 1);
-    asyncCRC = util::string::BoolLexicalCast(toks[0]);
+    asyncCRC = util::BoolLexicalCast(toks[0]);
   }
   else if (opt == "tls_control")
   {
-    tlsControl = acl::ACL::FromString(boost::join(toks, " "));
+    tlsControl = acl::ACL::FromString(util::Join(toks, " "));
   }
   else if (opt == "tls_listing")
   {
-    tlsListing = acl::ACL::FromString(boost::join(toks, " "));
+    tlsListing = acl::ACL::FromString(util::Join(toks, " "));
   }
   else if (opt == "tls_data")
   {
-    tlsData = acl::ACL::FromString(boost::join(toks, " "));
+    tlsData = acl::ACL::FromString(util::Join(toks, " "));
   }
   else if (opt == "tls_fxp")
   {
-    tlsFxp = acl::ACL::FromString(boost::join(toks, " "));
+    tlsFxp = acl::ACL::FromString(util::Join(toks, " "));
   }
   else
   {
@@ -729,7 +724,7 @@ void Config::ParseSection(const std::string& opt, std::vector<std::string>& toks
   else if (opt == "separate_credits")
   {
     ParameterCheck(opt, toks, 1);
-    currentSection->separateCredits = util::string::BoolLexicalCast(toks[0]);
+    currentSection->separateCredits = util::BoolLexicalCast(toks[0]);
   }
   else if (opt == "ratio")
   {
@@ -758,8 +753,8 @@ void Config::Parse(std::string line)
 {
   std::vector<std::string> toks;
   
-  boost::trim(line);
-  boost::split(toks, line, boost::is_any_of("\t "), boost::token_compress_on);
+  util::Trim(line);
+  util::Split(toks, line, "\t ", true);
   for (auto& token : toks) boost::replace_all(token, "[:space:]", " ");
 
   if (toks.size() == 0) return;
@@ -861,17 +856,17 @@ ConfigPtr Config::Load(std::string configPath, bool tool)
 bool Config::IsEventLogged(const std::string& path) const
 {
   if (path.empty()) return false;
-  return util::string::WildcardMatch(eventpath, path + (path.back() != '/' ? "/" : ""));
+  return util::WildcardMatch(eventpath, path + (path.back() != '/' ? "/" : ""));
 }
 
 bool Config::IsDupeLogged(const std::string& path) const
 {
-  return util::string::WildcardMatch(dupepath, path + (path.back() != '/' ? "/" : ""));
+  return util::WildcardMatch(dupepath, path + (path.back() != '/' ? "/" : ""));
 }
 
 bool Config::IsIndexed(const std::string& path) const
 {
-  return util::string::WildcardMatch(indexpath, path + (path.back() != '/' ? "/" : ""));
+  return util::WildcardMatch(indexpath, path + (path.back() != '/' ? "/" : ""));
 }
 
 // end namespace

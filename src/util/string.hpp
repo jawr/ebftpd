@@ -7,7 +7,7 @@
 #include <boost/lexical_cast.hpp>
 #include "util/error.hpp"
 
-namespace util { namespace string
+namespace util
 {
 
 bool BoolLexicalCast(std::string arg);
@@ -73,8 +73,27 @@ std::string Join(const Container& cont, const std::string& delim)
 
 void Split(std::vector<std::string>& cont, const std::string& s, 
            const std::string& delims, bool tokenCompress = false);
+           
+void Trim(std::string& s);
+std::string TrimCopy(const std::string& s);
+void TrimRight(std::string& s);
+std::string TrimRightCopy(const std::string& s);
+void TrimLeft(std::string& s);
+std::string TrimLeftCopy(const std::string& s);
+void TrimRightIf(std::string& s, const std::string& chars);
+std::string TrimRightCopyIf(const std::string& s, const std::string& chars);
+void TrimLeftIf(std::string& s, const std::string& chars);
+std::string TrimLeftCopyIf(const std::string& s, const std::string& chars);
 
-} /* string namespace */
+void ToLower(std::string& s);
+std::string ToLowerCopy(const std::string& s);
+
+void ToUpper(std::string& s);
+std::string ToUpperCopy(const std::string& s);
+
+bool StartsWith(const std::string& s, const std::string& test);
+bool EndsWith(const std::string& s, const std::string& test);
+
 } /* util namespace */
 
 #endif

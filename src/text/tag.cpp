@@ -1,6 +1,5 @@
 #include <cctype>
 #include <boost/format.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include "text/tag.hpp"
@@ -28,7 +27,7 @@ std::locale prettyLocale(std::locale(), new comma_numpunct());
 }
 
 Tag::Tag(const std::string& name) : 
-  name(boost::to_lower_copy(name)),
+  name(util::ToLowerCopy(name)),
   value(""),
   alignment(Alignment::Right), 
   unitConv(UnitConversion::Kbyte), 
@@ -38,7 +37,7 @@ Tag::Tag(const std::string& name) :
 
 void Tag::SetFilter(std::string filter)
 {
-  boost::to_lower(filter);
+  util::ToLower(filter);
 
   if (filter == "left")
     alignment = Alignment::Left;
@@ -89,13 +88,13 @@ void Tag::CaseConvert(std::string& s) const
     case CaseConversion::None   :
       break;
     case CaseConversion::Upper  :
-      boost::to_upper(s);
+      util::ToUpper(s);
       break;
     case CaseConversion::Lower  :
-      boost::to_lower(s);
+      util::ToLower(s);
       break;
     case CaseConversion::Title  :
-      s = util::string::TitleCase(s);
+      s = util::TitleCase(s);
       break;
   }
 }

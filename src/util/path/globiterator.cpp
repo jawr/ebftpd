@@ -1,7 +1,5 @@
 #include <algorithm>
 #include <fnmatch.h>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
 #include <boost/bind.hpp>
 #include "util/path/globiterator.hpp"
 #include "util/path/diriterator.hpp"
@@ -75,7 +73,7 @@ void GlobIterator::Initialise()
     auto next = std::find_if(toks.begin(), toks.end(), IsWildcard);
     if (next == toks.end()) --next;
 
-    std::string nextPath = util::string::Join(toks.begin(), next, "/");
+    std::string nextPath = util::Join(toks.begin(), next, "/");
     if (nextPath.empty()) nextPath = "/"; 
 
 		iter.reset(new SubIterator(nextPath, next, toks.end(), flags, filter));    
@@ -110,7 +108,7 @@ GlobIterator::Tokens GlobIterator::TokenizePathMask(const std::string& pathMask)
 {
   bool trailingSlash = pathMask.back() == '/';
   Tokens pathTokens;
-  boost::split(pathTokens, pathMask, boost::is_any_of("/"),  boost::token_compress_on);
+  util::Split(pathTokens, pathMask, "/",  boost::token_compress_on);
   if (trailingSlash)
   {
     pathTokens.pop_back();
@@ -125,7 +123,7 @@ void GlobIterator::SubIterator::NextSub()
   auto next = std::find_if(mask + 1, endTokens, IsWildcard);
   if (next == endTokens) --next;
   std::string nextPath(util::path::Join(path, **iter));
-  nextPath = util::path::Join(nextPath, util::string::Join(mask + 1, next, "/"));
+  nextPath = util::path::Join(nextPath, util::Join(mask + 1, next, "/"));
   
   try
   {

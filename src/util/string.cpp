@@ -3,9 +3,11 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include "util/string.hpp"
 
-namespace util { namespace string
+namespace util
 {
 
 bool BoolLexicalCast(std::string arg)
@@ -131,6 +133,98 @@ void Split(std::vector<std::string>& cont, const std::string& s,
                boost::token_compress_on : boost::token_compress_off);
 }
 
+void Trim(std::string& s)
+{
+  boost::trim(s);
+}
 
-} /* string namespace */
+std::string TrimCopy(const std::string& s)
+{
+  std::string temp(s);
+  Trim(temp);
+  return temp;
+}
+
+void TrimRight(std::string& s)
+{
+  boost::trim_right(s);
+}
+
+std::string TrimRightCopy(const std::string& s)
+{
+  std::string temp(s);
+  TrimRight(temp);
+  return temp;
+}
+
+void TrimLeft(std::string& s)
+{
+  boost::trim_left(s);
+}
+
+std::string TrimLeftCopy(const std::string& s)
+{
+  std::string temp(s);
+  TrimLeft(temp);
+  return temp;
+}
+
+void TrimRightIf(std::string& s, const std::string& chars)
+{
+  boost::trim_right_if(s, boost::is_any_of(chars));
+}
+
+std::string TrimRightCopyIf(const std::string& s, const std::string& chars)
+{
+  std::string temp(s);
+  TrimRightIf(temp, chars);
+  return temp;
+}
+
+void TrimLeftIf(std::string& s, const std::string& chars)
+{
+  boost::trim_left_if(s, boost::is_any_of(chars));
+}
+
+std::string TrimLeftCopyIf(const std::string& s, const std::string& chars)
+{
+  std::string temp(s);
+  TrimLeftIf(temp, chars);
+  return temp;
+}
+
+void ToLower(std::string& s)
+{
+  boost::to_lower(s);
+}
+
+std::string ToLowerCopy(const std::string& s)
+{
+  std::string temp(s);
+  ToLower(temp);
+  return temp;
+}
+
+void ToUpper(std::string& s)
+{
+  boost::to_upper(s);
+}
+
+std::string ToUpperCopy(const std::string& s)
+{
+  std::string temp(s);
+  ToUpper(temp);
+  return temp;
+}
+
+bool StartsWith(const std::string& s, const std::string& test)
+{
+  return boost::starts_with(s, test);
+}
+
+bool EndsWith(const std::string&s, const std::string& test)
+{
+  return boost::ends_with(s, test);
+}
+
 } /* util namespace */

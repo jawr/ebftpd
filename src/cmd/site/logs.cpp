@@ -1,6 +1,5 @@
 #include <stack>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/logs.hpp"
 #include "logs/logs.hpp"
 #include "util/reverselogreader.hpp"
@@ -14,7 +13,7 @@ namespace cmd { namespace site
 bool LOGSCommand::ParseArgs()
 {
   int n = 1;
-  boost::to_lower(args[n]);
+  util::ToLower(args[n]);
   if (args[n] == "-max")
   {
     if (args.size() < 4) return false;
@@ -26,18 +25,18 @@ bool LOGSCommand::ParseArgs()
     { return false; }
     if (number <= 0) return false;
     n += 2;
-    boost::to_lower(args[n]);
+    util::ToLower(args[n]);
   }
   
   log = args[n];
   strings.assign(args.begin() + n + 1, args.end());
-  for (std::string& s : strings) boost::to_lower(s);
+  for (std::string& s : strings) util::ToLower(s);
   return true;
 }
 
 bool LOGSCommand::CheckStrings(std::string line)
 {
-  boost::to_lower(line);
+  util::ToLower(line);
   for (auto& s : strings)
   {
     if (line.find(s) == std::string::npos)

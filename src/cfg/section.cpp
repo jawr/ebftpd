@@ -8,7 +8,7 @@ bool Section::IsMatch(const std::string& path) const
 {
   for (const auto& p : paths)
   {
-    if (util::string::WildcardMatch(p, path)) return true;
+    if (util::WildcardMatch(p, path)) return true;
   }
   return false;
 }

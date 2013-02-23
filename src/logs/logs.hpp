@@ -4,9 +4,9 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include <boost/algorithm/string/case_conv.hpp>
 #include "logs/logger.hpp"
 #include "util/format.hpp"
+#include "util/string.hpp"
 
 namespace logs
 {
@@ -53,7 +53,7 @@ void Siteop(const std::string& who, const std::string& what, const Args&... args
 {
   extern Logger siteop;
   std::ostringstream os;
-  os << '[' << std::left << std::setw(15) << who << "] " << boost::to_upper_copy(what) << ":";
+  os << '[' << std::left << std::setw(15) << who << "] " << util::ToUpperCopy(what) << ":";
   Log(siteop, os, args...);
 }
 
@@ -62,7 +62,7 @@ void Event(const std::string& what, const Args&... args)
 {
   extern Logger events;
   std::ostringstream os;
-  os << boost::to_upper_copy(what) << ":";
+  os << util::ToUpperCopy(what) << ":";
   Log(events, os, args...);
 }
 
@@ -71,7 +71,7 @@ void Security(const std::string& what, const std::string& format, const Args&...
 {
   extern Logger security;
   std::ostringstream os;
-  os << boost::to_upper_copy(what) << ": " << format;
+  os << util::ToUpperCopy(what) << ": " << format;
   security.Write("message", util::Format()(os.str(), args...).String());
 }
 

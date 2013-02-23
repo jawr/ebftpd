@@ -7,6 +7,7 @@
 #include "fs/directory.hpp"
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace site
 {
@@ -15,7 +16,7 @@ void SEARCHCommand::Execute()
 {
   int number = 10;
   unsigned termsOffset = 1;
-  if (boost::to_lower_copy(args[1]) == "-max")
+  if (util::ToLowerCopy(args[1]) == "-max")
   {
     if (args.size() < 4) throw cmd::SyntaxError();
     

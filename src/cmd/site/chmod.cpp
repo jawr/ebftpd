@@ -1,7 +1,5 @@
 #include <sstream>
 #include <string>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/trim.hpp>
 #include "cmd/site/chmod.hpp"
 #include "fs/chmod.hpp"
 #include "fs/globiterator.hpp"
@@ -58,22 +56,22 @@ void CHMODCommand::Process(fs::VirtualPath pathmask)
 void CHMODCommand::ParseArgs()
 {
   int n = 1;
-  boost::to_lower(args[1]);
+  util::ToLower(args[1]);
   if (args[1] == "-r")
   {
     ++n;
     recursive = true;
-    boost::to_lower(args[n]);
+    util::ToLower(args[n]);
   }
 
   modeStr = args[n];
 
   std::string::size_type pos =
-      util::string::FindNthNonConsecutiveChar(argStr, ' ', n);
+      util::FindNthNonConsecutiveChar(argStr, ' ', n);
   if (pos == std::string::npos) throw cmd::SyntaxError();
 
   patharg = argStr.substr(pos);
-  boost::trim(patharg);
+  util::Trim(patharg);
 }
 
 void CHMODCommand::Execute()

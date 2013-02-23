@@ -2,7 +2,7 @@
 #define __ACL_MISC_HPP
 
 #include <string>
-#include <boost/optional.hpp>
+#include <boost/optional/optional_fwd.hpp>
 #include "acl/types.hpp"
 
 namespace cfg { namespace setting

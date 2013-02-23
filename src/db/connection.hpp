@@ -5,7 +5,7 @@
 #include <boost/thread/once.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/optional.hpp>
-#include <boost/algorithm/string/join.hpp>
+#include "util/string.hpp"
 #include <memory>
 #include <utility>
 #include <sstream>
@@ -83,7 +83,7 @@ public:
     }
     catch (const mongo::DBException& e)
     {
-      LogException("Set field", e, typeid(obj), boost::join(fields, " "));
+      LogException("Set field", e, typeid(obj), util::Join(fields, " "));
       if (mode == ConnectionMode::Safe) 
         throw DBWriteError();
     }

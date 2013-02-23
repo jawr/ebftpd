@@ -85,7 +85,7 @@ bool STORCommand::CalcCRC(const fs::VirtualPath& path)
 {
   for (auto& mask : cfg::Get().CalcCrc())
   {
-    if (util::string::WildcardMatch(mask, path.ToString())) return true;
+    if (util::WildcardMatch(mask, path.ToString())) return true;
   }
   
   return false;

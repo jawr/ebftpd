@@ -1,6 +1,5 @@
 #include <sstream>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include "cmd/site/tadduser.hpp"
 #include "cmd/site/adduser.hpp"
 #include "cmd/error.hpp"
@@ -29,7 +28,7 @@ void TADDUSERCommand::Execute()
     cpArgStr += " " + *it;
 
   std::vector<std::string> cpArgs;
-  boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
+  util::Split(cpArgs, cpArgStr, " ");
   ADDUSERCommand(client, cpArgStr, cpArgs).Execute(*templateUser);
 }
 

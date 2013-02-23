@@ -1,6 +1,4 @@
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/split.hpp>
+#include "util/string.hpp"
 #include <boost/algorithm/string/replace.hpp>
 #include "text/templatesection.hpp"
 #include "text/error.hpp"
@@ -11,11 +9,11 @@ namespace text
 
 std::string TemplateSection::RegisterTag(std::string tagStr)
 {
-  boost::trim(tagStr);
-  boost::to_lower(tagStr);
+  util::Trim(tagStr);
+  util::ToLower(tagStr);
 
   std::vector<std::string> args;
-  boost::split(args, tagStr, boost::is_any_of("|"));
+  util::Split(args, tagStr, "|");
   if (args.empty()) throw TemplateError("Invalid tag: " + tagStr);
   
   const std::string& name = args.front();
@@ -34,7 +32,7 @@ std::string TemplateSection::RegisterTag(std::string tagStr)
 void TemplateSection::DoRegisterValue(std::string tagName, 
     const std::function<void(Tag&)>& doRegister)
 {
-  boost::to_lower(tagName);
+  util::ToLower(tagName);
   for (auto& tag : tags)
   {
     if (tag.Name() == tagName)

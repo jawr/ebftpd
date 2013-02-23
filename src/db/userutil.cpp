@@ -1,6 +1,5 @@
 #include <cassert>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include "db/userutil.hpp"
 #include "db/usercache.hpp"
 #include "db/group.hpp"

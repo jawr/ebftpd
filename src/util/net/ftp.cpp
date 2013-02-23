@@ -3,8 +3,7 @@
 #include <cstdint>
 #include <boost/lexical_cast.hpp>
 #include <boost/numeric/conversion/cast.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include <netinet/in.h>
 #include "util/net/ftp.hpp"
 #include "util/error.hpp"
@@ -20,7 +19,7 @@ util::Error EndpointFromPORT(const std::string& portString, Endpoint& ep)
   using boost::lexical_cast;
 
   std::vector<std::string> split;
-  boost::split(split, portString, boost::is_any_of(","));
+  util::Split(split, portString, ",");
   if (split.size() != 6) return util::Error::Failure("Invalid port string.");
 
   struct sockaddr_in addr;
@@ -118,7 +117,7 @@ util::Error EndpointFromLPRTv4(const std::string& portString, Endpoint& ep)
   using boost::numeric_cast;
 
   std::vector<std::string> split;
-  boost::split(split, portString, boost::is_any_of(","));
+  util::Split(split, portString, ",");
   if (split.size() != 9) return util::Error::Failure("Invalid port string.");
   
   struct sockaddr_in addr;
@@ -170,7 +169,7 @@ util::Error EndpointFromLPRTv6(const std::string& portString, Endpoint& ep)
   using boost::numeric_cast;
 
   std::vector<std::string> split;
-  boost::split(split, portString, boost::is_any_of(","));
+  util::Split(split, portString, ",");
   if (split.size() != 21) return util::Error::Failure("Invalid port string.");
   
   struct sockaddr_in6 addr;
@@ -276,7 +275,7 @@ util::Error EndpointFromEPRT(const std::string& portString, util::net::Endpoint&
   using boost::lexical_cast;
 
   std::vector<std::string> split;
-  boost::split(split, portString, boost::is_any_of("|"));
+  util::Split(split, portString, "|");
   if (split.size() != 5 || !split[0].empty() || !split[4].empty())
     return util::Error::Failure("Invalid port string.");
   

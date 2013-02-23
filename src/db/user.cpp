@@ -336,7 +336,7 @@ template <typename T>
 std::vector<T> GetUsersGeneric(const std::string& multiStr, const mongo::BSONObj* fields)
 {
   std::vector<std::string> toks;
-  boost::split(toks, multiStr, boost::is_any_of(" "), boost::token_compress_on);
+  util::Split(toks, multiStr, " ", true);
   
   mongo::Query query;
   if (std::find(toks.begin(), toks.end(), "*") == toks.end())

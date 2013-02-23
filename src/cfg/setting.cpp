@@ -1,10 +1,6 @@
 #include <sstream>
 #include <cstdlib>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/regex.hpp>
 #include "cfg/setting.hpp"
@@ -74,7 +70,7 @@ bool AsciiDownloads::Allowed(off_t size, const std::string& path) const
   if (masks.empty()) return true;
   for (auto& mask : masks)
   {
-    if (util::string::WildcardMatch(mask, path)) return true;
+    if (util::WildcardMatch(mask, path)) return true;
   }
   return false;
 }
@@ -90,7 +86,7 @@ bool AsciiUploads::Allowed(const std::string& path) const
   if (masks.empty()) return true;
   for (auto& mask : masks)
   {
-    if (util::string::WildcardMatch(mask, path)) return true;
+    if (util::WildcardMatch(mask, path)) return true;
   }
   return false;
 }
@@ -99,18 +95,18 @@ SecureIp::SecureIp(std::vector<std::string> toks)
 {
   int numOctets = boost::lexical_cast<int>(toks[0]);
   if (numOctets < 0) throw boost::bad_lexical_cast();
-  bool isHostname = util::string::BoolLexicalCast(toks[1]);
-  bool hasIdent = util::string::BoolLexicalCast(toks[2]);
+  bool isHostname = util::BoolLexicalCast(toks[1]);
+  bool hasIdent = util::BoolLexicalCast(toks[2]);
   strength = acl::IPStrength(numOctets, isHostname, hasIdent);
   toks.erase(toks.begin(), toks.begin()+3);
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  acl = acl::ACL::FromString(util::Join(toks, " "));
 }
 
 SecurePass::SecurePass(std::vector<std::string> toks) :
   strength(toks[0])
 {
   toks.erase(toks.begin());
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  acl = acl::ACL::FromString(util::Join(toks, " "));
 }
 
 SpeedLimit::SpeedLimit(std::vector<std::string> toks)
@@ -121,7 +117,7 @@ SpeedLimit::SpeedLimit(std::vector<std::string> toks)
   if (toks.size() > 3)
   {
     toks.erase(toks.begin(), toks.begin() + 3);
-    acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+    acl = acl::ACL::FromString(util::Join(toks, " "));
   }
   else
   {
@@ -146,7 +142,7 @@ Ports::Ports(const std::vector<std::string>& toks)
   for (const auto& token : toks)
   {
     temp.clear();
-    boost::split(temp, token, boost::is_any_of("-"));
+    util::Split(temp, token, "-");
     if (temp.size() > 2) throw cfg::ConfigError("Invalid port range.");
     int from = boost::lexical_cast<int>(temp[0]);
     int to = from;
@@ -161,13 +157,13 @@ Ports::Ports(const std::vector<std::string>& toks)
 
 AllowFxp::AllowFxp(std::vector<std::string> toks)   
 {
-  downloads = util::string::BoolLexicalCast(toks[0]);
-  uploads   = util::string::BoolLexicalCast(toks[1]);
-  logging   = util::string::BoolLexicalCast(toks[2]);
+  downloads = util::BoolLexicalCast(toks[0]);
+  uploads   = util::BoolLexicalCast(toks[1]);
+  logging   = util::BoolLexicalCast(toks[2]);
   if (toks.size() > 3)
   {
     toks.erase(toks.begin(), toks.begin() + 3);
-    acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+    acl = acl::ACL::FromString(util::Join(toks, " "));
   }
   else
   {
@@ -177,7 +173,7 @@ AllowFxp::AllowFxp(std::vector<std::string> toks)
 
 Alias::Alias(const std::vector<std::string>& toks)   
 {
-  name = boost::to_lower_copy(toks[0]);
+  name = util::ToLowerCopy(toks[0]);
   path = toks[1];
 }
 
@@ -185,7 +181,7 @@ Right::Right(std::vector<std::string> toks)
 {
   path = toks[0];
   toks.erase(toks.begin());
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  acl = acl::ACL::FromString(util::Join(toks, " "));
   specialVar = path.find("[:username:]") != std::string::npos ||
                path.find("[:groupname:]") != std::string::npos;
 }
@@ -232,7 +228,7 @@ PathFilter::PathFilter(std::vector<std::string> toks)
     throw ConfigError("Invalid regular expression.");
   }
   toks.erase(toks.begin(), toks.begin() + 2);
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  acl = acl::ACL::FromString(util::Join(toks, " "));
 }
 
 const boost::regex& PathFilter::Regex() const { return *regex; }
@@ -249,7 +245,7 @@ ACLInt::ACLInt(std::vector<std::string> toks)
   if (toks.size() > 1)
   {
     toks.erase(toks.begin());
-    acl = acl::ACL::FromString(boost::algorithm::join(toks, " ")); 
+    acl = acl::ACL::FromString(util::Join(toks, " ")); 
   }
   else
   {
@@ -318,17 +314,17 @@ Creditcheck::Creditcheck(std::vector<std::string> toks)
   ratio = boost::lexical_cast<int>(toks[1]);
   if (ratio < 0) throw ConfigError("creditloss ratio must be 0 or larger");
   toks.erase(toks.begin(), toks.begin()+2);
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  acl = acl::ACL::FromString(util::Join(toks, " "));
 }
 
 Creditloss::Creditloss(std::vector<std::string> toks)   
 {
   ratio = boost::lexical_cast<int>(toks[0]);
   if (ratio < 0) throw ConfigError("creditloss ratio must be 0 or larger");
-  allowLeechers = util::string::BoolLexicalCast(toks[1]);
+  allowLeechers = util::BoolLexicalCast(toks[1]);
   path = toks[2];
   toks.erase(toks.begin(), toks.begin()+3);
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  acl = acl::ACL::FromString(util::Join(toks, " "));
 }
 
 NukedirStyle::NukedirStyle(const std::vector<std::string>& toks)   
@@ -357,27 +353,27 @@ Msgpath::Msgpath(const std::vector<std::string>& toks)
 {
   path = toks[0];
   file = toks[1];
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  acl = acl::ACL::FromString(util::Join(toks, " "));
 }
 
 Privpath::Privpath(std::vector<std::string> toks)   
 {
   path = toks[0];
   toks.erase(toks.begin());
-  acl = acl::ACL::FromString(boost::algorithm::join(toks, " "));
+  acl = acl::ACL::FromString(util::Join(toks, " "));
 }
 
 SiteCmd::SiteCmd(const std::vector<std::string>& toks)   
 {
-  command = boost::to_upper_copy(toks[0]);
+  command = util::ToUpperCopy(toks[0]);
   description = toks[1];
-  std::string typeStr(boost::to_upper_copy(toks[2]));
+  std::string typeStr(util::ToUpperCopy(toks[2]));
   if (typeStr == "EXEC") type = Type::EXEC;
   else if (typeStr == "TEXT") type = Type::TEXT;
   else if (typeStr == "ALIAS")
   {
     type = Type::ALIAS;
-    boost::to_upper(target);
+    util::ToUpper(target);
   }
   else
     throw cfg::ConfigError("Invalid site_cmd parameter");
@@ -387,8 +383,8 @@ SiteCmd::SiteCmd(const std::vector<std::string>& toks)
 
 Cscript::Cscript(const std::vector<std::string>& toks)   
 {
-  command = boost::to_upper_copy(toks[0]);
-  std::string when = boost::to_lower_copy(toks[1]);
+  command = util::ToUpperCopy(toks[0]);
+  std::string when = util::ToLowerCopy(toks[1]);
   if (when == "pre") type = Type::PRE;
   else if (when == "post") type = Type::POST;
   else throw cfg::ConfigError("Invalid cscript parameter");
@@ -488,8 +484,8 @@ CheckScript::CheckScript(const std::vector<std::string>& toks) :
 
 Log::Log(const std::string& name, const std::vector<std::string>& toks) :
   name(name),
-  console(util::string::BoolLexicalCast(toks[0])),
-  file(util::string::BoolLexicalCast(toks[1])),
+  console(util::BoolLexicalCast(toks[0])),
+  file(util::BoolLexicalCast(toks[1])),
   database(toks.size() == 3 && boost::lexical_cast<long>(toks[2]))
 {
   if (database < 0) throw boost::bad_lexical_cast();

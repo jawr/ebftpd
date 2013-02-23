@@ -1,7 +1,5 @@
 #include <iomanip>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include "ftp/control.hpp"
 #include "util/verify.hpp"
 #include "util/net/tcplistener.hpp"
@@ -42,7 +40,7 @@ void Control::PartReply(ReplyCode code, const std::string& messages)
   if (code == ftp::CodeDeferred)
   {
     std::vector<std::string> splitMessages;
-    boost::split(splitMessages, messages, boost::is_any_of("\n"));
+    util::Split(splitMessages, messages, "\n");
     deferred.insert(deferred.end(), splitMessages.begin(), splitMessages.end());
   }
   else
@@ -76,7 +74,7 @@ void Control::MultiReply(ReplyCode code, bool final, const std::vector<std::stri
 void Control::MultiReply(ReplyCode code, bool final, const std::string& messages)
 {
   std::vector<std::string> splitMessages;
-  boost::split(splitMessages, messages, boost::is_any_of("\n"));
+  util::Split(splitMessages, messages, "\n");
   assert(!splitMessages.empty());
   MultiReply(code, final, splitMessages);
 }
@@ -115,8 +113,8 @@ std::string Control::NextCommand(const boost::posix_time::time_duration* timeout
   std::string commandLine;
   socket.Getline(commandLine, false);
   bytesRead += commandLine.length();
-  boost::trim_right_if(commandLine, boost::is_any_of("\n"));
-  boost::trim_right_if(commandLine, boost::is_any_of("\r"));
+  util::TrimRightIf(commandLine, "\n");
+  util::TrimRightIf(commandLine, "\r");
   StripTelnetChars(commandLine);
   logs::Debug(commandLine);
   return commandLine;

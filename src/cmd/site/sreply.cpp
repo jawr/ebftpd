@@ -1,6 +1,6 @@
-#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/sreply.hpp"
 #include "cmd/error.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace site
 {
@@ -14,7 +14,7 @@ void SREPLYCommand::Execute()
   }                
   else
   {
-    boost::to_lower(args[1]);
+    util::ToLower(args[1]);
     if (args[1] == "on")
     {
       control.SetSingleLineReplies(true);

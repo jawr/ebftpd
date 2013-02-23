@@ -1,6 +1,5 @@
 #include <sstream>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include "cmd/site/gadduser.hpp"
 #include "cmd/site/adduser.hpp"
 
@@ -15,7 +14,7 @@ void GADDUSERCommand::Execute()
     cpArgStr += " " + *it;
 
   std::vector<std::string> cpArgs;
-  boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
+  util::Split(cpArgs, cpArgStr, " ");
   ADDUSERCommand(client, cpArgStr, cpArgs).Execute(args[1]);
 }
 

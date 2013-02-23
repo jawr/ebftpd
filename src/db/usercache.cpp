@@ -77,7 +77,7 @@ bool UserCache::IdentIPAllowed(const std::string& identAddress)
   return std::find_if(ipMasks.begin(), ipMasks.end(), 
               [&](const std::pair<acl::UserID, std::vector<std::string>>& kv)
               {
-                return util::string::WildcardMatch(kv.second, identAddress, true);
+                return util::WildcardMatch(kv.second, identAddress, true);
               }) != ipMasks.end();
 }
 
@@ -86,7 +86,7 @@ bool UserCache::IdentIPAllowed(const std::string& identAddress, acl::UserID uid)
   std::lock_guard<std::mutex> lock(ipMasksMutex);
   auto it = ipMasks.find(uid);
   if (it == ipMasks.end()) return false;
-  return util::string::WildcardMatch(it->second, identAddress, true);
+  return util::WildcardMatch(it->second, identAddress, true);
 }
 
 bool UserCache::Replicate(const mongo::BSONElement& id)
@@ -217,13 +217,13 @@ acl::GroupID UserNoCache::UIDToPrimaryGID(acl::UserID uid)
 bool UserNoCache::IdentIPAllowed(const std::string& identAddress)
 {
   NoErrorConnection conn;
-  return util::string::WildcardMatch(LookupIPMasks(conn), identAddress, true);
+  return util::WildcardMatch(LookupIPMasks(conn), identAddress, true);
 }
 
 bool UserNoCache::IdentIPAllowed(const std::string& identAddress, acl::UserID uid)
 {
   NoErrorConnection conn;
-  return util::string::WildcardMatch(LookupIPMasks(conn, uid), identAddress, true);
+  return util::WildcardMatch(LookupIPMasks(conn, uid), identAddress, true);
 }
 
 } /* db namespace */

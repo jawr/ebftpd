@@ -1,5 +1,4 @@
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/split.hpp>
+#include "util/string.hpp"
 #include "cmd/site/factory.hpp"
 #include "cmd/site/idle.hpp"
 #include "cmd/site/vers.hpp"
@@ -365,19 +364,19 @@ CommandDefOpt Factory::LookupCustom(const std::string& command)
   {
     case cfg::setting::SiteCmd::Type::EXEC  :
     {
-      def.reset(CommandDef(boost::to_lower_copy(aclKeyword), 
+      def.reset(CommandDef(util::ToLowerCopy(aclKeyword), 
           CreatorBasePtr(new CustomCreator<CustomEXECCommand>(*match))));
       break;
     }
     case cfg::setting::SiteCmd::Type::TEXT  :
     {
-      def.reset(CommandDef(boost::to_lower_copy(aclKeyword), 
+      def.reset(CommandDef(util::ToLowerCopy(aclKeyword), 
           CreatorBasePtr(new CustomCreator<CustomTEXTCommand>(*match))));
       break;
     }
     case cfg::setting::SiteCmd::Type::ALIAS :
     {
-      def.reset(CommandDef(boost::to_lower_copy(aclKeyword), 
+      def.reset(CommandDef(util::ToLowerCopy(aclKeyword), 
           CreatorBasePtr(new CustomCreator<CustomALIASCommand>(*match))));
       break;
     }
@@ -408,7 +407,7 @@ std::unordered_set<std::string> Factory::ACLKeywords()
   for (auto& kv : Commands())
   {
     std::vector<std::string> curKeywords;
-    boost::split(curKeywords, kv.second.ACLKeyword(), boost::is_any_of("|"));
+    util::Split(curKeywords, kv.second.ACLKeyword(), "|");
     keywords.insert(curKeywords.begin(), curKeywords.end());
   }
   return keywords;

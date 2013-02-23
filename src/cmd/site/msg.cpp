@@ -2,11 +2,6 @@
 #include <vector>
 #include <algorithm>
 #include <map>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/classification.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
 #include "cmd/site/msg.hpp"
@@ -45,7 +40,7 @@ void MSGCommand::Read(const std::vector<db::mail::Message>& mail)
     while (!body.empty())
     {
       os.str("");
-      os << "| " << std::setw(70) << std::left << util::string::WordWrap(body, 70) << " |";
+      os << "| " << std::setw(70) << std::left << util::WordWrap(body, 70) << " |";
       control.PartReply(ftp::CommandOkay, os.str());
     }
     
@@ -111,12 +106,12 @@ void MSGCommand::Send()
 {
   if (args.size() < 4) throw cmd::SyntaxError();
 
-  boost::trim(args[2]);
+  util::Trim(args[2]);
   std::vector<std::string> recipients;
   if (args[2] != "*")
   {
-    boost::trim(args[2]);
-    boost::split(recipients, args[2], boost::is_any_of(" "), boost::token_compress_on);
+    util::Trim(args[2]);
+    util::Split(recipients, args[2], " ", true);
     if (recipients.size() > 1 &&
         !acl::AllowSiteCmd(client.User(), "msg{")) 
     {
@@ -136,7 +131,7 @@ void MSGCommand::Send()
     throw cmd::PermissionError();
   }
   
-  std::string body(boost::join(std::vector<std::
+  std::string body(util::Join(std::vector<std::
       string>(args.begin() + 3, args.end()), " "));
   
   std::vector<acl::User> users;
@@ -269,7 +264,7 @@ void MSGCommand::List()
   {
     body.RegisterValue("index", ++index);
     body.RegisterValue("sender", message.Sender());
-    body.RegisterValue("status", boost::to_upper_copy(util::EnumToString(message.Status())));
+    body.RegisterValue("status", util::ToUpperCopy(util::EnumToString(message.Status())));
     body.RegisterValue("when", boost::lexical_cast<std::string>(message.TimeSent()));
     body.RegisterValue("body", message.Body());
     
@@ -290,7 +285,7 @@ void MSGCommand::List()
 
 void MSGCommand::Execute()
 {
-  std::string cmd(boost::to_lower_copy(args[1]));
+  std::string cmd(util::ToLowerCopy(args[1]));
   if (cmd == "read") return Read();
   else if (cmd == "send") return Send();
   else if (cmd == "save") return Save();

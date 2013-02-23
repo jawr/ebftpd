@@ -23,7 +23,7 @@ bool DebuggerAttached()
 		else
 		{
 			waitpid(ppid, 0, 0);
-			ptrace(PT_CONTINUE, ppid, 0);
+			ptrace(PT_CONTINUE, ppid, 0, 0);
 			ptrace(PT_DETACH, ppid, 0, 0);
 		}
 		

@@ -1,9 +1,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/split.hpp>
+#include "util/string.hpp"
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "cmd/site/grpchange.hpp"
 #include "acl/group.hpp"
@@ -171,7 +169,7 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckComment()
 
 GRPCHANGECommand::SetFunction GRPCHANGECommand::Check()
 {
-  boost::to_lower(args[2]);
+  util::ToLower(args[2]);
   
   auto it = std::find_if(settings.begin(), settings.end(),
             [&](const SettingDef& def) { return def.name == args[2]; });

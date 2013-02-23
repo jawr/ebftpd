@@ -2,6 +2,7 @@
 #include "util/net/ftp.hpp"
 #include "ftp/data.hpp"
 #include "cmd/error.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -10,7 +11,7 @@ void SSCNCommand::Execute()
 {
   if (args.size() == 2)
   {
-    boost::to_lower(args[1]);
+    util::ToLower(args[1]);
     if (args[1] == "on") data.SetSSCNMode(ftp::SSCNMode::Client);
     else
     if (args[1] == "off") data.SetSSCNMode(ftp::SSCNMode::Server);

@@ -3,12 +3,11 @@
 
 #include <string>
 
-namespace util { namespace string
+namespace util
 {
 
 std::string TitleCase(const std::string& s);
 
-} /* string namespace */
 } /* util namespace */
 
 #endif

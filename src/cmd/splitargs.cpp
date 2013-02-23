@@ -1,5 +1,5 @@
-#include <boost/algorithm/string/trim.hpp>
 #include "cmd/splitargs.hpp"
+#include "util/string.hpp"
 
 namespace cmd
 {
@@ -21,14 +21,14 @@ bool SplitArgs(const std::string& command, std::vector<std::string>& args)
     {
       if (command[pos1] == '{') return false;
       args.emplace_back(command.substr(pos1));
-      boost::trim(args.back());
+      util::Trim(args.back());
       break;
     }
     else
     {
       if (command[pos1] == '{') ++pos1;
       args.emplace_back(command.substr(pos1, pos2 - pos1));
-      boost::trim(args.back());
+      util::Trim(args.back());
       pos1 = pos2 + 1;
     }
   }

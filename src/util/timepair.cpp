@@ -1,6 +1,6 @@
 #include <sstream>
-#include <boost/algorithm/string/trim.hpp>
 #include "util/timepair.hpp"
+#include "util/string.hpp"
 
 namespace util
 {
@@ -41,7 +41,7 @@ std::string FormatDuration(const TimePair& timePair)
   if (milliseconds) format << "." << milliseconds;
   format << 's';
   
-  return boost::trim_copy(format.str());
+  return util::TrimCopy(format.str());
 }
 
 } /* util namespace */

@@ -5,6 +5,7 @@
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "cmd/error.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace site
 {
@@ -13,7 +14,7 @@ void DUPECommand::Execute()
 {
   int number = 10;
   unsigned termsOffset = 1;
-  if (boost::to_lower_copy(args[1]) == "-max")
+  if (util::ToLowerCopy(args[1]) == "-max")
   {
     if (args.size() < 4) throw cmd::SyntaxError();
     

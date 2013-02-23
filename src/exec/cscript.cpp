@@ -1,5 +1,5 @@
 #include <boost/optional.hpp>
-#include <boost/algorithm/string/join.hpp>
+#include "util/string.hpp"
 #include "exec/cscript.hpp"
 #include "ftp/client.hpp"
 #include "exec/util.hpp"
@@ -50,7 +50,7 @@ bool Cscript(ftp::Client& client, const std::string& group,
     if (type == CscriptType::PRE)
       client.Control().Reply(failCode, "Unable to execute cscript: " + e.Message());
     logs::Error("Failed to execute cscript: %1%: %2%",
-                boost::join(argv, " "), e.Message());
+                util::Join(argv, " "), e.Message());
     return false;
   }
   

@@ -2,6 +2,7 @@
 #include "util/net/ftp.hpp"
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -9,7 +10,7 @@ namespace cmd { namespace rfc
 void EPSVCommand::ChangeMode()
 {
   auto epsvFxp = cfg::Get().EPSVFxp();
-  boost::to_upper(args[1]);
+  util::ToUpper(args[1]);
   if (args[1] == "EXTENDED") 
   {
     if (epsvFxp == ::cfg::EPSVFxp::Deny)

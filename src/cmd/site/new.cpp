@@ -1,6 +1,5 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/trim.hpp>
 #include "cmd/site/new.hpp"
 #include "db/index/index.hpp"
 #include "text/error.hpp"
@@ -11,6 +10,7 @@
 #include "cmd/error.hpp"
 #include "fs/owner.hpp"
 #include "acl/group.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace site
 {
@@ -48,7 +48,7 @@ std::string Age(boost::posix_time::time_duration age)
   }
   
   os << std::setw(2) << age.seconds() << "s ";
-  return boost::trim_copy(os.str());
+  return util::TrimCopy(os.str());
 }
 
 }

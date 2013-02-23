@@ -1,7 +1,6 @@
 #include <ctype.h>
 #include <ostream>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
 #include "cmd/site/take.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
@@ -17,9 +16,9 @@ namespace cmd { namespace site
 void TAKECommand::Execute()
 {
   std::string section;
-  if (boost::to_lower_copy(args[1]) == "-s")
+  if (util::ToLowerCopy(args[1]) == "-s")
   {
-    section = boost::to_upper_copy(args[2]);
+    section = util::ToUpperCopy(args[2]);
     if (args.size() < 5) throw cmd::SyntaxError();
     args.erase(args.begin() + 1, args.begin() + 3);
     
@@ -52,7 +51,7 @@ void TAKECommand::Execute()
   {
     type.assign(amount.end()-1, amount.end());
     amount.assign(amount.begin(), amount.end()-1);
-    boost::to_upper(type);
+    util::ToUpper(type);
   }
 
   try

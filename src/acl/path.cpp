@@ -1,4 +1,3 @@
-#include <boost/algorithm/string/predicate.hpp>
 #include "acl/path.hpp"
 #include "fs/owner.hpp"
 #include "cfg/get.hpp"
@@ -22,11 +21,11 @@ bool HiddenFile(const fs::VirtualPath& path)
 
   for (auto& hf : cfg::Get().HiddenFiles())
   {
-    if (util::string::WildcardMatch(hf.Path(), dirname))
+    if (util::WildcardMatch(hf.Path(), dirname))
     {
       for (auto& mask : hf.Masks())
       {
-        if (util::string::WildcardMatch(mask, basename)) return true;
+        if (util::WildcardMatch(mask, basename)) return true;
       }
     }
   }
@@ -57,11 +56,11 @@ bool Evaluate(const std::vector<cfg::setting::Right>& rights,
       if (!group.empty())
         boost::replace_all(specialPath, "[:groupname:]", group);
         
-      if (util::string::WildcardMatch(specialPath, path.ToString()))
+      if (util::WildcardMatch(specialPath, path.ToString()))
         return right.ACL().Evaluate(user);
     }
     else
-      if (util::string::WildcardMatch(right.Path(), path.ToString()))
+      if (util::WildcardMatch(right.Path(), path.ToString()))
         return right.ACL().Evaluate(user);
   }
   return false;
@@ -127,7 +126,7 @@ private:
     const cfg::Config& config = cfg::Get();
     for (auto& mask : config.Noretrieve())
     {
-      if (util::string::WildcardMatch(mask, path.Basename().ToString()))
+      if (util::WildcardMatch(mask, path.Basename().ToString()))
         return util::Error::Failure(EACCES);
     }
     return util::Error::Success();

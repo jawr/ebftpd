@@ -1,6 +1,5 @@
 #include <sstream>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include "cmd/site/adduser.hpp"
 #include "util/error.hpp"
 #include "acl/misc.hpp"
@@ -23,7 +22,7 @@ void ADDUSERCommand::Addips(const std::string& user,
   for (const std::string& ip : ips) cpArgStr += " " + ip;
 
   std::vector<std::string> cpArgs;
-  boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
+  util::Split(cpArgs, cpArgStr, " ");
 
   ADDIPCommand(client, cpArgStr, cpArgs).Execute();
 }

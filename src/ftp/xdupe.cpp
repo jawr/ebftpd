@@ -106,7 +106,7 @@ bool IsXdupe(const std::string& path)
 {
   for (const std::string& mask : cfg::Get().Xdupe())
   {
-    if (util::string::WildcardMatch(mask, path)) return true;
+    if (util::WildcardMatch(mask, path)) return true;
   }
   return false;
 }

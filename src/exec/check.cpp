@@ -17,7 +17,7 @@ LookupCheck(const std::vector<cfg::setting::CheckScript>& checks, const fs::Virt
 {
   for (const auto& check : checks)
   {
-    if (util::string::WildcardMatch(check.Mask(), path.ToString()))
+    if (util::WildcardMatch(check.Mask(), path.ToString()))
     {
       if (check.Disabled()) break;
       return boost::optional<const fs::Path>(check.Path());

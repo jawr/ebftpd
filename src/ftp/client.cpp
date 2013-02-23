@@ -1,9 +1,6 @@
 
 #include <iomanip>
 #include <functional>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/trim.hpp>
 #include <cstdint>
 #include <boost/optional.hpp>
 #include "ftp/client.hpp"
@@ -189,7 +186,7 @@ void Client::DisplayBanner()
 void Client::IdleReset(std::string commandLine)
 {
   for (auto & mask : cfg::Get().IdleCommands())
-    if (util::string::WildcardMatch(mask, commandLine, true))
+    if (util::WildcardMatch(mask, commandLine, true))
       return;
   idleTime = boost::posix_time::second_clock::local_time();
   idleExpires = idleTime + idleTimeout;
@@ -198,13 +195,12 @@ void Client::IdleReset(std::string commandLine)
 void Client::ExecuteCommand(const std::string& commandLine)
 {
   std::vector<std::string> args;
-  boost::split(args, commandLine, boost::is_any_of(" "),
-               boost::token_compress_on);
+  util::Split(args, commandLine, " ", true);
   if (args.empty()) throw ProtocolError("Empty command.");
   
   std::string argStr(commandLine.substr(args[0].length()));
-  boost::trim(argStr);
-  boost::to_upper(args[0]);
+  util::Trim(argStr);
+  util::ToUpper(args[0]);
   
   currentCommand = args[0];
   if (!argStr.empty()) currentCommand += " " + argStr;
@@ -335,7 +331,7 @@ void Client::LookupIdent()
 bool Client::ConfirmCommand(const std::string& argStr)
 {
   std::string command = 
-      util::string::CompressWhitespaceCopy(argStr);
+      util::CompressWhitespaceCopy(argStr);
   if (command != confirmCommand)
   {
     confirmCommand = command;
@@ -428,7 +424,7 @@ bool Client::IdntUpdate(const std::string& ident, std::string ip,
 bool Client::IdntParse(const std::string& command)
 {
   std::vector<std::string> args;
-  boost::split(args, command, boost::is_any_of(" "));
+  util::Split(args, command, " ");
   if (args.size() != 2) return false;
   
   auto pos1 = args[1].find_first_of('@');

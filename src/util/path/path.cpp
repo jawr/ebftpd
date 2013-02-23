@@ -1,8 +1,7 @@
 #include <glob.h>
 #include <fnmatch.h>
 #include <stdexcept>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include "util/path/path.hpp"
 
 namespace util { namespace path

@@ -2,9 +2,7 @@
 #include <sstream>
 #include <boost/bind.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include <boost/algorithm/string/replace.hpp>
 #include "cmd/site/change.hpp"
 #include "acl/user.hpp"
@@ -110,7 +108,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
   
   const cfg::Config& config = cfg::Get();
   
-  std::string section = boost::to_upper_copy(args[3]);
+  std::string section = util::ToUpperCopy(args[3]);
   if (config.Sections().find(section) == config.Sections().end())
   {
     control.Format(ftp::ActionNotOkay, "Section %1% doesn't exist.", section);
@@ -149,7 +147,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
   std::string section;
   if (args.size() == 5)
   {
-    section = boost::to_upper_copy(args[4]);
+    section = util::ToUpperCopy(args[4]);
     if (config.Sections().find(args[4]) == config.Sections().end())
     {
       control.Format(ftp::ActionNotOkay, "Section %1% doesn't exist.", args[4]);
@@ -195,7 +193,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckFlags()
 {
   char action = args[3][0];
   
-  std::string flags = boost::to_upper_copy(args[3].substr(1));
+  std::string flags = util::ToUpperCopy(args[3].substr(1));
   if (flags.empty()) throw cmd::SyntaxError();
   
   if (!acl::ValidFlags(flags))
@@ -248,7 +246,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckIdleTime()
 CHANGECommand::SetFunction CHANGECommand::CheckExpires()
 {
   boost::optional<boost::gregorian::date> date;
-  boost::to_lower(args[3]);
+  util::ToLower(args[3]);
   if (args[3] != "never")
   {
     try
@@ -384,7 +382,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxSimDown()
 
 CHANGECommand::SetFunction CHANGECommand::Check()
 {
-  boost::to_lower(args[2]);
+  util::ToLower(args[2]);
   
   auto it = std::find_if(settings.begin(), settings.end(),
             [&](const SettingDef& def) { return def.name == args[2]; });

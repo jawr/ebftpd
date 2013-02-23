@@ -1,5 +1,4 @@
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include <mongo/client/dbclient.h>
 #include "db/group.hpp"
 #include "acl/group.hpp"
@@ -162,7 +161,7 @@ template <typename T>
 std::vector<T> GetGroupsGeneric(const std::string& multiStr, const mongo::BSONObj* fields)
 {
   std::vector<std::string> toks;
-  boost::split(toks, multiStr, boost::is_any_of(" "), boost::token_compress_on);
+  util::Split(toks, multiStr, " ", true);
   
   mongo::Query query;
   if (std::find(toks.begin(), toks.end(), "*") == toks.end())

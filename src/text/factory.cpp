@@ -32,7 +32,7 @@ util::Error Factory::Initialize()
       
       fs::Path file(textpath / p);
       std::string name = p.NoExtension(); 
-      boost::to_lower(name);
+      util::ToLower(name);
 
       try
       {
@@ -66,7 +66,7 @@ util::Error Factory::Initialize()
 
 Template Factory::GetTemplate(const std::string& templ)
 {
-  std::string name = boost::to_lower_copy(templ);
+  std::string name = util::ToLowerCopy(templ);
   
   std::lock_guard<std::mutex> lock(mutex);
   if (!instance.get() || instance->templates.find(name) == instance->templates.end())

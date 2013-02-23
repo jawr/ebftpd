@@ -1,4 +1,4 @@
-#include <boost/algorithm/string/join.hpp>
+#include "util/string.hpp"
 #include "exec/reader.hpp"
 #include "util/processreader.hpp"
 #include "ftp/client.hpp"
@@ -25,7 +25,7 @@ Reader::~Reader()
   catch (const util::SystemError& e)
   {
     logs::Error("Error while closing child process executed by %1%: %2%", 
-                client.User().Name(), boost::join(argv, " "));
+                client.User().Name(), util::Join(argv, " "));
   }
 }
 
@@ -42,19 +42,19 @@ void Reader::Close()
     if (client.Child().Kill(util::TimePair(1, 0)))
     {
       logs::Debug("Child process executed by %1% needed SIGTERM to be closed: %2%",
-                  client.User().Name(), boost::join(argv, " "));
+                  client.User().Name(), util::Join(argv, " "));
       return;
     }
     
     if (client.Child().Kill(SIGKILL, util::TimePair(1, 0)))
     {
       logs::Error("Child process executed by %1% needed SIGKILL to be closed: %2%",
-                  client.User().Name(), boost::join(argv, " "));
+                  client.User().Name(), util::Join(argv, " "));
     }
     else
     {
       logs::Error("Child process executed by %1% failed to close even with SIGKILL: ",
-                  client.User().Name(), boost::join(argv, " "));
+                  client.User().Name(), util::Join(argv, " "));
     }
     open = false;
   }

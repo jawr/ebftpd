@@ -1,7 +1,6 @@
 #include <cassert>
 #include <memory>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include "cmd/site/passwd.hpp"
 #include "cmd/site/chpass.hpp"
 
@@ -16,7 +15,7 @@ void PASSWDCommand::Execute()
   cpArgStr += args[1];
 
   std::vector<std::string> cpArgs;
-  boost::split(cpArgs, cpArgStr, boost::is_any_of(" "));
+  util::Split(cpArgs, cpArgStr, " ");
   
   CHPASSCommand(client, cpArgStr, cpArgs).Execute();
 }

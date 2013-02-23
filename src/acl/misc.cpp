@@ -1,15 +1,13 @@
 #include <cassert>
 #include <functional>
 #include <vector>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/predicate.hpp>
+#include <boost/optional.hpp>
 #include "acl/misc.hpp"
+#include "util/string.hpp"
 #include "acl/user.hpp"
 #include "fs/path.hpp"
 #include "fs/owner.hpp"
 #include "cfg/get.hpp"
-#include "util/string.hpp"
 #include "acl/ipstrength.hpp"
 #include "acl/passwdstrength.hpp"
 #include "db/userutil.hpp"
@@ -94,7 +92,7 @@ UploadMaximum(const User& user, const fs::Path& path)
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {
       if (limit.UlLimit() > 0 && limit.ACL().Evaluate(user) &&
-          util::string::WildcardMatch(limit.Path(), path.ToString()))
+          util::WildcardMatch(limit.Path(), path.ToString()))
       {
         matches.emplace_back(&limit);
       }
@@ -112,7 +110,7 @@ DownloadMaximum(const User& user, const fs::Path& path)
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {
       if (limit.DlLimit() > 0 && limit.ACL().Evaluate(user) &&
-          util::string::WildcardMatch(limit.Path(), path.ToString()))
+          util::WildcardMatch(limit.Path(), path.ToString()))
       {
         matches.emplace_back(&limit);
       }
@@ -126,7 +124,7 @@ int UploadMinimum(const User& user, const fs::Path& path)
   for (const auto& limit : cfg::Get().MinimumSpeed())
   {
     if (limit.ACL().Evaluate(user) &&
-        util::string::WildcardMatch(limit.Path(), path.ToString()))
+        util::WildcardMatch(limit.Path(), path.ToString()))
     {
       return limit.UlLimit();
     }
@@ -139,7 +137,7 @@ int DownloadMinimum(const User& user, const fs::Path& path)
   for (const auto& limit : cfg::Get().MinimumSpeed())
   {
     if (limit.ACL().Evaluate(user) &&
-        util::string::WildcardMatch(limit.Path(), path.ToString()))
+        util::WildcardMatch(limit.Path(), path.ToString()))
     {
       return limit.DlLimit();
     }
@@ -180,7 +178,7 @@ bool AllowFxpReceive(const User& user, bool& logging)
 bool AllowSiteCmd(const User& user, const std::string& keyword)
 {
   std::vector<std::string> toks;
-  boost::split(toks, keyword, boost::is_any_of("|"));
+  util::Split(toks, keyword, "|");
 	if (toks.empty()) return true;
   for (auto& tok : toks)
   {
@@ -198,7 +196,7 @@ CreditCheck(const User& user, const fs::VirtualPath& path)
 {
   for (const auto& cc : cfg::Get().Creditcheck())
   {
-    if (util::string::WildcardMatch(cc.Path(), path.ToString()) &&
+    if (util::WildcardMatch(cc.Path(), path.ToString()) &&
         cc.ACL().Evaluate(user))
     {
       return boost::optional<const cfg::setting::Creditcheck&>(cc);
@@ -212,7 +210,7 @@ CreditLoss(const User& user, const fs::VirtualPath& path)
 {
   for (const auto& cc : cfg::Get().Creditloss())
   {
-    if (util::string::WildcardMatch(cc.Path(), path.ToString()) &&
+    if (util::WildcardMatch(cc.Path(), path.ToString()) &&
         cc.ACL().Evaluate(user))
     {
       return boost::optional<const cfg::setting::Creditloss&>(cc);

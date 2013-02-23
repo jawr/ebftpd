@@ -1,17 +1,57 @@
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+#include "util/string.hpp"
 #include "acl/acl.hpp"
 #include "acl/user.hpp"
 
 namespace acl
 {
 
+ACL& ACL::operator=(const ACL& rhs)
+{
+  perms.clear();
+  for (const Permission* p : rhs.perms)
+  {
+    perms.emplace_back(p->Clone());
+  }
+  finalResult = rhs.finalResult;
+  return *this;
+}
+
+ACL& ACL::operator=(ACL&& rhs)
+{
+  perms = std::move(rhs.perms);
+  finalResult = std::move(rhs.finalResult);
+  rhs.perms.clear();
+  return *this;
+}
+
+ACL::ACL(const ACL& other) :
+  finalResult(other.finalResult)
+{
+  for (const Permission* p : other.perms)
+  {
+    perms.emplace_back(p->Clone());
+  }
+}
+
+ACL::ACL(ACL&& other) :
+  perms(std::move(other.perms)),
+  finalResult(std::move(other.finalResult))
+{
+  other.perms.clear();
+}
+
+ACL::~ACL()
+{
+  for (const Permission* p : perms)
+    delete p;
+}
+
 bool ACL::Evaluate(const User& user) const
 {
   if (finalResult) return *finalResult;
-  for (const Permission& p : perms)
+  for (const Permission* p : perms)
   {
-    boost::tribool result = p.Evaluate(user);
+    boost::tribool result = p->Evaluate(user);
     if (!boost::indeterminate(result))
     {
       finalResult.reset(result);
@@ -44,7 +84,7 @@ ACL ACL::FromString(const std::string& str)
 {
   ACL acl;
   std::vector<std::string> args;
-  boost::split(args, str, boost::is_any_of(" "), boost::token_compress_on);
+  util::Split(args, str, " ", true);
   for (const auto& arg : args) acl.FromStringArg(arg);
   return acl;
 }

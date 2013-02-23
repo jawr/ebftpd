@@ -1,5 +1,4 @@
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/split.hpp>
+#include "util/string.hpp"
 #include "cmd/site/customcommand.hpp"
 #include "cmd/splitargs.hpp"
 #include "cmd/site/factory.hpp"
@@ -32,7 +31,7 @@ void CustomEXECCommand::Execute()
     {
       control.Reply(ftp::CommandOkay, "Error while reading from pipe: " + e.Message());
       logs::Error("Error while reading from child process pipe: %1%: %2%",
-                  boost::join(argv, " "), e.Message());
+                  util::Join(argv, " "), e.Message());
       return;
     }
     reader.Close();
@@ -41,7 +40,7 @@ void CustomEXECCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay, "Unable to execute command: " + e.Message());
     logs::Error("Failed to execute custom site command: %1%: %2%",
-                boost::join(argv, " "), e.Message());
+                util::Join(argv, " "), e.Message());
     return;
   }
   

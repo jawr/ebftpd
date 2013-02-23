@@ -89,7 +89,7 @@ bool User::AddIPMask(const std::string& ipMask, std::vector<std::string>* delete
   if (std::find_if(data.ipMasks.begin(), data.ipMasks.end(),
         [&](const std::string& mask)
         {
-          return util::string::WildcardMatch(mask, ipMask, true);
+          return util::WildcardMatch(mask, ipMask, true);
         }) != data.ipMasks.end())
   {
     return false;
@@ -97,7 +97,7 @@ bool User::AddIPMask(const std::string& ipMask, std::vector<std::string>* delete
   
   for (auto it = data.ipMasks.begin(); it != data.ipMasks.end();)
   {
-    if (util::string::WildcardMatch(ipMask, *it, true))
+    if (util::WildcardMatch(ipMask, *it, true))
     {
       if (deleted) deleted->emplace_back(*it);
       it = data.ipMasks.erase(it);
