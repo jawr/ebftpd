@@ -131,7 +131,7 @@ bool PostCheck(ftp::Client& client, const fs::VirtualPath& path,
     fs::MakeReal(path).ToString(), 
     crc,
     client.User().Name(),
-    acl::GIDToName(client.User().PrimaryGID()),
+    client.User().PrimaryGroup(),
     client.User().Tagline(),
     boost::lexical_cast<std::string>(static_cast<unsigned>(speed / 1024)),
     section

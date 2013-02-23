@@ -114,8 +114,10 @@ void WIPECommand::Execute()
      << " files / failures: " << failed << ").";
   control.Reply(ftp::CommandOkay, os.str());
   
-  logs::Event(recursive ? "WIPE-r" : "WIPE", path, client.User().Name(),
-              client.User().PrimaryGroup(), client.User().Tagline());
+  logs::Event(recursive ? "WIPE-r" : "WIPE", "path", path.ToString(), 
+              "user", client.User().Name(),
+              "group", client.User().PrimaryGroup(), 
+              "tagline", client.User().Tagline());
 }
 
 } /* site namespace */

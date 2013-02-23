@@ -61,9 +61,7 @@ template <typename... Args>
 void Event(const std::string& what, const Args&... args)
 {
   extern Logger events;
-  std::ostringstream os;
-  os << util::ToUpperCopy(what) << ":";
-  Log(events, os, args...);
+  events.Write("event", util::ToUpperCopy(what) + ":", args...);
 }
 
 template <typename... Args>

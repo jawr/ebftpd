@@ -62,7 +62,7 @@ bool Cscript(ftp::Client& client, const std::string& group,
 bool Cscripts(ftp::Client& client, const std::string& command, 
       const std::string& fullCommand, CscriptType type, ftp::ReplyCode failCode)
 {
-  std::string group = acl::GIDToName(client.User().PrimaryGID());
+  std::string group = client.User().PrimaryGroup();
 
   for (const auto& cscript : cfg::Get().Cscript())
   {

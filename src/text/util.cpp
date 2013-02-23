@@ -60,7 +60,7 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   ts.RegisterValue("username", client.User().Name());
   if (ts.HasTag("groupname")) 
   {
-    ts.RegisterValue("groupname", acl::GIDToName(client.User().PrimaryGID()));
+    ts.RegisterValue("groupname", client.User().PrimaryGroup());
   }
   ts.RegisterValue("flags", client.User().Flags());
   ts.RegisterValue("ratio", acl::RatioString(client.User()));

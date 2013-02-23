@@ -52,7 +52,10 @@ void MKDCommand::Execute()
   
   if (config.IsEventLogged(path.ToString()))
   {
-    logs::Event("NEWDIR", path, client.User().Name(), client.User().PrimaryGroup(), client.User().Tagline());
+    logs::Event("NEWDIR", "path", path.ToString(),
+                "user", client.User().Name(), 
+                "group", client.User().PrimaryGroup(), 
+                "tagline", client.User().Tagline());
   }
   
   control.Reply(ftp::PathCreated, "MKD command successful.");  

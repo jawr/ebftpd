@@ -19,7 +19,9 @@ void TAGLINECommand::Execute()
   client.User().SetTagline(argStr);
   control.Reply(ftp::CommandOkay, "New Tagline: " + argStr);
 
-  logs::Event("TAGLINE", client.User().Name(), client.User().PrimaryGroup(), client.User().Tagline());
+  logs::Event("TAGLINE", "user", client.User().Name(), 
+              "group", client.User().PrimaryGroup(), 
+              "tagline", client.User().Tagline());
 }
 
 } /* site namespace */

@@ -64,8 +64,10 @@ void ClientImpl::SetState(ClientState state)
   if (logout)
   {
     Counter::Login().Stop(user->ID());
-    logs::Event("LOGOUT", Ident() + '@' + Hostname(), IP(), user->Name(), 
-              acl::GIDToName(user->PrimaryGID()), user->Tagline());
+    logs::Event("LOGOUT", "ident_address", Ident() + '@' + Hostname(), 
+                "ip", IP(), "user", user->Name(), 
+                "group", acl::GIDToName(user->PrimaryGID()), 
+                "tagline", user->Tagline());
   }
 }
 
@@ -101,8 +103,10 @@ void ClientImpl::SetLoggedIn(bool kicked)
     loggedInAt = boost::posix_time::second_clock::local_time();
   }
 
-  logs::Event("LOGIN", Ident() + '@' + Hostname(), IP(), user->Name(), 
-              acl::GIDToName(user->PrimaryGID()), user->Tagline());
+  logs::Event("LOGIN", "ident address", Ident() + '@' + Hostname(), 
+              "ip", IP(), "user", user->Name(), 
+              "group", acl::GIDToName(user->PrimaryGID()), 
+              "tagline", user->Tagline());
 }
 
 void ClientImpl::SetWaitingPassword(const acl::User& user, bool kickLogin)

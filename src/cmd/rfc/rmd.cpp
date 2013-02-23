@@ -29,8 +29,9 @@ void RMDCommand::Execute()
   
   if (config.IsEventLogged(path.ToString()))
   {
-    logs::Event("DELDIR", path, client.User().Name(), client.User().PrimaryGroup(),
-                client.User().Tagline());
+    logs::Event("DELDIR", "path", path.ToString(), "user", client.User().Name(), 
+                "group", client.User().PrimaryGroup(),
+                "tagline", client.User().Tagline());
   }
 
   control.Reply(ftp::FileActionOkay, "RMD command successful.");   
