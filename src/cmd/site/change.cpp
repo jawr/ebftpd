@@ -424,7 +424,7 @@ void CHANGECommand::Execute()
     if (user)
     {
       set(*user);
-      logs::Siteop(client.User().Name(), "USER_" + args[2], user->Name(), display);
+      logs::Siteop(client.User().Name(), "changed '%1%' for '%2%' to '%3%'", args[2], user->Name(), display);
     }
   }
 

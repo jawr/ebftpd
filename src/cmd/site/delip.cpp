@@ -77,7 +77,7 @@ void DELIPCommand::Execute()
     for (const std::string& mask : deleted)
     {
       os << "\nIP " << mask << " deleted successfully.";
-      logs::Siteop(client.User().Name(), "DELIP", user->Name(), mask);
+      logs::Siteop(client.User().Name(), "deleted ip '%2%' from '%1%'", user->Name(), mask);
     }
   }
   else
@@ -88,7 +88,7 @@ void DELIPCommand::Execute()
     {
       std::string mask = user->DelIPMask(index);
       os << "\nIP " << mask << " deleted successfully.";
-      logs::Siteop(client.User().Name(), "DELIP", user->Name(), mask);
+      logs::Siteop(client.User().Name(), "deleted ip '%2%' from '%1%'", user->Name(), mask);
     }
   }
 

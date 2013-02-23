@@ -101,7 +101,7 @@ void GIVECommand::Execute()
   control.Reply(ftp::CommandOkay, os.str());
   
   if (!own)
-    logs::Siteop(client.User().Name(), "GIVE", user->Name(), credits);
+    logs::Siteop(client.User().Name(), "gave '%2%' credits to '%1%'", user->Name(), credits);
 }
 
 // end

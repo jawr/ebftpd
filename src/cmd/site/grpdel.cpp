@@ -32,7 +32,7 @@ void GRPDELCommand::Execute()
 
   group->Purge();
   control.Reply(ftp::CommandOkay, "Group " + args[1] + " deleted.");
-  logs::Siteop(client.User().Name(), "GRPDEL", args[1]);
+  logs::Siteop(client.User().Name(), "deleted group '%1%'", args[1]);
 }
 
 } /* site namespace */

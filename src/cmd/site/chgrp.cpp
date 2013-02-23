@@ -51,8 +51,8 @@ void CHGRPCommand::Execute()
     control.Reply(ftp::CommandOkay, "User " + user->Name() + " now has no groups.");
   else
     control.Reply(ftp::CommandOkay, "User " + user->Name() + " now has groups: " + acl::GroupString(*user));
-    
-  logs::Siteop(client.User().Name(), "CHGRP", user->Name(), acl::GroupString(*user));
+  
+  logs::Siteop(client.User().Name(), "changed groups for '%1%' to '%2%'", user->Name(), acl::GroupString(*user));
 }
 
 // end

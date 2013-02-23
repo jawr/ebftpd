@@ -39,7 +39,7 @@ void DELUSERCommand::Execute()
   if (kicked) os << " (" << kicked << " login(s) kicked)";
 
   control.Reply(ftp::CommandOkay, os.str());
-  logs::Siteop(client.User().Name(), "DELUSER", user->Name());
+  logs::Siteop(client.User().Name(), "deleted user '%1%'", user->Name());
 }
 
 } /* site namespace */

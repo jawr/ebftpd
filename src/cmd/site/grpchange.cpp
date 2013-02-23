@@ -199,7 +199,7 @@ void GRPCHANGECommand::Execute()
     if (group)
     {
       set(*group);
-      logs::Siteop(client.User().Name(), "GROUP_" + args[2], group->Name(), display);
+      logs::Siteop(client.User().Name(), "changed '%1%' for '%2%' to '%3%'", args[2], group->Name(), display);
     }
   }
 

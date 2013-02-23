@@ -324,13 +324,20 @@ bool User::HasGID(GroupID gid) const
 
 void User::SetPrimaryGID(acl::GroupID gid)
 {
+  if (data->primaryGid == gid) return;
+
   auto trans1 = util::MakeTransaction(data->primaryGid);
   auto trans2 = util::MakeTransaction(data->secondaryGids);
 
-  if (data->primaryGid == gid) return;
   if (data->primaryGid != -1)
   {
     data->secondaryGids.insert(data->secondaryGids.begin(), data->primaryGid);
+  }
+  
+  auto it = std::find(data->secondaryGids.begin(), data->secondaryGids.end(), gid);
+  if (it != data->secondaryGids.end())
+  {
+    data->secondaryGids.erase(it);
   }
   
   data->primaryGid = gid;

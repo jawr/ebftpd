@@ -37,7 +37,7 @@ void CHPASSCommand::Execute()
   
   user->SetPassword(args[2]);
   control.Reply(ftp::CommandOkay, "Password changed.");
-  logs::Siteop(client.User().Name(), "CHPASS", user->Name());
+  logs::Siteop(client.User().Name(), "changed password for '%1%'", user->Name());
 }
 
 } /* site namespace */

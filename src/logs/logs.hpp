@@ -35,24 +35,12 @@ struct Format : public util::Format
     util::Format(output)
   { }
 };
- 
-inline void Log(Logger& logger, std::ostringstream& os)
-{
-  logger.PushEntry("message", os.str());
-}
-
-template <typename T, typename... Args>
-void Log(Logger& logger, std::ostringstream& os, const T& arg, const Args&... args)
-{
-  os << " \"" << arg << "\"";
-  Log(logger, os, args...);
-}
 
 template <typename... Args>
-void Siteop(const std::string& admin, const std::string& what, const Args&... args)
+void Siteop(const std::string& admin, const std::string& format, const Args&... args)
 {
   extern Logger siteop;
-  siteop.PushEntry("event", Tag(), util::ToUpperCopy(what), "admin", Brackets('[', ']'), admin, args...); 
+  siteop.PushEntry("admin", Quote('\''), admin, "message", util::Format()(format, args...));
 }
 
 template <typename... Args>

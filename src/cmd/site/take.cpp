@@ -73,7 +73,7 @@ void TAKECommand::Execute()
   os << "Taken " << std::fixed << std::setprecision(2) << credits
      << "KB credits from " << user->Name() << ".";
   control.Reply(ftp::CommandOkay, os.str());
-  logs::Siteop(client.User().Name(), "TAKE", user->Name(), credits);
+  logs::Siteop(client.User().Name(), "took '%2%' credits from '%1%'", user->Name(), credits);
 }
 
 // end

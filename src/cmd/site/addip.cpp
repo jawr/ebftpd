@@ -62,11 +62,11 @@ void ADDIPCommand::Execute()
     }
       
     os << "\nIP " << *it << " added successfully.";
-    logs::Siteop(client.User().Name(), "ADDIP", user->Name(), *it);
+    logs::Siteop(client.User().Name(), "added ip '%2%' to '%1%'", user->Name(), *it);
     for (const std::string& del : deleted)
     {
       os << "\nAuto-removed unncessary IP " << del << "!";
-      logs::Siteop(client.User().Name(), "DELIP", user->Name(), del);
+      logs::Siteop(client.User().Name(), "deleted ip '%2%' from '%1%'", user->Name(), del);
     }
   }
 

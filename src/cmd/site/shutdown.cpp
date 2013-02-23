@@ -16,7 +16,7 @@ void SHUTDOWNCommand::Execute()
     else
     {
       control.Reply(ftp::CommandOkay, "Server shutdown to siteop only.");
-      logs::Siteop(client.User().Name(), "SITEOPONLY", "Server put into siteop only mode");
+      logs::Siteop(client.User().Name(), "put the server into siteop only mode");
     }
   }
   else
@@ -27,14 +27,14 @@ void SHUTDOWNCommand::Execute()
     else
     {
       control.Reply(ftp::CommandOkay, "Server reopened for all users.");
-      logs::Siteop(client.User().Name(), "REOPEN", "Server reopened to all users");
+      logs::Siteop(client.User().Name(), "reopened the server for all users");
     }
   }
   else
   if (args[1] == "full")
   {
     control.Reply(ftp::ServiceUnavailable, "Full server shutdown/exit in progress..");
-    logs::Siteop(client.User().Name(), "SHUTDOWN", "Server has been shutdown.");
+    logs::Siteop(client.User().Name(), "shut the server down");
     std::make_shared<ftp::task::Exit>()->Push();
   }
   else

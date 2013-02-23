@@ -78,7 +78,7 @@ void PASSCommand::Execute()
   
   if (client.User().Expired())
   {
-    logs::Security("LOGINEXPIRED", "'%1' attempted to login while expired", client.User().Name());
+    logs::Security("LOGINEXPIRED", "'%1%' attempted to login while expired", client.User().Name());
     control.Reply(ftp::ServiceUnavailable, "Your account has expired.");
     client.SetState(ftp::ClientState::Finished);
     return;

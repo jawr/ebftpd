@@ -36,7 +36,7 @@ void SETPGRPCommand::Execute()
   if (oldGID != -1) os << "Moved old primary group " << acl::GIDToName(oldGID) << " to secondary.\n";
   os << "Set primary group for " << args[1] << " to: " << args[2];
   control.Reply(ftp::CommandOkay, os.str());
-  logs::Siteop(client.User().Name(), "SETPGRP", user->Name(), user->PrimaryGroup());
+  logs::Siteop(client.User().Name(), "set primary group for '%1%' to '%2%'", user->Name(), user->PrimaryGroup());
 }
 
 }

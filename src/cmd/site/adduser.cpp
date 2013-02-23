@@ -89,14 +89,14 @@ void ADDUSERCommand::Execute()
   os << "Added user " << args[1];
   
   if (templateUser)
-    logs::Siteop(client.User().Name(), "TADDUSER", user->Name(), templateUser->Name());
+    logs::Siteop(client.User().Name(), "added user '%1%' based on template '%2%'", user->Name(), templateUser->Name());
   else
-    logs::Siteop(client.User().Name(), "ADDUSER", user->Name());
-  
+    logs::Siteop(client.User().Name(), "added user '%1%'", user->Name());
+
   if (gid != -1)
   {
     user->SetPrimaryGID(gid);
-    logs::Siteop(client.User().Name(), "SETPGRP", user->Name(), user->PrimaryGroup());
+    logs::Siteop(client.User().Name(), "set primary group for '%1%' to '%2%'", user->Name(), user->PrimaryGroup());
     os << " to group " << group;
   }
   

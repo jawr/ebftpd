@@ -18,7 +18,7 @@ void PURGECommand::Execute()
   {
     user->Purge();
     control.Reply(ftp::CommandOkay, "User " + args[1] + " has been purged.");
-    logs::Siteop(client.User().Name(), "PURGE", user->Name());
+    logs::Siteop(client.User().Name(), "purged user '%1%'", user->Name());
   }
 }
 

@@ -35,7 +35,7 @@ void READDCommand::Execute()
   
   user->DelFlag(acl::Flag::Deleted);
   control.Reply(ftp::CommandOkay, "User " + args[1] + " has been readded.");
-  logs::Siteop(client.User().Name(), "READD", user->Name());
+  logs::Siteop(client.User().Name(), "readded '%1%'", user->Name());
 }
 
 } /* site namespace */

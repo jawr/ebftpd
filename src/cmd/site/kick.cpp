@@ -38,7 +38,7 @@ void KICKCommand::Execute()
   control.Reply(ftp::CommandOkay, os.str());
   if (kicked == 0) throw cmd::NoPostScriptError();
 
-  logs::Siteop(client.User().Name(), "KICK", "user", user->Name(), "logins kicked", kicked);
+  logs::Siteop(client.User().Name(), "kicked '%1%', '%2%' logins", user->Name(), kicked);
 }
 
 }

@@ -37,7 +37,7 @@ void GRPADDCommand::Execute()
   
   if (args.size() > 2) group->SetDescription(argStr);  
   control.Reply(ftp::CommandOkay, "Group " + args[1] + " successfully added.");
-  logs::Siteop(client.User().Name(), "GRPADD", group->Name(), group->Description());
+  logs::Siteop(client.User().Name(), "added group '%1%' with description '%2%'", group->Name(), group->Description());
 }
 
 // end
