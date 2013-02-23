@@ -40,7 +40,6 @@ public:
   void Write(const char* field, double value);
   void Write(const char* field, bool value);
   void Write(const char* field, const char* value);
-  void QuoteNext(char /* quoteChar */) { }
   
   void Flush();
 };

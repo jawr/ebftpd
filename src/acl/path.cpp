@@ -7,7 +7,6 @@
 #include "acl/user.hpp"
 #include "logs/logs.hpp"
 #include "util/path/status.hpp"
-#include "acl/group.hpp"
 
 namespace acl { namespace path
 {
@@ -50,7 +49,7 @@ bool Evaluate(const std::vector<cfg::setting::Right>& rights,
       {
         if (user.PrimaryGID() != -1)
         {
-          group = acl::GIDToName(user.PrimaryGID());
+          group = user.PrimaryGroup();
         }
         firstSpecial = false;
       }

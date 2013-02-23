@@ -9,6 +9,7 @@
 #include "cmd/error.hpp"
 #include "stats/types.hpp"
 #include "stats/stat.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {

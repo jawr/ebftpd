@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <algorithm>
-#include <future>
 #include <chrono>
 #include <boost/thread/once.hpp>
 #include <future>

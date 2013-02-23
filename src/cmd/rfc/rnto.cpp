@@ -4,7 +4,6 @@
 #include "fs/directory.hpp"
 #include "cmd/error.hpp"
 #include "db/index/index.hpp"
-#include "acl/path.hpp"
 #include "cfg/get.hpp"
 #include "util/path/status.hpp"
 #include "fs/path.hpp"

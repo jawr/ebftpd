@@ -30,10 +30,10 @@ class KickUser : public Task
 {
   acl::UserID uid;
   bool oneOnly;
-  std::promise<unsigned> promise;
+  std::promise<int> promise;
   
 public:
-  KickUser(acl::UserID uid, std::future<unsigned>& future, bool oneOnly = false) : 
+  KickUser(acl::UserID uid, std::future<int>& future, bool oneOnly = false) : 
     uid(uid), oneOnly(oneOnly) { future = promise.get_future(); }
   void Execute(Server& server);
 };

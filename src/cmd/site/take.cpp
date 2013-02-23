@@ -4,7 +4,6 @@
 #include "cmd/site/take.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
-#include "acl/user.hpp"
 #include "util/error.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"

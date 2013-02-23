@@ -1,4 +1,3 @@
-#include <cstdio>
 #include <sys/socket.h>
 #include <boost/thread/thread.hpp>
 #include "util/net/tcpsocket.hpp"

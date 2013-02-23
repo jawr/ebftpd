@@ -1,10 +1,7 @@
 #include <cassert>
-#include <boost/thread/once.hpp>
 #include <boost/algorithm/string/replace.hpp>
-#include "util/string.hpp"
 #include "db/connection.hpp"
 #include "cfg/get.hpp"
-#include "db/error.hpp"
 
 namespace db
 {

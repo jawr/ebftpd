@@ -11,7 +11,7 @@
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/error.hpp"
-#include "acl/group.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {
@@ -53,7 +53,7 @@ void USERSCommand::Execute()
                             ::stats::Timeframe::Alltime, ::stats::Direction::Download);
 
       body.RegisterValue("user", user.Name());
-      body.RegisterValue("group", acl::GIDToName(user.PrimaryGID()));
+      body.RegisterValue("group", user.PrimaryGroup());
       body.RegisterSize("upload", upStat.KBytes());
       body.RegisterSize("download", dnStat.KBytes());
 

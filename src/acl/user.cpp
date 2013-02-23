@@ -8,7 +8,6 @@
 #include "util/string.hpp"
 #include "util/verify.hpp"
 #include "db/userutil.hpp"
-#include "db/user.hpp"
 #include "util/scopeguard.hpp"
 #include "acl/group.hpp"
 #include "acl/userdata.hpp"

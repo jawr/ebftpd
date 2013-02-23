@@ -41,8 +41,7 @@ class CustomCreator : public CreatorBase<cmd::Command>
   
 public:
   CustomCreator(const cfg::setting::SiteCmd& custSiteCmd) : custSiteCmd(custSiteCmd) { }
-  cmd::Command* Create(ftp::Client& client, const std::string& argStr, 
-                  const Args&)
+  cmd::Command* Create(ftp::Client& client, const std::string& argStr, const Args&)
   {
     // prepend custom command arguments to user passed arguments
     std::string cArgStr(custSiteCmd.Arguments());
@@ -102,8 +101,7 @@ public:
             (maximumArgs == -1 || argsSize <= maximumArgs));
   }
   
-  CommandPtr Create(ftp::Client& client, const std::string& argStr,
-                    const Args& args) const
+  CommandPtr Create(ftp::Client& client, const std::string& argStr, const Args& args) const
   {
     if (!creator) return nullptr;
     return CommandPtr(creator->Create(client, argStr, args));

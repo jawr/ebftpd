@@ -34,6 +34,8 @@ public:
 class StreamSink : public Sink
 {
   char quoteChar;
+  bool tag;
+  std::pair<char, char> bracketChar;
   
 protected:
   std::vector<Stream> streams;
@@ -43,6 +45,8 @@ public:
   template <typename... Streams>
   StreamSink(const Stream& stream, const Streams&... streams) :
     quoteChar('\0'),
+    tag(false),
+    bracketChar{'\0', '\0'},
     streams {stream, streams...}
   {
   }
@@ -55,7 +59,12 @@ public:
   void Write(const char* field, const std::string& value)
   { Write(field, value.c_str()); }
   
-  void QuoteNext(char quoteChar) { this->quoteChar = quoteChar; }
+  void Formatting(bool tag, char quoteChar, const std::pair<char, char>& bracketChar)
+  {
+    this->tag = tag;
+    this->quoteChar = quoteChar;
+    this->bracketChar = bracketChar;
+  }
   
   void Flush();
 };

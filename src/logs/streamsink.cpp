@@ -50,13 +50,12 @@ void StreamSink::Write(const char* /* field */, const char* value)
     *os << ' ';
   }
   
-  if (quoteChar != '\0')
-  {
-    *os << quoteChar << value << quoteChar;
-    quoteChar = '\0';
-  }
-  else
-    *os << value;
+  if (bracketChar.first != '\0') *os << bracketChar.first;
+  if (quoteChar != '\0') *os << quoteChar;
+  *os << value;
+  if (tag) *os << ':';
+  if (quoteChar != '\0') *os << quoteChar;
+  if (bracketChar.second != '\0') *os << bracketChar.second;
 }
 
 void StreamSink::Flush()

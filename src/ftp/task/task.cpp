@@ -8,6 +8,7 @@
 #include "text/error.hpp"
 #include "cfg/error.hpp"
 #include "ftp/data.hpp"
+#include "ftp/client.hpp"
 
 namespace ftp { namespace task
 {
@@ -19,7 +20,7 @@ void Task::Push()
 
 void KickUser::Execute(Server& server)
 {
-  unsigned kicked = 0;
+  int kicked = 0;
   for (auto& client: server.clients)
   {
     if (client.User().ID() == uid)

@@ -14,7 +14,6 @@
 #include "acl/util.hpp"
 #include "text/parser.hpp"
 #include "util/path/status.hpp"
-#include "acl/group.hpp"
 #include "ftp/control.hpp"
 #include "ftp/data.hpp"
 

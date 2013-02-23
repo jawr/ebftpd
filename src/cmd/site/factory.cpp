@@ -1,4 +1,3 @@
-#include "util/string.hpp"
 #include "cmd/site/factory.hpp"
 #include "cmd/site/idle.hpp"
 #include "cmd/site/vers.hpp"
@@ -37,7 +36,6 @@
 #include "cmd/site/group.hpp"
 #include "cmd/site/groups.hpp"
 #include "cmd/site/grpdel.hpp"
-#include "cmd/site/grpchange.hpp"
 #include "cmd/site/grpren.hpp"
 #include "cmd/site/reload.hpp"
 #include "cmd/site/shutdown.hpp"

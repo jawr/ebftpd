@@ -27,18 +27,18 @@ void KICKCommand::Execute()
     throw cmd::NoPostScriptError();
   } 
 
-  std::future<unsigned> future;
+  std::future<int> future;
   std::make_shared<ftp::task::KickUser>(user->ID(), future)->Push();
 
   future.wait();
-  unsigned kicked = future.get();
+  int kicked = future.get();
   
   std::ostringstream os;
   os << "Kicked " << future.get() << " of " << args[1] << "'s login(s).";
   control.Reply(ftp::CommandOkay, os.str());
   if (kicked == 0) throw cmd::NoPostScriptError();
 
-  logs::Siteop(client.User().Name(), "KICK", user->Name(), kicked);
+  logs::Siteop(client.User().Name(), "KICK", "user", user->Name(), "logins kicked", kicked);
 }
 
 }

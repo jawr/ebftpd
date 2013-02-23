@@ -4,8 +4,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "cmd/site/who.hpp"
 #include "acl/user.hpp"
-#include "acl/user.hpp"
-#include "acl/group.hpp"
 #include "ftp/task/types.hpp"
 #include "ftp/task/task.hpp"
 #include "cfg/config.hpp"
@@ -60,7 +58,7 @@ void WHOCommand::Execute()
     ++count;
     
     body.RegisterValue("user", user->Name());
-    body.RegisterValue("group", acl::GIDToName(user->PrimaryGID()));
+    body.RegisterValue("group", user->PrimaryGroup());
     body.RegisterValue("tagline", user->Tagline());
     body.RegisterValue("action", whoUser.Action());
     os << body.Compile();

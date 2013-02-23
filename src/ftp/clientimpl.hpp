@@ -2,16 +2,13 @@
 #define __FTP_CLIENTIMPL_HPP
 
 #include <string>
-#include <cstdint>
 #include <atomic>
 #include <mutex>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include "acl/user.hpp"
 #include "util/net/tcpsocket.hpp"
-#include "util/net/tcplistener.hpp"
 #include "util/thread.hpp"
-#include "util/error.hpp"
 #include "fs/path.hpp"
 #include "ftp/replycodes.hpp"
 #include "ftp/data.hpp"
@@ -19,6 +16,15 @@
 #include "ftp/xdupe.hpp"
 #include "util/processreader.hpp"
 #include "ftp/clientstate.hpp"
+
+namespace util
+{
+namespace net
+{
+class TCPListener;
+}
+}
+
 
 namespace ftp 
 {

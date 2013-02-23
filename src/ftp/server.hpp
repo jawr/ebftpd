@@ -9,7 +9,6 @@
 #include <mutex>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "ftp/client.hpp"
 #include "ftp/task/types.hpp"
 #include "ftp/task/task.hpp"
 #include "util/thread.hpp"
@@ -19,6 +18,8 @@
 
 namespace ftp
 {
+
+class Client;
 
 class Server : public util::Thread
 {

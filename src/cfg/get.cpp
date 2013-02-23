@@ -1,10 +1,8 @@
-#include <memory>
 #include <cassert>
 #include <boost/thread/tss.hpp>
 #include <mutex>
 #include <boost/signals2.hpp>
 #include "cfg/get.hpp"
-#include "cfg/config.hpp"
 #include "logs/logs.hpp"
 
 namespace cfg

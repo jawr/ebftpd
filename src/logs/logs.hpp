@@ -38,7 +38,7 @@ struct Format : public util::Format
  
 inline void Log(Logger& logger, std::ostringstream& os)
 {
-  logger.Write("message", os.str());
+  logger.PushEntry("message", os.str());
 }
 
 template <typename T, typename... Args>
@@ -49,19 +49,17 @@ void Log(Logger& logger, std::ostringstream& os, const T& arg, const Args&... ar
 }
 
 template <typename... Args>
-void Siteop(const std::string& who, const std::string& what, const Args&... args)
+void Siteop(const std::string& admin, const std::string& what, const Args&... args)
 {
   extern Logger siteop;
-  std::ostringstream os;
-  os << '[' << std::left << std::setw(15) << who << "] " << util::ToUpperCopy(what) << ":";
-  Log(siteop, os, args...);
+  siteop.PushEntry("event", Tag(), util::ToUpperCopy(what), "admin", Brackets('[', ']'), admin, args...); 
 }
 
 template <typename... Args>
 void Event(const std::string& what, const Args&... args)
 {
   extern Logger events;
-  events.Write("event", util::ToUpperCopy(what) + ":", args...);
+  events.PushEntry("event", Tag(), util::ToUpperCopy(what), QuoteOn(), args...);
 }
 
 template <typename... Args>
@@ -70,7 +68,7 @@ void Security(const std::string& what, const std::string& format, const Args&...
   extern Logger security;
   std::ostringstream os;
   os << util::ToUpperCopy(what) << ": " << format;
-  security.Write("message", util::Format()(os.str(), args...).String());
+  security.PushEntry("message", util::Format()(os.str(), args...).String());
 }
 
 extern Format Database;

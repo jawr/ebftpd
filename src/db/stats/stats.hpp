@@ -4,7 +4,7 @@
 #include <ctime>
 #include <string>
 #include <vector>
-#include "acl/user.hpp"
+#include "acl/types.hpp"
 
 namespace stats
 {
@@ -12,6 +12,11 @@ class Stat;
 enum class Timeframe : unsigned;
 enum class Direction : unsigned;
 enum class SortField : unsigned;
+}
+
+namespace acl
+{
+class User;
 }
 
 namespace db { namespace stats

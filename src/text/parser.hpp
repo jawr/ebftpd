@@ -4,7 +4,6 @@
 #include <string>
 #include <sstream>
 #include "text/template.hpp"
-#include "text/templatesection.hpp"
 
 namespace text
 {

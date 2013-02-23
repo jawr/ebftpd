@@ -29,11 +29,11 @@ void DELUSERCommand::Execute()
   
   user->AddFlag(acl::Flag::Deleted);
 
-  std::future<unsigned> future;
+  std::future<int> future;
   std::make_shared<ftp::task::KickUser>(user->ID(), future)->Push();
   
   future.wait();
-  unsigned kicked = future.get();
+  int kicked = future.get();
   std::ostringstream os;
   os << "User " << args[1] << " has been deleted.";
   if (kicked) os << " (" << kicked << " login(s) kicked)";

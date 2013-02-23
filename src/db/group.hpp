@@ -3,8 +3,8 @@
 
 #include <string>
 #include <memory>
+#include <boost/optional/optional_fwd.hpp>
 #include "acl/types.hpp"
-#include "db/serialization.hpp"
 
 namespace mongo
 {

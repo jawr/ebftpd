@@ -4,7 +4,6 @@
 #include "cmd/site/groups.hpp"
 #include "acl/group.hpp"
 #include "acl/user.hpp"
-#include "acl/group.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "text/template.hpp"

@@ -13,7 +13,6 @@
 #include "text/template.hpp"
 #include "text/templatesection.hpp"
 #include "text/tag.hpp"
-#include "acl/group.hpp"
 #include "acl/util.hpp"
 #include "acl/misc.hpp"
 #include "cmd/error.hpp"

@@ -1,7 +1,7 @@
 #include <algorithm>
-#include <string>
 #include <vector>
 #include <boost/regex.hpp>
+#include "util/titlecase.hpp"
 #include "util/string.hpp"
 
 /*

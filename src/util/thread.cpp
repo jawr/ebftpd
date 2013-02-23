@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include <exception>
-#include <boost/thread/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "util/thread.hpp"
 #include "util/error.hpp"

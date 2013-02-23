@@ -11,7 +11,6 @@
 #include "util/path/status.hpp"
 #include "cfg/get.hpp"
 #include "util/enumbitwise.hpp"
-#include "acl/group.hpp"
 #include "logs/logs.hpp"
 #include "util/string.hpp"
 #include "acl/user.hpp"

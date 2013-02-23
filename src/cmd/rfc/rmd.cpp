@@ -4,7 +4,6 @@
 #include "db/index/index.hpp"
 #include "acl/path.hpp"
 #include "cfg/get.hpp"
-#include "acl/group.hpp"
 #include "logs/logs.hpp"
 #include "fs/path.hpp"
 #include "acl/user.hpp"

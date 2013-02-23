@@ -2,7 +2,6 @@
 #include <boost/algorithm/string/replace.hpp>
 #include "text/templatesection.hpp"
 #include "text/error.hpp"
-#include "text/tag.hpp"
 
 namespace text
 {

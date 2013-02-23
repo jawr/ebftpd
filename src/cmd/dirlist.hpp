@@ -6,7 +6,6 @@
 #include <queue>
 #include <unordered_map>
 #include "fs/path.hpp"
-#include "util/path/status.hpp"
 #include "acl/types.hpp"
 #include "ftp/writeable.hpp"
 
@@ -19,6 +18,12 @@ class Writeable;
 namespace fs
 {
 class DirEnumerator;
+}
+
+namespace util { namespace path
+{
+class Status;
+}
 }
 
 namespace cmd

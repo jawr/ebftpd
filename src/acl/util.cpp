@@ -105,7 +105,7 @@ std::string GroupString(const User& user)
 {
   std::ostringstream os;
   if (user.HasGadminGID(user.PrimaryGID())) os << "+";
-  os << acl::GIDToName(user.PrimaryGID());
+  os << user.PrimaryGroup();
   for (acl::GroupID gid : user.SecondaryGIDs())
   {
     os << " ";

@@ -9,6 +9,7 @@
 #include "logs/logs.hpp"
 #include "cmd/error.hpp"
 #include "stats/util.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace rfc
 {

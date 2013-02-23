@@ -1,12 +1,9 @@
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include "cfg/config.hpp"
 #include "cfg/error.hpp"
-#include "cfg/setting.hpp"
 #include "util/string.hpp"
 #include "logs/logs.hpp"
 #include "main.hpp"

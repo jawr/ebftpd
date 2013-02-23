@@ -5,7 +5,6 @@
 #include "acl/types.hpp"
 #include "acl/user.hpp"
 #include "util/error.hpp"
-#include "logs/logs.hpp"
 #include "acl/misc.hpp"
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"

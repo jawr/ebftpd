@@ -1,5 +1,4 @@
 #include <sstream>
-#include <string>
 #include <vector>
 #include "util/string.hpp"
 #include <boost/ptr_container/ptr_vector.hpp>

@@ -16,7 +16,6 @@
 #include "util/string.hpp"
 #include "exec/check.hpp"
 #include "cmd/error.hpp"
-#include "acl/path.hpp"
 #include "fs/owner.hpp"
 #include "util/asynccrc32.hpp"
 #include "util/crc32.hpp"

@@ -1,5 +1,5 @@
-#include "util/string.hpp"
 #include "cmd/site/ranks.hpp"
+#include "util/string.hpp"
 #include "db/stats/stats.hpp"
 #include "stats/types.hpp"
 #include "cmd/error.hpp"
@@ -10,7 +10,7 @@
 #include "acl/acl.hpp"
 #include "acl/misc.hpp"
 #include "stats/stat.hpp"
-#include "acl/group.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace site
 {
@@ -123,7 +123,7 @@ void RANKSCommand::Execute()
       
       body.RegisterValue("index", ++index);
       body.RegisterValue("user", user->Name());
-      body.RegisterValue("group", acl::GIDToName(user->PrimaryGID()));
+      body.RegisterValue("group", user->PrimaryGroup());
       body.RegisterValue("tagline", user->Tagline());
       body.RegisterValue("files", u.Files());
       body.RegisterSize("size", u.KBytes());

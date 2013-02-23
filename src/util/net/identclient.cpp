@@ -1,7 +1,6 @@
 #include <sstream>
 #include "util/string.hpp"
 #include "util/net/identclient.hpp"
-#include "util/net/tcpsocket.hpp"
 
 namespace util { namespace net
 {

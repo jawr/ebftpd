@@ -6,7 +6,6 @@
 #include "cmd/site/user.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
-#include "acl/user.hpp"
 #include "util/error.hpp"
 #include "acl/misc.hpp"
 #include "cmd/error.hpp"

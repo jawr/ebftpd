@@ -1,8 +1,6 @@
 #include "util/string.hpp"
 #include <fstream>
 #include <memory>
-#include <sstream>
-#include "text/template.hpp"
 #include "text/parser.hpp"
 #include "text/templatesection.hpp"
 #include "text/error.hpp"

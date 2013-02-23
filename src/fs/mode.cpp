@@ -1,7 +1,6 @@
 #include <cctype>
 #include <sys/stat.h>
 #include "fs/mode.hpp"
-#include "util/error.hpp"
 
 // this is based on chmod in the gnu coreutils package
 

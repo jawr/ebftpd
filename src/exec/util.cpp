@@ -2,7 +2,6 @@
 #include "util/string.hpp"
 #include "exec/util.hpp"
 #include "ftp/client.hpp"
-#include "acl/group.hpp"
 #include "acl/user.hpp"
 
 namespace exec

@@ -1,7 +1,6 @@
 #include <cctype>
 #include "cmd/site/tagline.hpp"
 #include "acl/util.hpp"
-#include "acl/group.hpp"
 #include "logs/logs.hpp"
 #include "acl/user.hpp"
 

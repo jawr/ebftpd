@@ -15,6 +15,11 @@
 namespace cmd { namespace site
 {
 
+std::string HasFlag(const acl::User& user, const acl::Flag& flag)
+{
+  return user.HasFlag(flag) ? "*" : " ";
+}
+
 void FLAGSCommand::Execute()
 {
   if (args.size() == 2 && args[1] != client.User().Name() &&

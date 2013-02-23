@@ -1,7 +1,5 @@
 #include <iomanip>
 #include <functional>
-#include <cstdint>
-#include <boost/optional.hpp>
 #include "ftp/clientimpl.hpp"
 #include "logs/logs.hpp"
 #include "util/verify.hpp"
@@ -25,7 +23,6 @@
 #include "exec/cscript.hpp"
 #include "util/net/resolver.hpp"
 #include "acl/misc.hpp"
-#include "acl/group.hpp"
 
 namespace ftp
 {
@@ -64,9 +61,9 @@ void ClientImpl::SetState(ClientState state)
   if (logout)
   {
     Counter::Login().Stop(user->ID());
-    logs::Event("LOGOUT", "ident_address", Ident() + '@' + Hostname(), 
-                "ip", IP(), "user", user->Name(), 
-                "group", acl::GIDToName(user->PrimaryGID()), 
+    logs::Event("LOGOUT", logs::QuoteOff(), "ident_address", Ident() + '@' + Hostname(), 
+                "ip", logs::Brackets('(', ')'), IP(), logs::QuoteOn(), "user", user->Name(), 
+                "group", user->PrimaryGroup(), 
                 "tagline", user->Tagline());
   }
 }
@@ -103,9 +100,9 @@ void ClientImpl::SetLoggedIn(bool kicked)
     loggedInAt = boost::posix_time::second_clock::local_time();
   }
 
-  logs::Event("LOGIN", "ident address", Ident() + '@' + Hostname(), 
-              "ip", IP(), "user", user->Name(), 
-              "group", acl::GIDToName(user->PrimaryGID()), 
+  logs::Event("LOGIN", logs::QuoteOff(), "ident address", Ident() + '@' + Hostname(), 
+              "ip", logs::Brackets('(', ')'), IP(), logs::QuoteOn(), "user", user->Name(), 
+              "group", user->PrimaryGroup(), 
               "tagline", user->Tagline());
 }
 
