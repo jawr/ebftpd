@@ -7,6 +7,7 @@
 #include "acl/user.hpp"
 #include "cfg/get.hpp"
 #include "acl/group.hpp"
+#include "acl/flags.hpp"
 
 namespace acl
 {

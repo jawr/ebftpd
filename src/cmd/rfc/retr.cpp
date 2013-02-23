@@ -15,6 +15,7 @@
 #include "ftp/error.hpp"
 #include "acl/misc.hpp"
 #include "ftp/speedcontrol.hpp"
+#include "acl/flags.hpp"
 
 namespace cmd { namespace rfc
 {

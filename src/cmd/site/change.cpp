@@ -13,6 +13,7 @@
 #include "acl/util.hpp"
 #include "db/user.hpp"
 #include "logs/logs.hpp"
+#include "acl/flags.hpp"
 
 namespace cmd { namespace site
 {

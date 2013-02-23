@@ -5,52 +5,46 @@
 #include "db/error.hpp"
 #include "db/grouputil.hpp"
 #include "util/scopeguard.hpp"
+#include "acl/groupdata.hpp"
 
 namespace acl
 {
 
-GroupData::GroupData() :
-  id(-1),
-  slots(0),
-  leechSlots(-2),
-  allotmentSlots(-2),
-  maxAllotmentSize(0),
-  maxLogins(-1)
-{
-}
-
 Group::Group() :
-  db(data)
+  data(new GroupData()),
+  db(new db::Group(*data))
 {
 }
 
 Group::Group(GroupData&& data_) :
-  data(data_),
-  db(data)
+  data(new GroupData(data_)),
+  db(new db::Group(*data))
 {
 }
 
 Group& Group::operator=(Group&& rhs)
 {
-  data = rhs.data;
+  data = std::move(rhs.data);
+  db = std::move(rhs.db);
   return *this;
 }
 
 Group& Group::operator=(const Group& rhs)
 {
-  data = rhs.data;
+  data.reset(new GroupData(*rhs.data));
+  db.reset(new db::Group(*data));
   return *this;
 }
 
 Group::Group(Group&& other) :
-  data(other.data),
-  db(data)
+  data(std::move(other.data)),
+  db(new db::Group(*data))
 {
 }
 
 Group::Group(const Group& other) :
-  data(other.data),
-  db(data)
+  data(new GroupData(*other.data)),
+  db(new db::Group(*data))
 {
 }
 
@@ -58,13 +52,58 @@ Group::~Group()
 {
 }
 
+acl::GroupID Group::ID() const
+{
+  return data->id;
+}
+
+const std::string& Group::Name() const
+{
+  return data->name;
+}
+
+const std::string& Group::Description() const
+{
+  return data->description;
+}
+
+const std::string& Group::Comment() const
+{
+  return data->comment;
+}
+
+int Group::Slots() const
+{
+  return data->slots;
+}
+
+int Group::LeechSlots() const
+{
+  return data->leechSlots;
+}
+
+int Group::AllotmentSlots() const
+{
+  return data->allotmentSlots;
+}
+
+long long Group::MaxAllotmentSize() const
+{
+  return data->maxAllotmentSize;
+}
+
+int Group::MaxLogins() const
+{
+  return data->maxLogins;
+}
+
 bool Group::Rename(const std::string& name)
 {
-  std::string oldName = data.name;
-  data.name = name; 
+  std::string oldName = data->name;
+  data->name = name; 
   if (!db->SaveName())
   {
-    data.name.swap(oldName);
+    data->name.swap(oldName);
     return false;
   }
   return true;
@@ -72,43 +111,43 @@ bool Group::Rename(const std::string& name)
 
 void Group::SetDescription(const std::string& description)
 {
-  auto trans = util::MakeTransaction(data.description, description);
+  auto trans = util::MakeTransaction(data->description, description);
   db->SaveDescription();
 }
 
 void Group::SetComment(const std::string& comment)
 {
-  auto trans = util::MakeTransaction(data.description, comment);
+  auto trans = util::MakeTransaction(data->description, comment);
   db->SaveComment();
 }
 
 void Group::SetSlots(int slots)
 {
-  auto trans = util::MakeTransaction(data.slots, slots);
+  auto trans = util::MakeTransaction(data->slots, slots);
   db->SaveSlots();
 }
 
 void Group::SetLeechSlots(int leechSlots)
 {
-  auto trans = util::MakeTransaction(data.leechSlots, leechSlots);
+  auto trans = util::MakeTransaction(data->leechSlots, leechSlots);
   db->SaveLeechSlots();
 }
 
 void Group::SetAllotmentSlots(int allotmentSlots)
 {
-  auto trans = util::MakeTransaction(data.allotmentSlots, allotmentSlots);
+  auto trans = util::MakeTransaction(data->allotmentSlots, allotmentSlots);
   db->SaveAllotmentSlots();
 }
 
 void Group::SetMaxAllotmentSize(long long maxAllotmentSize)
 {
-  auto trans = util::MakeTransaction(data.maxAllotmentSize, maxAllotmentSize);
+  auto trans = util::MakeTransaction(data->maxAllotmentSize, maxAllotmentSize);
   db->SaveMaxAllotmentSize();
 }
 
 void Group::SetMaxLogins(int maxLogins)
 {
-  auto trans = util::MakeTransaction(data.maxLogins, maxLogins);
+  auto trans = util::MakeTransaction(data->maxLogins, maxLogins);
   db->SaveMaxLogins();
 }
 
@@ -139,7 +178,7 @@ boost::optional<Group> Group::Load(const std::string& name)
 boost::optional<Group> Group::Create(const std::string& name)
 {
   Group group;
-  group.data.name = name;
+  group.data->name = name;
   if (!group.db->Create()) return boost::optional<Group>();
   return boost::optional<Group>(group);
 }

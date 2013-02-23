@@ -3,6 +3,7 @@
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 #include "logs/logs.hpp"
+#include "acl/flags.hpp"
 
 namespace cmd { namespace rfc
 {

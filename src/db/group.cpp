@@ -6,6 +6,7 @@
 #include "db/serialization.hpp"
 #include "db/connection.hpp"
 #include "db/error.hpp"
+#include "acl/groupdata.hpp"
 
 namespace db
 {

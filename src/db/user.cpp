@@ -7,6 +7,7 @@
 #include "db/userutil.hpp"
 #include "db/grouputil.hpp"
 #include "util/futureminder.hpp"
+#include "acl/userdata.hpp"
 
 namespace db
 {

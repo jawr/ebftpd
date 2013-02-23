@@ -11,6 +11,7 @@
 #include "acl/ipstrength.hpp"
 #include "acl/passwdstrength.hpp"
 #include "db/userutil.hpp"
+#include "acl/flags.hpp"
 
 namespace acl { namespace message
 {

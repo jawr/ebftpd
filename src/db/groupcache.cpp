@@ -2,7 +2,7 @@
 #include "db/connection.hpp"
 #include "util/string.hpp"
 #include "db/group.hpp"
-#include "acl/group.hpp"
+#include "acl/groupdata.hpp"
 
 namespace db
 {

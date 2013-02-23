@@ -1,9 +1,9 @@
 #ifndef __ACL_GROUP_HPP
 #define __ACL_GROUP_HPP
 
+#include <memory>
 #include <string>
 #include "acl/types.hpp"
-#include "db/dbproxy.hpp"
 
 namespace db
 {
@@ -13,29 +13,12 @@ class Group;
 namespace acl
 {
 
-struct GroupData
-{
-  acl::GroupID id;
-  std::string name;
-
-  std::string description;
-  std::string comment;
-  
-  int slots;
-  int leechSlots;
-  int allotmentSlots;
-  long long maxAllotmentSize;
-  int maxLogins;
-
-  GroupData();
-};
-
-typedef db::DBProxy<GroupData, acl::GroupID, db::Group> GroupProxy;
+struct GroupData;
 
 class Group
 {
-  GroupData data;
-  GroupProxy db;
+  std::unique_ptr<GroupData> data;
+  std::unique_ptr<db::Group> db;
   
   Group();
   Group(GroupData&& data_);
@@ -49,32 +32,32 @@ public:
   
   ~Group();
 
-  acl::GroupID ID() const { return data.id; }
+  acl::GroupID ID() const;
   
-  const std::string& Name() const { return data.name; }
+  const std::string& Name() const;
   bool Rename(const std::string& name);
 
-  const std::string& Description() const { return data.description; }
+  const std::string& Description() const;
   void SetDescription(const std::string& description);
   
-  const std::string& Comment() const { return data.comment; }
+  const std::string& Comment() const;
   void SetComment(const std::string& comment);
 
-  int Slots() const { return data.slots; }
+  int Slots() const;
   void SetSlots(int slots);
   
-  int LeechSlots() const { return data.leechSlots; }
+  int LeechSlots() const;
   void SetLeechSlots(int leechSlots);
   
-  int AllotmentSlots() const { return data.allotmentSlots; }
+  int AllotmentSlots() const;
   void SetAllotmentSlots(int allotmentSlots);
   
-  long long MaxAllotmentSize() const { return data.maxAllotmentSize; }
+  long long MaxAllotmentSize() const;
   void SetMaxAllotmentSize(long long maxAllotmentSize);
   
-  int MaxLogins() const { return data.maxLogins; }
+  int MaxLogins() const;
   void SetMaxLogins(int maxLogins);
-  
+
   long long NumMembers() const;
   
   void Purge();

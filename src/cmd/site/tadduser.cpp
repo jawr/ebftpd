@@ -3,6 +3,7 @@
 #include "cmd/site/tadduser.hpp"
 #include "cmd/site/adduser.hpp"
 #include "cmd/error.hpp"
+#include "acl/flags.hpp"
 
 namespace cmd { namespace site
 {

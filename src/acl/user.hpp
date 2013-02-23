@@ -1,14 +1,24 @@
 #ifndef __ACL_USER_HPP
 #define __ACL_USER_HPP
 
-#include <unordered_set>
-#include <unordered_map>
 #include <memory>
-#include <boost/optional.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include "acl/flags.hpp"
+#include <string>
+#include <vector>
+#include <unordered_set>
+#include <boost/optional/optional_fwd.hpp>
 #include "acl/types.hpp"
+
+namespace boost
+{
+namespace posix_time
+{
+class ptime;
+}
+namespace gregorian
+{
+class date;
+}
+}
 
 namespace db
 {
@@ -18,49 +28,14 @@ class User;
 namespace acl
 {
 
-struct UserData
-{
-  acl::UserID id;
-  std::string name;
-  std::vector<std::string> ipMasks;
+enum class Flag : char;
 
-  std::string password;
-  std::string salt;
-  std::string flags;
-  
-  acl::GroupID primaryGid;
-  std::vector<acl::GroupID> secondaryGids;
-  std::unordered_set<acl::GroupID> gadminGids;
-  
-  acl::UserID creator;
-  boost::gregorian::date created;
-
-  long long weeklyAllotment;
-  std::string homeDir;
-  int idleTime;
-  boost::optional<boost::gregorian::date> expires;
-  int numLogins;
-
-  std::string comment;
-  std::string tagline;
-  
-  long long maxDownSpeed;
-  long long maxUpSpeed;
-  int maxSimDown;
-  int maxSimUp;
-
-  int loggedIn;
-  boost::optional<boost::posix_time::ptime> lastLogin;
-  std::unordered_map<std::string, int> ratio;
-  std::unordered_map<std::string, long long> credits;
-  
-  UserData();
-};
+struct UserData;
 
 class User
 {
 private:
-  UserData data;
+  std::unique_ptr<UserData> data;
   std::unique_ptr<db::User> db;
 
   User();
@@ -79,12 +54,12 @@ public:
   
   ~User();
 
-  acl::UserID ID() const { return data.id; }
+  acl::UserID ID() const;
   
-  const std::string& Name() const { return data.name; }
+  const std::string& Name() const;
   bool Rename(const std::string& name);
 
-  const std::vector<std::string>& IPMasks() const { return data.ipMasks; }
+  const std::vector<std::string>& IPMasks() const;
   bool AddIPMask(const std::string& ipMask, std::vector<std::string>* deleted = nullptr);
   void DelIPMask(const std::string& ipMask);
   std::string DelIPMask(size_t index);
@@ -93,15 +68,8 @@ public:
   bool VerifyPassword(const std::string& password) const;
   void SetPassword(const std::string& password);
   
-  const std::string& Flags() const { return data.flags; }
-  bool HasFlags(const std::string& flags) const
-  {
-    for (char ch: flags)
-    {
-      if (this->data.flags.find(ch) != std::string::npos) return true;
-    }
-    return false;
-  }
+  const std::string& Flags() const;
+  bool HasFlags(const std::string& flags) const;
   bool HasFlag(Flag flag) const;
 
   void SetFlags(const std::string& flags);
@@ -110,9 +78,9 @@ public:
   void DelFlags(const std::string& flags);
   void DelFlag(Flag flag);
 
-  acl::GroupID PrimaryGID() const { return data.primaryGid; }
+  acl::GroupID PrimaryGID() const;
   std::string PrimaryGroup() const;
-  const std::vector<GroupID> SecondaryGIDs() const { return data.secondaryGids; }
+  const std::vector<GroupID> SecondaryGIDs() const;
   bool HasGID(GroupID gid) const;
 
   void SetPrimaryGID(acl::GroupID gid);
@@ -121,52 +89,52 @@ public:
   void SetGIDs(const std::vector<acl::GroupID>& gids);
   void ToggleGIDs(const std::vector<acl::GroupID>& gids);
   
-  const std::unordered_set<GroupID> GadminGIDs() const { return data.gadminGids; }
+  const std::unordered_set<GroupID> GadminGIDs() const;
   bool HasGadminGID(GroupID gid) const;
 
   void AddGadminGID(GroupID gid);
   void DelGadminGID(GroupID gid);
   bool ToggleGadminGID(GroupID gid);
 
-  acl::UserID Creator() const { return data.creator; }
-  const boost::gregorian::date& Created() const { return data.created; }
+  acl::UserID Creator() const;
+  const boost::gregorian::date& Created() const;
   
-  long long WeeklyAllotment() const { return data.weeklyAllotment; }
+  long long WeeklyAllotment() const;
   void SetWeeklyAllotment(long long weeklyAllotment);
   
-  const std::string& HomeDir() const { return data.homeDir; }
+  const std::string& HomeDir() const;
   void SetHomeDir(const std::string& homeDir);
   
-  int IdleTime() const { return data.idleTime; }
+  int IdleTime() const;
   void SetIdleTime(int idleTime);
   
-  const boost::optional<boost::gregorian::date>& Expires() const { return data.expires; }
+  const boost::optional<boost::gregorian::date>& Expires() const;
   bool Expired() const;
   void SetExpires(const boost::optional<boost::gregorian::date>& expires);
   
-  int NumLogins() const { return data.numLogins; }
+  int NumLogins() const;
   void SetNumLogins(int numLogins);
   
-  const std::string& Comment() const { return data.comment; }
+  const std::string& Comment() const;
   void SetComment(const std::string& comment);
   
-  const std::string& Tagline() const { return data.tagline; }
+  const std::string& Tagline() const;
   void SetTagline(const std::string& tagline);
   
-  long long MaxDownSpeed() const { return data.maxDownSpeed; }
+  long long MaxDownSpeed() const;
   void SetMaxDownSpeed(long long maxDownSpeed);
   
-  long long MaxUpSpeed() const { return data.maxUpSpeed; }
+  long long MaxUpSpeed() const;
   void SetMaxUpSpeed(long long maxUpSpeed);
   
-  int MaxSimDown() const { return data.maxSimDown; }
+  int MaxSimDown() const;
   void SetMaxSimDown(int maxSimDown);
   
-  int MaxSimUp() const { return data.maxSimUp; }
+  int MaxSimUp() const;
   void SetMaxSimUp(int maxSimUp);
   
-  int LoggedIn() const { return data.loggedIn; }
-  const boost::optional<boost::posix_time::ptime>& LastLogin() const { return data.lastLogin; }
+  int LoggedIn() const;
+  const boost::optional<boost::posix_time::ptime>& LastLogin() const;
   void SetLoggedIn();
   
   int SectionRatio(const std::string& section) const;

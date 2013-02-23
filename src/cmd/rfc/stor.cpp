@@ -24,6 +24,7 @@
 #include "acl/misc.hpp"
 #include "ftp/speedcontrol.hpp"
 #include "util/path/status.hpp"
+#include "acl/flags.hpp"
 
 namespace cmd { namespace rfc
 {

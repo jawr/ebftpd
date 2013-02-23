@@ -1,5 +1,6 @@
 #include "cmd/site/purge.hpp"
 #include "logs/logs.hpp"
+#include "acl/flags.hpp"
 
 namespace cmd { namespace site
 {

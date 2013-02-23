@@ -7,6 +7,7 @@
 #include "cmd/error.hpp"
 #include "text/util.hpp"
 #include "acl/misc.hpp"
+#include "acl/flags.hpp"
 
 namespace cmd { namespace rfc
 {

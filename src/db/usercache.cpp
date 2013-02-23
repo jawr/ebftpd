@@ -2,7 +2,7 @@
 #include "db/connection.hpp"
 #include "util/string.hpp"
 #include "db/user.hpp"
-#include "acl/user.hpp"
+#include "acl/userdata.hpp"
 
 namespace db
 {

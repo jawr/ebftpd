@@ -14,6 +14,7 @@
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "acl/misc.hpp"
+#include "acl/flags.hpp"
 
 namespace cmd { namespace site
 {
