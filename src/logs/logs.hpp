@@ -59,9 +59,26 @@ void Security(const std::string& what, const std::string& format, const Args&...
   security.PushEntry("message", util::Format()(os.str(), args...).String());
 }
 
-extern Format Database;
-extern Format Error;
-extern Format Debug;
+template <typename... Args>
+void Debug(const std::string& format, const Args&... args)
+{
+  extern Logger debug;
+  debug.PushEntry("message", util::Format()(format, args...).String());
+}
+
+template <typename... Args>
+void Database(const std::string& format, const Args&... args)
+{
+  extern Logger db;
+  db.PushEntry("message", util::Format()(format, args...).String());
+}
+
+template <typename... Args>
+void Error(const std::string& format, const Args&... args)
+{
+  extern Logger error;
+  error.PushEntry("message", util::Format()(format, args...).String());
+}
 
 void InitialisePreConfig();
 bool InitialisePostConfig();

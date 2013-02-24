@@ -19,10 +19,6 @@ Logger db;
 
 std::shared_ptr<StreamSink> consoleSink;
 
-Format Database([](const std::string& message) { db.PushEntry("message", message); });
-Format Error([](const std::string& message) { error.PushEntry("message", message); });
-Format Debug([](const std::string& message) { debug.PushEntry("message", message); });
-
 void InitialisePreConfig()
 {
   consoleSink = std::make_shared<StreamSink>(Stream(&std::clog, false));

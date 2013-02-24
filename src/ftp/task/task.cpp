@@ -105,7 +105,10 @@ void UserUpdate::Execute(Server& server)
 {
   for (auto& client: server.clients)
   {
-    if (client.User().ID() == uid) client.SetUserUpdated();
+    if (client.State() == ClientState::LoggedIn && client.User().ID() == uid)
+    {
+      client.SetUserUpdated();
+    }
   }
 }
 
