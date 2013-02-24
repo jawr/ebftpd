@@ -26,9 +26,10 @@ void ADDUSERCommand::Addips(const std::string& user,
   ADDIPCommand(client, cpArgStr, cpArgs).Execute();
 }
 
-void ADDUSERCommand::Execute(const std::string& group)
+void ADDUSERCommand::Execute(const std::string& groupName, bool gadmin)
 {
-  this->group = group;
+  this->groupName = groupName;
+  this->gadmin = gadmin;
   Execute();
 }
 
@@ -40,24 +41,31 @@ void ADDUSERCommand::Execute(const acl::User& templateUser)
 
 void ADDUSERCommand::Execute()
 {
-  acl::GroupID gid = -1;
-  if (!group.empty())
-  {
-    gid = acl::NameToGID(group);
-    if (gid == -1)
-    {
-      control.Reply(ftp::ActionNotOkay, "Group " + group + " doesn't exist.");
-      throw cmd::NoPostScriptError();
-    }
-  }
-  else
-  if (args[0] == "ADDUSER" &&
+  if (groupName.empty() && !templateUser &&
+      args[0] == "ADDUSER" &&
       !acl::AllowSiteCmd(client.User(), "adduser") &&
       acl::AllowSiteCmd(client.User(), "addusergadmin"))
   {
-    gid = client.User().PrimaryGID();
-    if (gid == -1) throw cmd::PermissionError();
-    group = acl::GIDToName(gid);
+    groupName = client.User().PrimaryGroup();
+    if (groupName == "unknown") throw cmd::PermissionError();
+    gadmin = true;
+  }
+  
+  boost::optional<acl::Group> group;
+  if (!groupName.empty())
+  {
+    group = acl::Group::Load(groupName);
+    if (!group)
+    {
+      control.Reply(ftp::ActionNotOkay, "Group " + groupName + " doesn't exist.");
+      throw cmd::NoPostScriptError();
+    }
+
+    if (gadmin && group->NumSlotsUsed() >= group->Slots())
+    {
+      control.Reply(ftp::ActionNotOkay, "Maximum number of slots exceeded for group " + groupName + ".");
+      throw cmd::NoPostScriptError();
+    }
   }
   
   if (!acl::Validate(acl::ValidationType::Username, args[1]))
@@ -75,10 +83,20 @@ void ADDUSERCommand::Execute()
     control.Reply(ftp::ActionNotOkay, os.str());
     throw cmd::NoPostScriptError();
   }
+
+  bool defaultTemplate = false;
+  if (!templateUser)
+  {
+    templateUser = acl::User::Load("default");
+    if (!templateUser)
+    {
+      control.Reply(ftp::ActionNotOkay, "Unable to load default user template.");
+      throw cmd::NoPostScriptError();
+    }
+    defaultTemplate = true;
+  }
   
-  auto user = templateUser ?
-              acl::User::FromTemplate(args[1], args[2], client.User().ID(), *templateUser) :
-              acl::User::Create(args[1], args[2], client.User().ID());
+  auto user = acl::User::FromTemplate(args[1], args[2], client.User().ID(), *templateUser);
   if (!user)
   {
     control.Reply(ftp::ActionNotOkay, "User " + args[1] + " already exists.");
@@ -88,19 +106,16 @@ void ADDUSERCommand::Execute()
   std::ostringstream os;
   os << "Added user " << args[1];
   
-  if (templateUser)
-    logs::Siteop(client.User().Name(), "added user '%1%' based on template '%2%'", user->Name(), templateUser->Name());
-  else
-    logs::Siteop(client.User().Name(), "added user '%1%'", user->Name());
+  logs::Siteop(client.User().Name(), "added user '%1%' based on template '%2%'", user->Name(), templateUser->Name());
 
-  if (gid != -1)
+  if (group)
   {
-    user->SetPrimaryGID(gid);
+    user->SetPrimaryGID(group->ID());
     logs::Siteop(client.User().Name(), "set primary group for '%1%' to '%2%'", user->Name(), user->PrimaryGroup());
-    os << " to group " << group;
+    os << " to group " << group->Name();
   }
   
-  if (templateUser) os << " based on template " << templateUser->Name();
+  if (!defaultTemplate) os << " based on template " << templateUser->Name();
   
   os << ".";
 

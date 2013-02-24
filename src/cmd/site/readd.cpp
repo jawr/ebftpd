@@ -4,21 +4,20 @@
 #include "logs/logs.hpp"
 #include "acl/flags.hpp"
 #include "acl/user.hpp"
+#include "acl/group.hpp"
 
 namespace cmd { namespace site
 {
 
 void READDCommand::Execute()
 {
+  bool gadmin = false;
   if (!acl::AllowSiteCmd(client.User(), "readd") &&
-      acl::AllowSiteCmd(client.User(), "readdgadmin") &&
-      !client.User().HasGadminGID(acl::NameToPrimaryGID(args[1])))
+      acl::AllowSiteCmd(client.User(), "readdgadmin"))
   {
-    throw cmd::PermissionError();
+    if (!client.User().HasGadminGID(acl::NameToPrimaryGID(args[1]))) throw cmd::PermissionError();  
+    gadmin = true;
   }
-  
-  // needs further checking to ensure
-  // gadmins can't exceed their slots
   
   auto user = acl::User::Load(args[1]);
   if (!user)
@@ -31,6 +30,22 @@ void READDCommand::Execute()
   {
     control.Reply(ftp::ActionNotOkay, "User " + args[1] + " is not deleted.");
     return;
+  }
+  
+  if (gadmin)
+  {
+    auto group = acl::Group::Load(user->PrimaryGID());
+    if (!group)
+    {
+      control.Reply(ftp::ActionNotOkay, "Unable to load group " + user->PrimaryGroup() + ".");
+      return;
+    }
+    
+    if (group->NumSlotsUsed() >= group->Slots())
+    {
+      control.Reply(ftp::ActionNotOkay, "Maximum number of slots exceeded for group " + group->Name() + ".");
+      return;
+    }
   }
   
   user->DelFlag(acl::Flag::Deleted);

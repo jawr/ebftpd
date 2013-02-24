@@ -43,6 +43,14 @@ bool CreateDefaults()
       user->AddFlag(Flag::Siteop);
       user->SetPrimaryGID(0);
     }
+    
+    if (!UIDExists(1))
+    {
+      auto user = User::Create("default", "default", 0);
+      if (!user || user->ID() != 1) return false;
+      user->AddFlag(Flag::Template);
+    }
+    else if (!NameToUID("default") == 1) return false;
   }
   catch (const util::RuntimeError&)
   {

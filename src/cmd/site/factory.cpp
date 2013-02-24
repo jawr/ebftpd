@@ -252,7 +252,7 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<CHGADMINCommand>()),
                       "Syntax: SITE CHGADMIN <user> <group",
                       "Toggle gadmin status for a user on the specified group" }, },
-    { "GADDUSER",   { 3,  -1, "gadduser",
+    { "GADDUSER",   { 3,  -1, "gadduser|gaddusergadmin",
                       CreatorBasePtr(new Creator<GADDUSERCommand>()),
                       "Syntax: SITE GADDUSER <group> <user> <password> [<ident@ip> ..]",
                       "Add a user directly to a group" }, },

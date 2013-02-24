@@ -16,6 +16,12 @@ void GRPDELCommand::Execute()
     control.Reply(ftp::ActionNotOkay, "Group " + args[1] + " doesn't exist.");
     return;
   }
+
+  if (group->ID() == 0)
+  {
+    control.Reply(ftp::ActionNotOkay, "That user is required by the server so cannot be deleted.");
+    return;
+  }
   
   auto numMembers = group->NumMembers();
   if (numMembers < 0)

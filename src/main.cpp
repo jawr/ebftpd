@@ -212,7 +212,7 @@ int main(int argc, char** argv)
   
   if (!acl::CreateDefaults())
   {
-    logs::Error("Error while creating default user and group");
+    logs::Error("Error while creating root user and group and default user template");
     return 1;
   }
   

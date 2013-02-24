@@ -12,7 +12,7 @@ class CHANGECommand;
 
 class CHANGECommand : public Command
 {
-  typedef std::function<void(acl::User&)> SetFunction;
+  typedef std::function<bool(acl::User&)> SetFunction;
   typedef std::function<SetFunction(CHANGECommand*)> CheckFunction;
 
   struct SettingDef

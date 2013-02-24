@@ -127,7 +127,16 @@ void Group::SaveMaxLogins()
   SaveField("max logins");
 }
 
-long long Group::NumMembers() const
+int Group::NumSlotsUsed() const
+{
+  NoErrorConnection conn;
+  mongo::BSONObjBuilder bob;
+  bob.append("primary gid", group.id);
+  bob.appendRegex("flags", "^[^6]*$");
+  return conn.Count("users", bob.obj());  
+}
+
+int Group::NumMembers() const
 {
   mongo::BSONArrayBuilder bab;
   bab.append(group.id);
@@ -135,6 +144,60 @@ long long Group::NumMembers() const
                                         BSON("secondary gids" << BSON("$in" << bab.arr()))));
   NoErrorConnection conn;
   return conn.Count("users", query);
+}
+
+int Group::NumLeeches() const
+{
+  NoErrorConnection conn;
+  auto query = BSON("primary gid" << group.id <<
+                    "ratio" << BSON("$elemMatch" << BSON("section" << "" << 
+                                                         "value" << 0)));
+  return conn.Count("users", query);
+}
+
+int Group::NumAllotments() const
+{
+  NoErrorConnection conn;
+  auto query = BSON("primary gid" << group.id <<
+                    "weekly allotment" << BSON("$elemMatch" << BSON("section" << "" << 
+                                                                    "value" << BSON("$gt" << 0))));
+std::cout << query << std::endl;
+  return conn.Count("users", query);
+}
+
+long long Group::TotalAllotmentSize() const
+{
+  NoErrorConnection conn;
+  auto cmd = BSON("aggregate" << "users" << "pipeline" <<
+    BSON_ARRAY(
+      BSON("$unwind" << "$weekly allotment") <<
+      BSON("$match" << 
+        BSON("primary gid" << group.id <<
+             "weekly allotment.section" << "")
+      ) <<
+      BSON("$group" << 
+        BSON("_id" << "" <<
+             "total" << BSON("$sum" << "$weekly allotment.value"))
+     )));
+     std::cout << cmd << std::endl;
+  mongo::BSONObj result;
+  if (conn.RunCommand(cmd, result))
+  {
+    auto elems = result["result"].Array();
+    if (!elems.empty())
+    {
+      try
+      {
+        return elems[0]["total"].Long();
+      }
+      catch (const mongo::DBException& e)
+      {
+        LogException("Unserialize allotment size total", e, result);
+      }
+    }
+  }
+  
+  return -1;
 }
 
 void Group::Purge() const

@@ -41,7 +41,12 @@ public:
   void SaveMaxAllotmentSize();
   void SaveMaxLogins();
   
-  long long NumMembers() const;
+  int NumSlotsUsed() const;
+  int NumMembers() const;
+  int NumLeeches() const;
+  int NumAllotments() const;
+  long long TotalAllotmentSize() const;
+
   void Purge() const;
   
   static boost::optional<acl::GroupData> Load(acl::GroupID gid);

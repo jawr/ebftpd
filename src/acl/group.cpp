@@ -151,9 +151,29 @@ void Group::SetMaxLogins(int maxLogins)
   db->SaveMaxLogins();
 }
 
-long long Group::NumMembers() const
+int Group::NumSlotsUsed() const
+{
+  return db->NumSlotsUsed();
+}
+
+int Group::NumMembers() const
 {
   return db->NumMembers();
+}
+
+int Group::NumLeeches() const
+{
+  return db->NumLeeches();
+}
+
+int Group::NumAllotments() const
+{
+  return db->NumAllotments();
+}
+
+long long Group::TotalAllotmentSize() const
+{
+  return db->TotalAllotmentSize();
 }
 
 void Group::Purge()

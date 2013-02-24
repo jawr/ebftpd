@@ -21,6 +21,12 @@ void RENUSERCommand::Execute()
     return;
   }
   
+  if (user->Name() == "default")
+  {
+    control.Reply(ftp::ActionNotOkay, "Cannot rename default template user.");
+    return;
+  }
+  
   if (!user->Rename(args[2]))
   {
     control.Reply(ftp::ActionNotOkay, "User " + args[2] + " already exists.");

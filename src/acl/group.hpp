@@ -60,7 +60,11 @@ public:
   int MaxLogins() const;
   void SetMaxLogins(int maxLogins);
 
-  long long NumMembers() const;
+  int NumSlotsUsed() const;
+  int NumMembers() const;
+  int NumLeeches() const;
+  int NumAllotments() const;
+  long long TotalAllotmentSize() const;
   
   void Purge();
   

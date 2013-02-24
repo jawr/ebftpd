@@ -27,6 +27,12 @@ void DELUSERCommand::Execute()
     throw cmd::NoPostScriptError();    
   }
   
+  if (user->Name() == "default" || user->ID() == 0 || user->ID() == 1)
+  {
+    control.Reply(ftp::ActionNotOkay, "That user is required by the server so cannot be deleted.");
+    throw cmd::NoPostScriptError();    
+  }
+  
   user->AddFlag(acl::Flag::Deleted);
 
   std::future<int> future;
