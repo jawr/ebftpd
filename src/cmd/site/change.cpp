@@ -122,7 +122,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckRatio()
     if (ratio == 0) display = "Unlimited";
     else display = "1:" + boost::lexical_cast<std::string>(ratio);
 
-    return [ratio, gadmin, this](acl::User& user) -> bool 
+    return [ratio, this](acl::User& user) -> bool 
             {
               if (gadmin && ratio == 0)
               {
@@ -217,7 +217,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
   
   if (!section.empty()) display += ")";
   
-  return [section, allotment, gadmin, this](acl::User& user) -> bool
+  return [section, allotment, this](acl::User& user) -> bool
           {
             if (gadmin && allotment > 0)
             {
