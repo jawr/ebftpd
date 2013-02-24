@@ -71,18 +71,17 @@ class DirectoryList
   mutable std::unordered_map<acl::GroupID, std::string> groupNameCache;
   mutable std::unordered_map<time_t, std::string> timestampCache;
   
-  void ListPath(const fs::Path& path, std::queue<std::string> masks, int depth = 1) const;
+  void ListPath(const fs::VirtualPath& path, std::queue<std::string> masks, int depth = 1) const;
   void Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirEnum) const;
   inline void Output(const std::string& message) const
   {
     socket.Write(message.c_str(), message.length());
   }
-
   
   const std::string& UIDToName(acl::UserID uid) const;
   const std::string& GIDToName(acl::GroupID gid) const;
   
-  static void SplitPath(const fs::Path& path, fs::Path& parent,
+  static void SplitPath(const fs::Path& path, fs::VirtualPath& parent,
                         std::queue<std::string>& masks);
                         
   static std::string Permissions(const util::path::Status& status);

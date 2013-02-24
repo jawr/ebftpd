@@ -137,14 +137,14 @@ DirectoryList::DirectoryList(ftp::Client& client,
 {
 }
 
-void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
+void DirectoryList::SplitPath(const fs::Path& path, fs::VirtualPath& parent,
                               std::queue<std::string>& masks)
 { 
   try
   {
     if (util::path::Status(fs::MakeReal(path).ToString()).IsRegularFile())
     {
-      parent = path.Dirname();
+      parent = fs::PathFromUser(path.Dirname().ToString());
       masks.push(path.Basename().ToString());
       return;
     }
@@ -155,7 +155,7 @@ void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
   typedef boost::tokenizer<boost::char_separator<char>>  tokenizer;
   static const char* wildcardChars = "*?[]";
 
-  if (path.IsAbsolute()) parent = fs::Path("/");
+  if (path.IsAbsolute()) parent = fs::PathFromUser("/");
   bool foundWildcards = false;
 
   boost::char_separator<char> sep("/");
@@ -173,6 +173,8 @@ void DirectoryList::SplitPath(const fs::Path& path, fs::Path& parent,
       parent /= token;
     }
   }
+  
+  parent = fs::PathFromUser(parent.ToString());
 }
 
 void DirectoryList::Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirEnum) const
@@ -202,7 +204,7 @@ void DirectoryList::Readdir(const fs::VirtualPath& path, fs::DirEnumerator& dirE
   }
 }
 
-void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks, int depth) const
+void DirectoryList::ListPath(const fs::VirtualPath& path, std::queue<std::string> masks, int depth) const
 {
   if (maxRecursion && depth > maxRecursion) return;
 
@@ -302,7 +304,7 @@ void DirectoryList::ListPath(const fs::Path& path, std::queue<std::string> masks
 
 void DirectoryList::Execute()
 {
-  fs::Path parent;
+  fs::VirtualPath parent;
   std::queue<std::string> masks;
   SplitPath(path, parent, masks);
   ListPath(parent, masks);

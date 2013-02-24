@@ -15,6 +15,7 @@
 #include "db/user.hpp"
 #include "logs/logs.hpp"
 #include "acl/flags.hpp"
+#include "fs/path.hpp"
 
 namespace cmd { namespace site
 {
@@ -178,15 +179,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
 
 CHANGECommand::SetFunction CHANGECommand::CheckHomeDir()
 {
-  std::string path = argStr.substr(args[1].length() + args[2].length() + 2);
-  
-  assert(!path.empty());
-  if (path[0] != '/')
-  {
-    control.Format(ftp::ActionNotOkay, "Must be an absolute path.");
-    throw cmd::NoPostScriptError();
-  }
-  
+  std::string path = fs::PathFromUser(argStr.substr(args[1].length() + args[2].length() + 2)).ToString();  
   display = path;  
   return [path](acl::User& user) { user.SetHomeDir(path); };
 }

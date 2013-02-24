@@ -295,9 +295,17 @@ bool PrivatePath(const fs::VirtualPath& path, const User& user)
   return false;
 }
 
+bool InsideHomeDir(const User& user, const fs::VirtualPath& path)
+{
+  if (user.HomeDir().empty()) return false;
+  if (user.HomeDir().back() == '/') return util::StartsWith(path.ToString(), user.HomeDir());
+  else return util::StartsWith(path.ToString(), user.HomeDir() + '/');
+}
+
 template <Type type>
 util::Error InnerAllowed(const User& user, const fs::VirtualPath& path)
 { 
+  if (!InsideHomeDir(user, path)) return util::Error::Failure(EACCES);
   if (PrivatePath(path, user)) return util::Error::Failure(ENOENT);
   return Traits<type>::Allowed(user, path);
 }
