@@ -10,6 +10,7 @@
 #include "text/factory.hpp"
 #include "cfg/error.hpp"
 #include "cfg/get.hpp"
+#include "util/misc.hpp"
 
 namespace signals
 {
@@ -30,6 +31,7 @@ void Handler::StopThread()
 
 void Handler::Run()
 {
+  util::SetProcessTitle("SIGNALS");
   sigset_t mask;
   sigemptyset(&mask);
   sigaddset(&mask, SIGHUP);

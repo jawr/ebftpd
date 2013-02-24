@@ -78,6 +78,8 @@ inline std::string WildcardToRegex(const std::string& wc)
   return re;
 }
 
+void SetProcessTitle(const std::string& title);
+
 } /* util namespace */
 
 #endif

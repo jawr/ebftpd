@@ -7,6 +7,7 @@
 #include "cfg/get.hpp"
 #include "db/error.hpp"
 #include "util/verify.hpp"
+#include "util/misc.hpp"
 
 namespace db
 {
@@ -130,6 +131,7 @@ void Replicator::Populate()
 
 void Replicator::Run()
 {
+  util::SetProcessTitle("DB REPLICATOR");
   mongo::DBClientConnection conn;
   bool first = true;
   while (true)

@@ -6,6 +6,7 @@
 #include "ftp/client.hpp"
 #include "logs/logs.hpp"
 #include "util/net/tlscontext.hpp"
+#include "util/misc.hpp"
 
 namespace ftp
 {
@@ -154,6 +155,7 @@ void Server::AcceptClients()
 
 void Server::Run()
 {
+  util::SetProcessTitle("SERVER");
   while (!isShutdown)
   {
     AcceptClients();

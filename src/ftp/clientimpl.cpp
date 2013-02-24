@@ -23,6 +23,7 @@
 #include "exec/cscript.hpp"
 #include "util/net/resolver.hpp"
 #include "acl/misc.hpp"
+#include "util/misc.hpp"
 
 namespace ftp
 {
@@ -486,6 +487,7 @@ void ClientImpl::InnerRun()
 
 void ClientImpl::Run()
 {
+  util::SetProcessTitle("CLIENT");
   auto finishedGuard = util::MakeScopeExit([&]
   {
     SetState(ClientState::Finished);
