@@ -68,10 +68,10 @@ Config::Config(const std::string& configPath, bool tool) :
   cacheReplicate(0),
   dirSizeDepth(2),
   asyncCRC(false),
-  tlsControl(acl::ACL::FromString("*")),
-  tlsListing(acl::ACL::FromString("*")),
-  tlsData(acl::ACL::FromString("!*")),
-  tlsFxp(acl::ACL::FromString("!*"))
+  tlsControl("*"),
+  tlsListing("*"),
+  tlsData("!*"),
+  tlsFxp("!*")
 {
   std::string line;
   std::ifstream io(configPath.c_str());
@@ -114,7 +114,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     if (aclKeywords.find(keyword) == aclKeywords.end() && !tool)
       throw ConfigError("Invalid command acl keyword: " + keyword);
     commandACLs.insert(std::make_pair(keyword, 
-        acl::ACL::FromString(util::Join(toks, " "))));
+        acl::ACL(util::Join(toks, " "))));
   }
   else
   if (util::StartsWith(opt, "custom-"))
@@ -128,7 +128,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
       throw ConfigError("Invalid custom command acl keyword: " + command);
     }
     commandACLs.insert(std::make_pair(util::ToLowerCopy(opt), 
-        acl::ACL::FromString(util::Join(toks, " "))));
+        acl::ACL(util::Join(toks, " "))));
   }
   else
   if (opt == "database")
@@ -237,7 +237,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "hideuser")
   {
     ParameterCheck(opt, toks, 1, -1);
-    hideuser = acl::ACL::FromString(util::Join(toks, " "));
+    hideuser = acl::ACL(util::Join(toks, " "));
   }
   else if (opt == "use_dir_size")
   {
@@ -692,19 +692,19 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "tls_control")
   {
-    tlsControl = acl::ACL::FromString(util::Join(toks, " "));
+    tlsControl = acl::ACL(util::Join(toks, " "));
   }
   else if (opt == "tls_listing")
   {
-    tlsListing = acl::ACL::FromString(util::Join(toks, " "));
+    tlsListing = acl::ACL(util::Join(toks, " "));
   }
   else if (opt == "tls_data")
   {
-    tlsData = acl::ACL::FromString(util::Join(toks, " "));
+    tlsData = acl::ACL(util::Join(toks, " "));
   }
   else if (opt == "tls_fxp")
   {
-    tlsFxp = acl::ACL::FromString(util::Join(toks, " "));
+    tlsFxp = acl::ACL(util::Join(toks, " "));
   }
   else
   {

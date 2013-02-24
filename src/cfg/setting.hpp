@@ -180,7 +180,7 @@ class AllowFxp
 public:
   AllowFxp() :
     downloads(true), uploads(true), 
-    logging(false), acl(acl::ACL::FromString("*"))
+    logging(false), acl("*")
   { }
   AllowFxp(std::vector<std::string> toks);
   bool Downloads() const { return downloads; }

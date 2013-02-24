@@ -210,15 +210,15 @@ bool Data::ProtectionOkay() const
   
   if (state.Type() == TransferType::List)
   {
-    return !cfg::Get().TLSListing().Evaluate(client.User());
+    return !cfg::Get().TLSListing().Evaluate(client.User().ACLInfo());
   }
   else
   if (IsFXP())
   {
-    return !cfg::Get().TLSFxp().Evaluate(client.User());
+    return !cfg::Get().TLSFxp().Evaluate(client.User().ACLInfo());
   }
 
-  return !cfg::Get().TLSData().Evaluate(client.User());
+  return !cfg::Get().TLSData().Evaluate(client.User().ACLInfo());
 }
 
 void Data::HandleControl()

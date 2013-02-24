@@ -32,6 +32,8 @@ enum class Flag : char;
 
 struct UserData;
 
+class ACLInfo;
+
 class User
 {
 private:
@@ -160,6 +162,8 @@ public:
   void SetDefaultWeeklyAllotment(long long allotment) { SetSectionWeeklyAllotment("", allotment); }
 
   void Purge() const;
+  
+  ::acl::ACLInfo ACLInfo() const;
   
   static boost::optional<User> Load(acl::UserID uid);
   static boost::optional<User> Load(const std::string& name);

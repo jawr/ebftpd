@@ -27,7 +27,7 @@ void USERCommand::Execute()
       return;
     }
 
-    if (cfg::Get().TLSControl().Evaluate(*user) && !control.IsTLS())
+    if (cfg::Get().TLSControl().Evaluate(user->ACLInfo()) && !control.IsTLS())
     {
       logs::Security("TLSCONTROL", "'%1%' attempted to login without TLS enabled on control", user->Name());
       control.Reply(ftp::NotLoggedIn, "TLS is enforced on control connections.");

@@ -68,11 +68,11 @@ void RANKSCommand::Execute()
     }
   }
   
-  acl::ACL acl(acl::ACL::FromString("*"));
+  acl::ACL acl("*");
   if (args.size() >= 7)
   {
     std::vector<std::string> aclArgs(args.begin() + 6, args.end());
-    acl = acl::ACL::FromString(util::Join(aclArgs, " "));
+    acl = acl::ACL(util::Join(aclArgs, " "));
   }
   
   auto users = ::db::stats::CalculateUserRanks(section, tf, dir, sf);
@@ -119,7 +119,7 @@ void RANKSCommand::Execute()
     if (index < number)
     {
       auto user = acl::User::Load(u.ID());      
-      if (!user || !acl.Evaluate(*user)) continue;
+      if (!user || !acl.Evaluate(user->ACLInfo())) continue;
       
       body.RegisterValue("index", ++index);
       body.RegisterValue("user", user->Name());

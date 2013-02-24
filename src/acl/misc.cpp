@@ -18,9 +18,10 @@ namespace acl { namespace message
 
 fs::Path Evaluate(const std::vector<cfg::setting::Right>& rights, const User& user)
 {
+  auto info = user.ACLInfo();
   for (const auto& right : rights)
   {
-    if (right.ACL().Evaluate(user)) return fs::Path(right.Path());
+    if (right.ACL().Evaluate(info)) return fs::Path(right.Path());
   }
   return fs::Path();
 }
@@ -62,9 +63,10 @@ namespace stats
 
 int Max(const std::vector<cfg::setting::ACLInt>& maxStats, const User& user)
 {
+  auto info = user.ACLInfo();
   for (const auto& maxStat : maxStats)
   {
-    if (maxStat.ACL().Evaluate(user)) return maxStat.Arg();
+    if (maxStat.ACL().Evaluate(info)) return maxStat.Arg();
   }
   return -1;
 }
@@ -87,12 +89,13 @@ namespace speed
 std::vector<const cfg::setting::SpeedLimit*>
 UploadMaximum(const User& user, const fs::Path& path)
 {
+  auto info = user.ACLInfo();
   std::vector<const cfg::setting::SpeedLimit*> matches;
   if (!user.HasFlag(acl::Flag::Exempt))
   {
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {
-      if (limit.UlLimit() > 0 && limit.ACL().Evaluate(user) &&
+      if (limit.UlLimit() > 0 && limit.ACL().Evaluate(info) &&
           util::WildcardMatch(limit.Path(), path.ToString()))
       {
         matches.emplace_back(&limit);
@@ -105,12 +108,13 @@ UploadMaximum(const User& user, const fs::Path& path)
 std::vector<const cfg::setting::SpeedLimit*>
 DownloadMaximum(const User& user, const fs::Path& path)
 {
+  auto info = user.ACLInfo();
   std::vector<const cfg::setting::SpeedLimit*> matches;
   if (!user.HasFlag(acl::Flag::Exempt))
   {
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {
-      if (limit.DlLimit() > 0 && limit.ACL().Evaluate(user) &&
+      if (limit.DlLimit() > 0 && limit.ACL().Evaluate(info) &&
           util::WildcardMatch(limit.Path(), path.ToString()))
       {
         matches.emplace_back(&limit);
@@ -122,9 +126,10 @@ DownloadMaximum(const User& user, const fs::Path& path)
 
 int UploadMinimum(const User& user, const fs::Path& path)
 {
+  auto info = user.ACLInfo();
   for (const auto& limit : cfg::Get().MinimumSpeed())
   {
-    if (limit.ACL().Evaluate(user) &&
+    if (limit.ACL().Evaluate(info) &&
         util::WildcardMatch(limit.Path(), path.ToString()))
     {
       return limit.UlLimit();
@@ -135,9 +140,10 @@ int UploadMinimum(const User& user, const fs::Path& path)
 
 int DownloadMinimum(const User& user, const fs::Path& path)
 {
+  auto info = user.ACLInfo();
   for (const auto& limit : cfg::Get().MinimumSpeed())
   {
-    if (limit.ACL().Evaluate(user) &&
+    if (limit.ACL().Evaluate(info) &&
         util::WildcardMatch(limit.Path(), path.ToString()))
     {
       return limit.DlLimit();
@@ -151,10 +157,11 @@ int DownloadMinimum(const User& user, const fs::Path& path)
 bool AllowFxp(const User& user, bool& logging, 
   const std::function<bool(const cfg::setting::AllowFxp&)>& isAllowed)
 {
+  auto info = user.ACLInfo();
   const cfg::Config& config = cfg::Get();
   for (const auto& af : config.AllowFxp())
   {
-    if (af.ACL().Evaluate(user))
+    if (af.ACL().Evaluate(info))
     {
       logging = af.Logging();
       return isAllowed(af);
@@ -178,6 +185,7 @@ bool AllowFxpReceive(const User& user, bool& logging)
 
 bool AllowSiteCmd(const User& user, const std::string& keyword)
 {
+  auto info = user.ACLInfo();
   std::vector<std::string> toks;
   util::Split(toks, keyword, "|");
 	if (toks.empty()) return true;
@@ -185,7 +193,7 @@ bool AllowSiteCmd(const User& user, const std::string& keyword)
   {
     try
     {
-      if (cfg::Get().CommandACL(tok).Evaluate(user)) return true;
+      if (cfg::Get().CommandACL(tok).Evaluate(info)) return true;
     }
     catch (const std::out_of_range&) { }
   }
@@ -195,10 +203,11 @@ bool AllowSiteCmd(const User& user, const std::string& keyword)
 boost::optional<const cfg::setting::Creditcheck&> 
 CreditCheck(const User& user, const fs::VirtualPath& path)
 {
+  auto info = user.ACLInfo();
   for (const auto& cc : cfg::Get().Creditcheck())
   {
     if (util::WildcardMatch(cc.Path(), path.ToString()) &&
-        cc.ACL().Evaluate(user))
+        cc.ACL().Evaluate(info))
     {
       return boost::optional<const cfg::setting::Creditcheck&>(cc);
     }
@@ -209,10 +218,11 @@ CreditCheck(const User& user, const fs::VirtualPath& path)
 boost::optional<const cfg::setting::Creditloss&> 
 CreditLoss(const User& user, const fs::VirtualPath& path)
 {
+  auto info = user.ACLInfo();
   for (const auto& cc : cfg::Get().Creditloss())
   {
     if (util::WildcardMatch(cc.Path(), path.ToString()) &&
-        cc.ACL().Evaluate(user))
+        cc.ACL().Evaluate(info))
     {
       return boost::optional<const cfg::setting::Creditloss&>(cc);
     }
@@ -222,9 +232,10 @@ CreditLoss(const User& user, const fs::VirtualPath& path)
 
 bool SecureIP(const User& user, const std::string& ip, IPStrength& minimum)
 {
+  auto info = user.ACLInfo();
   IPStrength strength(ip);
   for (auto& si : cfg::Get().SecureIp())
-    if (si.ACL().Evaluate(user))
+    if (si.ACL().Evaluate(info))
     {
       if (si.Strength().Allowed(strength))
         return true;
@@ -239,9 +250,10 @@ bool SecureIP(const User& user, const std::string& ip, IPStrength& minimum)
 
 bool SecurePass(const User& user, const std::string& password , PasswdStrength& minimum)
 {
+  auto info = user.ACLInfo();
   PasswdStrength strength(password);
   for (auto& sp : cfg::Get().SecurePass())
-    if (sp.ACL().Evaluate(user))
+    if (sp.ACL().Evaluate(info))
     {
       if (sp.Strength().Allowed(strength))
         return true;

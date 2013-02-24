@@ -38,7 +38,8 @@ bool Evaluate(const std::vector<cfg::setting::Right>& rights,
 {
   std::string group;
   bool firstSpecial = true;
-  
+  auto info = user.ACLInfo();
+
   for (const auto& right : rights)
   {
     if (right.SpecialVar())
@@ -58,11 +59,11 @@ bool Evaluate(const std::vector<cfg::setting::Right>& rights,
         boost::replace_all(specialPath, "[:groupname:]", group);
         
       if (util::WildcardMatch(specialPath, path.ToString()))
-        return right.ACL().Evaluate(user);
+        return right.ACL().Evaluate(info);
     }
     else
       if (util::WildcardMatch(right.Path(), path.ToString()))
-        return right.ACL().Evaluate(user);
+        return right.ACL().Evaluate(info);
   }
   return false;
 }
@@ -287,10 +288,11 @@ struct Traits<Hideowner>
 
 bool PrivatePath(const fs::VirtualPath& path, const User& user)
 {
+  auto info = user.ACLInfo();
   for (const auto& pp : cfg::Get().Privpath())
   {
     if (!path.ToString().compare(0, pp.Path().length(), pp.Path()))
-      return !pp.ACL().Evaluate(user);
+      return !pp.ACL().Evaluate(info);
   }
   return false;
 }
@@ -361,9 +363,10 @@ template util::Error Allowed<View>(const User& user, const fs::VirtualPath& path
 util::Error Filter(const User& user, const fs::Path& basename, 
     fs::Path& messagePath)
 {
+  auto info = user.ACLInfo();
   for (auto& filter : cfg::Get().PathFilter())
   {
-    if (filter.ACL().Evaluate(user))
+    if (filter.ACL().Evaluate(info))
     {
       if (!boost::regex_match(basename.ToString(), filter.Regex()))
       {

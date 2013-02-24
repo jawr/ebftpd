@@ -8,6 +8,7 @@ namespace acl
 {
 
 class User;
+class ACLInfo;
 
 class Permission
 {
@@ -18,7 +19,7 @@ public:
   Permission(bool negate) : negate(negate) { }  
   virtual ~Permission() { }
   virtual Permission* Clone() const = 0;
-  virtual boost::tribool Evaluate(const User& user) const = 0;
+  virtual boost::tribool Evaluate(const ACLInfo& info) const = 0;
 };
 
 class FlagPermission : public Permission
@@ -31,7 +32,7 @@ public:
   { }
     
   FlagPermission* Clone() const { return new FlagPermission(*this); }  
-  boost::tribool Evaluate(const User& user) const;
+  boost::tribool Evaluate(const ACLInfo& info) const;
 };
 
 class UserPermission : public Permission
@@ -44,7 +45,7 @@ public:
   { }
   
   UserPermission* Clone() const { return new UserPermission(*this); }
-  boost::tribool Evaluate(const User& user) const;
+  boost::tribool Evaluate(const ACLInfo& info) const;
 };
 
 class GroupPermission : public Permission
@@ -57,7 +58,7 @@ public:
   { }
   
   GroupPermission* Clone() const { return new GroupPermission(*this); }
-  boost::tribool Evaluate(const User& user) const;
+  boost::tribool Evaluate(const ACLInfo& info) const;
 };
 
 } /* acl namespace */

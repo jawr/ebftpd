@@ -5,6 +5,11 @@
 namespace acl
 {
 
+ACL::ACL(const std::string& s)
+{
+  FromString(s);
+}
+
 ACL& ACL::operator=(const ACL& rhs)
 {
   perms.clear();
@@ -46,12 +51,12 @@ ACL::~ACL()
     delete p;
 }
 
-bool ACL::Evaluate(const User& user) const
+bool ACL::Evaluate(const ACLInfo& info) const
 {
   if (finalResult) return *finalResult;
   for (const Permission* p : perms)
   {
-    boost::tribool result = p->Evaluate(user);
+    boost::tribool result = p->Evaluate(info);
     if (!boost::indeterminate(result))
     {
       finalResult.reset(result);
@@ -80,13 +85,11 @@ void ACL::FromStringArg(const std::string& arg)
   }
 }
 
-ACL ACL::FromString(const std::string& str)
+void ACL::FromString(const std::string& str)
 {
-  ACL acl;
   std::vector<std::string> args;
   util::Split(args, str, " ", true);
-  for (const auto& arg : args) acl.FromStringArg(arg);
-  return acl;
+  for (const auto& arg : args) FromStringArg(arg);
 }
 
 } /* acl namespace */

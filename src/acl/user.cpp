@@ -11,6 +11,7 @@
 #include "util/scopeguard.hpp"
 #include "acl/group.hpp"
 #include "acl/userdata.hpp"
+#include "acl/acl.hpp"
 
 namespace acl
 {
@@ -624,6 +625,11 @@ void User::DecrSectionCreditsForce(const std::string& section, long long kBytes)
 void User::Purge() const
 {
   db->Purge();
+}
+
+::acl::ACLInfo User::ACLInfo() const
+{
+  return ::acl::ACLInfo(data->name, PrimaryGroup(), data->flags);
 }
 
 boost::optional<User> User::Load(acl::UserID uid)

@@ -99,14 +99,14 @@ SecureIp::SecureIp(std::vector<std::string> toks)
   bool hasIdent = util::BoolLexicalCast(toks[2]);
   strength = acl::IPStrength(numOctets, isHostname, hasIdent);
   toks.erase(toks.begin(), toks.begin()+3);
-  acl = acl::ACL::FromString(util::Join(toks, " "));
+  acl = acl::ACL(util::Join(toks, " "));
 }
 
 SecurePass::SecurePass(std::vector<std::string> toks) :
   strength(toks[0])
 {
   toks.erase(toks.begin());
-  acl = acl::ACL::FromString(util::Join(toks, " "));
+  acl = acl::ACL(util::Join(toks, " "));
 }
 
 SpeedLimit::SpeedLimit(std::vector<std::string> toks)
@@ -117,11 +117,11 @@ SpeedLimit::SpeedLimit(std::vector<std::string> toks)
   if (toks.size() > 3)
   {
     toks.erase(toks.begin(), toks.begin() + 3);
-    acl = acl::ACL::FromString(util::Join(toks, " "));
+    acl = acl::ACL(util::Join(toks, " "));
   }
   else
   {
-    acl = acl::ACL::FromString("*");
+    acl = acl::ACL("*");
   }
 }
 
@@ -163,11 +163,11 @@ AllowFxp::AllowFxp(std::vector<std::string> toks)
   if (toks.size() > 3)
   {
     toks.erase(toks.begin(), toks.begin() + 3);
-    acl = acl::ACL::FromString(util::Join(toks, " "));
+    acl = acl::ACL(util::Join(toks, " "));
   }
   else
   {
-    acl = acl::ACL::FromString("*");
+    acl = acl::ACL("*");
   }
 }
 
@@ -181,7 +181,7 @@ Right::Right(std::vector<std::string> toks)
 {
   path = toks[0];
   toks.erase(toks.begin());
-  acl = acl::ACL::FromString(util::Join(toks, " "));
+  acl = acl::ACL(util::Join(toks, " "));
   specialVar = path.find("[:username:]") != std::string::npos ||
                path.find("[:groupname:]") != std::string::npos;
 }
@@ -232,7 +232,7 @@ PathFilter::PathFilter(std::vector<std::string> toks)
     throw ConfigError("Invalid regular expression.");
   }
   toks.erase(toks.begin(), toks.begin() + 2);
-  acl = acl::ACL::FromString(util::Join(toks, " "));
+  acl = acl::ACL(util::Join(toks, " "));
 }
 
 const boost::regex& PathFilter::Regex() const { return *regex; }
@@ -249,11 +249,11 @@ ACLInt::ACLInt(std::vector<std::string> toks)
   if (toks.size() > 1)
   {
     toks.erase(toks.begin());
-    acl = acl::ACL::FromString(util::Join(toks, " ")); 
+    acl = acl::ACL(util::Join(toks, " ")); 
   }
   else
   {
-    acl = acl::ACL::FromString("*");
+    acl = acl::ACL("*");
   }
 }
 
@@ -318,7 +318,7 @@ Creditcheck::Creditcheck(std::vector<std::string> toks)
   ratio = boost::lexical_cast<int>(toks[1]);
   if (ratio < 0) throw ConfigError("creditloss ratio must be 0 or larger");
   toks.erase(toks.begin(), toks.begin()+2);
-  acl = acl::ACL::FromString(util::Join(toks, " "));
+  acl = acl::ACL(util::Join(toks, " "));
 }
 
 Creditloss::Creditloss(std::vector<std::string> toks)   
@@ -328,7 +328,7 @@ Creditloss::Creditloss(std::vector<std::string> toks)
   allowLeechers = util::BoolLexicalCast(toks[1]);
   path = toks[2];
   toks.erase(toks.begin(), toks.begin()+3);
-  acl = acl::ACL::FromString(util::Join(toks, " "));
+  acl = acl::ACL(util::Join(toks, " "));
 }
 
 NukedirStyle::NukedirStyle(const std::vector<std::string>& toks)   
@@ -357,14 +357,14 @@ Msgpath::Msgpath(const std::vector<std::string>& toks)
 {
   path = toks[0];
   file = toks[1];
-  acl = acl::ACL::FromString(util::Join(toks, " "));
+  acl = acl::ACL(util::Join(toks, " "));
 }
 
 Privpath::Privpath(std::vector<std::string> toks)   
 {
   path = toks[0];
   toks.erase(toks.begin());
-  acl = acl::ACL::FromString(util::Join(toks, " "));
+  acl = acl::ACL(util::Join(toks, " "));
 }
 
 SiteCmd::SiteCmd(const std::vector<std::string>& toks)   

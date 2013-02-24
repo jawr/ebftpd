@@ -5,6 +5,7 @@
 #include "util/misc.hpp"
 #include "util/path/status.hpp"
 #include "fs/path.hpp"
+#include "acl/user.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -14,7 +15,7 @@ void CWDCommand::ShowDiz(const fs::VirtualPath& path)
   fs::RealPath real(fs::MakeReal(path));
   for (const auto& diz : cfg::Get().ShowDiz())
   {
-    if (!diz.ACL().Evaluate(client.User())) continue;
+    if (!diz.ACL().Evaluate(client.User().ACLInfo())) continue;
     try
     {
       fs::RealPath dizPath = real / diz.Path();
