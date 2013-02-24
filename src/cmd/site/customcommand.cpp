@@ -1,6 +1,6 @@
 #include "util/string.hpp"
 #include "cmd/site/customcommand.hpp"
-#include "cmd/splitargs.hpp"
+#include "cmd/util.hpp"
 #include "cmd/site/factory.hpp"
 #include "logs/logs.hpp"
 #include "acl/misc.hpp"

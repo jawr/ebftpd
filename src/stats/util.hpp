@@ -51,7 +51,7 @@ int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path,
     const boost::optional<const cfg::Section&>& section);
 int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
     const boost::optional<const cfg::Section&>& section);
-
+    
 } /* stats namespace */
 
 #endif

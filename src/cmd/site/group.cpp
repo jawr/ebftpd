@@ -95,7 +95,7 @@ void GROUPCommand::Execute()
     body.RegisterValue("files_dn", dnStats[user.ID()].Files());
     body.RegisterSize("size_dn", dnStats[user.ID()].KBytes());
     body.RegisterValue("ratio", acl::RatioString(user));
-    body.RegisterValue("weekly_allot", user.WeeklyAllotment());
+    body.RegisterValue("weekly_allot", acl::WeeklyAllotmentString(user));
     os << body.Compile();
   }
   

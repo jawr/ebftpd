@@ -1,5 +1,6 @@
 #include <ios>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/logic/tribool.hpp>
 #include "cmd/rfc/retr.hpp"
 #include "fs/file.hpp"
 #include "db/stats/stats.hpp"
@@ -17,9 +18,22 @@
 #include "acl/flags.hpp"
 #include "ftp/data.hpp"
 #include "fs/path.hpp"
+#include "db/stats/stats.hpp"
+#include "stats/types.hpp"
+#include "stats/stat.hpp"
 
 namespace cmd { namespace rfc
 {
+
+boost::tribool CheckWeeklyAllotment(const acl::User& user, const std::string& section, off_t size)
+{
+  long long allotment = user.SectionWeeklyAllotment(section);
+  if (allotment <= 0) return boost::indeterminate;
+  
+  auto downloaded = db::stats::CalculateSingleUser(user.ID(), section, 
+                        stats::Timeframe::Week, stats::Direction::Download);
+  return downloaded.KBytes() + (size / 1024) < allotment;
+}
 
 void RETRCommand::Execute()
 {
@@ -96,15 +110,26 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
+  int ratio = -1;
   auto section = cfg::Get().SectionMatch(path.ToString());
-  int ratio = stats::DownloadRatio(client, path, section);
-  if (!client.User().DecrSectionCredits(section && section->SeparateCredits() ? 
-          section->Name() : "", size / 1024 * ratio))
+  boost::tribool allotment = CheckWeeklyAllotment(client.User(), section ? section->Name() : "", size);
+  if (!allotment)
   {
-    control.Reply(ftp::ActionNotOkay, "Not enough credits to download that file.");
-    throw cmd::NoPostScriptError();
+    control.Reply(ftp::ActionNotOkay, "Not enough allotment left to download that file.");
+    throw cmd::NoPostScriptError();    
   }
-
+  
+  if (boost::indeterminate(allotment))
+  {
+    ratio = stats::DownloadRatio(client, path, section);
+    if (!client.User().DecrSectionCredits(section && section->SeparateCredits() ? 
+            section->Name() : "", size / 1024 * ratio))
+    {
+      control.Reply(ftp::ActionNotOkay, "Not enough credits to download that file.");
+      throw cmd::NoPostScriptError();
+    }
+  }
+  
   std::stringstream os;
   os << "Opening " << (data.DataType() == ftp::DataType::ASCII ? "ASCII" : "BINARY") 
      << " connection for download of " 
@@ -135,18 +160,22 @@ void RETRCommand::Execute()
                           data.State().Duration().total_milliseconds());
     }
     
-    if (size > data.State().Bytes())
+    if (boost::indeterminate(allotment))
     {
-      // download failed short, give the remaining credits back
-      client.User().IncrSectionCredits(section && section->SeparateCredits() ? 
-              section->Name() : "", (size - data.State().Bytes()) / 1024 * ratio);
-    }
-    else
-    if (data.State().Bytes() > size)
-    {
-      // final download size was larger than at start, take some more credits
-      client.User().DecrSectionCreditsForce(section && section->SeparateCredits() ? 
-              section->Name() : "", (data.State().Bytes() - size) * ratio);
+      assert(ratio != -1);
+      if (size > data.State().Bytes())
+      {
+        // download failed short, give the remaining credits back
+        client.User().IncrSectionCredits(section && section->SeparateCredits() ? 
+                section->Name() : "", (size - data.State().Bytes()) / 1024 * ratio);
+      }
+      else
+      if (data.State().Bytes() > size)
+      {
+        // final download size was larger than at start, take some more credits
+        client.User().DecrSectionCreditsForce(section && section->SeparateCredits() ? 
+                section->Name() : "", (data.State().Bytes() - size) * ratio);
+      }
     }
   });  
 

@@ -98,10 +98,7 @@ public:
 
   acl::UserID Creator() const;
   const boost::gregorian::date& Created() const;
-  
-  long long WeeklyAllotment() const;
-  void SetWeeklyAllotment(long long weeklyAllotment);
-  
+    
   const std::string& HomeDir() const;
   void SetHomeDir(const std::string& homeDir);
   
@@ -155,7 +152,13 @@ public:
   { return DecrSectionCredits("", kBytes); }
   void DecrDefaultCreditsForce(long long kBytes)
   { return DecrSectionCreditsForce("", kBytes); }
+
+  long long SectionWeeklyAllotment(const std::string& section) const;
+  void SetSectionWeeklyAllotment(const std::string& section, long long allotment);
   
+  long long DefaultWeeklyAllotment() const { return SectionWeeklyAllotment(""); }
+  void SetDefaultWeeklyAllotment(long long allotment) { SetSectionWeeklyAllotment("", allotment); }
+
   void Purge() const;
   
   static boost::optional<User> Load(acl::UserID uid);

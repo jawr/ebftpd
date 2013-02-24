@@ -31,7 +31,7 @@ struct UserData
   acl::UserID creator;
   boost::gregorian::date created;
 
-  long long weeklyAllotment;
+  std::unordered_map<std::string, long long> weeklyAllotment;
   std::string homeDir;
   int idleTime;
   boost::optional<boost::gregorian::date> expires;

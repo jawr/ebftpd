@@ -16,6 +16,7 @@
 #include "logs/logs.hpp"
 #include "acl/flags.hpp"
 #include "fs/path.hpp"
+#include "cmd/util.hpp"
 
 namespace cmd { namespace site
 {
@@ -29,7 +30,7 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
     "Section specific ratio, <section> <ratio> (0 is unlimited)"                        },
     
   { "wkly_allotment", 2,  "change|changegadmin",  &CHANGECommand::CheckWeeklyAllotment,
-    "Weekly allotment, optionally for specific section <allotment> [<section>]"         },
+    "Weekly allotment, optionally for specific section <allotment>[M|G] [<section>]"         },
     
   { "homedir",        1,  "changehomedir",        &CHANGECommand::CheckHomeDir,
     "Home directory"                                                                    },
@@ -120,6 +121,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
   
   try
   {
+    
     int ratio = boost::lexical_cast<int>(args[4]);
     if (ratio < 0 || ratio > cfg::Get().MaximumRatio()) throw boost::bad_lexical_cast();
     
@@ -142,39 +144,29 @@ CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
   gadmin = !acl::AllowSiteCmd(client.User(), "change") &&
            acl::AllowSiteCmd(client.User(), "changegadmin");
 
-  control.Format(ftp::NotImplemented, "Not finished");
-  throw cmd::NoPostScriptError();
-
   const cfg::Config& config = cfg::Get();
     
   std::string section;
   if (args.size() == 5)
   {
     section = util::ToUpperCopy(args[4]);
-    if (config.Sections().find(args[4]) == config.Sections().end())
+    if (config.Sections().find(section) == config.Sections().end())
     {
-      control.Format(ftp::ActionNotOkay, "Section %1% doesn't exist.", args[4]);
+      control.Format(ftp::ActionNotOkay, "Section %1% doesn't exist.", section);
       throw cmd::NoPostScriptError();
     }
   }
+
+  long long allotment;
+  if (!ParseCredits(args[3], allotment)) throw cmd::SyntaxError();
   
-  try
-  {
-    long long allotment = boost::lexical_cast<long long>(args[3]);
-    if (allotment < 0) throw boost::bad_lexical_cast();
-    
-    if (!section.empty()) display = section + "(";
-    if (allotment == 0) display += "Disabled";
-    else display += boost::lexical_cast<std::string>(allotment) + "KB";
-    
-    if (!section.empty()) display += ")";
-    
-    return [allotment](acl::User& user) { user.SetWeeklyAllotment(allotment); };
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    throw cmd::SyntaxError();
-  }
+  if (!section.empty()) display = section + "(";
+  if (allotment == 0) display += "Disabled";
+  else display += boost::lexical_cast<std::string>(allotment) + "KB";
+  
+  if (!section.empty()) display += ")";
+  
+  return [section, allotment](acl::User& user) { user.SetSectionWeeklyAllotment(section, allotment); };
 }
 
 CHANGECommand::SetFunction CHANGECommand::CheckHomeDir()

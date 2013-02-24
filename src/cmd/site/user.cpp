@@ -84,7 +84,7 @@ void USERCommand::Execute()
   body.RegisterValue("groups", acl::GroupString(*user));
   body.RegisterValue("tagline", user->Tagline());
   body.RegisterValue("comment", user->Comment());
-  body.RegisterSize("weekly_allot", user->WeeklyAllotment());
+  body.RegisterValue("weekly_allot", acl::WeeklyAllotmentString(*user));
 
   const auto& ipMasks = user->IPMasks();
   for (auto it = ipMasks.begin(); it != ipMasks.end(); ++it)

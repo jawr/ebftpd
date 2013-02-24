@@ -115,4 +115,21 @@ std::string GroupString(const User& user)
   return os.str();
 }
 
+std::string WeeklyAllotmentString(const User& user)
+{
+  std::ostringstream os;
+  if (user.DefaultWeeklyAllotment() <= 0)
+    os << "Disabled";
+  else
+    os << FormatCredits(user.DefaultWeeklyAllotment());
+  for (const auto& kv : cfg::Get().Sections())
+  {
+    if (user.SectionWeeklyAllotment(kv.first) > 0)
+    {
+      os << " " << kv.first << "(" <<  FormatCredits(user.SectionWeeklyAllotment(kv.first)) <<  ")";
+    }
+  }
+  return os.str();  
+}
+
 } /* acl namespace */

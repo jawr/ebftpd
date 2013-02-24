@@ -110,9 +110,10 @@ const boost::gregorian::date& User::Created() const
   return data->created;
 }
 
-long long User::WeeklyAllotment() const
+long long User::SectionWeeklyAllotment(const std::string& section) const
 {
-  return data->weeklyAllotment;
+  auto it = data->weeklyAllotment.find(section);
+  return it != data->weeklyAllotment.end() ? it->second : 0;  
 }
 
 const std::string& User::HomeDir() const
@@ -503,10 +504,11 @@ bool User::ToggleGadminGID(GroupID gid)
   return true;
 }
 
-void User::SetWeeklyAllotment(long long weeklyAllotment)
+void User::SetSectionWeeklyAllotment(const std::string& section, long long allotment)
 {
-  auto trans = util::MakeTransaction(data->weeklyAllotment, weeklyAllotment);
-  db->SaveWeeklyAllotment();
+  auto trans = util::MakeTransaction(data->weeklyAllotment);
+  data->weeklyAllotment[section] = allotment;
+  db->SaveWeeklyAllotment();  
 }
 
 void User::SetHomeDir(const std::string& homeDir)

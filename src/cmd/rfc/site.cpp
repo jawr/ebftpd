@@ -2,7 +2,7 @@
 #include "cmd/site/factory.hpp"
 #include "cfg/get.hpp"
 #include "acl/misc.hpp"
-#include "cmd/splitargs.hpp"
+#include "cmd/util.hpp"
 #include "cmd/error.hpp"
 #include "exec/cscript.hpp"
 #include "util/string.hpp"

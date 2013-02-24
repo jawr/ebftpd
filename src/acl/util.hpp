@@ -22,6 +22,7 @@ class User;
 std::string RatioString(const User& user);
 std::string CreditString(const User& user);
 std::string GroupString(const User& user);
+std::string WeeklyAllotmentString(const User& user);
 
 } /* acl namespace */
 

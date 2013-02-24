@@ -239,7 +239,6 @@ template <> mongo::BSONObj Serialize<acl::UserData>(const acl::UserData& user)
   bob.append("gadmin gids", SerializeContainer(user.gadminGids));
   bob.append("creator", user.creator);
   bob.append("created", ToDateT(user.created));
-  bob.append("weekly allotment", user.weeklyAllotment);
   bob.append("home dir", user.homeDir);
   bob.append("idle time", user.idleTime);
   
@@ -264,6 +263,7 @@ template <> mongo::BSONObj Serialize<acl::UserData>(const acl::UserData& user)
     
   bob.append("ratio", SerializeMap(user.ratio, "section", "value"));
   bob.append("credits", SerializeMap(user.credits, "section", "value"));
+  bob.append("weekly allotment", SerializeMap(user.weeklyAllotment, "section", "value"));
   
   return bob.obj();
 }
@@ -288,7 +288,6 @@ template <> acl::UserData Unserialize<acl::UserData>(const mongo::BSONObj& obj)
     obj.getObjectID(oid);
     user.created = ToGregDate(oid.OID().asDateT());
     
-    user.weeklyAllotment = obj["weekly allotment"].Long();
     user.homeDir = obj["home dir"].String();
     user.idleTime = obj["idle time"].Int();
     
@@ -308,6 +307,7 @@ template <> acl::UserData Unserialize<acl::UserData>(const mongo::BSONObj& obj)
     
     UnserializeMap(obj["ratio"].Array(), "section", "value", user.ratio);
     UnserializeMap(obj["credits"].Array(), "section", "value", user.credits);
+    UnserializeMap(obj["weekly allotment"].Array(), "section", "value", user.weeklyAllotment);
     
     return user;
   }

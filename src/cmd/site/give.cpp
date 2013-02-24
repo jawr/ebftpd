@@ -9,6 +9,7 @@
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
 #include "logs/logs.hpp"
+#include "cmd/util.hpp"
 
 namespace cmd { namespace site
 {
@@ -45,30 +46,8 @@ void GIVECommand::Execute()
     return;
   }
 
-  std::string amount = args[2];
-  std::string type = "K";
-  if (isalpha(amount.at(amount.length()-1)))
-  {
-    type.assign(amount.end()-1, amount.end());
-    amount.assign(amount.begin(), amount.end()-1);
-    util::ToUpper(type);
-  }
-
   long long credits;
-  try
-  {
-    credits = boost::lexical_cast<long long>(amount);
-    if (credits < 0) throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast& e)
-  {
-    throw cmd::SyntaxError();
-  }
-
-  if (type == "G")
-    credits *= 1024 * 1024;
-  else if (type == "M")
-    credits *= 1024;
+  if (!ParseCredits(args[2], credits)) throw cmd::SyntaxError();
 
   bool own = false;
   std::ostringstream os;
@@ -97,11 +76,19 @@ void GIVECommand::Execute()
   // give user the credits
   user->IncrSectionCredits(section, credits);
   os << "Given " << std::setprecision(2) << std::fixed << credits
-     << "KB credits to " << user->Name() << ".";
+     << "KB credits to " << user->Name();
+  if (!section.empty()) os << " on section " << section;
+  os << ".";
   control.Reply(ftp::CommandOkay, os.str());
   
   if (!own)
-    logs::Siteop(client.User().Name(), "gave '%2%' credits to '%1%'", user->Name(), credits);
+  {
+    if (section.empty())
+      logs::Siteop(client.User().Name(), "gave '%2%' credits to '%1%'", user->Name(), credits);
+    else
+      logs::Siteop(client.User().Name(), "gave '%2%' credits to '%1%' on section '%3%'", 
+                   user->Name(), credits, section);
+  }
 }
 
 // end
