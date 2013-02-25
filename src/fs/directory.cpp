@@ -85,7 +85,9 @@ util::Error ChangeMatch(const acl::User& user, const VirtualPath& path, VirtualP
     for (auto& entry : DirContainer(user, path.Dirname()))
     {
       if (!util::StartsWith(util::ToLowerCopy(entry), lcBasename)) continue;
-      match = path.Dirname() / entry;
+      // this hackishness forces creation of a fresh virtualpath,
+      // therefore forcing resolution of symlinks
+      match = MakeVirtual(fs::Path((path.Dirname() / entry).ToString()));
       e = ChangeDirectory(user, match);
       if (e || (e.Errno() != ENOENT && e.Errno() != ENOTDIR))
       {
