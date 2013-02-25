@@ -13,7 +13,7 @@ enum class CounterResult : int;
 
 class LoginCounter
 {
-  std::mutex mutex;
+  mutable std::mutex mutex;
   int global;
   std::unordered_map<acl::UserID, int> personal;
 
@@ -29,6 +29,7 @@ class LoginCounter
 public:
   CounterResult Start(acl::UserID uid, int limit, bool kickLogin, bool exempt);
   void Stop(acl::UserID uid);
+  int GlobalCount() const;
   
   friend class Counter;
 };

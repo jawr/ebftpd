@@ -73,27 +73,6 @@ public:
   void Execute(Server& server);
 };
 
-class OnlineUserCount : public Task
-{
-  int count;
-  int allCount;
-  std::promise<void> promise;
-  
-public:
-  OnlineUserCount(std::future<void>& future) :
-    count(0), allCount(0)
-  {
-    future = promise.get_future();
-  }
-  
-  void Execute(Server& server);
-  
-  int Count() const { return count; }
-  int AllCount() const { return allCount; }
-  
-
-};
-
 class ReloadConfig : public Task
 {
 public:

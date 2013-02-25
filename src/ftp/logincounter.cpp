@@ -36,5 +36,11 @@ void LoginCounter::Stop(acl::UserID uid)
   --global;
 }
 
+int LoginCounter::GlobalCount() const
+{
+  std::lock_guard<std::mutex> lock(mutex);
+  return global;
+}
+
 } /* ftp namespace */
 

@@ -8,7 +8,6 @@
 #include "ftp/client.hpp"
 #include "cfg/get.hpp"
 #include "fs/directory.hpp"
-#include "ftp/task/task.hpp"
 #include "db/stats/stats.hpp"
 #include "stats/stat.hpp"
 #include "acl/util.hpp"
@@ -16,6 +15,8 @@
 #include "util/path/status.hpp"
 #include "ftp/control.hpp"
 #include "ftp/data.hpp"
+#include "ftp/counter.hpp"
+#include "acl/user.hpp"
 
 namespace text
 {
@@ -68,17 +69,9 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   ts.RegisterValue("credits", acl::CreditString(client.User()));
   ts.RegisterValue("time_online", "");
 
-  if (ts.HasTag("online_users") || ts.HasTag("all_online_users"))
-  {
-    std::cout << "ONLINE COUNT!" << std::endl;
-    std::future<void> oucFuture;
-    auto ocuTask = std::make_shared<ftp::task::OnlineUserCount>(oucFuture);
-    ocuTask->Push();
-    oucFuture.wait();
-    
-    ts.RegisterValue("online_users", ocuTask->Count());
-    ts.RegisterValue("all_online_users", ocuTask->AllCount());
-  }
+  int onlineCount = ftp::Counter::Login().GlobalCount();
+  ts.RegisterValue("online_users", onlineCount);
+  ts.RegisterValue("all_online_users", onlineCount);
   
   for (auto tf : ::stats::timeframes)
   {

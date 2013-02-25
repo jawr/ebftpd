@@ -112,18 +112,6 @@ void UserUpdate::Execute(Server& server)
   }
 }
 
-void OnlineUserCount::Execute(Server& server)
-{
-  for (const auto& client: server.clients)
-  {
-    if (client->State() != ClientState::LoggedIn) continue;
-    ++count;
-    ++allCount;
-  }
-  
-  promise.set_value();
-}
-
 void ClientFinished::Execute(Server& server)
 {
   server.CleanupClient(client);

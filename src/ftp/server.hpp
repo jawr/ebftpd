@@ -64,7 +64,6 @@ public:
   friend class task::LoginKickUser;
   friend class task::UserUpdate;
   friend class task::Task;
-  friend class task::OnlineUserCount;
   friend class task::ClientFinished;
   
   friend void SignalHandler(int);
