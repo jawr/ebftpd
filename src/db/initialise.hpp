@@ -8,7 +8,6 @@ namespace db
 {
 
 bool Initialise(const std::function<void(acl::UserID)>& userUpdatedCB);
-void Cleanup();
 
 } /* db namespace */
 

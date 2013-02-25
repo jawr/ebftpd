@@ -27,6 +27,7 @@
 #include "util/path/path.hpp"
 #include "db/initialise.hpp"
 #include "util/scopeguard.hpp"
+#include "db/replicator.hpp"
 
 #include "version.hpp"
 
@@ -208,8 +209,6 @@ int main(int argc, char** argv)
     return 1;
   }
   
-  auto dbExit = util::MakeScopeExit([]() { db::Cleanup(); });
-  
   if (!acl::CreateDefaults())
   {
     logs::Error("Error while creating root user and group and default user template");
@@ -224,8 +223,10 @@ int main(int argc, char** argv)
   }
   else if (Daemonise(foreground))
   {
+    db::Replicator::Get().Start();
     ftp::Server::StartThread();
     ftp::Server::JoinThread();
+    db::Replicator::Get().Stop();
   }
   
   return exitStatus;

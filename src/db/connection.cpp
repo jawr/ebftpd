@@ -51,6 +51,7 @@ Connection::Connection(ConnectionMode mode) :
 void Connection::Create()
 {
   boost::call_once(&CreateAuthenticateHook, once);  
+  boost::this_thread::disable_interruption noInterrupt;
   
   try
   {
@@ -152,6 +153,8 @@ std::vector<mongo::BSONObj> Connection::Query(
   std::vector<mongo::BSONObj> results;
   if (scopedConn)
   {
+    boost::this_thread::disable_interruption noInterrupt;
+    
     try
     {
       auto cursor = scopedConn->conn().query(Namespace(collection), 
@@ -190,6 +193,8 @@ void Connection::EnsureIndex(const std::string& collection,
   
   try
   {
+    boost::this_thread::disable_interruption noInterrupt;
+
     scopedConn->conn().ensureIndex(Namespace(collection), keys, unique);
     if (mode != ConnectionMode::Fast)
     {
@@ -214,6 +219,8 @@ long long Connection::Count(const std::string& collection, const mongo::BSONObj&
   long long count = -1;
   if (scopedConn) 
   {
+    boost::this_thread::disable_interruption noInterrupt;
+
     try
     {
       count = scopedConn->conn().count(Namespace(collection), query);
@@ -275,6 +282,8 @@ bool Connection::Eval(const std::string& javascript, mongo::BSONObj& info, mongo
   bool ret = false;
   if (scopedConn)
   {
+    boost::this_thread::disable_interruption noInterrupt;
+
     try
     {
       ret = scopedConn->conn().eval(database, javascript, info, retval, args);
@@ -318,6 +327,8 @@ int Connection::InsertAutoIncrement(const std::string& collection,
 
     try
     {
+      boost::this_thread::disable_interruption noInterrupt;
+      
       scopedConn->conn().insert(ns, bab.obj());
       auto err = GetLastError();
       if (!err.Okay())

@@ -72,14 +72,14 @@ bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
     for (const auto& ip : validIPs)
     {
       ep = util::net::Endpoint(ip, port);
-      std::unique_ptr<util::net::TCPListener> listener(new util::net::TCPListener(ep));
+      std::shared_ptr<util::net::TCPListener> listener(new util::net::TCPListener(ep));
       int fd = listener->Socket();
       
       instance.fds[fdsIndex].fd = fd;
       instance.fds[fdsIndex].events = POLLIN;
       ++fdsIndex;
       
-      instance.servers.insert(std::make_pair(fd, listener.release()));
+      instance.servers.insert(std::make_pair(fd, listener));
       logs::Debug("Listening for clients on %1%", ep);
     }
   }

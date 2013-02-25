@@ -58,7 +58,7 @@ bool EnsureIndexes()
   return false;
 }
 
-bool StartReplication(const std::function<void(acl::UserID)>& userUpdatedCB)
+bool RegisterCaches(const std::function<void(acl::UserID)>& userUpdatedCB)
 {
   try
   {
@@ -70,8 +70,6 @@ bool StartReplication(const std::function<void(acl::UserID)>& userUpdatedCB)
     auto groupCache = std::make_shared<GroupCache>();
     if (!replicator.Register(groupCache)) return false;
     SetGroupCache(groupCache);
-    
-    replicator.Start();
     
     return true;
   }
@@ -97,18 +95,13 @@ bool Initialise(const std::function<void(acl::UserID)>& userUpdatedCB)
     return false;
   }
 
-  if (!StartReplication(userUpdatedCB))
+  if (!RegisterCaches(userUpdatedCB))
   {
     logs::Database("Error while initialising database replication");
     return false;
   }
   
   return true;
-}
-
-void Cleanup()
-{
-  Replicator::Get().Stop();
 }
 
 } /* db namespace */

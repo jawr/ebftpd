@@ -55,24 +55,33 @@ public:
         if (lastOID) query = QUERY("_id" << BSON("$gt" << *lastOID));
 
         boost::this_thread::interruption_point();
-        cursor = conn.query(ns, query.sort(BSON("$natural" << 1)), 0, 0, nullptr, 
-                            mongo::QueryOption_CursorTailable | 
-                            mongo::QueryOption_AwaitData);
+        
+        {
+          boost::this_thread::disable_interruption noInterrupt;
+          cursor = conn.query(ns, query.sort(BSON("$natural" << 1)), 0, 0, nullptr, 
+                              mongo::QueryOption_CursorTailable | 
+                              mongo::QueryOption_AwaitData);
+        }
+        
         boost::this_thread::interruption_point();
       }
       
       while (true)
       {
-        if (!cursor->more())
         {
-          boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-          if (cursor->isDead())
+          boost::this_thread::disable_interruption noInterrupt;
+          if (!cursor->more())
           {
-            cursor.reset();
-            break;
+            boost::this_thread::restore_interruption restoreInterrupt(noInterrupt);
+            boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+            if (cursor->isDead())
+            {
+              cursor.reset();
+              break;
+            }
+            
+            continue;
           }
-          
-          continue;
         }
         
         auto entry = cursor->next();
@@ -166,7 +175,6 @@ void Replicator::Run()
       while (true)
       {
         auto entry = tail.Next();
-        std::cout << entry << std::endl;
         Replicate(entry);
       }
     }
