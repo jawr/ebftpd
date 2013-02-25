@@ -36,6 +36,12 @@ struct Format : public util::Format
   { }
 };
 
+inline void Siteop(const std::string& admin, const std::string& message)
+{
+  extern Logger siteop;
+  siteop.PushEntry("admin", Quote('\''), admin, "message",  message);
+}
+
 template <typename... Args>
 void Siteop(const std::string& admin, const std::string& format, const Args&... args)
 {
@@ -50,6 +56,14 @@ void Event(const std::string& what, const Args&... args)
   events.PushEntry("event", Tag(), util::ToUpperCopy(what), QuoteOn(), args...);
 }
 
+inline void Security(const std::string& what, const std::string& message)
+{
+  extern Logger security;
+  std::ostringstream os;
+  os << util::ToUpperCopy(what) << ": " << message;
+  security.PushEntry("message", os.str());
+}
+
 template <typename... Args>
 void Security(const std::string& what, const std::string& format, const Args&... args)
 {
@@ -59,6 +73,12 @@ void Security(const std::string& what, const std::string& format, const Args&...
   security.PushEntry("message", util::Format()(os.str(), args...).String());
 }
 
+inline void Debug(const std::string& message)
+{
+  extern Logger debug;
+  debug.PushEntry("message", message);
+}
+
 template <typename... Args>
 void Debug(const std::string& format, const Args&... args)
 {
@@ -66,11 +86,23 @@ void Debug(const std::string& format, const Args&... args)
   debug.PushEntry("message", util::Format()(format, args...).String());
 }
 
+inline void Database(const std::string& message)
+{
+  extern Logger db;
+  db.PushEntry("message", message);
+}
+
 template <typename... Args>
 void Database(const std::string& format, const Args&... args)
 {
   extern Logger db;
   db.PushEntry("message", util::Format()(format, args...).String());
+}
+
+inline void Error(const std::string& message)
+{
+  extern Logger error;
+  error.PushEntry("message", message);
 }
 
 template <typename... Args>
