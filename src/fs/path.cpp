@@ -55,7 +55,10 @@ const VirtualPath& MakeVirtual(const RealPath& path)
       path.cache.virt = new VirtualPath(newpath);
     }
     else
+    {
+      // if the rest of this code is correct, we should never get here
       throw std::logic_error("RealPath cannot be made VirtualPath");
+    }
   }
   return *path.cache.virt;
 }
@@ -64,7 +67,8 @@ const RealPath& MakeReal(const Path& path)
 {
   if (!path.cache.real)
   {
-    path.cache.real = new RealPath(RealPath(cfg::Get().Sitepath()) & (WorkDirectory() / path));
+    auto virt = fs::Resolve(WorkDirectory() / path);
+    path.cache.real = new RealPath(RealPath(cfg::Get().Sitepath()) & virt);
     std::string noSymlinks;
     if (util::path::Realpath(path.cache.real->ToString(), noSymlinks))
     {
@@ -88,7 +92,7 @@ const RealPath& MakeReal(const RealPath& path)
 
 VirtualPath PathFromUser(const std::string& path)
 {
-  return fs::Resolve(fs::MakeVirtual(Path(path)));
+  return fs::MakeVirtual(Path(path));
 }
 
 
