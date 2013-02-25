@@ -36,7 +36,7 @@ void InitialiseLog(Logger& logger, const cfg::setting::Log& config)
   if (config.File())
   {
     Stream stream(new std::ofstream(util::path::Join(cfg::Get().Datapath(), 
-              "/logs/" + config.Name() + ".log").c_str()), true);
+              "logs/" + config.Name() + ".log").c_str()), true);
     logger.PushSink(std::make_shared<StreamSink>(stream));
   }
   

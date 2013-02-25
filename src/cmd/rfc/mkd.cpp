@@ -51,7 +51,7 @@ void MKDCommand::Execute()
   
   if (config.IsEventLogged(path.ToString()))
   {
-    logs::Event("NEWDIR", "path", path.ToString(),
+    logs::Event("NEWDIR", "path", fs::MakeReal(path).ToString(),
                 "user", client.User().Name(), 
                 "group", client.User().PrimaryGroup(), 
                 "tagline", client.User().Tagline());

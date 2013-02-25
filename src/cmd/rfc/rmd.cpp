@@ -28,7 +28,7 @@ void RMDCommand::Execute()
   
   if (config.IsEventLogged(path.ToString()))
   {
-    logs::Event("DELDIR", "path", path.ToString(), "user", client.User().Name(), 
+    logs::Event("DELDIR", "path", fs::MakeReal(path).ToString(), "user", client.User().Name(), 
                 "group", client.User().PrimaryGroup(),
                 "tagline", client.User().Tagline());
   }
