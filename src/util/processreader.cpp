@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <poll.h>
 #include <unistd.h>
 #include <boost/thread/thread.hpp>
 #include "util/processreader.hpp"
@@ -30,7 +31,13 @@ ProcessReader::~ProcessReader()
 void ProcessReader::Open()
 {
   if (pid != -1) throw std::logic_error("Must call Close before calling Open again");
+  
+  {
+    boost::lock_guard<boost::mutex> lock(interruptMutex);
+    interruptPipe.reset(new util::InterruptPipe());
+  }
 
+  pipe.reset(new util::Pipe());
   util::Pipe errorPipe;
   
   if (fcntl(errorPipe.WriteFd(), F_SETFD, fcntl(errorPipe.WriteFd(), F_GETFD) | FD_CLOEXEC) < 0)
@@ -41,7 +48,7 @@ void ProcessReader::Open()
   
   if (pid)
   {
-    pipe.CloseWrite();
+    pipe->CloseWrite();
     errorPipe.CloseWrite();
     int error;
     ssize_t len;
@@ -56,12 +63,11 @@ void ProcessReader::Open()
   else
   {
     errorPipe.CloseRead();
-    pipe.CloseRead();
-    if (dup2(pipe.WriteFd(), fileno(stdout)) < 0) return;
+    pipe->CloseRead();
+    if (dup2(pipe->WriteFd(), fileno(stdout)) < 0) return;
 
     execve(file.c_str(), PrepareArgv(argv), PrepareArgv(env));
-    pipe.CloseWrite();
-//    _exit(1);
+    pipe->CloseWrite();
 
     int error = errno;
     while (write(errorPipe.WriteFd(), &error, sizeof(error)) < 0)
@@ -72,36 +78,38 @@ void ProcessReader::Open()
 
 size_t ProcessReader::Read(char* buffer, size_t size, const util::TimePair* timeout)
 {
-  fd_set set;
-  struct timeval tv;
-  int max = std::max(pipe.ReadFd(), interruptPipe.ReadFd()) + 1;
+  struct pollfd fds[2];
+
+  fds[0].fd = pipe->ReadFd();
+  fds[0].events = POLLIN;
+
+  fds[1].fd = interruptPipe->ReadFd();
+  fds[1].events = POLLIN;
+
+  int pollTimeout = timeout ? (timeout->Seconds() * 1000) + (timeout->Microseconds() / 1000) : -1;
   while (true)
   {
-    FD_ZERO(&set);
-    FD_SET(pipe.ReadFd(), &set);
-    FD_SET(interruptPipe.ReadFd(), &set);
+    fds[0].revents = 0;    
+    fds[1].revents = 0;
     
-    if (timeout) memcpy(&tv, &timeout->Timeval(), sizeof(tv));
-    
-    int n = select(max, &set, nullptr, nullptr, 
-          timeout ? &tv : nullptr);
+    int n = poll(fds, 2, pollTimeout);
     if (!n) throw util::SystemError(ETIMEDOUT);
     if (n < 0)
     {
       if (errno == EINTR) continue;
       throw util::SystemError(errno);
     }
-    
-    if (FD_ISSET(interruptPipe.ReadFd(), &set))
+
+    if (fds[1].revents & POLLIN)
     {
       char ch;
-      (void) read(interruptPipe.ReadFd(), &ch, 1);
+      (void) read(interruptPipe->ReadFd(), &ch, 1);
       boost::this_thread::interruption_point();
     }
-    
-    if (FD_ISSET(pipe.ReadFd(), &set))
+
+    if (fds[0].revents & POLLIN)
     {
-      ssize_t len = read(pipe.ReadFd(), buffer, size);
+      ssize_t len = read(pipe->ReadFd(), buffer, size);
       if (len < 0)
       {
         if (errno == EINTR) continue;
@@ -109,6 +117,8 @@ size_t ProcessReader::Read(char* buffer, size_t size, const util::TimePair* time
       }
       return len;
     }
+    
+    return 0;
   }
 }
 
@@ -192,7 +202,12 @@ void ProcessReader::Open(const std::string& file,
 
 bool ProcessReader::Close(bool nohang)
 {
-  pipe.Reset();
+  {
+    boost::lock_guard<boost::mutex> lock(interruptMutex);
+    interruptPipe = nullptr;
+  }
+
+  pipe = nullptr;  
   eof = false;
   getcharBufferPos = getcharBuffer;
   getcharBufferLen = 0;
@@ -252,7 +267,11 @@ bool ProcessReader::Kill(int signo, const util::TimePair& timeout)
 
 void ProcessReader::Interrupt()
 {
-  (void) write(interruptPipe.WriteFd(), "", 1);
+  boost::lock_guard<boost::mutex> lock(interruptMutex);
+  if (interruptPipe)
+  {
+    (void) write(interruptPipe->WriteFd(), "", 1);
+  }
 }
 
 } /* util namespace */

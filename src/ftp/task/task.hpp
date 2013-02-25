@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <future>
+#include <memory>
 #include "ftp/task/types.hpp"
 #include "acl/types.hpp"
 #include "acl/user.hpp"
@@ -14,6 +15,7 @@ namespace ftp
 { 
 
 class Server;
+class Client;
 
 namespace task
 {
@@ -119,6 +121,15 @@ class UserUpdate : public Task
   
 public:
   UserUpdate(acl::UserID uid) : uid(uid) { }
+  void Execute(Server& server);
+};
+
+class ClientFinished : public Task
+{
+  std::shared_ptr<Client> client;
+  
+public:
+  ClientFinished(const std::shared_ptr<Client>& client) : client(client) { }
   void Execute(Server& server);
 };
 

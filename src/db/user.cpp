@@ -23,16 +23,17 @@ bool User::Create()
 
 void User::UpdateLog() const
 {
+  std::cout << "UPDATELOG" << std::endl;
   db::FastConnection conn;
   auto entry = BSON("collection" << "users" << "id" << user.id);
   conn.Insert("updatelog", entry);
 }
 
-void User::SaveField(const std::string& field) const
+void User::SaveField(const std::string& field, bool updateLog) const
 {
   db::NoErrorConnection conn;
   conn.SetField("users", QUERY("uid" << user.id), user, field);
-  UpdateLog();
+  if (updateLog) UpdateLog();
 }
 
 bool User::SaveName()
@@ -136,12 +137,8 @@ void User::SaveMaxSimUp()
 
 void User::SaveLoggedIn()
 {
-  SaveField("logged in");
-}
-
-void User::SaveLastLogin()
-{
-  SaveField("last login");
+  db::NoErrorConnection conn;
+  conn.SetFields("users", QUERY("uid" << user.id), user, { "logged in", "last login" });
 }
 
 void User::SaveRatio()

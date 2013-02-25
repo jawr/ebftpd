@@ -32,6 +32,7 @@ void Handler::StopThread()
 void Handler::Run()
 {
   util::SetProcessTitle("SIGNALS");
+  
   sigset_t mask;
   sigemptyset(&mask);
   sigaddset(&mask, SIGHUP);

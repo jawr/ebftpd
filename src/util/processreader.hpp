@@ -1,10 +1,12 @@
 #ifndef __UTIL_PROCESSREADER_HPP
 #define __UTIL_PROCESSREADER_HPP
 
+#include <memory>
 #include <string>
 #include <csignal>
 #include <vector>
 #include <sys/wait.h>
+#include <boost/thread/mutex.hpp>
 #include "util/error.hpp"
 #include "util/pipe.hpp"
 #include "util/interruptpipe.hpp"
@@ -27,8 +29,9 @@ private:
   ArgvType argv;
   ArgvType env;
   pid_t pid;
-  util::Pipe pipe;
-  util::InterruptPipe interruptPipe;
+  std::unique_ptr<util::Pipe> pipe;
+  std::unique_ptr<util::InterruptPipe> interruptPipe;
+  boost::mutex interruptMutex;
   int exitStatus;
   bool eof;
 

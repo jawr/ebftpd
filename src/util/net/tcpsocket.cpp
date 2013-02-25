@@ -307,58 +307,6 @@ void TCPSocket::Shutdown()
   if (socket != -1)  shutdown(socket, SHUT_RDWR);
 }
 
- TCPSocket::State TCPSocket::WaitStateTimeout(State state, const util::TimePair* duration)
-{
-  fd_set readSet;
-  FD_ZERO(&readSet);
-  if (state.readable) FD_SET(socket, &readSet);
-  
-  fd_set writeSet;
-  FD_ZERO(&writeSet);
-  if (state.writeable) FD_SET(socket, &writeSet);
-  
-  struct timeval* tvPtr = nullptr;
-  struct timeval tv;
-  if (duration)
-  {
-    tv.tv_sec = duration->Seconds();
-    tv.tv_usec = duration->Microseconds();
-    tvPtr = &tv;
-  }
-  
-  int result;
-  while ((result = select(socket + 1, &readSet, &writeSet, nullptr, tvPtr)) < 0)
-  {
-    boost::this_thread::interruption_point();
-    if (errno != EINTR) throw NetworkSystemError(errno);
-  }
-
-  boost::this_thread::interruption_point();
-  if (result)
-  {
-    if (!FD_ISSET(socket, &readSet) && state.readable) state.readable = false;
-    if (!FD_ISSET(socket, &writeSet) && state.writeable) state.writeable = false;
-  }
-  
-  return state;
-}
-
- TCPSocket::State TCPSocket::WaitStateTimeout(State state, const util::TimePair& duration)
-{
-  return WaitStateTimeout(state, &duration);
-}
-
- TCPSocket::State TCPSocket::WaitState(State state)
-{
-  return WaitStateTimeout(state, 0);
-}
-
- TCPSocket::State TCPSocket::Pending(State state)
-{
-  util::TimePair duration(0, 0);
-  return WaitStateTimeout(state, &duration);
-}
-
 std::string TCPSocket::TLSCipher() const
 {
   if (!tls.get()) return "NONE";

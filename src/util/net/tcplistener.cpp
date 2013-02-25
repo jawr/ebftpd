@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cerrno>
 #include <sys/time.h>
-#include <sys/select.h>
 #include <boost/thread/thread.hpp>
 #include "util/net/tcplistener.hpp"
 #include "util/net/error.hpp"
@@ -13,8 +12,6 @@ namespace util { namespace net
 TCPListener::~TCPListener()
 {
   Close();
-  if (interruptPipe[0] >= 0) close(interruptPipe[0]);
-  if (interruptPipe[1] >= 0) close(interruptPipe[1]);
 }
 
 TCPListener::TCPListener(const util::net::Endpoint& endpoint, int backlog) :
@@ -22,7 +19,6 @@ TCPListener::TCPListener(const util::net::Endpoint& endpoint, int backlog) :
   socket(-1),
   backlog(backlog)
 {
-  if (pipe(interruptPipe) < 0) throw NetworkSystemError(errno);
   Listen();
 }
 
@@ -30,7 +26,6 @@ TCPListener::TCPListener(int backlog) :
   socket(-1),
   backlog(backlog)
 {
-  if (pipe(interruptPipe) < 0) throw NetworkSystemError(errno);
 }
 
 void TCPListener::Listen()
@@ -83,56 +78,6 @@ void TCPListener::Listen(const util::net::Endpoint& endpoint)
 void TCPListener::Accept(TCPSocket& socket)
 {
   socket.Accept(*this);
-}
-
-bool TCPListener::WaitPendingTimeout(const TimePair* duration) const
-{
-  fd_set readSet;
-  FD_ZERO(&readSet);
-  FD_SET(socket, &readSet);
-  FD_SET(interruptPipe[0], &readSet);
-  int max = std::max(socket, interruptPipe[0]);
-  
-  struct timeval *tvPtr = nullptr;
-  struct timeval tv;
-  if (duration)
-  {
-    tv.tv_sec = duration->Seconds();
-    tv.tv_usec = duration->Microseconds();
-    tvPtr = &tv;
-  }
-  
-  int result;
-  while ((result = select(max + 1, &readSet, nullptr, nullptr, tvPtr)) < 0)
-  {
-    if (errno != EINTR) throw NetworkSystemError(errno);
-    boost::this_thread::interruption_point();
-  }
-
-  if (!result) return false;
-  
-  if (FD_ISSET(interruptPipe[0], &readSet))
-    boost::this_thread::interruption_point();
-  
-  if (FD_ISSET(socket, &readSet)) return true;
-  
-  return false;  
-}
-
-bool TCPListener::WaitPendingTimeout(const TimePair& duration) const
-{
-  return WaitPendingTimeout(&duration);
-}
-
-bool TCPListener::WaitPending() const
-{
-  return WaitPendingTimeout(0);
-}
-
-bool TCPListener::Pending() const
-{
-  TimePair duration(0, 0);
-  return WaitPendingTimeout(&duration);
 }
 
 void TCPListener::Close()

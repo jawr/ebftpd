@@ -7,6 +7,8 @@
 #include <queue>
 #include <atomic>
 #include <mutex>
+#include <memory>
+#include <poll.h>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "ftp/task/types.hpp"
@@ -23,49 +25,34 @@ class Client;
 
 class Server : public util::Thread
 {
-  typedef boost::ptr_list<Client> ClientList;
-
-  boost::ptr_vector<util::net::TCPListener> servers;
+  std::unordered_map<int, std::shared_ptr<util::net::TCPListener>> servers;
+  std::vector<struct pollfd> fds;
   std::vector<std::string> validIPs;
   int32_t port;
-  util::InterruptPipe interruptPipe;
 
-  std::mutex clientMtx;
-  boost::ptr_list<Client> clients;
+  std::unordered_set<std::shared_ptr<Client>> clients;
 
+  std::mutex queueMutex;
   std::queue<TaskPtr> queue;
-  std::mutex taskMtx;
   
   std::atomic_bool isShutdown;
   
   void AcceptClients();
   void AcceptClient(util::net::TCPListener& server);
-  void HandleClients();
+
   void Run();
   void HandleTasks();
   void StopClients();
+  void CleanupClient(const std::shared_ptr<Client>& client);
 
-  void InnerSetShutdown()
-  {
-    isShutdown = true;
-    instance.interruptPipe.Interrupt();
-  }
-
+  void InnerSetShutdown();
+  
   Server() : port(-1), isShutdown(false) { }
 
-  static void PushTask(const TaskPtr& task)
-  {
-    { 
-      std::lock_guard<std::mutex> lock(instance.taskMtx); 
-      instance.queue.push(task);
-    }
-    instance.interruptPipe.Interrupt();
-  }
-  
+  static void PushTask(const TaskPtr& task);  
   static Server instance;
   
 public:
-  
   static bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
   
   static void StartThread();
@@ -78,6 +65,7 @@ public:
   friend class task::UserUpdate;
   friend class task::Task;
   friend class task::OnlineUserCount;
+  friend class task::ClientFinished;
   
   friend void SignalHandler(int);
 };

@@ -1,4 +1,5 @@
 #include <sys/select.h>
+#include <poll.h>
 #include "ftp/portallocator.hpp"
 #include "ftp/addrallocator.hpp"
 #include "util/net/interfaces.hpp"
@@ -10,6 +11,7 @@
 #include "cfg/get.hpp"
 #include "ftp/error.hpp"
 #include "ftp/control.hpp"
+#include "util/verify.hpp"
 
 namespace util
 {
@@ -45,7 +47,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
   using namespace util::net;
 
   socket.Close();
-  listener.Close();
+  if (listener) listener->Close();
   
   boost::optional<util::net::IPAddress> ip;
   // unable to use alternative pasv_addr if espv mode isn't Full
@@ -82,7 +84,9 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
   if (!ip) ip = IPAddress(client.Control().LocalEndpoint().IP());
   if (pasvType == PassiveType::PASV && ip->Family() == IPFamily::IPv6)
     FindPartnerIP(*ip, *ip);
-  
+
+  if (!listener) listener.reset(new util::net::TCPListener());
+    
   boost::optional<uint16_t> firstPort;
   while (true)
   {
@@ -93,7 +97,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
       
     try
     {
-      listener.Listen(Endpoint(*ip, port));
+      listener->Listen(Endpoint(*ip, port));
       break;
     }
     catch (const util::net::NetworkSystemError& e)
@@ -104,14 +108,14 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
   }
 
   this->pasvType = pasvType;
-  ep = listener.Endpoint();
+  ep = listener->Endpoint();
 }
 
 void Data::InitActive(const util::net::Endpoint& ep)
 {
   pasvType = PassiveType::None;
   socket.Close();
-  listener.Close();
+  listener = nullptr;
   
   boost::optional<util::net::IPAddress> localIP;
   std::string firstAddr;
@@ -162,8 +166,9 @@ void Data::Open(TransferType transferType)
 {
   if (pasvType != PassiveType::None)
   {
-    listener.Accept(socket);
-    listener.Close();
+    assert(listener);
+    listener->Accept(socket);
+    listener = nullptr;
   }
   
   if (transferType != TransferType::List && IsFXP())
@@ -221,37 +226,43 @@ bool Data::ProtectionOkay() const
   return !cfg::Get().TLSData().Evaluate(client.User().ACLInfo());
 }
 
-void Data::HandleControl()
+void Data::HandleControl(int revents)
 {
   try
   {
-    std::string command = client.Control().NextCommand();
+    if (revents & POLLIN)
+    {
+      std::string command = client.Control().NextCommand();
+      
+      if (command == "ABOR")
+      {
+        client.Control().Reply(ftp::DataCloseAborted, 
+            "Abort requested, closing data connection");
+        throw TransferAborted();
+      }
+      else
+      if (command == "QUIT")
+      {
+        client.Control().Reply(ftp::ClosingControl, "Bye bye");
+        client.SetState(ftp::ClientState::Finished);
+        throw util::net::EndOfStream();
+      }
+      else
+      if (command == "STAT")
+      {
+        std::ostringstream os;
+        os << "Status: " << state.Bytes() << " bytes transferred";
+        client.Control().Reply(ftp::FileStatus, os.str());
+      }
+      else
+      {
+        client.Control().Reply(ftp::BadCommandSequence, 
+                  "Unsupported command during transfer");
+      }
+    }
     
-    if (command == "ABOR")
-    {
-      client.Control().Reply(ftp::DataCloseAborted, 
-          "Abort requested, closing data connection");
-      throw TransferAborted();
-    }
-    else
-    if (command == "QUIT")
-    {
-      client.Control().Reply(ftp::ClosingControl, "Bye bye");
-      client.SetState(ftp::ClientState::Finished);
-      throw util::net::EndOfStream();
-    }
-    else
-    if (command == "STAT")
-    {
-      std::ostringstream os;
-      os << "Status: " << state.Bytes() << " bytes transferred";
-      client.Control().Reply(ftp::FileStatus, os.str());
-    }
-    else
-    {
-      client.Control().Reply(ftp::BadCommandSequence, 
-                "Unsupported command during transfer");
-    }
+    if (revents & POLLHUP) throw util::net::EndOfStream();
+    throw util::net::NetworkError();
   }
   catch (const util::net::NetworkError& e)
   {
@@ -261,70 +272,86 @@ void Data::HandleControl()
 
 size_t Data::Read(char* buffer, size_t size)
 {
-  fd_set readSet;
-  struct timeval tv;
-  int controlSock = client.Control().socket->Socket();
-  int max = std::max(socket.Socket(), controlSock);
+  int pollTimeout = (socket.Timeout().Seconds() * 1000 ) + 
+                    (socket.Timeout().Microseconds() / 1000);
+  struct pollfd fds[2];
+  
+  fds[0].fd = client.Control().socket->Socket();
+  fds[0].events = POLLIN;
+  
+  fds[1].fd = socket.Socket();
+  fds[1].events = POLLIN;
   
   while (true)
   {
-    FD_ZERO(&readSet);
-    FD_SET(socket.Socket(), &readSet);
-    FD_SET(controlSock, &readSet);
-    memcpy(&tv, &socket.Timeout().Timeval(), sizeof(tv));
-  
-    int n = select(max + 1, &readSet, nullptr, nullptr, &tv);
+    fds[0].revents = 0;
+    fds[1].revents = 0;
+    
+    int n = poll(fds, 2, pollTimeout);
     if (!n) throw util::net::TimeoutError();
-    if (n < 0) throw util::net::NetworkSystemError(errno);
-    
-    if (FD_ISSET(controlSock, &readSet))
+    if (n < 0)
     {
-      HandleControl();
+      if (errno == EINTR)
+      {
+        boost::this_thread::interruption_point();
+        verify(false);
+      }
+      else
+      {
+        throw util::net::NetworkSystemError(errno);
+      }
     }
     
-    if (FD_ISSET(socket.Socket(), &readSet))
-    {
-      return socket.Read(buffer, size);
-    }
+    if (fds[0].revents > 0) HandleControl(fds[0].revents);
+    if (fds[1].revents & POLLIN) return socket.Read(buffer, size);
+    if (fds[1].revents & POLLHUP) throw util::net::EndOfStream();
+    throw util::net::NetworkError();
   }
 }
 
 void Data::Write(const char* buffer, size_t len)
 {
-  fd_set readSet;
-  fd_set writeSet;
-  struct timeval tv;
-  int controlSock = client.Control().socket->Socket();
-  int max = std::max(socket.Socket(), controlSock);
+  int pollTimeout = (socket.Timeout().Seconds() * 1000 ) + 
+                    (socket.Timeout().Microseconds() / 1000);
+  struct pollfd fds[2];
+  
+  fds[0].fd = client.Control().socket->Socket();
+  fds[0].events = POLLIN;
+  
+  fds[1].fd = socket.Socket();
+  fds[1].events = POLLOUT;
   
   while (true)
   {
-    FD_ZERO(&readSet);
-    FD_SET(controlSock, &readSet);
-
-    FD_ZERO(&writeSet);
-    FD_SET(socket.Socket(), &writeSet);
-
-    memcpy(&tv, &socket.Timeout().Timeval(), sizeof(tv));
-  
-    int n = select(max + 1, &readSet, &writeSet, nullptr, &tv);
-    if (!n) throw util::net::TimeoutError();
-    if (n < 0) throw util::net::NetworkSystemError(errno);
+    fds[0].revents = 0;
+    fds[1].revents = 0;
     
-    if (FD_ISSET(controlSock, &readSet))
+    int n = poll(fds, 2, pollTimeout);
+    if (!n) throw util::net::TimeoutError();
+    if (n < 0)
     {
-      HandleControl();
+      if (errno == EINTR)
+      {
+        boost::this_thread::interruption_point();
+        verify(false);
+      }
+      else
+      {
+        throw util::net::NetworkSystemError(errno);
+      }
     }
     
-    if (FD_ISSET(socket.Socket(), &writeSet))
+    if (fds[0].revents > 0) HandleControl(fds[0].revents);
+    if (fds[1].revents & POLLOUT)
     {
       socket.Write(buffer, len);
       if (state.Type() == TransferType::List)
         bytesWrite += len;
       return;
     }
+    if (fds[1].revents & POLLHUP) throw util::net::EndOfStream();
+    throw util::net::NetworkError();
   }
 }
-
 
 } /* ftp namespace */

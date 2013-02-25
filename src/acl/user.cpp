@@ -581,11 +581,9 @@ void User::SetMaxSimUp(int maxSimUp)
 void User::SetLoggedIn()
 {
   auto trans1 = util::MakeTransaction(data->loggedIn, data->loggedIn + 1);
-  db->SaveLoggedIn();
-
   auto trans2 = util::MakeTransaction(data->lastLogin,
                   boost::posix_time::microsec_clock::local_time());
-  db->SaveLastLogin();
+  db->SaveLoggedIn();
 }
 
 int User::SectionRatio(const std::string& section) const

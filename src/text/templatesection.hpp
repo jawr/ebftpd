@@ -33,8 +33,11 @@ public:
   
   bool HasTag(const std::string& tagName) const
   {
-    return std::find_if(tags.begin(), tags.end(), [tagName](const Tag& tag) 
-                        { return tag.Name() == tagName; }) == tags.end();
+    return std::find_if(tags.begin(), tags.end(), 
+              [&](const Tag& tag) 
+              { 
+                return tag.Name() == tagName; 
+              }) != tags.end();
   }
 };
 

@@ -47,7 +47,7 @@ class ClientImpl;
 class Control;
 class Data;
 
-class Client
+class Client : public std::enable_shared_from_this<Client>
 {
   std::unique_ptr<ClientImpl> pimpl;
   

@@ -16,12 +16,10 @@ class TCPListener : boost::noncopyable
   util::net::Endpoint endpoint;
   int socket;
   int backlog;
-  int interruptPipe[2];
 
   TCPListener(const TCPListener&) = delete;
   TCPListener& operator=(const TCPListener&) = delete;
   
-  bool WaitPendingTimeout(const TimePair* duration) const;
   void Listen();
   
 public:
@@ -41,15 +39,6 @@ public:
   void Accept(TCPSocket& socket);
   /* Throws NetworkSystemError, InvalidIPAddressError */
   
-  bool WaitPendingTimeout(const TimePair& duration) const;
-  /* Throws NetworkSystemError */
-
-  bool WaitPending() const;
-  /* Throws NetworkSystemError */
-
-  bool Pending() const;
-  /* Throws NetworkSystemError */
-
   void Close();
   /* No exceptions */
   

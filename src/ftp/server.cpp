@@ -1,7 +1,6 @@
 #include <cassert>
 #include <memory>
 #include <boost/thread/thread.hpp>
-#include <sys/select.h>
 #include "ftp/server.hpp"
 #include "ftp/client.hpp"
 #include "logs/logs.hpp"
@@ -10,6 +9,21 @@
 
 namespace ftp
 {
+
+namespace
+{
+void InterruptHandler(int /* signo */)
+{
+}
+
+void InitialiseInterruption()
+{
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_handler = InterruptHandler;
+  sigaction(SIGUSR1, &sa, nullptr);
+}
+}
 
 Server Server::instance;
 
@@ -37,7 +51,7 @@ void Server::HandleTasks()
   while (true)
   {
     {
-      std::lock_guard<std::mutex> lock(taskMtx);
+      std::lock_guard<std::mutex> lock(queueMutex);
       if (queue.empty()) break;
       task = queue.front();
       queue.pop();
@@ -53,10 +67,19 @@ bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
   util::net::Endpoint ep;
   try
   {
+    instance.fds.resize(validIPs.size());
+    int fdsIndex = 0;
     for (const auto& ip : validIPs)
     {
       ep = util::net::Endpoint(ip, port);
-      instance.servers.push_back(new util::net::TCPListener(ep));
+      std::unique_ptr<util::net::TCPListener> listener(new util::net::TCPListener(ep));
+      int fd = listener->Socket();
+      
+      instance.fds[fdsIndex].fd = fd;
+      instance.fds[fdsIndex].events = POLLIN;
+      ++fdsIndex;
+      
+      instance.servers.insert(std::make_pair(fd, listener.release()));
       logs::Debug("Listening for clients on %1%", ep);
     }
   }
@@ -69,100 +92,98 @@ bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
   return true;
 }
 
-void Server::HandleClients()
-{
-  std::lock_guard<std::mutex> lock(clientMtx);
-  for (ClientList::iterator it = clients.begin();
-       it != clients.end();)
-  {
-    ftp::Client& client = *it;
-    if (client.State() == ClientState::Finished)
-    {
-      if (client.TryJoin())
-      {
-        clients.erase(it++);
-        logs::Debug("Client finished");
-      }
-      else
-        ++it;
-      // we should probably log if a client hasnt been joinable for too long
-    }
-    else 
-      ++it;
-  }
-}
-
 void Server::StopClients()
 {
   logs::Debug("Stopping all connected clients..");
   for (auto& client : clients)
-    client.Interrupt();
+    client->Interrupt();
     
   for (auto& client : clients)
-    client.Join();
+    client->Join();
     
   clients.clear();
 }
 
 void Server::AcceptClient(util::net::TCPListener& server)
 {
-  std::unique_ptr<ftp::Client> client(new ftp::Client());
+  std::shared_ptr<ftp::Client> client(new ftp::Client());
   if (client->Accept(server)) 
   {
     client->Start();
-    std::lock_guard<std::mutex> lock(clientMtx);
-    clients.push_back(client.release());
+    clients.insert(client);
   }
 }
 
 void Server::AcceptClients()
 {
-  fd_set readSet;
-  FD_ZERO(&readSet);
+  sigset_t mask;
+  sigfillset(&mask);
+  sigdelset(&mask, SIGUSR1);
 
-  FD_SET(interruptPipe.ReadFd(), &readSet);
-  int max = interruptPipe.ReadFd();
+  for (auto& pfd : fds) pfd.revents = 0;
   
-  for (auto& server : servers)
-  {
-    FD_SET(server.Socket(), &readSet);
-    max = std::max(server.Socket(), interruptPipe.ReadFd());
-  }
-  
-  struct timeval tv;
+  struct timespec tv;
   tv.tv_sec = 0;
-  tv.tv_usec = 100000;
+  tv.tv_nsec = 100000000;
   
-  int n = select(max + 1, &readSet, nullptr, nullptr, &tv);
+  int n = ppoll(fds.data(), fds.size(), &tv, &mask);
   if (n < 0)
   {
-    logs::Error("Server select failed: %1%", util::Error::Failure(errno).Message());
-    // ensure we don't poll rapidly on repeated select failures
-    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-  }
-  else if (FD_ISSET(interruptPipe.ReadFd(), &readSet))
-  {
-    char ch;
-    (void) read(interruptPipe.ReadFd(), &ch, sizeof(ch));
-    HandleTasks();
+    if (errno == EINTR)
+    {
+      HandleTasks();
+    }
+    else
+    {
+      logs::Error("Server select failed: %1%", util::Error::Failure(errno).Message());
+      // ensure we don't poll rapidly on repeated select failures
+      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    }
   }
   else
   {
-    for (auto& server : servers)
-      if (FD_ISSET(server.Socket(), &readSet)) AcceptClient(server);
+    for (auto& pfd : fds)
+    {
+      if (pfd.revents & POLLIN)
+        AcceptClient(*servers.at(pfd.fd));
+    }
   }
 }
 
 void Server::Run()
 {
+  InitialiseInterruption();
   util::SetProcessTitle("SERVER");
   while (!isShutdown)
   {
     AcceptClients();
-    HandleClients();
   }
   
   StopClients();
+}
+
+void Server::InnerSetShutdown()
+{
+  isShutdown = true;
+  pthread_kill(thread.native_handle(), SIGUSR1);
+}
+
+void Server::PushTask(const TaskPtr& task)
+{
+  { 
+    std::lock_guard<std::mutex> lock(instance.queueMutex); 
+    instance.queue.push(task);
+  }
+  
+  pthread_kill(instance.thread.native_handle(), SIGUSR1);
+}
+
+void Server::CleanupClient(const std::shared_ptr<Client>& client)
+{
+  assert(client->State() == ClientState::Finished);
+  client->Join();
+  clients.erase(client);
+  logs::Debug("Client finished");
 }
 
 } // end ftp namespace

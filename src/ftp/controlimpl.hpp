@@ -27,7 +27,6 @@ namespace ftp
 class ControlImpl
 {
   util::net::TCPSocket socket;
-  util::Pipe interruptPipe;
   ReplyCode lastCode;
   std::string commandLine;
   bool singleLineReplies;

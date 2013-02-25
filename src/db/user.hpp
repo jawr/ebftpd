@@ -27,7 +27,7 @@ class User
   acl::UserData& user;
 
   void UpdateLog() const;
-  void SaveField(const std::string& field) const;
+  void SaveField(const std::string& field, bool updateLog = true) const;
   
 public:
   User(acl::UserData& user) :  user(user) { }
@@ -51,7 +51,6 @@ public:
   void SaveMaxSimDown();
   void SaveMaxSimUp();
   void SaveLoggedIn();
-  void SaveLastLogin();
   void SaveRatio();
   void IncrCredits(const std::string& section, long long kBytes);
   bool DecrCredits(const std::string& section, long long kBytes, bool force);

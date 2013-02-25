@@ -166,6 +166,7 @@ void Replicator::Run()
       while (true)
       {
         auto entry = tail.Next();
+        std::cout << entry << std::endl;
         Replicate(entry);
       }
     }

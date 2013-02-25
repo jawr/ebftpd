@@ -2,6 +2,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
+#include <poll.h>
 #include "ftp/controlimpl.hpp"
 #include "util/string.hpp"
 #include "util/verify.hpp"
@@ -98,38 +99,50 @@ void ControlImpl::NegotiateTLS()
 
 std::string ControlImpl::NextCommand(const boost::posix_time::time_duration* timeout)
 {
-  fd_set readSet;
-  FD_ZERO(&readSet);
-  FD_SET(socket.Socket(), &readSet);
-  FD_SET(interruptPipe.ReadFd(), &readSet);
-    
-  int max = std::max(socket.Socket(), interruptPipe.ReadFd());
+  sigset_t mask;
+  sigfillset(&mask);
+  sigdelset(&mask, SIGUSR1);
+  
+  struct pollfd fds[1];
+  fds[0].fd = socket.Socket();
+  fds[0].events = POLLIN;
+  fds[0].revents = 0;
 
-  int n;
-  if (timeout)
+  int pollTimeout = !timeout ? -1 : timeout->total_milliseconds();
+  
+  int n = poll(fds, 1, pollTimeout);
+  if (!n)
   {
-    struct timeval tv;
-    tv.tv_sec = std::max(0, timeout->total_seconds());
-    tv.tv_usec = 0;
-
-    n = select(max + 1, &readSet, nullptr, nullptr, &tv);
+    throw util::net::TimeoutError();
   }
   else
-    n = select(max + 1, &readSet, nullptr, nullptr, nullptr);
+  if (n < 0)
+  {
+    if (errno == EINTR)
+    {
+      boost::this_thread::interruption_point();
+      verify(false);
+    }
+    else
+    {
+     throw util::net::NetworkSystemError(errno);
+    }
+  }
 
-  boost::this_thread::interruption_point();
-    
-  if (!n) throw util::net::TimeoutError();
-  if (n < 0) throw util::net::NetworkSystemError(errno);
-  
-  std::string commandLine;
-  socket.Getline(commandLine, false);
-  bytesRead += commandLine.length();
-  util::TrimRightIf(commandLine, "\n");
-  util::TrimRightIf(commandLine, "\r");
-  StripTelnetChars(commandLine);
-  logs::Debug(commandLine);
-  return commandLine;
+  if (fds[0].revents & POLLIN)
+  {
+    std::string commandLine;
+    socket.Getline(commandLine, false);
+    bytesRead += commandLine.length();
+    util::TrimRightIf(commandLine, "\n");
+    util::TrimRightIf(commandLine, "\r");
+    StripTelnetChars(commandLine);
+    logs::Debug(commandLine);
+    return commandLine;
+  }
+
+  if (fds[0].revents & POLLHUP) throw util::net::EndOfStream();
+  throw util::net::NetworkError();
 }
 
 std::string ControlImpl::WaitForIdnt()

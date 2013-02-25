@@ -21,11 +21,11 @@ void Task::Push()
 void KickUser::Execute(Server& server)
 {
   int kicked = 0;
-  for (auto& client: server.clients)
+  for (auto& client : server.clients)
   {
-    if (client.User().ID() == uid)
+    if (client->User().ID() == uid)
     {
-      client.Interrupt();
+      client->Interrupt();
       ++kicked;
       if (oneOnly) break;
     }
@@ -39,13 +39,13 @@ void LoginKickUser::Execute(Server& server)
   Result result;
   for (auto& client: server.clients)
   {
-    if (client.User().ID() == uid && client.State() == ftp::ClientState::LoggedIn)
+    if (client->User().ID() == uid && client->State() == ftp::ClientState::LoggedIn)
     {
       if (!result.kicked)
       {
-        client.Interrupt();
+        client->Interrupt();
         result.kicked = true;
-        result.idleTime = client.IdleTime();
+        result.idleTime = client->IdleTime();
       }
       
       ++result.logins;
@@ -59,9 +59,9 @@ void GetOnlineUsers::Execute(Server& server)
 {
   for (auto& client: server.clients)
   {
-    if (client.State() != ClientState::LoggedIn) continue;
-    users.emplace_back(client.User().ID(), client.Data().State(), client.IdleTime(), 
-                       client.CurrentCommand(), client.Ident(), client.Hostname());
+    if (client->State() != ClientState::LoggedIn) continue;
+    users.emplace_back(client->User().ID(), client->Data().State(), client->IdleTime(), 
+                       client->CurrentCommand(), client->Ident(), client->Hostname());
   }
   
   promise.set_value(true);
@@ -105,9 +105,9 @@ void UserUpdate::Execute(Server& server)
 {
   for (auto& client: server.clients)
   {
-    if (client.State() == ClientState::LoggedIn && client.User().ID() == uid)
+    if (client->State() == ClientState::LoggedIn && client->User().ID() == uid)
     {
-      client.SetUserUpdated();
+      client->SetUserUpdated();
     }
   }
 }
@@ -116,12 +116,17 @@ void OnlineUserCount::Execute(Server& server)
 {
   for (const auto& client: server.clients)
   {
-    if (client.State() != ClientState::LoggedIn) continue;
+    if (client->State() != ClientState::LoggedIn) continue;
     ++count;
     ++allCount;
   }
   
   promise.set_value();
+}
+
+void ClientFinished::Execute(Server& server)
+{
+  server.CleanupClient(client);
 }
 
 }

@@ -1,6 +1,7 @@
 #ifndef __FTP_DATA_HPP
 #define __FTP_DATA_HPP
 
+#include <memory>
 #include <sys/types.h>
 #include "util/net/tcplistener.hpp"
 #include "util/net/tcpsocket.hpp"
@@ -50,7 +51,7 @@ enum class SSCNMode
 class Data : public Writeable
 {
   Client& client;
-  util::net::TCPListener listener;
+  std::unique_ptr<util::net::TCPListener> listener;
   util::net::TCPSocket socket;
   bool protection;
   PassiveType pasvType;
@@ -65,7 +66,7 @@ class Data : public Writeable
   
   TransferState state;
   
-  void HandleControl();
+  void HandleControl(int revents);
 
 public:
   explicit Data(Client& client);

@@ -1,3 +1,6 @@
+#include <pthread.h>
+#include <csignal>
+#include <cstring>
 #include <iomanip>
 #include <functional>
 #include "ftp/clientimpl.hpp"
@@ -24,9 +27,25 @@
 #include "util/net/resolver.hpp"
 #include "acl/misc.hpp"
 #include "util/misc.hpp"
+#include "ftp/task/task.hpp"
 
 namespace ftp
 {
+
+namespace
+{
+void InterruptHandler(int /* signo */)
+{
+}
+
+void InitialiseInterruption()
+{
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_handler = InterruptHandler;
+  sigaction(SIGUSR1, &sa, nullptr);
+}
+}
 
 std::atomic_bool ClientImpl::siteopOnly(false);
 
@@ -71,9 +90,8 @@ void ClientImpl::SetState(ClientState state)
 
 void ClientImpl::SetLoggedIn(bool kicked)
 {
-  
   auto result = Counter::Login().Start(user->ID(), user->NumLogins(), kicked, 
-                               user->HasFlag(acl::Flag::Exempt));
+                                       user->HasFlag(acl::Flag::Exempt));
   switch (result)
   {
     case CounterResult::PersonalFail  :
@@ -311,6 +329,7 @@ void ClientImpl::Interrupt()
   control.Interrupt();
   data.Interrupt();
   child.Interrupt();
+  pthread_kill(thread.native_handle(), SIGUSR1);
 }
 
 void ClientImpl::LookupIdent()
@@ -488,14 +507,17 @@ void ClientImpl::InnerRun()
 void ClientImpl::Run()
 {
   util::SetProcessTitle("CLIENT");
+  InitialiseInterruption();
+  
   auto finishedGuard = util::MakeScopeExit([&]
   {
     SetState(ClientState::Finished);
+    std::make_shared<ftp::task::ClientFinished>(parent.shared_from_this())->Push();
     if (user) db::mail::LogOffPurgeTrash(user->ID());
     LogTraffic();
   });
 
-  try
+ try
   {
     InnerRun();
   }

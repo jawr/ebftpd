@@ -48,7 +48,7 @@ int32_t GetAttribute(const std::string& path, const char* attribute)
   int len = getxattr(path.c_str(), attribute, buf, sizeof(buf));
   if (len < 0)
   {
-    if (errno != ENOATTR && errno != ENODATA)
+    if (errno != ENOATTR && errno != ENODATA && errno != ENOENT)
     {
       logs::Error("Error while reading filesystem attribute %1%: %2%: %3%", 
                   attribute, path, util::Error::Failure(errno).Message());

@@ -59,8 +59,6 @@ private:
   void PopulateLocalEndpoint();
   void PopulateRemoteEndpoint();
 
-  State WaitStateTimeout(State state, const util::TimePair* duration);
-  
 public:
   ~TCPSocket();
 
@@ -112,15 +110,6 @@ public:
   
   int Socket() const { return socket; }
   /* No exceptions */
-  
-  State WaitStateTimeout(State state, const util::TimePair& duration);
-  /* Throws NetworkSystemError */
-
-  State WaitState(State state);
-  /* Throws NetworkSystemError */
-
-  State Pending(State state);
-  /* Throws NetworkSystemError */
   
   const Endpoint& RemoteEndpoint() const { return remoteEndpoint; }
   /* No exceptions */
