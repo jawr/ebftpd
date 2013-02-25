@@ -54,7 +54,11 @@ void FileSink::Flush()
   if (os)
   {
     std::ofstream of(path.c_str(), std::ios::app);
-    if (of) of << Timestamp() << ' ' << os->str() << std::endl;
+    if (of)
+    {
+      of << Timestamp() << ' ' << os->str() << std::endl;
+    }
+    os->str(std::string());
   }
 }
 
