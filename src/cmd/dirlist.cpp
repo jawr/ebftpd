@@ -211,7 +211,7 @@ void DirectoryList::ListPath(const fs::VirtualPath& path, std::queue<std::string
   fs::DirEnumerator dirEnum;
   try
   {
-    Readdir(MakeVirtual(path), dirEnum);
+    Readdir(path, dirEnum);
   }
   catch (const util::SystemError& e)
   {
@@ -271,6 +271,16 @@ void DirectoryList::ListPath(const fs::VirtualPath& path, std::queue<std::string
                   << de.Path();
         }
         
+        if (de.Status().IsSymLink())
+        {
+          auto real = fs::MakeReal(path / de.Path());
+          std::string dest;
+          if (util::path::Readlink(real.ToString(), dest))
+          {
+            message << " -> " << dest;
+          }
+        }
+                
         if (options.SlashDirs() && de.Status().IsDirectory()) message << '/';
         message << "\r\n";
       }

@@ -29,7 +29,9 @@ Path MakePretty(const Path& path)
 const VirtualPath& MakeVirtual(const Path& path)
 {
   if (!path.cache.virt)
-    path.cache.virt = new VirtualPath(WorkDirectory() / path);
+  {
+    return MakeVirtual(MakeReal(path));
+  }
   return *path.cache.virt;
 }
 
@@ -61,7 +63,14 @@ const VirtualPath& MakeVirtual(const RealPath& path)
 const RealPath& MakeReal(const Path& path)
 {
   if (!path.cache.real)
-    path.cache.real = new RealPath(RealPath(cfg::Get().Sitepath()) & MakeVirtual(path));
+  {
+    path.cache.real = new RealPath(RealPath(cfg::Get().Sitepath()) & (WorkDirectory() / path));
+    std::string noSymlinks;
+    if (util::path::Realpath(path.cache.real->ToString(), noSymlinks))
+    {
+      path.cache.real->path = noSymlinks;
+    }
+  }
   return *path.cache.real;
 }
 
@@ -76,5 +85,11 @@ const RealPath& MakeReal(const RealPath& path)
 {
   return path;
 }
+
+VirtualPath PathFromUser(const std::string& path)
+{
+  return fs::Resolve(fs::MakeVirtual(Path(path)));
+}
+
 
 } /* fs namespace */

@@ -1,6 +1,7 @@
 #include <glob.h>
 #include <fnmatch.h>
 #include <stdexcept>
+#include <unistd.h>
 #include "util/string.hpp"
 #include "util/path/path.hpp"
 
@@ -206,6 +207,23 @@ bool WildcardMatch(const std::string& pattern, const std::string& path, bool iCa
   int flags = iCase ? FNM_CASEFOLD : 0;
   flags |= FNM_PATHNAME;
   return !fnmatch(pattern.c_str(), path.c_str(), flags);
+}
+
+bool Readlink(const std::string& source, std::string& dest)
+{
+  char buf[PATH_MAX];
+  ssize_t len = readlink(source.c_str(), buf, sizeof(buf));
+  if (len < 0) return false;
+  dest.assign(buf, len);
+  return true;
+}
+
+bool Realpath(const std::string& source, std::string& dest)
+{
+  char buf[PATH_MAX];
+  if (!realpath(source.c_str(), buf)) return false;
+  dest.assign(buf);
+  return true;
 }
 
 } /* path namespace */

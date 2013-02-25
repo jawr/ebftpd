@@ -313,8 +313,7 @@ const RealPath& MakeReal(const Path& path);
 const RealPath& MakeReal(const VirtualPath& path);
 const RealPath& MakeReal(const RealPath& path);
 
-inline VirtualPath PathFromUser(const std::string& path)
-{ return fs::Resolve(fs::MakeVirtual(Path(path))); }
+VirtualPath PathFromUser(const std::string& path);
 
 } /* fs namespace */
 

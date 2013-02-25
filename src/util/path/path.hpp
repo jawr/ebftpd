@@ -19,6 +19,8 @@ std::string NoExtension(const std::string& path);
 std::string Relative(const std::string& workPath, const std::string& path);
 std::vector<std::string> Glob(const std::string& path, bool tilde = true);
 bool WildcardMatch(const std::string& pattern, const std::string& path, bool iCase = false);
+bool Readlink(const std::string& source, std::string& dest);
+bool Realpath(const std::string& source, std::string& dest);
 
 } /* path namespace */
 } /* util namespace */
