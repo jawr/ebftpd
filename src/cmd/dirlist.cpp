@@ -324,8 +324,8 @@ std::string DirectoryList::Permissions(const util::path::Status& status)
 {
   std::string perms(10, '-');
   
-  if (status.IsDirectory()) perms[0] = 'd';
-  else if (status.IsSymLink()) perms[0] = 'l';
+  if (status.IsSymLink()) perms[0] = 'l';
+  else if (status.IsDirectory()) perms[0] = 'd';
   
   const struct stat& native = status.Native();
   

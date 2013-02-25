@@ -144,7 +144,6 @@ class Config
   std::map<std::string, Section> sections;
   ::cfg::EPSVFxp epsvFxp;
   int maximumRatio;
-  int cacheReplicate;
   int dirSizeDepth;
   bool asyncCRC;
   
@@ -289,7 +288,6 @@ public:
   const acl::ACL& TLSListing() const { return tlsListing; }
   const acl::ACL& TLSData() const { return tlsData; }
   const acl::ACL& TLSFxp() const { return tlsFxp; }
-  int CacheReplicate() const { return cacheReplicate; }
   int DirSizeDepth() const { return dirSizeDepth; }
   bool AsyncCRC() const { return asyncCRC; }
 

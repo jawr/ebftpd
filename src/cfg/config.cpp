@@ -65,7 +65,6 @@ Config::Config(const std::string& configPath, bool tool) :
   weekStart(::cfg::WeekStart::Sunday),
   epsvFxp(::cfg::EPSVFxp::Allow),
   maximumRatio(10),
-  cacheReplicate(0),
   dirSizeDepth(2),
   asyncCRC(false),
   tlsControl("*"),
@@ -657,19 +656,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     catch (const boost::bad_lexical_cast&)
     {
       throw ConfigError("maximum_ratio must be zero or larger");
-    }
-  }
-  else if (opt == "cache_replicate")
-  {
-    ParameterCheck(opt, toks, 1);
-    try
-    {
-      cacheReplicate = boost::lexical_cast<int>(toks[0]);
-      if (cacheReplicate < 0) throw boost::bad_lexical_cast();
-    }
-    catch (const boost::bad_lexical_cast&)
-    {
-      throw ConfigError("cache_replicate must be zero or larger");
     }
   }
   else if (opt == "dir_size_depth")
