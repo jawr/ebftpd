@@ -3,6 +3,7 @@
 #include "util/path/path.hpp"
 #include "cfg/get.hpp"
 #include "logs/streamsink.hpp"
+#include "logs/filesink.hpp"
 #ifndef EXTERNAL_TOOL
 #include "db/logsink.hpp"
 #endif
@@ -35,9 +36,8 @@ void InitialiseLog(Logger& logger, const cfg::setting::Log& config)
   
   if (config.File())
   {
-    Stream stream(new std::ofstream(util::path::Join(cfg::Get().Datapath(), 
-              "logs/" + config.Name() + ".log").c_str()), true);
-    logger.PushSink(std::make_shared<StreamSink>(stream));
+    logger.PushSink(std::make_shared<FileSink>(util::path::Join(cfg::Get().Datapath(), 
+              "logs/" + config.Name() + ".log")));
   }
   
 #ifndef EXTERNAL_TOOL

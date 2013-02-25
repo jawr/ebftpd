@@ -1,32 +1,32 @@
 #include <ctime>
 #include <boost/lexical_cast.hpp>
-#include "logs/streamsink.hpp"
+#include "logs/filesink.hpp"
 #include "logs/util.hpp"
 
 namespace logs
 {
 
-void StreamSink::Write(const char* field, int value)
+void FileSink::Write(const char* field, int value)
 {
   Write(field, boost::lexical_cast<std::string>(value));
 }
 
-void StreamSink::Write(const char* field, long long value)
+void FileSink::Write(const char* field, long long value)
 {
   Write(field, boost::lexical_cast<std::string>(value));
 }
 
-void StreamSink::Write(const char* field, double value)
+void FileSink::Write(const char* field, double value)
 {
   Write(field, boost::lexical_cast<std::string>(value));
 }
 
-void StreamSink::Write(const char* field, bool value)
+void FileSink::Write(const char* field, bool value)
 {
   Write(field, boost::lexical_cast<std::string>(value));
 }
 
-void StreamSink::Write(const char* /* field */, const char* value)
+void FileSink::Write(const char* /* field */, const char* value)
 {
   std::ostringstream* os = buffer.get();
   if (!os)
@@ -48,19 +48,13 @@ void StreamSink::Write(const char* /* field */, const char* value)
   if (bracketChar.second != '\0') *os << bracketChar.second;
 }
 
-void StreamSink::Flush()
+void FileSink::Flush()
 {
   std::ostringstream* os = buffer.get();
   if (os)
   {
-    std::string buf(Timestamp());
-    buf += ' ';
-    buf += os->str();
-    for (auto& stream : streams)
-    {
-      stream.Write(buf);
-    }
-    os->str(std::string());
+    std::ofstream of(path.c_str(), std::ios::app);
+    if (of) of << os->str() << std::endl;
   }
 }
 
