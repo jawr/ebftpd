@@ -2,6 +2,7 @@
 #include <cassert>
 #include <memory>
 #include <boost/thread/thread.hpp>
+#include <poll.h>
 #include "ftp/server.hpp"
 #include "ftp/client.hpp"
 #include "logs/logs.hpp"
