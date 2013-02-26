@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -206,13 +205,10 @@ bool ValidatePaths(const std::vector<std::string>& paths)
 
 bool ConnectDatabase()
 {
-  auto dbConfig = config->Database();
-  std::ostringstream host;
-  host << dbConfig.Address() << ":" << dbConfig.Port();
-
+  const auto& dbConfig = config->Database();
   try
   {
-    conn.connect(host.str());
+    conn.connect(dbConfig.Host());
     if (!dbConfig.Login().empty())
     {
       std::string errmsg;

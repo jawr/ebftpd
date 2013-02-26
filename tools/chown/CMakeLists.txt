@@ -9,6 +9,7 @@ add_executable (chown src/chown.cpp
                 ${SERVER_SRC}/cfg/section.cpp
                 ${SERVER_SRC}/logs/logs.cpp
 								${SERVER_SRC}/logs/streamsink.cpp
+								${SERVER_SRC}/logs/filesink.cpp
                 ${SERVER_SRC}/util/path/path.cpp
                 ${SERVER_SRC}/acl/acl.cpp
                 ${SERVER_SRC}/acl/permission.cpp

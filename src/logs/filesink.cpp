@@ -1,4 +1,5 @@
 #include <ctime>
+#include <fstream>
 #include <boost/lexical_cast.hpp>
 #include "logs/filesink.hpp"
 #include "logs/util.hpp"

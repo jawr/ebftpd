@@ -1,4 +1,3 @@
-#include <sstream>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -145,14 +144,11 @@ acl::GroupID LookupGID(mongo::DBClientConnection& conn, const std::string& group
 
 util::Error LookupOwner(const std::string& user, const std::string& group, fs::Owner& owner)
 {
-  auto dbConfig = config->Database();
-  std::ostringstream host;
-  host << dbConfig.Address() << ":" << dbConfig.Port();
-  
+  auto dbConfig = config->Database();  
   try
   {
     mongo::DBClientConnection conn;
-    conn.connect(host.str());
+    conn.connect(dbConfig.Host());
     if (!dbConfig.Login().empty())
     {
       std::string errmsg;
