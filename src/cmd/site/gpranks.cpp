@@ -1,14 +1,12 @@
 #include "cmd/site/gpranks.hpp"
-#include "db/stats/stats.hpp"
 #include "stats/types.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
-#include "logs/logs.hpp"
 #include "acl/misc.hpp"
-#include "acl/group.hpp"
-#include "stats/stat.hpp"
+#include "stats/compile.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace site
 
@@ -67,8 +65,6 @@ void GPRANKSCommand::Execute()
     }
   }
   
-  auto groups = ::db::stats::CalculateGroupRanks(section, tf, dir, sf);
-  
   std::string tmplName = "gpranks." + util::EnumToString(tf) + 
                          "." + util::EnumToString(dir) + 
                          "." + util::EnumToString(sf);
@@ -91,50 +87,8 @@ void GPRANKSCommand::Execute()
     return;
   }
 
-  std::ostringstream os;
-
-  text::TemplateSection& head = templ->Head();
-  head.RegisterValue("section", section.empty() ? "ALL" : section);
-  os << head.Compile();
-  
-  text::TemplateSection& body = templ->Body();
-
-  long long totalKBytes = 0;
-  long long totalFiles = 0;
-  long long totalXfertime = 0;
-
-  int index = 0;
-  unsigned total = 0;
-  for (const auto& g : groups)
-  {
-    if (g.Files() <= 0) break;
-    if (index < number)
-    {
-      auto group = acl::Group::Load(g.ID());
-      body.RegisterValue("index", ++index);
-      body.RegisterValue("group", group ? group->Name() : "unknown");
-      body.RegisterValue("descr", group ? group->Description() : "");
-      body.RegisterValue("files", g.Files());
-      body.RegisterSize("size", g.KBytes());
-      body.RegisterSpeed("speed", g.Speed());
-      
-      os << body.Compile();
-    }
-    
-    totalKBytes += g.KBytes();
-    totalFiles += g.Files();
-    totalXfertime += g.Xfertime();
-    ++total;
-  }
-  
-  text::TemplateSection& foot = templ->Foot();
-  foot.RegisterValue("groups", total);
-  foot.RegisterSize("size", totalKBytes);
-  foot.RegisterValue("files" ,totalFiles);
-  foot.RegisterSpeed("speed", totalXfertime == 0 ? totalKBytes : totalKBytes / (totalXfertime / 1000.0));
-  os << foot.Compile();
-  
-  control.Reply(ftp::CommandOkay, os.str());
+  std::string message = stats::CompileGroupRanks(section, tf, dir, sf, number, *templ);
+  control.Reply(ftp::CommandOkay, message);
 }
 
 } /* site namespace */

@@ -1,16 +1,14 @@
 #include "cmd/site/ranks.hpp"
 #include "util/string.hpp"
-#include "db/stats/stats.hpp"
 #include "stats/types.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
-#include "logs/logs.hpp"
 #include "acl/acl.hpp"
 #include "acl/misc.hpp"
-#include "stats/stat.hpp"
 #include "acl/user.hpp"
+#include "stats/compile.hpp"
 
 namespace cmd { namespace site
 {
@@ -75,8 +73,6 @@ void RANKSCommand::Execute()
     acl = acl::ACL(util::Join(aclArgs, " "));
   }
   
-  auto users = ::db::stats::CalculateUserRanks(section, tf, dir, sf);
-  
   std::string tmplName = "ranks." + util::EnumToString(tf) + 
                          "." + util::EnumToString(dir) + 
                          "." + util::EnumToString(sf);
@@ -99,52 +95,13 @@ void RANKSCommand::Execute()
     return;
   }
 
-  std::ostringstream os;
-
-  text::TemplateSection& head = templ->Head();
-  head.RegisterValue("section", section.empty() ? "ALL" : section);
-  os << head.Compile();
+  std::string message = stats::CompileUserRanks(section, tf, dir, sf, number, *templ, 
+                          [&](const acl::User& user)
+                          {
+                            return acl.Evaluate(user.ACLInfo());
+                          });
   
-  text::TemplateSection& body = templ->Body();
-
-  long long totalBytes = 0;
-  long long totalFiles = 0;
-  long long totalXfertime = 0;
-
-  int index = 0;
-  unsigned total = 0;
-  for (const auto& u : users)
-  {
-    if (u.Files() <= 0) break;
-    if (index < number)
-    {
-      auto user = acl::User::Load(u.ID());      
-      if (!user || !acl.Evaluate(user->ACLInfo())) continue;
-      
-      body.RegisterValue("index", ++index);
-      body.RegisterValue("user", user->Name());
-      body.RegisterValue("group", user->PrimaryGroup());
-      body.RegisterValue("tagline", user->Tagline());
-      body.RegisterValue("files", u.Files());
-      body.RegisterSize("size", u.KBytes());
-      body.RegisterSpeed("speed", u.Speed());
-      os << body.Compile();
-    }
-    
-    totalBytes += u.KBytes();
-    totalFiles += u.Files();
-    totalXfertime += u.Xfertime();
-    ++total;
-  }
-  
-  text::TemplateSection& foot = templ->Foot();
-  foot.RegisterValue("users", total);
-  foot.RegisterSize("size", totalBytes);
-  foot.RegisterValue("files" ,totalFiles);
-  foot.RegisterSpeed("speed", totalXfertime == 0 ? totalBytes : totalBytes / (totalXfertime / 1000.0));
-  os << foot.Compile();
-  
-  control.Reply(ftp::CommandOkay, os.str());
+  control.Reply(ftp::CommandOkay, message);
 }
 
 } /* site namespace */
