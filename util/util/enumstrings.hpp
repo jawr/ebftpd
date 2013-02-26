@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <cassert>
+#include <cstring>
 
 namespace util
 {
