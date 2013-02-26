@@ -9,6 +9,7 @@
 #include "cfg/get.hpp"
 #include "acl/group.hpp"
 #include "acl/flags.hpp"
+#include "logs/logs.hpp"
 
 namespace acl
 {
@@ -32,19 +33,50 @@ bool CreateDefaults()
     if (!GIDExists(0))
     {
       auto group = Group::Create("ebftpd");
-      if (!group || group->ID() != 0) return false;
+      if (!group)
+      {
+        logs::Error("Failed to create master group (ebftpd). Must exist with wrong GID.");
+        return false;
+      }
+      
+      if (group->ID() != 0)
+      {
+        logs::Error("Master group (ebftpd) created with wrong GID (must be 0).");
+        return false;
+      }
     }
     
     if (!GIDExists(1))
     {
       auto group = Group::Create("default");
-      if (!group || group->ID() != 1) return false;
+      if (!group)
+      {
+        logs::Error("Failed to create template group (default). Must exist with wrong GID.");
+        return false;
+      }
+      
+      if (group->ID() != 1)
+      {
+        logs::Error("Template group (default) create with wrong GID (must be 1).");
+        return false;
+      }
     }
 
     if (!UIDExists(0))
     {
       auto user = User::Create("ebftpd", "ebftpd", 0);
-      if (!user || user->ID() != 0) return false;      
+      if (!user)
+      {
+        logs::Error("Failed to create master user (ebftpd). Must exist with wrong UID.");
+        return false;
+      }
+
+      if (user->ID() != 0)
+      {
+        logs::Error("Master user (ebftpd) created with wrong UID (must be 0).");
+        return false;
+      }
+      
       user->AddIPMask("*@localhost");
       user->AddFlag(Flag::Siteop);
       user->SetPrimaryGID(0);
@@ -53,10 +85,32 @@ bool CreateDefaults()
     if (!UIDExists(1))
     {
       auto user = User::Create("default", "default", 0);
-      if (!user || user->ID() != 1) return false;
+      if (!user)
+      {
+        logs::Error("Failed to create template user (default). Must exist with wrong UID.");
+        return false;
+      }
+      
+      if (user->ID() != 1)
+      {
+        logs::Error("Template user (default) create with wrong UID (must be 1).");
+        return false;
+      }
+      
       user->AddFlag(Flag::Template);
     }
-    else if (!NameToUID("default") == 1) return false;
+    else
+    if (NameToUID("default") != 1)
+    {
+      logs::Error("Unable to find template user (default).");
+      return false;
+    }
+    else
+    if (NameToGID("default") != 1)
+    {
+      logs::Error("Unable to find template group (default).");
+      return false;
+    }
   }
   catch (const util::RuntimeError&)
   {
