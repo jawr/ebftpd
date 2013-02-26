@@ -29,7 +29,7 @@ enum class Who
 
 void DisplayHelp(char* argv0, po::options_description& desc)
 {
-  std::cout << "usage: " << argv0 << " [options] <username> <password>" << std::endl;
+  std::cout << "usage: " << argv0 << " [options]" << std::endl;
   std::cout << desc;
 }
 
@@ -93,7 +93,8 @@ std::istream& operator>>(std::istream& is, Who& who)
 bool ParseOptions(int argc, char** argv, std::string& configPath, 
                   stats::Timeframe& tf, stats::Direction& dir,
                   stats::SortField& sf, Who& who,
-                  std::string& section, bool& raw, int& max)
+                  std::string& section, bool& raw, int& max,
+                  std::string& templatePath)
 {
   po::options_description visible("supported options");
   visible.add_options()
@@ -107,6 +108,7 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     ("section,s", po::value<std::string>(&section), "stat section, defaults to all if omitted")
     ("raw,r", po::value<bool>(&raw)->default_value(true), "raw formatting")
     ("max,m", po::value<int>(&max)->default_value(10), "maximum entries in output, -1 for unlimited")
+    ("template,y", po::value<std::string>(&templatePath), "template file path")
   ;
   
   po::variables_map vm;
@@ -149,8 +151,13 @@ int main(int argc, char** argv)
   bool raw;
   int max;
   std::string configPath;
+  std::string templatePath;
 
-  if (!ParseOptions(argc, argv, configPath, tf, dir, sf, who, section, raw, max)) return 1;
+  if (!ParseOptions(argc, argv, configPath, tf, dir, sf, who, 
+                    section, raw, max, templatePath))
+  {
+    return 1;
+  }
 
   try
   {
@@ -164,39 +171,51 @@ int main(int argc, char** argv)
   
   cfg::UpdateShared(config);
   
-  // templates need to be refactored so we can load a single template instead
-  // of a whole factory full
-  
-  std::string tmplGeneric(cfg::Get().Datapath());
-  tmplGeneric += "/text/";
-  if (raw) tmplGeneric += "raw";
-  
-  if (who == Who::Users) tmplGeneric += "ranks";
-  else tmplGeneric += "gpranks";
-  
-  std::string tmplSpecific = tmplGeneric + "." + 
-                             util::EnumToString(tf) + "." + 
-                             util::EnumToString(dir) + "." + 
-                             util::EnumToString(sf);
-                         
   boost::optional<text::Template> templ;
-  try
+  if (!templatePath.empty())
   {
     try
     {
-      text::TemplateParser parser(tmplSpecific + ".tmpl");
+      text::TemplateParser parser(templatePath);
       templ.reset(parser.Create());
     }
-    catch (const text::TemplateError&)
+    catch (const text::TemplateError& e)
     {
-      text::TemplateParser parser(tmplGeneric + ".tmpl");
-      templ.reset(parser.Create());
+      std::cerr << "Unable to load template file: " << e.Message() << std::endl;
+      return 1;
     }
   }
-  catch (const text::TemplateError& e)
+  else
   {
-    std::cerr << "Unable to load template file: " << e.Message() << std::endl;
-    return 1;
+    std::string tmplGeneric(cfg::Get().Datapath());
+    tmplGeneric += "/text/";
+    if (raw) tmplGeneric += "raw";
+    
+    if (who == Who::Users) tmplGeneric += "ranks";
+    else tmplGeneric += "gpranks";
+    
+    std::string tmplSpecific = tmplGeneric + "." + 
+                               util::EnumToString(tf) + "." + 
+                               util::EnumToString(dir) + "." + 
+                               util::EnumToString(sf);                           
+    try
+    {
+      try
+      {
+        text::TemplateParser parser(tmplSpecific + ".tmpl");
+        templ.reset(parser.Create());
+      }
+      catch (const text::TemplateError&)
+      {
+        text::TemplateParser parser(tmplGeneric + ".tmpl");
+        templ.reset(parser.Create());
+      }
+    }
+    catch (const text::TemplateError& e)
+    {
+      std::cerr << "Unable to load template file: " << e.Message() << std::endl;
+      return 1;
+    }
   }
   
   if (who == Who::Users)

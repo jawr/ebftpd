@@ -3,3 +3,5 @@ project (ebftpd-tools)
 add_subdirectory(chown)
 add_subdirectory(index)
 add_subdirectory(passchk)
+add_subdirectory(ranks)
+
