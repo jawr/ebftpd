@@ -15,7 +15,7 @@
 #include "util/string.hpp"
 #include "stats/compile.hpp"
 #include "text/error.hpp"
-#include "text/factory.hpp"
+#include "text/parser.hpp"
 
 namespace po = boost::program_options;
 
@@ -167,34 +167,30 @@ int main(int argc, char** argv)
   // templates need to be refactored so we can load a single template instead
   // of a whole factory full
   
-  try
-  {
-    text::Factory::Initialize();
-  }
-  catch (const text::TemplateError& e)
-  {
-    std::cerr << "Templates failed to initialise: " << e.Message() << std::endl;
-    return 1;
-  }
+  std::string tmplGeneric(cfg::Get().Datapath());
+  tmplGeneric += "/text/";
+  if (raw) tmplGeneric += "raw";
   
-  std::string tmplBase(raw ? "raw" : "");
-  if (who == Who::Users) tmplBase += "ranks";
-  else tmplBase += "gpranks";
+  if (who == Who::Users) tmplGeneric += "ranks";
+  else tmplGeneric += "gpranks";
   
-  std::string tmplName = tmplBase + "." + util::EnumToString(tf) + 
-                         "." + util::EnumToString(dir) + 
-                         "." + util::EnumToString(sf);
+  std::string tmplSpecific = tmplGeneric + "." + 
+                             util::EnumToString(tf) + "." + 
+                             util::EnumToString(dir) + "." + 
+                             util::EnumToString(sf);
                          
   boost::optional<text::Template> templ;
   try
   {
     try
     {
-      templ.reset(text::Factory::GetTemplate(tmplName));
+      text::TemplateParser parser(tmplSpecific + ".tmpl");
+      templ.reset(parser.Create());
     }
     catch (const text::TemplateError&)
     {
-      templ.reset(text::Factory::GetTemplate(tmplBase));
+      text::TemplateParser parser(tmplGeneric + ".tmpl");
+      templ.reset(parser.Create());
     }
   }
   catch (const text::TemplateError& e)
@@ -211,5 +207,6 @@ int main(int argc, char** argv)
   {
     std::cout << stats::CompileGroupRanks(section, tf, dir, sf, max, *templ);
   }
+  
   return 0;
 }

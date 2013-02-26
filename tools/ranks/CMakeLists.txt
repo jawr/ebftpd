@@ -33,7 +33,7 @@ add_executable (ranks src/ranks.cpp
                 ${SERVER_SRC}/util/path/path.cpp
                 ${SERVER_SRC}/stats/types.cpp
                 ${SERVER_SRC}/stats/compile.cpp
-                ${SERVER_SRC}/text/factory.cpp
+                ${SERVER_SRC}/text/parser.cpp
                 ${SERVER_SRC}/text/tag.cpp
                 ${SERVER_SRC}/text/templatesection.cpp
                 ${SERVER_SRC}/text/parser.cpp
