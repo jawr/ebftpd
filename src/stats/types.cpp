@@ -24,7 +24,7 @@ template <> const char* util::EnumStrings<stats::SortField>::values[] =
 {
   "kbytes",
   "files",
-  "speed"
+  "speed",
   ""
 };
 

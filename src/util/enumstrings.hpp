@@ -19,8 +19,10 @@ template <typename Enum>
 Enum EnumFromString(const std::string& s)
 {
   for (size_t i = 0; EnumStrings<Enum>::values[i][0] != '\0'; ++i)
+  {
     if (!strcasecmp(EnumStrings<Enum>::values[i], s.c_str()))
       return static_cast<Enum>(i);
+  }
   throw std::out_of_range("Invalid enum string");
 }
 
