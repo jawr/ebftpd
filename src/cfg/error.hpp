@@ -18,6 +18,12 @@ struct RequiredSettingError : public ConfigError
   RequiredSettingError(const std::string& setting) : std::runtime_error("Missing required setting: " + setting) { }
 };
 
+
+struct StopStartNeeded : public ConfigError
+{
+  StopStartNeeded(const std::string& message) : std::runtime_error(message) { }
+};
+
 }
 
 #endif

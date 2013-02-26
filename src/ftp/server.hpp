@@ -52,6 +52,9 @@ class Server : public util::Thread
   static void PushTask(const TaskPtr& task);  
   static Server instance;
   
+  static void InterruptHandler(int signo);
+  static void InitialiseInterruption();
+  
 public:
   static bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
   

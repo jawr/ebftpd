@@ -10,21 +10,6 @@
 namespace ftp
 {
 
-namespace
-{
-void InterruptHandler(int /* signo */)
-{
-}
-
-void InitialiseInterruption()
-{
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_handler = InterruptHandler;
-  sigaction(SIGUSR1, &sa, nullptr);
-}
-}
-
 Server Server::instance;
 
 void Server::StartThread()
@@ -184,6 +169,19 @@ void Server::CleanupClient(const std::shared_ptr<Client>& client)
   client->Join();
   clients.erase(client);
   logs::Debug("Client finished");
+}
+
+
+void Server::InterruptHandler(int /* signo */)
+{
+}
+
+void Server::InitialiseInterruption()
+{
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_handler = InterruptHandler;
+  sigaction(SIGUSR1, &sa, nullptr);
 }
 
 } // end ftp namespace

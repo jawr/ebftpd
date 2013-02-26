@@ -18,11 +18,6 @@ add_executable (passchk src/passchk.cpp
                 ${SERVER_SRC}/util/error.cpp
                 ${SERVER_SRC}/acl/acl.cpp
                 ${SERVER_SRC}/acl/permission.cpp
-                ${SERVER_SRC}/logs/logs.cpp
-                ${SERVER_SRC}/logs/logger.cpp
-                ${SERVER_SRC}/logs/streamsink.cpp
-                ${SERVER_SRC}/logs/filesink.cpp
-                ${SERVER_SRC}/cfg/get.cpp
                 ${SERVER_SRC}/util/path/path.cpp)
 
 add_dependencies(passchk version)

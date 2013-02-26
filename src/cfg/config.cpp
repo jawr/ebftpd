@@ -5,9 +5,9 @@
 #include "cfg/config.hpp"
 #include "cfg/error.hpp"
 #include "util/string.hpp"
-#include "logs/logs.hpp"
 #include "main.hpp"
 #include "util/path/path.hpp"
+#include "util/format.hpp"
 
 namespace util
 {
@@ -75,7 +75,6 @@ Config::Config(const std::string& configPath, bool tool) :
   std::ifstream io(configPath.c_str());
   if (!io) throw ConfigError("Unable to open config file.");
 
-  bool okay = true;
   for (int i = 1; std::getline(io, line); ++i)
   {
     std::string::size_type pos = line.find_first_of('#');
@@ -88,17 +87,13 @@ Config::Config(const std::string& configPath, bool tool) :
     } 
     catch (const ConfigError& e)
     {
-      logs::Error("Error in config at line %1%: %2%", i, e.Message());
-      okay = false;
+      throw ConfigError(util::Format()("Error in config at line %1%: %2%", i, e.Message()));
     }
     catch (const std::bad_cast& e)
     {
-      logs::Error("Error in config at line %1%: Invalid value", i);
-      okay = false;
+      throw ConfigError(util::Format()("Error in config at line %1%: Invalid value", i));
     }
   }
-  
-  if (!okay) throw ConfigError("Errors while parsing config file.");
 
   SanityCheck();
 }
@@ -161,22 +156,10 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1);
     tlsCiphers = toks[0];
   }
-  else if (opt == "reload_config")
-  {
-    NotImplemented(opt);
-  }
   else if (opt == "datapath")
   {
     ParameterCheck(opt, toks, 1);
     datapath = toks[0];
-  }
-  else if (opt == "pwd_path")
-  {
-    NotImplemented(opt);
-  }
-  else if (opt == "grp_path")
-  {
-    NotImplemented(opt);
   }
   else if (opt == "banner")
   {
@@ -195,18 +178,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1);
     freeSpace = boost::lexical_cast<int>(toks[0]);
-  }
-  else if (opt == "mmap_amount")
-  {
-    NotImplemented(opt);
-  }
-  else if (opt == "dl_send_file")
-  {
-    NotImplemented(opt);
-  }
-  else if (opt == "ul_buffered_force")
-  {
-    NotImplemented(opt);
   }
   else if (opt == "total_users")
   {
@@ -228,10 +199,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1);
     maxSitecmdLines = boost::lexical_cast<int>(toks[0]);
   }
-  else if (opt == "use_dir_size")
-  {
-    NotImplemented(opt);
-  }
   else if (opt == "timezone")
   {
     ParameterCheck(opt, toks, 1);
@@ -241,10 +208,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1);
     dlIncomplete = util::BoolLexicalCast(toks[0]);
-  }
-  else if (opt == "file_dl_count")
-  {
-    NotImplemented(opt);
   }
   else if (opt == "sitename_long")
   {
@@ -325,10 +288,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1, -1);
     activeAddr.insert(activeAddr.end(), toks.begin(), toks.end());
-  }
-  else if (opt == "ignore_size")
-  {
-    NotImplemented(opt);
   }
   else if (opt == "banned_users")
   {
@@ -724,11 +683,6 @@ void Config::Parse(std::string line)
 
   if (currentSection) ParseSection(opt, toks);
   else ParseGlobal(opt, toks);  
-}
-
-void Config::NotImplemented(const std::string& opt)
-{
-  logs::Error("Ignoring not implemented config option: %1%", opt);
 }
 
 void Config::ParameterCheck(const std::string& opt,

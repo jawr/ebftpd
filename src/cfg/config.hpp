@@ -155,7 +155,6 @@ class Config
   Config(const Config&) = default;
   Config& operator=(const Config&) = default;
   
-  static void NotImplemented(const std::string& opt);
   static void ParameterCheck(const std::string& opt,
                              const std::vector<std::string>& toks, 
                              int minimum, int maximum);

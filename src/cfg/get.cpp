@@ -4,6 +4,8 @@
 #include <boost/signals2.hpp>
 #include "cfg/get.hpp"
 #include "logs/logs.hpp"
+#include "util/string.hpp"
+#include "cfg/error.hpp"
 
 namespace cfg
 {
@@ -49,43 +51,26 @@ const Config& Get()
   return *config;
 }
 
-bool RequireStopStart()
+void StopStartCheck()
 {
-  bool required = false;
   const Config& old = cfg::Get();
-  
-  if (shared->ValidIp() != old.ValidIp())
-  {
-    logs::Error("'valid_ip' config option changed, full stop start required.");
-    required = true;
-  }
-  
-  if (shared->Port() != old.Port())
-  {
-    logs::Error("'port' config option changed, full stop start required.");
-    required = true;
-  }
-  
-  if (shared->TlsCertificate() != old.TlsCertificate())
-  {
-    logs::Error("'tls_certificate' option changed, full stop start required.");
-    required = true;
-  }
+  std::vector<std::string> settings;
 
-  if (shared->TlsCiphers() != old.TlsCiphers())
-  {
-    logs::Error("'tls_ciphers' option changed, full stop start required.");
-    required = true;
-  }
-
+  if (shared->ValidIp() != old.ValidIp()) settings.push_back("valid_ip");
+  if (shared->Port() != old.Port()) settings.push_back("port");
+  if (shared->TlsCertificate() != old.TlsCertificate()) settings.push_back("tls_certificate");
+  if (shared->TlsCiphers() != old.TlsCiphers()) settings.push_back("tls_ciphers");
   if (shared->Database().Address() != old.Database().Address() ||   
       shared->Database().Port() != old.Database().Port())
   {
-    logs::Error("'database' option changed, full stop start required.");
-    required = true;
+    settings.push_back("database");
   }
-      
-  return required;
+
+  if (!settings.empty())
+  {
+    throw StopStartNeeded("Full stop start required for these settings: " + 
+                          util::Join(settings, ","));
+  }
 }
 
 void ConnectUpdatedSlot(const std::function<void()>& slot)

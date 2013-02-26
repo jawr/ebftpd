@@ -78,6 +78,9 @@ class ClientImpl : public util::Thread
   ClientImpl(ClientImpl&&) = delete;
   ClientImpl(const ClientImpl&) = delete;
   
+  static void InterruptHandler(int signo);
+  static void InitialiseInterruption();
+  
 public:
   ClientImpl(Client& parent);
   ~ClientImpl();

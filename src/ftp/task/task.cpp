@@ -92,7 +92,15 @@ void ReloadConfig::Execute(Server&)
     templatesResult = Result::Fail;
   }
 
-  if (cfg::RequireStopStart()) configResult = Result::StopStart;
+  try
+  {
+    cfg::StopStartCheck();
+  }
+  catch (const cfg::StopStartNeeded& e)
+  {
+    logs::Error(e.Message());
+    configResult = Result::StopStart;
+  }
   promise.set_value(std::make_pair(configResult, templatesResult));
 }
 
