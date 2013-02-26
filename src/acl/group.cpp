@@ -184,14 +184,14 @@ void Group::Purge()
 boost::optional<Group> Group::Load(acl::GroupID gid)
 {
   auto data = db::Group::Load(gid);
-  if (!data) return boost::optional<Group>();
+  if (!data) return boost::none;
   return boost::optional<Group>(Group(std::move(*data)));
 }
 
 boost::optional<Group> Group::Load(const std::string& name)
 {
   auto data = db::Group::Load(name);
-  if (!data) return boost::optional<Group>();
+  if (!data) return boost::none;
   return boost::optional<Group>(Group(std::move(*data)));
 }
 
@@ -199,7 +199,15 @@ boost::optional<Group> Group::Create(const std::string& name)
 {
   Group group;
   group.data->name = name;
-  if (!group.db->Create()) return boost::optional<Group>();
+  if (!group.db->Create()) return boost::none;
+  return boost::optional<Group>(group);
+}
+
+boost::optional<Group> Group::FromTemplate(const std::string& name, const Group& templateGroup)
+{
+  Group group(templateGroup);
+  group.data->name = name;
+  if (!group.db->Create()) return boost::none;
   return boost::optional<Group>(group);
 }
 

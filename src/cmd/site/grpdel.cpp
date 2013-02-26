@@ -17,9 +17,9 @@ void GRPDELCommand::Execute()
     return;
   }
 
-  if (group->ID() == 0)
+  if (group->Name() == "default" || group->ID() == 1 || group->ID() == 0)
   {
-    control.Reply(ftp::ActionNotOkay, "That user is required by the server so cannot be deleted.");
+    control.Reply(ftp::ActionNotOkay, "That group is required by the server so cannot be deleted.");
     return;
   }
   

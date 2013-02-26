@@ -36,6 +36,12 @@ void CHGRPCommand::Execute()
 
   for (; it != args.end(); ++it)
   {
+    if (*it == "default")
+    {
+      control.Reply(ftp::ActionNotOkay, "The default template group cannot have members.");
+      return;
+    }
+    
     auto gid = acl::NameToGID(*it);
     if (gid == -1)
     {

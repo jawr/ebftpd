@@ -27,8 +27,15 @@ void GRPADDCommand::Execute()
       return;
     }
   }
+  
+  auto templateGroup = acl::Group::Load("default");
+  if (!templateGroup)
+  {
+    control.Reply(ftp::ActionNotOkay, "Unable to load default group template.");
+    return;
+  }
 
-  auto group = acl::Group::Create(args[1]);
+  auto group = acl::Group::FromTemplate(args[1], *templateGroup);
   if (!group)
   {
     control.Reply(ftp::ActionNotOkay, "Group " + args[1] + " alread exists.");

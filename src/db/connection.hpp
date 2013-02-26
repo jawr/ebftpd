@@ -201,7 +201,7 @@ public:
       auto results = QueryMulti<T>(collection, query, 1, 0, fieldsToReturn);
       if (!results.empty()) return boost::optional<T>(results.front());
     }
-    return boost::optional<T>();
+    return boost::none;
   }
   
   void EnsureIndex(const std::string& collection, const mongo::BSONObj& keys, bool unique);

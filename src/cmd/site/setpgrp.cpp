@@ -24,6 +24,12 @@ void SETPGRPCommand::Execute()
     return;
   }
   
+  if (args[2] == "default")
+  {
+    control.Reply(ftp::ActionNotOkay, "The default template group cannot have members.");
+    return;
+  }
+  
   acl::GroupID oldGID = user->PrimaryGID();
   if (oldGID == gid)
   {

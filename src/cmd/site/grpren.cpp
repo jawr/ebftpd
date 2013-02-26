@@ -23,6 +23,12 @@ void GRPRENCommand::Execute()
     return;
   }
   
+  if (group->Name() == "default")
+  {
+    control.Reply(ftp::ActionNotOkay, "Cannot rename default template group.");
+    return;
+  }
+
   if (!group->Rename(args[2]))
   {
     control.Reply(ftp::ActionNotOkay, "Group " + args[2] + " already exists.");

@@ -34,6 +34,12 @@ bool CreateDefaults()
       auto group = Group::Create("ebftpd");
       if (!group || group->ID() != 0) return false;
     }
+    
+    if (!GIDExists(1))
+    {
+      auto group = Group::Create("default");
+      if (!group || group->ID() != 1) return false;
+    }
 
     if (!UIDExists(0))
     {

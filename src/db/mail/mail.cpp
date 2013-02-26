@@ -52,7 +52,7 @@ boost::optional<mongo::OID> IndexToOID(acl::UserID recipient, int index)
   NoErrorConnection conn;
   mongo::Query query = QUERY("recipient" << recipient);
   auto results = conn.Query("mail", query, 1, index);
-  if (results.empty()) return boost::optional<mongo::OID>();
+  if (results.empty()) return boost::none;
   
   mongo::BSONElement oidElem;
   results.front().getObjectID(oidElem);

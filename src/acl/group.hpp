@@ -71,6 +71,7 @@ public:
   static boost::optional<Group> Load(acl::GroupID gid);
   static boost::optional<Group> Load(const std::string& name);
   static boost::optional<Group> Create(const std::string& name);
+  static boost::optional<Group> FromTemplate(const std::string& name, const Group& templateGroup);
 
   static std::vector<acl::GroupID> GetGIDs(const std::string& multiStr = "*");
   static std::vector<acl::Group> GetGroups(const std::string& multiStr = "*");

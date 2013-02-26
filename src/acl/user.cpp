@@ -633,14 +633,14 @@ void User::Purge() const
 boost::optional<User> User::Load(acl::UserID uid)
 {
   auto data = db::User::Load(uid);
-  if (!data) return boost::optional<User>();
+  if (!data) return boost::none;
   return boost::optional<User>(User(std::move(*data)));
 }
 
 boost::optional<User> User::Load(const std::string& name)
 {
   auto data = db::User::Load(name);
-  if (!data) return boost::optional<User>();
+  if (!data) return boost::none;
   return boost::optional<User>(User(std::move(*data)));
 }
 
@@ -651,7 +651,7 @@ boost::optional<User> User::Create(const std::string& name,
   user.data->name = name;
   user.data->creator = creator;
   user.SetPasswordNoSave(password);
-  if (!user.db->Create()) return boost::optional<User>();
+  if (!user.db->Create()) return boost::none;
   return boost::optional<User>(user);
 }
 
@@ -664,7 +664,7 @@ boost::optional<User> User::FromTemplate(const std::string& name,
   user.data->creator = creator;
   user.SetPasswordNoSave(password);
   user.DelFlag(Flag::Template);
-  if (!user.db->Create()) return boost::optional<User>();
+  if (!user.db->Create()) return boost::none;
   return boost::optional<User>(user);
 }
 
