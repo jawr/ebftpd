@@ -1,3 +1,4 @@
+#include <csignal>
 #include <cassert>
 #include <memory>
 #include <boost/thread/thread.hpp>

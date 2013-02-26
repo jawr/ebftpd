@@ -1,3 +1,4 @@
+#include <boost/thread/thread.hpp>
 #include <sys/select.h>
 #include <poll.h>
 #include "ftp/portallocator.hpp"

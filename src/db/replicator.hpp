@@ -8,6 +8,11 @@
 #include <mutex>
 #include "db/replicable.hpp"
 
+namespace mongo
+{
+class BSONObj;
+}
+
 namespace db
 {
 

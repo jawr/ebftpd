@@ -4,6 +4,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <unistd.h>
+#include "main.hpp"
 #include "ftp/server.hpp"
 #include "ftp/task/task.hpp"
 #include "util/net/tlscontext.hpp"
@@ -30,9 +31,6 @@
 #include "db/replicator.hpp"
 
 #include "version.hpp"
-
-extern const std::string programName = "ebftpd";
-extern const std::string programFullname = programName + " " + std::string(version);
 
 void DisplayHelp(char* argv0, boost::program_options::options_description& desc)
 {
