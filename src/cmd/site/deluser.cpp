@@ -32,6 +32,12 @@ void DELUSERCommand::Execute()
     control.Reply(ftp::ActionNotOkay, "That user is required by the server so cannot be deleted.");
     throw cmd::NoPostScriptError();    
   }
+
+  if (user->HasFlag(acl::Flag::Deleted))
+  {
+    control.Reply(ftp::ActionNotOkay, "User " + user->Name() + " is already deleted.");
+    throw cmd::NoPostScriptError();    
+  }
   
   user->AddFlag(acl::Flag::Deleted);
 

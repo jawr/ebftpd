@@ -142,7 +142,6 @@ void Replicator::Run()
 {
   util::SetProcessTitle("DB REPLICATOR");
   mongo::DBClientConnection conn;
-  bool first = true;
   while (true)
   {
     const auto& dbConfig = cfg::Get().Database();
@@ -166,8 +165,7 @@ void Replicator::Run()
       continue;
     }
     
-    if (!first) Populate();
-    else first = false;
+    Populate();
 
     try
     {

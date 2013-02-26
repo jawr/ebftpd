@@ -8,6 +8,8 @@ namespace cmd { namespace site
 
 class PURGECommand : public Command
 {
+  void PurgeAll();
+  
 public:
   PURGECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
     Command(client, client.Control(), client.Data(), argStr, args) { }

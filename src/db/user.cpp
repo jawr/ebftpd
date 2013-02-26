@@ -23,7 +23,6 @@ bool User::Create()
 
 void User::UpdateLog() const
 {
-  std::cout << "UPDATELOG" << std::endl;
   db::FastConnection conn;
   auto entry = BSON("collection" << "users" << "id" << user.id);
   conn.Insert("updatelog", entry);
