@@ -314,7 +314,6 @@ void ClientImpl::Interrupt()
   control.Interrupt();
   data.Interrupt();
   child.Interrupt();
-  pthread_kill(thread.native_handle(), SIGUSR1);
 }
 
 void ClientImpl::LookupIdent()
@@ -492,7 +491,6 @@ void ClientImpl::InnerRun()
 void ClientImpl::Run()
 {
   util::SetProcessTitle("CLIENT");
-  InitialiseInterruption();
   
   auto finishedGuard = util::MakeScopeExit([&]
   {
@@ -530,18 +528,6 @@ void ClientImpl::Run()
   }
   
   (void) finishedGuard; /* silence unused variable warning */
-}
-
-void ClientImpl::InterruptHandler(int /* signo */)
-{
-}
-
-void ClientImpl::InitialiseInterruption()
-{
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_handler = InterruptHandler;
-  sigaction(SIGUSR1, &sa, nullptr);
 }
 
 } /* ftp namespace */

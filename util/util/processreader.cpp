@@ -102,8 +102,7 @@ size_t ProcessReader::Read(char* buffer, size_t size, const util::TimePair* time
 
     if (fds[1].revents & POLLIN)
     {
-      char ch;
-      (void) read(interruptPipe->ReadFd(), &ch, 1);
+      interruptPipe->Acknowledge();
       boost::this_thread::interruption_point();
     }
 

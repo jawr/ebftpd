@@ -27,6 +27,8 @@ class Server : public util::Thread
 {
   std::unordered_map<int, std::shared_ptr<util::net::TCPListener>> servers;
   std::vector<struct pollfd> fds;
+  util::InterruptPipe interruptPipe;
+
   std::vector<std::string> validIPs;
   int32_t port;
 
@@ -51,9 +53,6 @@ class Server : public util::Thread
 
   static void PushTask(const TaskPtr& task);  
   static Server instance;
-  
-  static void InterruptHandler(int signo);
-  static void InitialiseInterruption();
   
 public:
   static bool Initialise(const std::vector<std::string>& validIPs, int32_t port);

@@ -54,7 +54,7 @@ bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
   util::net::Endpoint ep;
   try
   {
-    instance.fds.resize(validIPs.size());
+    instance.fds.resize(validIPs.size() + 1);
     int fdsIndex = 0;
     for (const auto& ip : validIPs)
     {
@@ -69,6 +69,9 @@ bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
       instance.servers.insert(std::make_pair(fd, listener));
       logs::Debug("Listening for clients on %1%", ep);
     }
+    
+    instance.fds[fdsIndex].fd = instance.interruptPipe.ReadFd();
+    instance.fds[fdsIndex].events = POLLIN;
   }
   catch (const util::net::NetworkError& e)
   {
@@ -109,37 +112,32 @@ void Server::AcceptClients()
 
   for (auto& pfd : fds) pfd.revents = 0;
   
-  struct timespec tv;
-  tv.tv_sec = 0;
-  tv.tv_nsec = 100000000;
-  
-  int n = ppoll(fds.data(), fds.size(), &tv, &mask);
+  int n = poll(fds.data(), fds.size(), 100);
   if (n < 0)
   {
-    if (errno == EINTR)
-    {
-      HandleTasks();
-    }
-    else
-    {
-      logs::Error("Server select failed: %1%", util::Error::Failure(errno).Message());
-      // ensure we don't poll rapidly on repeated select failures
-      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-    }
+    logs::Error("Server select failed: %1%", util::Error::Failure(errno).Message());
+    // ensure we don't poll rapidly on repeated select failures
+    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
   }
   else
   {
-    for (auto& pfd : fds)
+    // last pullfd is interrupt pipe
+    if (fds.back().revents & POLLIN)
     {
-      if (pfd.revents & POLLIN)
-        AcceptClient(*servers.at(pfd.fd));
+      interruptPipe.Acknowledge();
+      HandleTasks();
+    }
+    
+    for (auto it = fds.begin(); it != fds.end() - 1; ++it)
+    {
+      if (it->revents & POLLIN)
+        AcceptClient(*servers.at(it->fd));
     }
   }
 }
 
 void Server::Run()
 {
-  InitialiseInterruption();
   util::SetProcessTitle("SERVER");
   while (!isShutdown)
   {
@@ -152,7 +150,7 @@ void Server::Run()
 void Server::InnerSetShutdown()
 {
   isShutdown = true;
-  pthread_kill(thread.native_handle(), SIGUSR1);
+  interruptPipe.Interrupt();
 }
 
 void Server::PushTask(const TaskPtr& task)
@@ -162,7 +160,7 @@ void Server::PushTask(const TaskPtr& task)
     instance.queue.push(task);
   }
   
-  pthread_kill(instance.thread.native_handle(), SIGUSR1);
+  instance.interruptPipe.Interrupt();
 }
 
 void Server::CleanupClient(const std::shared_ptr<Client>& client)
@@ -171,19 +169,6 @@ void Server::CleanupClient(const std::shared_ptr<Client>& client)
   client->Join();
   clients.erase(client);
   logs::Debug("Client finished");
-}
-
-
-void Server::InterruptHandler(int /* signo */)
-{
-}
-
-void Server::InitialiseInterruption()
-{
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_handler = InterruptHandler;
-  sigaction(SIGUSR1, &sa, nullptr);
 }
 
 } // end ftp namespace

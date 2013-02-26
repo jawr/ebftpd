@@ -9,9 +9,15 @@ namespace util
 class InterruptPipe : public Pipe
 {
 public:
+  void Acknowledge()
+  {
+    char ch;
+    (void) read(ReadFd(), &ch, 1);
+  }
+
   void Interrupt()
   {
-    (void) write(WriteFd(), "1", 1);
+    (void) write(WriteFd(), "", 1);
   }
 };
 
