@@ -1,11 +1,81 @@
 #include <iostream>
 #include <sstream>
 #include <mongo/client/dbclient.h>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/program_options/parsers.hpp>
 #include "util/passwd.hpp"
 #include "cfg/config.hpp"
 #include "cfg/error.hpp"
+#include "version.hpp"
 
 std::shared_ptr<cfg::Config> config;
+
+void DisplayHelp(char* argv0, boost::program_options::options_description& desc)
+{
+  std::cout << "usage: " << argv0 << " [options] <username> <password>" << std::endl;
+  std::cout << desc;
+}
+
+void DisplayVersion()
+{
+  std::cout << "ebftpd passchk " + std::string(version) << std::endl;
+}
+
+bool ParseOptions(int argc, char** argv, std::string& configPath, 
+                  std::string& username, std::string& password)
+{
+  namespace po = boost::program_options;
+  po::options_description visible("supported options");
+  visible.add_options()
+    ("help,h", "display this help message")
+    ("version,v", "display version")
+    ("config-path,c", po::value<std::string>(), "specify location of config file")
+  ;
+  
+  std::string who;
+  po::options_description all("positional options");
+  all.add(visible);
+  all.add_options()
+    ("username", po::value<std::string>(&username)->required(), "username")
+    ("password", po::value<std::string>(&password)->required(), "password")
+  ;
+
+  po::positional_options_description pos;
+  pos.add("username", 1);
+  pos.add("password", 1);
+
+  po::variables_map vm;
+  try
+  {
+    po::store(po::command_line_parser(argc, argv).options(all).
+              positional(pos).run(), vm);
+
+    if (vm.count("help"))
+    {
+      DisplayHelp(argv[0], visible);
+      return false;
+    }
+
+    if (vm.count("version"))
+    {
+      DisplayVersion();
+      return false;
+    }
+
+    po::notify(vm);
+  }
+  catch (const boost::program_options::error& e)
+  {
+    std::cerr << e.what() << std::endl;
+    DisplayHelp(argv[0], visible);
+    return false;
+  }
+
+  if (vm.count("config-path")) configPath = vm["config-path"].as<std::string>();
+  
+  return true;
+}
 
 bool RetrieveHashAndSalt(const std::string& username, std::string& hash, std::string& salt)
 {
@@ -46,16 +116,12 @@ bool RetrieveHashAndSalt(const std::string& username, std::string& hash, std::st
 
 int main(int argc, char** argv)
 {
-  if (argc != 4)
-  {
-    std::cout << "usage: " << argv[0] << " <username> <password> <config path>" << std::endl;
-    return 1;
-  }
-  
-  std::string username(argv[1]);
-  std::string password(argv[2]);
-  std::string configPath(argv[3]);
-  
+  std::string username;
+  std::string password;
+  std::string configPath;
+
+  if (!ParseOptions(argc, argv, configPath, username, password)) return 1;
+
   try
   {
     config = cfg::Config::Load(configPath, true);
@@ -73,10 +139,10 @@ int main(int argc, char** argv)
   using namespace util::passwd;
   if (HexEncode(HashPassword(password, HexDecode(salt))) != hash)
   {
-    std::cout << "NOMATCH" << std::endl;
+    std::cout << "Password incorrect" << std::endl;
     return 1;
   }
   
-  std::cout << "MATCH" << std::endl;
+  std::cout << "Password okay" << std::endl;
   return 0;
 }
