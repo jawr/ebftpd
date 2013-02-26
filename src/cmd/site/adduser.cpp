@@ -9,6 +9,7 @@
 #include "acl/util.hpp"
 #include "acl/group.hpp"
 #include "logs/logs.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace site
 {
@@ -94,6 +95,21 @@ void ADDUSERCommand::Execute()
       throw cmd::NoPostScriptError();
     }
     defaultTemplate = true;
+  }
+  
+  const cfg::Config& config = cfg::Get();
+  if (std::find(config.BannedUsers().begin(), config.BannedUsers().end(), args[1]) !=
+      config.BannedUsers().end())
+  {
+    control.Reply(ftp::ActionNotOkay, "User " + args[1] + " is banned.");
+    throw cmd::NoPostScriptError();
+  }
+  
+  if (acl::User::TotalUsers() >= cfg::Get().TotalUsers())
+  {
+    control.Format(ftp::ActionNotOkay, "Maximum users added limit of %1% has been reached.", 
+                   cfg::Get().TotalUsers());
+    throw cmd::NoPostScriptError();
   }
   
   auto user = acl::User::FromTemplate(args[1], args[2], client.User().ID(), *templateUser);

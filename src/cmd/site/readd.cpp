@@ -18,7 +18,7 @@ void READDCommand::Execute()
     if (!client.User().HasGadminGID(acl::NameToPrimaryGID(args[1]))) throw cmd::PermissionError();  
     gadmin = true;
   }
-  
+
   auto user = acl::User::Load(args[1]);
   if (!user)
   {

@@ -44,7 +44,6 @@ Config::Config(const std::string& configPath, bool tool) :
   tool(tool),
   currentSection(nullptr),
   port(-1),
-  defaultFlags("3"),
   freeSpace(100),
   timezone(0),
   sitenameLong("SITE NAME"),
@@ -152,10 +151,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1);
     port = boost::lexical_cast<int>(toks[0]);
   }
-  else if (opt == "default_flags")
-  {
-    defaultFlags = toks[0];
-  }
   else if (opt == "tls_certificate")
   {
     ParameterCheck(opt, toks, 1);
@@ -233,11 +228,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1);
     maxSitecmdLines = boost::lexical_cast<int>(toks[0]);
   }
-  else if (opt == "hideuser")
-  {
-    ParameterCheck(opt, toks, 1, -1);
-    hideuser = acl::ACL(util::Join(toks, " "));
-  }
   else if (opt == "use_dir_size")
   {
     NotImplemented(opt);
@@ -270,11 +260,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1);
     loginPrompt = toks[0];
-  }
-  else if (opt == "email")
-  {
-    ParameterCheck(opt, toks, 1);
-    email = toks[0];
   }
   else if (opt == "master")
   {
@@ -340,11 +325,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1, -1);
     activeAddr.insert(activeAddr.end(), toks.begin(), toks.end());
-  }
-  else if (opt == "ignore_type")
-  { 
-    ParameterCheck(opt, toks, 1, -1);
-    ignoreType.insert(ignoreType.end(), toks.begin(), toks.end());
   }
   else if (opt == "ignore_size")
   {
@@ -545,11 +525,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1, -1);
     maxGstats.emplace_back(toks);
   }
-  else if (opt == "show_totals")
-  {
-    ParameterCheck(opt, toks, 2, -1);
-    showTotals.emplace_back(toks); 
-  }
   else if (opt == "cscript")
   {
     ParameterCheck(opt, toks, 3);
@@ -594,11 +569,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 4, 5);
     siteCmd.emplace_back(toks);
-  }
-  else if (opt == "requests")
-  {
-    ParameterCheck(opt, toks, 2);
-    requests = setting::Requests(toks);
   }
   else if (opt == "idle_timeout")
   {

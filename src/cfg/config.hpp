@@ -45,7 +45,6 @@ class Config
   std::string tlsCertificate;
   std::string tlsCiphers;
   int port;
-  std::string defaultFlags;
   // glftpd
   setting::AsciiDownloads asciiDownloads;
   setting::AsciiUploads asciiUploads;
@@ -76,7 +75,6 @@ class Config
   std::string banner;
   std::vector<setting::Alias> alias;
   std::vector<std::string> cdpath;
-  std::vector<std::string> ignoreType;
   
   setting::Log securityLog;
   setting::Log databaseLog;
@@ -113,7 +111,6 @@ class Config
   std::vector<setting::ACLInt> maxGstats;
   std::vector<std::string> bannedUsers;
   std::vector<setting::Right> showDiz;
-  std::vector<setting::ShowTotals> showTotals;
   bool dlIncomplete;
   std::vector<setting::Cscript> cscript;
   std::vector<std::string> idleCommands;
@@ -121,15 +118,11 @@ class Config
   setting::Lslong lslong;
   std::vector<setting::HiddenFiles> hiddenFiles;
   std::vector<std::string> noretrieve;
-  std::string email;
   int multiplierMax;
-  setting::Requests requests;
-  setting::Lastonline lastonline;
   long emptyNuke;
   std::vector<setting::Creditcheck> creditcheck;
   std::vector<setting::Creditloss> creditloss;
   setting::NukedirStyle nukedirStyle;
-  acl::ACL hideuser;
   std::vector<setting::Msgpath> msgpath;
   std::vector<setting::Privpath> privpath;
   std::vector<setting::SiteCmd> siteCmd;
@@ -183,7 +176,6 @@ public:
   const std::string& TlsCertificate() const { return tlsCertificate; }
   const std::string& TlsCiphers() const { return tlsCiphers; }
   int Port() const { return port; }
-  const std::string& DefaultFlags() const { return defaultFlags; }
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
   const setting::AsciiUploads& AsciiUploads() const { return asciiUploads; } 
   unsigned FreeSpace() const { return freeSpace; }
@@ -218,7 +210,6 @@ public:
   const std::string& Banner() const { return banner; }
   const std::vector<setting::Alias>& Alias() const { return alias; }
   const std::vector<std::string>& Cdpath() const { return cdpath; }
-  const std::vector<std::string>& IgnoreType() const { return ignoreType; }
   
   const setting::Log SecurityLog() const { return securityLog; }
   const setting::Log DatabaseLog() const { return databaseLog; }
@@ -262,15 +253,11 @@ public:
   const setting::Lslong& Lslong() const { return lslong; }
   const std::vector<setting::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
   const std::vector<std::string>& Noretrieve() const { return noretrieve; }
-  const std::string& Email() const { return email; }
   int MultiplierMax() const { return multiplierMax; }
-  const setting::Requests& Requests() const { return requests; }
-  const setting::Lastonline& Lastonline() const { return lastonline; }
   long EmptyNuke() const { return emptyNuke; }
   const std::vector<setting::Creditcheck>& Creditcheck() const { return creditcheck; }
   const std::vector<setting::Creditloss>& Creditloss() const { return creditloss; }
-  const setting::NukedirStyle& NukedirStyle() const { return nukedirStyle; }
-  const acl::ACL& Hideuser() const { return hideuser; }
+  const setting::NukedirStyle& Nukedirtyle() const { return nukedirStyle; }
   const std::vector<setting::Msgpath>& Msgpath() const { return msgpath; }
   const std::vector<setting::Privpath>& Privpath() const { return privpath; }
   const std::vector<setting::SiteCmd>& SiteCmd() const { return siteCmd; }

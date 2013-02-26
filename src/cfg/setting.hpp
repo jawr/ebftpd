@@ -230,15 +230,6 @@ public:
   int ExemptUsers() const { return exemptUsers; }
 };
 
-class ShowTotals
-{
-  int maxLines;
-  std::vector<std::string> paths;
-public:
-  ShowTotals(std::vector<std::string> toks);
-  int MaxLines() const { return maxLines; }
-};
-
 class Lslong
 {
   std::string bin;

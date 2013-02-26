@@ -9,6 +9,6 @@ Users logged on to {{ sitename_short }}
 {% endblock %}
 {% foot %}
 |------------+--------------------------------+--------------------------------|
-| {{ users|4|center }} of {{ total_users|4|center }} user(s) currently online.                                       |
+| {{ online_users|4|center }} of {{ max_online_users|4|center }} user(s) currently online.               
 `------------------------------------------------------------------------------'
 {% endblock %}

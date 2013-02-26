@@ -174,6 +174,8 @@ public:
                             const User& templateUser);
   static std::vector<acl::UserID> GetUIDs(const std::string& multiStr = "*");
   static std::vector<acl::User> GetUsers(const std::string& multiStr = "*");
+  
+  static size_t TotalUsers();
 };
 
 std::string UIDToName(acl::UserID uid);

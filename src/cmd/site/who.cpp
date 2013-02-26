@@ -50,7 +50,7 @@ void WHOCommand::Execute()
   os << head.Compile();
 
   int count = 0;
-  for (auto& whoUser: whoUsers)
+  for (auto& whoUser : whoUsers)
   {
     auto user = acl::User::Load(whoUser.uid);
     if (!user) continue;
@@ -64,8 +64,9 @@ void WHOCommand::Execute()
     os << body.Compile();
   }
 
-  foot.RegisterValue("users", count);
-  foot.RegisterValue("total_users", cfg.TotalUsers());
+  foot.RegisterValue("online_users", count);
+  foot.RegisterValue("all_online_users", count);
+  foot.RegisterValue("max_online_users", cfg::Get().MaxUsers().Users());
   os << foot.Compile();
 
   control.Reply(ftp::CommandOkay, os.str());

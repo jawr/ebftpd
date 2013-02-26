@@ -45,6 +45,7 @@ void SWHOCommand::Execute()
   head.RegisterValue("sitename_short", cfg.SitenameShort());
   os << head.Compile();
 
+  unsigned count = whoUsers.size();
   for (auto& whoUser : whoUsers)
   {
     body.RegisterValue("user", acl::UIDToName(whoUser.uid));
@@ -53,8 +54,9 @@ void SWHOCommand::Execute()
     os << body.Compile();
   }
 
-  foot.RegisterValue("users", whoUsers.size());
-  foot.RegisterValue("total_users", cfg.TotalUsers());
+  foot.RegisterValue("online_users", count);
+  foot.RegisterValue("all_online_users", count);
+  foot.RegisterValue("max_online_users", cfg::Get().MaxUsers().Users());
   os << foot.Compile();
 
   control.Reply(ftp::CommandOkay, os.str());

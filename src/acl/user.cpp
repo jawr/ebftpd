@@ -685,6 +685,11 @@ std::vector<acl::User> User::GetUsers(const std::string& multiStr)
   return users;
 }
 
+size_t User::TotalUsers()
+{
+  return GetUIDs("*").size();
+}
+
 std::string UIDToName(acl::UserID uid)
 {
   return db::UIDToName(uid);

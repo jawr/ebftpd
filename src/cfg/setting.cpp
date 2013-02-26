@@ -257,14 +257,6 @@ ACLInt::ACLInt(std::vector<std::string> toks)
   }
 }
 
-ShowTotals::ShowTotals(std::vector<std::string> toks)   
-{
-  maxLines = (toks[0] == "*") ? -1 : boost::lexical_cast<int>(toks[0]);
-  if (maxLines < -1) throw boost::bad_lexical_cast();
-  toks.erase(toks.begin());
-  paths = toks;
-}
-
 Lslong::Lslong(std::vector<std::string> toks)   
 {
   options = toks[0];
