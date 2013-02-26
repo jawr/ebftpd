@@ -8,6 +8,7 @@
 #include <mutex>
 #include "acl/types.hpp"
 #include "db/replicable.hpp"
+#include "db/user/usercachebase.hpp"
 
 namespace mongo
 {
@@ -16,16 +17,6 @@ class BSONElement;
 
 namespace db
 {
-
-struct UserCacheBase
-{
-  virtual ~UserCacheBase() { }
-  virtual std::string UIDToName(acl::UserID uid) = 0;
-  virtual acl::UserID NameToUID(const std::string& name) = 0;
-  virtual acl::GroupID UIDToPrimaryGID(acl::UserID uid) = 0;
-  virtual bool IdentIPAllowed(const std::string& identAddress) = 0;  
-  virtual bool IdentIPAllowed(const std::string& identAddress, acl::UserID uid) = 0;  
-};
 
 class UserCache : 
   public UserCacheBase,
@@ -59,15 +50,6 @@ public:
 
   bool Replicate(const mongo::BSONElement& id);
   bool Populate();  
-};
-
-struct UserNoCache : public UserCacheBase
-{
-  std::string UIDToName(acl::UserID uid);
-  acl::UserID NameToUID(const std::string& name);
-  acl::GroupID UIDToPrimaryGID(acl::UserID uid);  
-  bool IdentIPAllowed(const std::string& identAddress);
-  bool IdentIPAllowed(const std::string& identAddress, acl::UserID uid);
 };
 
 } /* db namespace */

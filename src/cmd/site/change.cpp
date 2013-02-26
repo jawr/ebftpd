@@ -12,7 +12,7 @@
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 #include "acl/util.hpp"
-#include "db/user.hpp"
+#include "db/user/user.hpp"
 #include "logs/logs.hpp"
 #include "acl/flags.hpp"
 #include "fs/path.hpp"

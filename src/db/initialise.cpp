@@ -1,10 +1,10 @@
 #include "db/initialise.hpp"
 #include "db/connection.hpp"
 #include "db/replicator.hpp"
-#include "db/usercache.hpp"
-#include "db/groupcache.hpp"
-#include "db/userutil.hpp"
-#include "db/grouputil.hpp"
+#include "db/user/usercache.hpp"
+#include "db/group/groupcache.hpp"
+#include "db/user/util.hpp"
+#include "db/group/util.hpp"
 
 namespace db
 {

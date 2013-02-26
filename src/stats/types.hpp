@@ -28,7 +28,7 @@ extern const std::vector< ::stats::Direction> directions;
 
 enum class SortField : unsigned
 {
-  Bytes,
+  KBytes,
   Files,
   Speed
 };

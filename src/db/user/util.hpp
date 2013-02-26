@@ -14,6 +14,7 @@ struct UserData;
 namespace db
 {
 
+class Connection;
 struct UserCacheBase;
 
 void SetUserCache(const std::shared_ptr<UserCacheBase>& cache);
@@ -24,6 +25,8 @@ acl::GroupID UIDToPrimaryGID(acl::UserID uid);
 
 bool IdentIPAllowed(const std::string& identAddress);
 bool IdentIPAllowed(const std::string& identAddress, acl::UserID uid);
+
+std::vector<std::string> LookupIPMasks(Connection& conn, acl::UserID uid = -1);
 
 } /* db namespace */
 

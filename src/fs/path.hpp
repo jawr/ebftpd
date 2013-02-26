@@ -1,10 +1,6 @@
 #ifndef __FS_PATH_HPP
 #define __FS_PATH_HPP
 
-#ifdef EXTERNAL_TOOL
-#error "This header not suitable for inclusion in external tools"
-#endif
-
 #include <cassert>
 #include <string>
 #include <cstring>

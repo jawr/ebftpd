@@ -6,6 +6,7 @@
 #include <mutex>
 #include "acl/types.hpp"
 #include "db/replicable.hpp"
+#include "db/group/groupcachebase.hpp"
 
 namespace mongo
 {
@@ -14,13 +15,6 @@ class BSONElement;
 
 namespace db
 {
-
-struct GroupCacheBase
-{
-  virtual ~GroupCacheBase() { }
-  virtual std::string GIDToName(acl::GroupID gid) = 0;
-  virtual acl::GroupID NameToGID(const std::string& name) = 0;
-};
 
 class GroupCache : 
   public GroupCacheBase,
@@ -39,12 +33,6 @@ public:
 
   bool Replicate(const mongo::BSONElement& id);
   bool Populate();
-};
-
-struct GroupNoCache : public GroupCacheBase
-{
-  std::string GIDToName(acl::GroupID gid);
-  acl::GroupID NameToGID(const std::string& name);
 };
 
 } /* db namespace */

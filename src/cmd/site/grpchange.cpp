@@ -8,7 +8,7 @@
 #include "cmd/error.hpp"
 #include "acl/misc.hpp"
 #include "acl/util.hpp"
-#include "db/group.hpp"
+#include "db/group/group.hpp"
 #include "logs/logs.hpp"
 #include "acl/user.hpp"
 

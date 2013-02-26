@@ -1,7 +1,7 @@
 #include <boost/optional.hpp>
 #include <mongo/client/dbclient.h>
 #include "util/string.hpp"
-#include "db/group.hpp"
+#include "db/group/group.hpp"
 #include "acl/group.hpp"
 #include "util/verify.hpp"
 #include "db/serialization.hpp"

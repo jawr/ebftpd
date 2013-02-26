@@ -33,7 +33,6 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     ("config-path,c", po::value<std::string>(), "specify location of config file")
   ;
   
-  std::string who;
   po::options_description all("positional options");
   all.add(visible);
   all.add_options()

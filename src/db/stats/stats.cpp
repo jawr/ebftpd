@@ -208,7 +208,7 @@ std::vector< ::stats::Stat> RetrieveGroups(
                         return s1.Files() > s2.Files();
                       };
         break;
-      case ::stats::SortField::Bytes  :
+      case ::stats::SortField::KBytes  :
         sortCompare = [&](const ::stats::Stat& s1, const ::stats::Stat& s2)
                       {
                         return s1.KBytes() > s2.KBytes();

@@ -1,25 +1,12 @@
-#include "db/groupcache.hpp"
+#include "db/group/groupcache.hpp"
 #include "db/connection.hpp"
 #include "util/string.hpp"
-#include "db/group.hpp"
+#include "db/group/group.hpp"
 #include "acl/groupdata.hpp"
+#include "db/group/serialization.hpp"
 
 namespace db
 {
-
-struct GroupPair
-{
-  std::string name;
-  acl::GroupID gid;
-};
-
-template <> GroupPair Unserialize<GroupPair>(const mongo::BSONObj& obj)
-{
-  GroupPair data;
-  data.name = obj["name"].String();
-  data.gid = obj["gid"].Int();
-  return data;
-}
 
 std::string GroupCache::GIDToName(acl::GroupID gid)
 {
@@ -102,24 +89,6 @@ bool GroupCache::Populate()
   }
 
   return true;
-}
-
-std::string GroupNoCache::GIDToName(acl::GroupID gid)
-{
-  NoErrorConnection conn;  
-  auto fields = BSON("gid" << 1 << "name" << 1 << "primary gid" << 1);
-  auto data = conn.QueryOne<GroupPair>("groups", QUERY("gid" << gid), &fields);
-  if (!data) return "unknown";
-  return data->name;
-}
-
-acl::GroupID GroupNoCache::NameToGID(const std::string& name)
-{
-  NoErrorConnection conn;  
-  auto fields = BSON("gid" << 1 << "name" << 1 << "primary gid" << 1);
-  auto data = conn.QueryOne<GroupPair>("groups", QUERY("name" << name), &fields);
-  if (!data) return -1;
-  return data->gid;
 }
 
 } /* db namespace */

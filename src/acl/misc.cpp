@@ -10,7 +10,7 @@
 #include "cfg/get.hpp"
 #include "acl/ipstrength.hpp"
 #include "acl/passwdstrength.hpp"
-#include "db/userutil.hpp"
+#include "db/user/util.hpp"
 #include "acl/flags.hpp"
 
 namespace acl { namespace message

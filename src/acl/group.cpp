@@ -1,9 +1,9 @@
 #include <cassert>
 #include "acl/group.hpp"
-#include "db/group.hpp"
+#include "db/group/group.hpp"
 #include "util/error.hpp"
 #include "db/error.hpp"
-#include "db/grouputil.hpp"
+#include "db/group/util.hpp"
 #include "util/scopeguard.hpp"
 #include "acl/groupdata.hpp"
 

@@ -22,7 +22,7 @@ template <> const char* util::EnumStrings<stats::Direction>::values[] =
 
 template <> const char* util::EnumStrings<stats::SortField>::values[] =
 {
-  "bytes",
+  "kbytes",
   "files",
   "speed"
   ""

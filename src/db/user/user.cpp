@@ -1,11 +1,11 @@
 #include <future>
-#include "db/user.hpp"
+#include "db/user/user.hpp"
 #include "db/connection.hpp"
 #include "acl/user.hpp"
 #include "db/serialization.hpp"
 #include "db/error.hpp"
-#include "db/userutil.hpp"
-#include "db/grouputil.hpp"
+#include "db/user/util.hpp"
+#include "db/group/util.hpp"
 #include "util/futureminder.hpp"
 #include "acl/userdata.hpp"
 
