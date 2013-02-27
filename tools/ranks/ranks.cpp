@@ -27,6 +27,16 @@ enum class Who
   Groups
 };
 
+namespace util
+{
+template <> const char* util::EnumStrings<Who>::values[] = 
+{
+  "users",
+  "groups",
+  ""
+};
+}
+
 void DisplayHelp(char* argv0, po::options_description& desc)
 {
   std::cout << "usage: " << argv0 << " [options]" << std::endl;
@@ -37,6 +47,9 @@ void DisplayVersion()
 {
   std::cout << "ebftpd ranks " + std::string(version) << std::endl;
 }
+
+namespace stats
+{
 
 std::istream& operator>>(std::istream& is, stats::Timeframe& tf)
 {
@@ -71,23 +84,37 @@ std::istream& operator>>(std::istream& is, stats::SortField& sf)
   return is;
 }
 
+std::ostream& operator<<(std::ostream& os, const stats::Timeframe& tf)
+{
+  return (os << util::EnumToString(tf));
+}
+
+std::ostream& operator<<(std::ostream& os, const stats::Direction& dir)
+{
+  return (os << util::EnumToString(dir));
+}
+
 std::ostream& operator<<(std::ostream& os, const stats::SortField& sf)
 {
   return (os << util::EnumToString(sf));
 }
 
+} /* stats namespace */
+
 std::istream& operator>>(std::istream& is, Who& who)
 {
   std::string token;
   is >> token;
-  util::ToLower(token);
-  if (token == "users") who = Who::Users;
-  else if (token == "groups") who = Who::Groups;
-  else
+  if (!util::EnumFromString(token, who))
   {
     throw po::validation_error(po::validation_error::invalid_option_value);
   }
   return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const Who& who)
+{
+  return (os << util::EnumToString(who));
 }
 
 bool ParseOptions(int argc, char** argv, std::string& configPath, 
