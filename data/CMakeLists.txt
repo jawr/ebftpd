@@ -1,0 +1,3 @@
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/dummy ${CMAKE_BINARY_DIR}/dummy/logs)
+install(DIRECTORY ${CMAKE_BINARY_DIR}/dummy/logs DESTINATION data)
+install(DIRECTORY text DESTINATION data)
