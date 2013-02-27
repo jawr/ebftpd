@@ -49,4 +49,5 @@ file(GLOB_RECURSE SUBSRCS text/*.cpp)
 list(APPEND SRCS ${SUBSRCS})
 
 add_library(eb SHARED version.cpp ${SRCS})
+add_dependencies(eb version)
 
