@@ -1,5 +1,1 @@
-3. Gadmins
-   * Only allow gadmins to delete own users
-4. Template users
-5. User input validation (including filtering out unicode -- non ascii characters)
-6. Group profiles are incomplete no save function, not being added when group created
+Not used anymore.
