@@ -49,4 +49,22 @@ file(GLOB_RECURSE SUBSRCS text/*.cpp)
 list(APPEND SRCS ${SUBSRCS})
 
 add_library(eb SHARED version.cpp ${SRCS})
+add_dependencies(eb version)
 
+install(TARGETS ebftpd eb
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib)
+
+install(CODE 
+  "message(STATUS \"Installing: ${CMAKE_INSTALL_PREFIX}/ebftpd -> ${CMAKE_INSTALL_PREFIX}/bin/ebftpd\")"
+  "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \"${CMAKE_INSTALL_PREFIX}/bin/ebftpd\" \"${CMAKE_INSTALL_PREFIX}/ebftpd\")"
+)
+
+install(CODE
+  "message(STATUS \"Installing: ${CMAKE_INSTALL_PREFIX}/site\")"
+  "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/site)"
+)
+
+install(CODE
+  "execute_process(COMMAND ${CMAKE_COMMAND} -DDEST=${CMAKE_INSTALL_PREFIX}/etc/ebftpd.pem -P ../cmake/GenerateCert.cmake)"
+)

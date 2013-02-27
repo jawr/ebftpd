@@ -6,4 +6,4 @@ include_directories (${SERVER_SRC} ../../util)
 add_executable (chown chown.cpp)
 add_dependencies(chown version)
 target_link_libraries(chown eb util ${ALL_LIBRARIES})
-
+install(TARGETS chown RUNTIME DESTINATION bin)
