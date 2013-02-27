@@ -18,6 +18,7 @@ namespace cfg
 
 enum class WeekStart { Sunday, Monday };
 enum class EPSVFxp { Allow, Deny, Force };
+enum class LogAddresses { Never, Errors, Always };
 
 class Config;
 
@@ -138,6 +139,9 @@ class Config
   int maximumRatio;
   int dirSizeDepth;
   bool asyncCRC;
+  bool identLookup;
+  bool dnsLookup;
+  ::cfg::LogAddresses logAddresses;
   
   acl::ACL tlsControl;
   acl::ACL tlsListing;
@@ -274,6 +278,9 @@ public:
   const acl::ACL& TLSFxp() const { return tlsFxp; }
   int DirSizeDepth() const { return dirSizeDepth; }
   bool AsyncCRC() const { return asyncCRC; }
+  bool IdentLookup() const { return identLookup; }
+  bool DNSLookup() const { return dnsLookup; }
+  ::cfg::LogAddresses LogAddresses() const { return logAddresses; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }
@@ -287,11 +294,5 @@ public:
 };
 
 }
-
-namespace util
-{
-template <> const char* util::EnumStrings<cfg::EPSVFxp>::values[];
-}
-
 
 #endif 

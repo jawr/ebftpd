@@ -66,8 +66,10 @@ void ClientImpl::SetState(ClientState state)
   if (logout)
   {
     Counter::Login().Stop(user->ID());
-    logs::Event("LOGOUT", logs::QuoteOff(), "ident_address", Ident() + '@' + Hostname(), 
-                "ip", logs::Brackets('(', ')'), IP(), logs::QuoteOn(), "user", user->Name(), 
+    logs::Event("LOGOUT", logs::QuoteOff(), 
+                "ident_address", Ident(LogAddresses::Normal) + "@" + Hostname(LogAddresses::Normal), 
+                "ip", logs::Brackets('(', ')'), IP(LogAddresses::Normal), 
+                 logs::QuoteOn(), "user", user->Name(), 
                 "group", user->PrimaryGroup(), 
                 "tagline", user->Tagline());
   }
@@ -104,8 +106,10 @@ void ClientImpl::SetLoggedIn(bool kicked)
     loggedInAt = boost::posix_time::second_clock::local_time();
   }
 
-  logs::Event("LOGIN", logs::QuoteOff(), "ident address", Ident() + '@' + Hostname(), 
-              "ip", logs::Brackets('(', ')'), IP(), logs::QuoteOn(), "user", user->Name(), 
+  logs::Event("LOGIN", logs::QuoteOff(), 
+              "ident address", Ident(LogAddresses::Normal) + '@' + Hostname(LogAddresses::Normal), 
+              "ip", logs::Brackets('(', ')'), IP(LogAddresses::Normal), 
+              logs::QuoteOn(), "user", user->Name(), 
               "group", user->PrimaryGroup(), 
               "tagline", user->Tagline());
 }
@@ -318,7 +322,7 @@ void ClientImpl::Interrupt()
 
 void ClientImpl::LookupIdent()
 {
-  if (ident != "*") return;
+  if (!cfg::Get().IdentLookup() || ident != "*") return;
   
   try
   {
@@ -362,7 +366,7 @@ bool ClientImpl::PreCheckAddress()
 {
   if (!acl::IPAllowed(IP()) && (IP() != Hostname() && !acl::IPAllowed(Hostname())))
   {
-    logs::Security("BADADDRESS", "Refused connection from unknown address: %1%", HostnameAndIP());
+    logs::Security("BADADDRESS", "Refused connection from unknown address: %1%", HostnameAndIP(LogAddresses::Error));
     return false;
   }
   
@@ -371,10 +375,10 @@ bool ClientImpl::PreCheckAddress()
 
 void ClientImpl::HostnameLookup()
 {
-  if (!hostname.empty()) return;
+  if (!cfg::Get().DNSLookup() || !hostname.empty()) return;
   
   try
-  {
+  { 
   
     std::string hostname = util::net::ReverseResolve(util::net::IPAddress(ip));
     
@@ -392,12 +396,56 @@ void ClientImpl::HostnameLookup()
   }
 }
 
-std::string ClientImpl::HostnameAndIP() const
+std::string ClientImpl::SanitiseAddress(std::string address, LogAddresses log) const
+{
+  const cfg::Config& config = cfg::Get();
+  switch (log)
+  {
+    case LogAddresses::Error      :
+    {
+      if (config.LogAddresses() == cfg::LogAddresses::Never)
+        address = "disabled";
+      break;
+    }
+    case LogAddresses::Normal     :
+    {
+      if (config.LogAddresses() != cfg::LogAddresses::Always)
+        address = "disabled";
+      break;
+    }
+    case LogAddresses::NotLogging :
+    {
+      break;
+    }
+  }
+  return address;
+}
+
+std::string ClientImpl::IP(LogAddresses log) const
 {
   std::lock_guard<std::mutex> lock(mutex);
+  return SanitiseAddress(ip, log);
+}
+
+std::string ClientImpl::Ident(LogAddresses log) const
+{
+  std::lock_guard<std::mutex> lock(mutex);
+  return SanitiseAddress(ident, log);
+}
+
+std::string ClientImpl::Hostname(LogAddresses log) const
+{
+  std::lock_guard<std::mutex> lock(mutex);
+  return SanitiseAddress(hostname, log);
+}
+
+std::string ClientImpl::HostnameAndIP(LogAddresses log) const
+{
   std::ostringstream os;
-  os << hostname;
-  if (ip != hostname)
+  std::string hostname = Hostname(log);
+  std::string ip = IP(log);
+  if (hostname.empty()) os << ip;
+  else os << hostname;
   os << "(" << ip << ")";
   return os.str();
 }
@@ -452,7 +500,7 @@ void ClientImpl::InnerRun()
   {
     if (cfg::Get().BouncerOnly() && !control.RemoteEndpoint().IP().IsLoopback())
     {
-      logs::Security("NONBOUNCER", "Refused connection not from a bouncer address: %1%", HostnameAndIP());
+      logs::Security("NONBOUNCER", "Refused connection not from a bouncer address: %1%", HostnameAndIP(LogAddresses::Error));
       return;
     }
   }
@@ -463,14 +511,14 @@ void ClientImpl::InnerRun()
     {
       if (cfg::Get().BouncerOnly())
       {
-        logs::Security("IDNTTIMEOUT", "Timeout while waiting for IDNT command from bouncer: ", HostnameAndIP());
+        logs::Security("IDNTTIMEOUT", "Timeout while waiting for IDNT command from bouncer: ", HostnameAndIP(LogAddresses::Error));
         return;
       }
     }
     else
     if (!IdntParse(command))
     {
-      logs::Security("BADIDNT", "Malformed IDNT command from bouncer: ", HostnameAndIP());
+      logs::Security("BADIDNT", "Malformed IDNT command from bouncer: ", HostnameAndIP(LogAddresses::Error));
       return;
     }
   }
@@ -481,7 +529,7 @@ void ClientImpl::InnerRun()
   
   LookupIdent();
   
-  logs::Debug("Servicing client connected from %1%@%2%", ident, HostnameAndIP());
+  logs::Debug("Servicing client connected from %1%@%2%", ident, HostnameAndIP(LogAddresses::Normal));
     
   DisplayBanner();
   Handle();

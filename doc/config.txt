@@ -1,0 +1,517 @@
+description of all config options for ebftpd
+
+------------------------------------------------------------------------------------------------------------------------
+usage:            database <name> <address> <port> [<login> <password>]
+required:         no
+default:          database ebftpd localhost 27017
+descrription:     details required to connect to mongodb -- optional authentication
+------------------------------------------------------------------------------------------------------------------------
+usage:            sitepath <path>
+required:         yes
+default:          none
+description:      path to the site root as seen by users (this is relative to true os root)
+------------------------------------------------------------------------------------------------------------------------
+usage:            pidfile <path>
+required:         no
+default:          none (suggest /ebftpd/etc/ebftpd.pid)
+description:      path to store a pid file to prevent mutliple instances of the server
+------------------------------------------------------------------------------------------------------------------------
+port              port <port number>
+required:         yes
+default:          none 
+description:      port number on which to listen for clients
+------------------------------------------------------------------------------------------------------------------------
+usage:            tls_certificate <path>
+required:         no
+default:          none (suggest /ebftpd/etc/ebftpd.pem)
+description:      path to a certificate for use with tls. ommitting this option disables tls support
+------------------------------------------------------------------------------------------------------------------------
+usage:            tls_ciphers <cipher string>
+required:         no
+default:          internal openssl defaults 
+description:      openssl compatible string to describe cipher to make available to clients
+                  see http://www.openssl.org/docs/apps/ciphers.html#CIPHER_STRINGS for more details
+------------------------------------k------------------------------------------------------------------------------------                  
+usage:            datapath <path>
+required:         yes
+default:          none (suggested /ebftpd/data)
+description:      path under which any data, logs and template files will be stored
+------------------------------------------------------------------------------------------------------------------------
+usage:            banner <path>
+required:         no
+default:          none
+description:      path to a text file to display before login
+------------------------------------------------------------------------------------------------------------------------
+usage:            ascii_downloads <size in bytes> <file mask> [<file mask> ..]
+required:         no
+default:          none
+description:      prevent ascii downloads of files larger than size or not matching specified masks
+------------------------------------------------------------------------------------------------------------------------
+usage:            ascii_uploads  <file mask> [<file mask> ..]
+required:         no
+default:          none
+description:      prevent ascii uploads of files not matching specified masks
+------------------------------------------------------------------------------------------------------------------------
+usage:            free_space <mbytes>
+required:         no
+default:          1024
+description:      prevent uploads if free space drops below the specified number of mbytes
+------------------------------------------------------------------------------------------------------------------------
+usage:            total_users <number>>
+required:         no
+default:          -1
+description:      maximum users allowed to be added to the userbase (-1 unlimited)
+------------------------------------------------------------------------------------------------------------------------
+usage:            multiplier_max <number>
+required:         no
+default:          10
+description:      maximum multiplier allowed to be passed to site nuke command
+------------------------------------------------------------------------------------------------------------------------
+usage:            empty_nuke <kbytes>
+required:         no
+default:          102400 (100MB)
+description:      penalty for being nuked for empty directory
+------------------------------------------------------------------------------------------------------------------------
+usage:            max_sitecmd_lines <number>
+required:         no
+default:          1000
+description:      maximum lines of output allowed from custom site commands (-1 unlimited)
+------------------------------------------------------------------------------------------------------------------------
+usage:            dl_incomplete <yes|no>
+required:         no
+default:          yes
+description:      allow downloading of incomplete (upload in progress) files. these transfers will be
+                  synched to prevent downloading of an incomplete file
+------------------------------------------------------------------------------------------------------------------------
+usage:            sitename_long <name>
+required:         no
+default:          EBFTPD
+description:      longer variation of site name
+------------------------------------------------------------------------------------------------------------------------
+usage:            sitename_short <name>
+required:         no
+default:          EB
+description:      short variation of site name
+------------------------------------------------------------------------------------------------------------------------
+usage:            login_prompt <prompt>
+required:         no
+default:          <sitelong name>: ebftpd <version>
+description:      single line message displayed after banner (if used)
+------------------------------------------------------------------------------------------------------------------------
+usage:            master <username> [<username> ..]
+required:         no
+default:          none
+description:      list of users who cannot be deleted and can change siteops flags
+------------------------------------------------------------------------------------------------------------------------
+usage:            bouncer_ip <ip> [<ip> ..]
+required:         no
+default:          none
+description:      list of ips from which to expect bouncer connections (IDNT command will be enabled for them)
+------------------------------------------------------------------------------------------------------------------------
+usage:            bouncer_only <yes|no>
+required:         no
+default:          no
+description:      prevent direct connections from non-bouncers? (loopback excluded)
+------------------------------------------------------------------------------------------------------------------------
+usage:            security_log <console yes|no> <file yes|no> <database size>
+required:         no
+default:          yes yes 0
+description:      configure destinations for security log
+                  database is specified as size as it's automatically rotated (0 to disable database)
+------------------------------------------------------------------------------------------------------------------------
+usage:            database_log <console yes|no> <file yes|no>
+required:         no
+default:          yes yes
+description:      configure destinations for database log
+------------------------------------------------------------------------------------------------------------------------
+usage:            event_log <console yes|no> <file yes|no> <database size>
+required:         no
+default:          yes yes 0
+description:      configure destinations for event log
+                  database is specified as size as it's automatically rotated (0 to disable database)
+------------------------------------------------------------------------------------------------------------------------
+usage:            debug_log <console yes|no> <file yes|no> <database size>
+required:         no
+default:          yes yes 0
+description:      configure destinations for debug log
+                  database is specified as size as it's automatically rotated (0 to disable database)
+------------------------------------------------------------------------------------------------------------------------
+usage:            error_log <console yes|no> <file yes|no> <database size>
+required:         no
+default:          yes yes 0
+description:      configure destinations for error log
+                  database is specified as size as it's automatically rotated (0 to disable database)
+------------------------------------------------------------------------------------------------------------------------
+usage:            siteop_log <console yes|no> <file yes|no> <database size>
+required:         no
+default:          yes yes 0
+description:      configure destinations for siteop log
+                  database is specified as size as it's automatically rotated (0 to disable database)
+------------------------------------------------------------------------------------------------------------------------
+usage:            calc_crc <file mask> [<file mask> ..]
+required:         no
+default:          none
+description:      file masks to calculate on-the-fly crc for
+------------------------------------------------------------------------------------------------------------------------
+usage:            xdupe <file mask> [<file mask> ..]
+required:         no
+default:          none
+description:      file masks to display in xdupe output
+------------------------------------------------------------------------------------------------------------------------
+usage:            valid_ip <ip> [<ip> ..]
+required:         yes
+default:          none
+description:      list of ips for the server to listen on
+------------------------------------------------------------------------------------------------------------------------
+usage:            active_addr <ip> [<ip> ..]
+required:         no
+default:          default system interface
+description:      list of ips for server to bind to when doing active data connections, multiple will be round-robin
+------------------------------------------------------------------------------------------------------------------------
+usage:            pasv_addr <ip> [<ip> ..]
+required:         no
+default:          default system interface
+description:      list of ips for server to bind to when doing passive data connections, multiple will be round-robin
+------------------------------------------------------------------------------------------------------------------------
+usage:            banned_users <username> [<username> ..]
+required:         no
+default:          none
+description:      list of usernames that cannot be added to the userbase
+------------------------------------------------------------------------------------------------------------------------
+usage:            idle_commands <command mask> [<command mask> ..]
+required:         no
+default:          none
+description:      list of commands masks that won't reset the idle timeout
+------------------------------------------------------------------------------------------------------------------------
+usage:            noretrieve <file mask> [<file mask> ..]
+required:         no
+default:          none
+description:      list of file masks that cannot be downloaded
+------------------------------------------------------------------------------------------------------------------------
+usage:            maximum_speed <path mask> <down bytes/s> <up bytes/s> <acls>
+required:         no
+default:          * -1 -1 *
+description:      path based maximum speed limits (throttled when exceeded) (-1 unlimited)
+------------------------------------------------------------------------------------------------------------------------
+usage:            minimum_speed <path mask> <down bytes/s> <up bytes/s> <acls>
+required:         no
+default:          * -1 -1 *
+description:      path based minimum speed limits (transfer aborted when not met) (-1 unlmited)
+------------------------------------------------------------------------------------------------------------------------
+sim_xfers          sim_xfers <number down> <number up>
+required:         no
+default:          -1 -1
+description:      server wide simultaneous transfer limits (-1 unlimited)
+------------------------------------------------------------------------------------------------------------------------
+usage:            secure_ip <num octets> <hostname yes|no> <ident yes|no> <acls>
+required:         no
+default:          any allowed
+description:      restrictions on ips masks allowed to be added by specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            secure_pass <mask> <acls>
+required:         no
+default:          any allowed
+description:      restrictions on strength of password allowed be to added by specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            active_ports <P1>[-<P2>] [<P3>[-<P4>] ..]
+required:         no
+default:          any system allocated ports
+description:      define specific port ranges for use creating active connections
+------------------------------------------------------------------------------------------------------------------------
+usage:            pasv_ports <P1>[-<P2>] [<P3>[-<P4>] ..]
+required:         no
+default:          any system allocated ports
+description:      define specific port ranges for use listening for passive connections
+------------------------------------------------------------------------------------------------------------------------
+usage:            allow_fxp <down yes|no> <up yes|no> <logging yes|no> <acls>
+required:         no
+default:          yes yes no *
+description:      enable or disable fxp transfers for downloads and/or uploads for specified acls
+                  if logging yes, log denied fxps
+------------------------------------------------------------------------------------------------------------------------
+usage:            welcome_msg <path> <acls>
+required:         no
+default:          none
+description:      welcome template message to display to u <sers matching the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            goodbye_msg <path> <acls>
+required:         no
+default:          none
+description:      goodbye template message to display to users matching the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            cdpath <path> [<path> ..]
+required:         no
+default:          none
+description:      search paths for cwd command
+------------------------------------------------------------------------------------------------------------------------
+usage:            alias <name> [<path> ..]
+required:         no
+default:          none
+description:      path aliases for cwd command
+------------------------------------------------------------------------------------------------------------------------
+usage:            delete <path mask> <acls>
+required:         no
+default:          deny all
+description:      delete access for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            deleteown <path mask> <acls>
+required:         no
+default:          deny all
+description:      delete access (when owned by user) for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            overwrite <path mask> <acls>
+required:         no
+default:          deny all
+description:      overwrite access for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            resume <path mask> <acls>
+required:         no
+default:          deny all
+description:      resume access for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            rename <path mask> <acls>
+required:         no
+default:          deny all
+description:      rename access for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            renameown <path mask> <acls>
+required:         no
+default:          deny all
+description:      rename access (when owned by user) for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            filemove <path mask> <acls>
+required:         no
+default:          deny all
+description:      file move access for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            makedir <path mask> <acls>
+required:         no
+default:          deny all
+description:      create directory access for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            upload <path mask> <acls>
+required:         no
+default:          deny all
+description:      upload access for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            download <path mask> <acls>
+required:         no
+default:          deny all
+description:      download access for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            nuke <path mask> <acls>
+required:         no
+default:          deny all
+description:      nuke access for a path mask for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            hideinwho <path mask> <acls>
+required:         no
+default:          dont hide any
+description:      path masks for which to hide :current actions for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            freefile <path mask> acls>
+required:         no
+default:          none
+description:      path masks to allow free downloads for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            nostats <path mask> <acls>
+required:         no
+default:          none
+description:      path masks which won't later upload / download stats for the specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            hideowner <path mask> acls>
+required:         no
+default:          none
+description:      paths masks which will have file and directory ownership hidden for the spcified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            event_path <path mask> [<path mask> ..]
+required:         no
+default:          none
+description:      paths masks for which to add event log entries
+------------------------------------------------------------------------------------------------------------------------
+usage:            index_path <path mask> [<path mask> ..]
+required:         no
+default:          none
+description:      paths masks for which to add directories to the search index
+------------------------------------------------------------------------------------------------------------------------
+usage:            dupe_path <path mask> [<path mask> ..]
+required:         no
+default:          none
+description:      paths masks for which to add directories to the dupe index
+------------------------------------------------------------------------------------------------------------------------
+usage:            show_diz <path mask> <acls>
+required:         no
+default:          none
+description:      display any file matching the specified path mask after cwd for specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            path-filter  <regex> <acls>
+required:         no
+default:          path filter to reject file and directory names with unwanted characters
+------------------------------------------------------------------------------------------------------------------------
+usage:            max_users <number normal> <number exempt>
+required:         no
+default:          none
+description:      maximum online users
+------------------------------------------------------------------------------------------------------------------------
+usage:            max_ustats <number> <acls>
+required:         no
+default:          -1 *
+description:      maximum entries to display on user stats commands (-1 unlimited)
+------------------------------------------------------------------------------------------------------------------------
+usage:            max_gstats <number> <acls>
+required:         no
+default:          -1 *
+description:      maximum entries to display on group stats commands (-1 unlimited)
+------------------------------------------------------------------------------------------------------------------------
+usage:            cscript <command> <pre|post> <script path>
+required:         no
+default:          none
+description:      custom pre and post command scripts
+------------------------------------------------------------------------------------------------------------------------
+usage:            lslong <options> [<recursion depth>]
+required:         no
+default:          -l 2
+description:      default long listing options and maximum recursion depth (0 unlimited)
+------------------------------------------------------------------------------------------------------------------------
+usage:            hidden_files <path mask> <file mask> [<file mask> ..]
+required:         no
+default:          none
+description:      specfiy file masks that will be hidden in specific paths
+------------------------------------------------------------------------------------------------------------------------
+usage:            creditcheck <path mask> <ratio> <acls>
+required:         no
+default:          none
+description:      upload ratio based on path mask for those with specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            creditloss <path mask> <ratio> <acls>
+required:         no
+default:          none
+description:      download ratio based on path mask for those with specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            nukedir_style <format> <0|1|2> <empty bytes>
+required:         no
+default:          NUKED-%N 2 1048576
+description:      specify how nuked directories are handled
+                  %N in format replaced with directory
+                  0 == delete completely
+                  1 == delete contents
+                  2 == keep all
+------------------------------------------------------------------------------------------------------------------------
+usage:            msg_path <path mask> <path> <acls>
+required:         no
+default:          none
+description:      display message when changing to a directory matching path mask for those with specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            privpath <path> <acls>
+required:         no
+default:          none
+description:      define a private path only visible and accessible to those with specified acls
+------------------------------------------------------------------------------------------------------------------------
+usage:            site_cmd <command> <descrption> <exec|text|alias> <target> [<arguments> ..]
+required:         no
+defauult:          none
+description:      define a custom site command
+------------------------------------------------------------------------------------------------------------------------
+usage:            idle_timeout <default seconds> <min seconds> <max seconds>
+required:         no
+default:          900 1 7200
+description:      specify default idle timeout and restrictions on site idle command
+------------------------------------------------------------------------------------------------------------------------
+usage:            week_start <sunday|monday>
+required:         no
+default:          sunday
+description:      which day of the week will the stat week roll over on
+------------------------------------------------------------------------------------------------------------------------
+usage:            pre_check <script path> [<path mask>]
+required:         no
+default:          none
+description:      run pre upload checking script for optional path mask or all paths
+                  pass 'none' as script path to disable for specified path
+------------------------------------------------------------------------------------------------------------------------
+usage:            pre_dir_check <script path> [<path mask>]
+required:         no
+default:          none
+description:      run a pre mkdir checking script for an optional path mask or all paths
+                  pass 'none' as script path to disable for specific path
+------------------------------------------------------------------------------------------------------------------------
+usage:            post_check <script path> [<path mask>]
+required:         no
+default:          none
+description:      run a post upload checking script for an optional path mask or all paths
+                  pass 'none' as script path to disable for specific path
+------------------------------------------------------------------------------------------------------------------------
+usage:            epsv_fxp <allow|deny|force>
+required:         no
+default:          allow
+description:      controls the functionality of the epsv command
+                  allow - enables access to non-standard epsv features required for fxp
+                  deny - disables access to the same non-standard features
+                  force - enables the non-standard features by default
+------------------------------------------------------------------------------------------------------------------------
+usage:            maximum_ratio <number>
+required:         no
+default:          10
+description:      maximum allowable ratio when changed using site change command
+------------------------------------------------------------------------------------------------------------------------
+usage:            dir_size_depth <number>
+required:         no
+default:          2
+description:      number of directories deep to recurse when calculating directory size for site search and site new
+------------------------------------------------------------------------------------------------------------------------
+usage:            async_crc <yes|no>
+required:         no
+default:          no
+description:      perform on-the-fly crc calculations in a separate thread (experimental)
+------------------------------------------------------------------------------------------------------------------------
+usage:            tls_control <acls>
+required:         no
+default:          * (enforce for all users)
+description:      acls for which to enforce tls on the control connection
+------------------------------------------------------------------------------------------------------------------------
+usage:            tls_listing <acls>
+required:         no
+default:          * (enforce for all users)
+description:      acls for which to enforce tls on directory listings
+------------------------------------------------------------------------------------------------------------------------
+usage:            tls_data <acls>
+required:         no
+default:          !* (not enforced)
+description:      acls for which to enforce tls on data connections listings
+------------------------------------------------------------------------------------------------------------------------
+usage:            tls_fxp <acls>
+required:         no
+default:          !* (not enforced)
+description:      acls for which to enforce tls on fxp connections listings
+------------------------------------------------------------------------------------------------------------------------
+usage:            ident_lookup <yes|no>
+required:         no
+default:          yes
+description:      do ident lookups on connect, required for ident checking
+------------------------------------------------------------------------------------------------------------------------
+usage:            ident_lookup <yes|no>
+required:         no
+default:          yes
+description:      do dns lookups on connect, required for ident@hostname checking
+------------------------------------------------------------------------------------------------------------------------
+usage:            log_addresses <never|errors|always>
+required:         no
+default:          always
+description:      when to log client ip and/or hostnames
+
+section / endsection block
+------------------------------------------------------------------------------------------------------------------------
+usage:            path <path mask> [<path mask> ..]
+required:         no
+default:          none
+description:      path masks that match this section
+------------------------------------------------------------------------------------------------------------------------
+usage:            separate_credits <yes|no>
+required:         no
+default:          no
+description:      separate credits from other sections
+------------------------------------------------------------------------------------------------------------------------
+usage:            ratio <number>
+required:         no
+default:          -1
+description:      separate ratio from other sections (-1 no separate ratio)
+------------------------------------------------------------------------------------------------------------------------

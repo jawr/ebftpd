@@ -15,7 +15,7 @@
 #include "ftp/control.hpp"
 #include "ftp/xdupe.hpp"
 #include "util/processreader.hpp"
-#include "ftp/clientstate.hpp"
+#include "ftp/enums.hpp"
 
 namespace util
 {
@@ -72,6 +72,7 @@ class ClientImpl : public util::Thread
   void LookupIdent();
   void IdleReset(std::string commandLine)  ;
   bool ReloadUser();
+  std::string SanitiseAddress(std::string address, LogAddresses log) const;
   
   ClientImpl& operator=(ClientImpl&&) = delete;
   ClientImpl& operator=(const ClientImpl&) = delete;
@@ -163,25 +164,11 @@ public:
   bool PostCheckAddress();
   bool PreCheckAddress();
   
-  std::string IP() const
-  {
-    std::lock_guard<std::mutex> lock(mutex);
-    return ip;
-  }
-  
-  std::string Ident() const
-  {
-    std::lock_guard<std::mutex> lock(mutex);
-    return ident;
-  }
-  
-  std::string Hostname() const
-  {
-    std::lock_guard<std::mutex> lock(mutex);
-    return hostname;
-  }
+  std::string IP(LogAddresses log = LogAddresses::NotLogging) const;
+  std::string Ident(LogAddresses log = LogAddresses::NotLogging) const;
+  std::string Hostname(LogAddresses log = LogAddresses::NotLogging) const;
   void HostnameLookup();
-  std::string HostnameAndIP() const;
+  std::string HostnameAndIP(LogAddresses log = LogAddresses::NotLogging) const;
   bool IdntUpdate(const std::string& ident, std::string ip,
                   const std::string& hostname);
   bool IdntParse(const std::string& command);

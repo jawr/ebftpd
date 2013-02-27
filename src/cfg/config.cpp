@@ -20,6 +20,14 @@ template <> const char* util::EnumStrings<cfg::EPSVFxp>::values[] =
   ""
 };
 
+template <> const char* util::EnumStrings<cfg::LogAddresses>::values[] = 
+{
+  "never",
+  "errors",
+  "always",
+  ""
+};
+
 }
 
 namespace cfg
@@ -65,6 +73,9 @@ Config::Config(const std::string& configPath, bool tool) :
   maximumRatio(10),
   dirSizeDepth(2),
   asyncCRC(false),
+  identLookup(true),
+  dnsLookup(true),
+  logAddresses(cfg::LogAddresses::Always),
   tlsControl("*"),
   tlsListing("*"),
   tlsData("!*"),
@@ -590,6 +601,22 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1);
     asyncCRC = util::BoolLexicalCast(toks[0]);
+  }
+  else if (opt == "ident_lookup")
+  {
+    ParameterCheck(opt, toks, 1);
+    identLookup = util::BoolLexicalCast(toks[0]);
+  }
+  else if (opt == "dns_lookup")
+  {
+    ParameterCheck(opt, toks, 1);
+    dnsLookup = util::BoolLexicalCast(toks[0]);
+  }
+  else if (opt == "log_addresses")
+  {
+    ParameterCheck(opt, toks, 1);
+    if (!util::EnumFromString(toks[0], logAddresses))
+      throw boost::bad_lexical_cast();
   }
   else if (opt == "tls_control")
   {

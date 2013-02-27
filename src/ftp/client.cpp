@@ -183,19 +183,19 @@ bool Client::PreCheckAddress()
   return pimpl->PreCheckAddress();
 }
 
-std::string Client::IP() const
+std::string Client::IP(LogAddresses log) const
 {
-  return pimpl->IP();
+  return pimpl->IP(log);
 }
 
-std::string Client::Ident() const
+std::string Client::Ident(LogAddresses log) const
 {
-  return pimpl->Ident();
+  return pimpl->Ident(log);
 }
 
-std::string Client::Hostname() const
+std::string Client::Hostname(LogAddresses log) const
 {
-  return pimpl->Hostname();
+  return pimpl->Hostname(log);
 }
 
 void Client::HostnameLookup()
@@ -203,9 +203,9 @@ void Client::HostnameLookup()
   pimpl->HostnameLookup();
 }
 
-std::string Client::HostnameAndIP() const
+std::string Client::HostnameAndIP(LogAddresses log) const
 {
-  return pimpl->HostnameAndIP();
+  return pimpl->HostnameAndIP(log);
 }
 
 bool Client::IdntUpdate(const std::string& ident, std::string ip,

@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 #include "acl/types.hpp"
-#include "ftp/clientstate.hpp"
+#include "ftp/enums.hpp"
 
 namespace boost
 {
@@ -99,11 +99,11 @@ public:
   static bool IsSiteopOnly();
   bool PostCheckAddress();
   bool PreCheckAddress();
-  std::string IP() const;  
-  std::string Ident() const;
-  std::string Hostname() const;
+  std::string IP(LogAddresses log = LogAddresses::NotLogging) const;  
+  std::string Ident(LogAddresses log = LogAddresses::NotLogging) const;
+  std::string Hostname(LogAddresses log = LogAddresses::NotLogging) const;
   void HostnameLookup();
-  std::string HostnameAndIP() const;
+  std::string HostnameAndIP(LogAddresses log = LogAddresses::NotLogging) const;
   bool IdntUpdate(const std::string& ident, std::string ip,
                   const std::string& hostname);
   bool IdntParse(const std::string& command);
