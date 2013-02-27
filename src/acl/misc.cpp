@@ -95,7 +95,7 @@ UploadMaximum(const User& user, const fs::Path& path)
   {
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {
-      if (limit.UlLimit() > 0 && limit.ACL().Evaluate(info) &&
+      if (limit.Uploads() > 0 && limit.ACL().Evaluate(info) &&
           util::WildcardMatch(limit.Path(), path.ToString()))
       {
         matches.emplace_back(&limit);
@@ -114,7 +114,7 @@ DownloadMaximum(const User& user, const fs::Path& path)
   {
     for (const auto& limit : cfg::Get().MaximumSpeed())
     {
-      if (limit.DlLimit() > 0 && limit.ACL().Evaluate(info) &&
+      if (limit.Downloads() > 0 && limit.ACL().Evaluate(info) &&
           util::WildcardMatch(limit.Path(), path.ToString()))
       {
         matches.emplace_back(&limit);
@@ -132,7 +132,7 @@ int UploadMinimum(const User& user, const fs::Path& path)
     if (limit.ACL().Evaluate(info) &&
         util::WildcardMatch(limit.Path(), path.ToString()))
     {
-      return limit.UlLimit();
+      return limit.Uploads();
     }
   }
   return 0;
@@ -146,7 +146,7 @@ int DownloadMinimum(const User& user, const fs::Path& path)
     if (limit.ACL().Evaluate(info) &&
         util::WildcardMatch(limit.Path(), path.ToString()))
     {
-      return limit.DlLimit();
+      return limit.Downloads();
     }
   }
   return 0;

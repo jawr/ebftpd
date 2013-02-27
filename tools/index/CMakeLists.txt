@@ -6,3 +6,5 @@ include_directories (${SERVER_SRC} ../../util)
 add_executable (index index.cpp)
 add_dependencies(index version cb util)
 target_link_libraries(index eb util ${ALL_LIBRARIES})
+install(TARGETS index RUNTIME DESTINATION bin)
+

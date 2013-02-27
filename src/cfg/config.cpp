@@ -44,10 +44,9 @@ Config::Config(const std::string& configPath, bool tool) :
   tool(tool),
   currentSection(nullptr),
   port(-1),
-  freeSpace(100),
-  timezone(0),
-  sitenameLong("SITE NAME"),
-  sitenameShort("SN"),
+  freeSpace(1024),
+  sitenameLong("EBFTPD"),
+  sitenameShort("EB"),
   datapath("data"),
   bouncerOnly(false),
   securityLog("security", true, true, 0),
@@ -57,10 +56,10 @@ Config::Config(const std::string& configPath, bool tool) :
   debugLog("debug", true, true, 0),
   siteopLog("siteop", true, true, 0),
   dlIncomplete(true),
-  totalUsers(20),
+  totalUsers(-1),
   multiplierMax(10),
   emptyNuke(102400),
-  maxSitecmdLines(-1),
+  maxSitecmdLines(1000),
   weekStart(::cfg::WeekStart::Sunday),
   epsvFxp(::cfg::EPSVFxp::Allow),
   maximumRatio(10),
@@ -145,6 +144,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1);
     port = boost::lexical_cast<int>(toks[0]);
+    if (port < 0 || port > 65535) throw boost::bad_lexical_cast();
   }
   else if (opt == "tls_certificate")
   {
@@ -178,31 +178,31 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1);
     freeSpace = boost::lexical_cast<int>(toks[0]);
+    if (freeSpace < 0) throw boost::bad_lexical_cast();
   }
   else if (opt == "total_users")
   {
     ParameterCheck(opt, toks, 1);
     totalUsers = boost::lexical_cast<int>(toks[0]);
+    if (totalUsers < -1) throw boost::bad_lexical_cast();
   }
   else if (opt == "multiplier_max")
   {
     ParameterCheck(opt, toks, 1);
     multiplierMax = boost::lexical_cast<int>(toks[0]);
+    if (multiplierMax < 1) throw boost::bad_lexical_cast();
   }
   else if (opt == "empty_nuke")
   {
     ParameterCheck(opt, toks, 1);
     emptyNuke = boost::lexical_cast<int>(toks[0]);
+    if (emptyNuke < 0) throw boost::bad_lexical_cast();
   }
   else if (opt == "max_sitecmd_lines")
   {
     ParameterCheck(opt, toks, 1);
     maxSitecmdLines = boost::lexical_cast<int>(toks[0]);
-  }
-  else if (opt == "timezone")
-  {
-    ParameterCheck(opt, toks, 1);
-    timezone = boost::lexical_cast<int>(toks[0]);
+    if (maxSitecmdLines < -1) throw boost::bad_lexical_cast();
   }
   else if (opt == "dl_incomplete")
   {
@@ -307,12 +307,12 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "maximum_speed")
   {
-    ParameterCheck(opt, toks, 3, -1);
+    ParameterCheck(opt, toks, 4, -1);
     maximumSpeed.emplace_back(toks);
   }
   else if (opt == "minimum_speed")
   {
-    ParameterCheck(opt, toks, 3, -1);
+    ParameterCheck(opt, toks, 4, -1);
     minimumSpeed.emplace_back(toks);
   }
   else if (opt == "sim_xfers")
@@ -332,8 +332,8 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "pasv_addr")
   {
-    ParameterCheck(opt, toks, 1);
-    pasvAddr.emplace_back(toks[0]);
+    ParameterCheck(opt, toks, 1, -1);
+    pasvAddr.insert(pasvAddr.end(), toks.begin(), toks.end());
   }
   else if (opt == "active_ports")
   {
@@ -346,7 +346,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "allow_fxp")
   {
-    ParameterCheck(opt, toks, 3, -1);
+    ParameterCheck(opt, toks, 4, -1);
     allowFxp.emplace_back(toks);
   }
   else if (opt == "welcome_msg")
@@ -361,8 +361,8 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "cdpath")
   {
-    ParameterCheck(opt, toks, 1);
-    cdpath.emplace_back(toks[0]);
+    ParameterCheck(opt, toks, 1, -1);
+    cdpath.insert(cdpath.end(), toks.begin(), toks.end());
   }
   else if (opt == "alias")
   {
@@ -426,18 +426,18 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "event_path")
   {
-    ParameterCheck(opt, toks, 1);
-    eventpath.emplace_back(toks[0]);
+    ParameterCheck(opt, toks, 1, -1);
+    eventpath.insert(bouncerIp.end(), toks.begin(), toks.end());
   }
   else if (opt == "dupe_path")
   {
-    ParameterCheck(opt, toks, 1);
-    dupepath.emplace_back(toks[0]);
+    ParameterCheck(opt, toks, 1, -1);
+    dupepath.insert(bouncerIp.end(), toks.begin(), toks.end());
   }
   else if (opt == "index_path")
   {
-    ParameterCheck(opt, toks, 1);
-    indexpath.emplace_back(toks[0]);
+    ParameterCheck(opt, toks, 1, -1);
+    indexpath.insert(bouncerIp.end(), toks.begin(), toks.end());
   } 
   else if (opt == "hideinwho")
   {
@@ -464,9 +464,9 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 2, -1);
     showDiz.emplace_back(toks);
   }
-  else if (opt == "path-filter")
+  else if (opt == "path_filter")
   {
-    ParameterCheck(opt, toks, 3, -1);
+    ParameterCheck(opt, toks, 2, -1);
     pathFilter.emplace_back(toks);
   }
   else if (opt == "max_users")
@@ -476,12 +476,12 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "max_ustats")
   {
-    ParameterCheck(opt, toks, 1, -1);
+    ParameterCheck(opt, toks, 2, -1);
     maxUstats.emplace_back(toks);
   }
   else if (opt == "max_gstats")
   {
-    ParameterCheck(opt, toks, 1, -1);
+    ParameterCheck(opt, toks, 2, -1);
     maxGstats.emplace_back(toks);
   }
   else if (opt == "cscript")
@@ -506,7 +506,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "creditloss")
   {
-    ParameterCheck(opt, toks, 4, -1);
+    ParameterCheck(opt, toks, 3, -1);
     creditloss.emplace_back(toks);
   }
   else if (opt == "nukedir_style")
@@ -577,28 +577,14 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "maximum_ratio")
   {
     ParameterCheck(opt, toks, 1);
-    try
-    {
-      maximumRatio = boost::lexical_cast<int>(toks[0]);
-      if (maximumRatio < 0) throw boost::bad_lexical_cast();
-    }
-    catch (const boost::bad_lexical_cast&)
-    {
-      throw ConfigError("maximum_ratio must be zero or larger");
-    }
+    maximumRatio = boost::lexical_cast<int>(toks[0]);
+    if (maximumRatio < 0) throw boost::bad_lexical_cast();
   }
   else if (opt == "dir_size_depth")
   {
     ParameterCheck(opt, toks, 1);
-    try
-    {
-      dirSizeDepth = boost::lexical_cast<int>(toks[0]);
-      if (dirSizeDepth < 0) throw boost::bad_lexical_cast();
-    }
-    catch (const boost::bad_lexical_cast&)
-    {
-      throw ConfigError("dir_size_depth must be zero or larger");
-    }
+    dirSizeDepth = boost::lexical_cast<int>(toks[0]);
+    if (dirSizeDepth < 0) throw boost::bad_lexical_cast();
   }
   else if (opt == "async_crc")
   {
@@ -631,8 +617,8 @@ void Config::ParseSection(const std::string& opt, std::vector<std::string>& toks
 {
   if (opt == "path")
   {
-    ParameterCheck(opt, toks, 1);
-    currentSection->paths.emplace_back(toks[0]);
+    ParameterCheck(opt, toks, 1, -1);
+    currentSection->paths.insert(currentSection->paths.end(), toks.begin(), toks.end());
   }
   else if (opt == "separate_credits")
   {
@@ -691,7 +677,7 @@ void Config::ParameterCheck(const std::string& opt,
 {
   int toksSize = static_cast<int>(toks.size());
   if (toksSize < minimum || (maximum != -1 && toksSize > maximum))
-    throw ConfigError("Wrong numer of Parameters for " + opt);
+    throw ConfigError("Wrong numer of parameters for " + opt);
 }
 
 bool Config::CheckSetting(const std::string& name)
@@ -710,6 +696,7 @@ void Config::SanityCheck()
     loginPrompt = sitenameLong + ": ebftpd connected.";
     
   if (allowFxp.empty()) allowFxp.emplace_back();
+  if (pathFilter.empty()) pathFilter.emplace_back();
 }
 
 bool Config::IsBouncer(const std::string& ip) const

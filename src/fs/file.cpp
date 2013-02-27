@@ -77,7 +77,7 @@ FileSinkPtr CreateFile(const acl::User& user, const VirtualPath& path)
   e = util::path::FreeDiskSpace(MakeReal(path).Dirname().ToString(), freeBytes);
   if (!e) throw util::SystemError(e.Errno());
   
-  if (cfg::Get().FreeSpace() > freeBytes / 1024 / 1024)
+  if (static_cast<unsigned long>(cfg::Get().FreeSpace()) > freeBytes / 1024 / 1024)
     throw util::SystemError(ENOSPC);
 
   mode_t mode = cfg::Get().DlIncomplete() ? 0755 : 0644;
@@ -108,7 +108,7 @@ FileSinkPtr AppendFile(const acl::User& user, const VirtualPath& path, off_t off
   e = util::path::FreeDiskSpace(MakeReal(path).Dirname().ToString(), freeBytes);
   if (!e) throw util::SystemError(e.Errno());
   
-  if (cfg::Get().FreeSpace() > freeBytes / 1024 / 1024)
+  if (static_cast<unsigned long>(cfg::Get().FreeSpace()) > freeBytes / 1024 / 1024)
     throw util::SystemError(ENOSPC);
 
   int fd = open(MakeReal(path).CString(), O_WRONLY | O_APPEND);

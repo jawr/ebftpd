@@ -105,7 +105,7 @@ void ADDUSERCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  if (acl::User::TotalUsers() >= cfg::Get().TotalUsers())
+  if (config.TotalUsers() != -1 && static_cast<int>(acl::User::TotalUsers()) >= config.TotalUsers())
   {
     control.Format(ftp::ActionNotOkay, "Maximum users added limit of %1% has been reached.", 
                    cfg::Get().TotalUsers());

@@ -18,12 +18,12 @@ int MaximumDownloads()
 
 int UploadSpeedLimit(const cfg::setting::SpeedLimit& limit)
 {
-  return limit.UlLimit();
+  return limit.Uploads();
 }
 
 int DownloadSpeedLimit(const cfg::setting::SpeedLimit& limit)
 {
-  return limit.DlLimit();
+  return limit.Downloads();
 }
 
 }

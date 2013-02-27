@@ -120,14 +120,15 @@ public:
 class SpeedLimit
 {
   std::string path;
-  long dlLimit;
-  long ulLimit;
+  long downloads;
+  long uploads;
   acl::ACL acl;
+  
 public:
   SpeedLimit(std::vector<std::string> toks);
   const std::string& Path() const { return path; }
-  long DlLimit() const { return dlLimit; }
-  long UlLimit() const { return ulLimit; }
+  long Uploads() const { return downloads; }
+  long Downloads() const { return uploads; }
   const acl::ACL& ACL() const { return acl; }
 };
 
@@ -201,7 +202,6 @@ public:
 
 class PathFilter
 {
-  std::string messagePath;
   std::unique_ptr<boost::regex> regex;
   acl::ACL acl;
   
@@ -212,8 +212,8 @@ public:
   PathFilter(PathFilter&& other);
   ~PathFilter();
   
+  PathFilter();
   PathFilter(std::vector<std::string> toks);
-  const std::string& MessagePath() const { return messagePath; }
   const boost::regex& Regex() const;
   const acl::ACL& ACL() const { return acl; }
   
@@ -236,7 +236,7 @@ class Lslong
   std::string options;
   int maxRecursion;
 public:
-  Lslong() : options("l"), maxRecursion(0) { }
+  Lslong() : options("l"), maxRecursion(2) { }
   Lslong(std::vector<std::string> toks);
   const std::string& Bin() const { return bin; }
   const std::string& Options() const { return options; }
@@ -264,22 +264,6 @@ public:
   int Max() const { return max; }
 };
 
-class Lastonline
-{
-public:
-  enum Type { ALL, TIMEOUT, ALL_WITH_ACTIVITY };
-
-private:
-  Type type;
-  int max;
-
-public:
-  Lastonline() : type(ALL), max(10) { }
-  Lastonline(const std::vector<std::string>& toks);
-  Type GetType() const { return type; }
-  int Max() const { return max; }
-};
-
 class Creditcheck
 {
   std::string path;
@@ -295,16 +279,14 @@ public:
 
 class Creditloss
 {
-  int ratio;
-  bool allowLeechers;
   std::string path;
+  int ratio;
   acl::ACL acl;
   
 public:
   Creditloss(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
   int Ratio() const { return ratio; }
-  bool AllowLeechers() const { return allowLeechers; }
   const std::string& Path() const { return path; }
 };
 
@@ -316,27 +298,27 @@ public:
 private:
   std::string format;
   Type type;
-  int minBytes;
+  long emptyBytes;
 
 public:
-  NukedirStyle() : type(KEEP), minBytes(1024 * 1024) { }
+  NukedirStyle() : type(KEEP), emptyBytes(1024 * 1024) { }
   NukedirStyle(const std::vector<std::string>& toks);
   const std::string& Format() const { return format; }
-  int MinBytes() const { return minBytes; }
+  long EmptyBytes() const { return emptyBytes; }
   Type GetType() const { return type; }
 };
 
 class Msgpath
 {
   std::string path;
-  std::string file;
+  std::string filepath;
   acl::ACL acl;
   
 public:
   Msgpath(const std::vector<std::string>& toks);
   const std::string& Path() const { return path; }
   const acl::ACL& ACL() const { return acl; }
-  const std::string& File() const { return file; }
+  const std::string& Filepath() const { return filepath; }
 };
 
 class Privpath

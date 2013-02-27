@@ -5,3 +5,6 @@ include_directories(.)
 
 file(GLOB_RECURSE SRCS util/*.cpp)
 add_library(util SHARED ${SRCS})
+
+install(TARGETS util
+        LIBRARY DESTINATION lib)

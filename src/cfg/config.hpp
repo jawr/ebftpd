@@ -48,8 +48,7 @@ class Config
   // glftpd
   setting::AsciiDownloads asciiDownloads;
   setting::AsciiUploads asciiUploads;
-  unsigned freeSpace;
-  int timezone;
+  int freeSpace;
   std::string sitenameLong;
   std::string sitenameShort;
   std::string loginPrompt;
@@ -114,7 +113,7 @@ class Config
   bool dlIncomplete;
   std::vector<setting::Cscript> cscript;
   std::vector<std::string> idleCommands;
-  unsigned totalUsers;
+  int totalUsers;
   setting::Lslong lslong;
   std::vector<setting::HiddenFiles> hiddenFiles;
   std::vector<std::string> noretrieve;
@@ -177,8 +176,7 @@ public:
   int Port() const { return port; }
   const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
   const setting::AsciiUploads& AsciiUploads() const { return asciiUploads; } 
-  unsigned FreeSpace() const { return freeSpace; }
-  int Timezone() const { return timezone; }
+  int FreeSpace() const { return freeSpace; }
   const std::string& SitenameLong() const { return sitenameLong; }
   const std::string& SitenameShort() const { return sitenameShort; }
   const std::string& LoginPrompt() const { return loginPrompt; }
@@ -248,7 +246,7 @@ public:
   bool DlIncomplete() const { return dlIncomplete; }
   const std::vector<setting::Cscript>& Cscript() const { return cscript; }
   const std::vector<std::string>& IdleCommands() const { return idleCommands; }
-  unsigned TotalUsers() const { return totalUsers; }
+  int TotalUsers() const { return totalUsers; }
   const setting::Lslong& Lslong() const { return lslong; }
   const std::vector<setting::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
   const std::vector<std::string>& Noretrieve() const { return noretrieve; }

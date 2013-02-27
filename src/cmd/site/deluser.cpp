@@ -7,6 +7,7 @@
 #include "acl/misc.hpp"
 #include "logs/logs.hpp"
 #include "acl/flags.hpp"
+#include "cfg/get.hpp"
 
 namespace cmd { namespace site
 {
@@ -24,6 +25,12 @@ void DELUSERCommand::Execute()
   if (!user)
   {
     control.Reply(ftp::ActionNotOkay, "User " + args[1] + " doesn't exist.");
+    throw cmd::NoPostScriptError();    
+  }
+  
+  if (user->HasFlag(acl::Flag::Siteop) && !cfg::Get().IsMaster(client.User().Name()))
+  {
+    control.Reply(ftp::ActionNotOkay, "Only masters can delete other siteops.");
     throw cmd::NoPostScriptError();    
   }
   
