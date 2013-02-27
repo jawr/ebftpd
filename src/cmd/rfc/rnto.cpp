@@ -15,11 +15,9 @@ void RNTOCommand::Execute()
 {
   fs::VirtualPath path(fs::PathFromUser(argStr));
 
-  fs::Path messagePath;
-  util::Error e(acl::path::Filter(client.User(), path.Basename(), messagePath));
+  util::Error e(acl::path::Filter(client.User(), path.Basename()));
   if (!e)
   {
-    // should display above messagepath, we'll just reply for now
     control.Reply(ftp::ActionNotOkay, "Path name contains one or more invalid characters.");
     throw cmd::NoPostScriptError();
   }

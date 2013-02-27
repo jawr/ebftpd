@@ -360,8 +360,7 @@ util::Error Allowed(const User& user, const fs::VirtualPath& path)
 
 template util::Error Allowed<View>(const User& user, const fs::VirtualPath& path);
 
-util::Error Filter(const User& user, const fs::Path& basename, 
-    fs::Path& messagePath)
+util::Error Filter(const User& user, const fs::Path& basename)
 {
   auto info = user.ACLInfo();
   for (auto& filter : cfg::Get().PathFilter())
@@ -370,7 +369,6 @@ util::Error Filter(const User& user, const fs::Path& basename,
     {
       if (!boost::regex_match(basename.ToString(), filter.Regex()))
       {
-        messagePath = fs::Path(filter.MessagePath());
         return util::Error::Failure(EACCES);
       }
       break;

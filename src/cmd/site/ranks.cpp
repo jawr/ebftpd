@@ -48,6 +48,7 @@ void RANKSCommand::Execute()
   }
 
   int maxNumber = acl::stats::MaxUsers(client.User());
+  std::cout << maxNumber << std::endl;
   if (maxNumber != -1)
   {
     number = std::min(maxNumber, number);

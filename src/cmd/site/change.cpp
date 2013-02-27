@@ -282,16 +282,35 @@ CHANGECommand::SetFunction CHANGECommand::CheckFlags()
   
   switch (action)
   {
-    case '+'  : return [flags](acl::User& user) -> bool { user.AddFlags(flags); return true; };
-    case '-'  : return [flags](acl::User& user) -> bool
+    case '+'  : return [flags, this](acl::User& user) -> bool
                         {
+                          if (user.HasFlag(acl::Flag::Siteop) && !cfg::Get().IsMaster(client.User().Name()))
+                          {
+                            control.PartFormat(ftp::CommandOkay, "Only masters can change flags of other siteops.");
+                            return false;
+                          }
+                          user.AddFlags(flags); 
+                          return true; 
+                        };
+    case '-'  : return [flags, this](acl::User& user) -> bool
+                        {
+                          if (user.HasFlag(acl::Flag::Siteop) && !cfg::Get().IsMaster(client.User().Name()))
+                          {
+                            control.PartFormat(ftp::CommandOkay, "Only masters can change flags of other siteops.");
+                            return false;
+                          }
                           user.DelFlags(flags); 
                           // ensure the template flag is not deleted from default user
                           if (user.ID() == 1) user.AddFlag(acl::Flag::Template);
                           return true; 
                         };
-    case '='  : return [flags](acl::User& user) -> bool
+    case '='  : return [flags, this](acl::User& user) -> bool
                         {
+                          if (user.HasFlag(acl::Flag::Siteop) && !cfg::Get().IsMaster(client.User().Name()))
+                          {
+                            control.PartFormat(ftp::CommandOkay, "Only masters can change flags of other siteops.");
+                            return false;
+                          }
                           user.SetFlags(flags);
                           // ensure the template flag is not deleted from default user
                           if (user.ID() == 1) user.AddFlag(acl::Flag::Template);

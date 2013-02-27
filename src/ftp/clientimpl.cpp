@@ -322,8 +322,7 @@ void ClientImpl::LookupIdent()
   
   try
   {
-    util::net::IdentClient identClient(control.LocalEndpoint(), 
-                                       control.RemoteEndpoint());
+    util::net::IdentClient identClient(control.LocalEndpoint(), control.RemoteEndpoint());
     ident = identClient.Ident();
   }
   catch (util::net::NetworkError& e)
