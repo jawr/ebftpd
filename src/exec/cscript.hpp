@@ -15,7 +15,7 @@ class Client;
 namespace exec
 {
 
-typedef cfg::setting::Cscript::Type CscriptType;
+typedef cfg::Cscript::Type CscriptType;
 
 bool Cscripts(ftp::Client& client, const std::string& command, 
     const std::string& fullCommand, CscriptType type, ftp::ReplyCode failCode);

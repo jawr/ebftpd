@@ -344,7 +344,7 @@ Factory::Factory()
 
 CommandDefOpt Factory::LookupCustom(const std::string& command)
 {
-  const cfg::setting::SiteCmd* match = nullptr;
+  const cfg::SiteCmd* match = nullptr;
   for (auto& siteCmd : cfg::Get().SiteCmd())
   {
     if (siteCmd.Command() == command)
@@ -360,19 +360,19 @@ CommandDefOpt Factory::LookupCustom(const std::string& command)
   std::string aclKeyword("custom-" + command);
   switch (match->GetType())
   {
-    case cfg::setting::SiteCmd::Type::EXEC  :
+    case cfg::SiteCmd::Type::EXEC  :
     {
       def.reset(CommandDef(util::ToLowerCopy(aclKeyword), 
           CreatorBasePtr(new CustomCreator<CustomEXECCommand>(*match))));
       break;
     }
-    case cfg::setting::SiteCmd::Type::TEXT  :
+    case cfg::SiteCmd::Type::TEXT  :
     {
       def.reset(CommandDef(util::ToLowerCopy(aclKeyword), 
           CreatorBasePtr(new CustomCreator<CustomTEXTCommand>(*match))));
       break;
     }
-    case cfg::setting::SiteCmd::Type::ALIAS :
+    case cfg::SiteCmd::Type::ALIAS :
     {
       def.reset(CommandDef(util::ToLowerCopy(aclKeyword), 
           CreatorBasePtr(new CustomCreator<CustomALIASCommand>(*match))));

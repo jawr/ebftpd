@@ -10,10 +10,9 @@
 #include <string>
 #include "acl/types.hpp"
 
-namespace cfg { namespace setting
+namespace cfg
 {
 class SpeedLimit;
-}
 }
 
 namespace ftp
@@ -67,9 +66,9 @@ class SpeedCounter
 {
   std::mutex mutex;
   std::unordered_map<std::string, std::pair<int, SpeedInfo>> speeds;
-  std::function<int(const cfg::setting::SpeedLimit&)> getSpeedLimit;
+  std::function<int(const cfg::SpeedLimit&)> getSpeedLimit;
 
-  SpeedCounter(const std::function<int(const cfg::setting::SpeedLimit&)>& getSpeedLimit) :
+  SpeedCounter(const std::function<int(const cfg::SpeedLimit&)>& getSpeedLimit) :
     getSpeedLimit(getSpeedLimit)
   { }
   
@@ -80,7 +79,7 @@ class SpeedCounter
   
 public:
 
-  typedef std::vector<const cfg::setting::SpeedLimit*>& SpeedLimitList;
+  typedef std::vector<const cfg::SpeedLimit*>& SpeedLimitList;
   
   boost::posix_time::time_duration 
   Update(const SpeedInfoOpt& last, const SpeedInfo& current, const SpeedLimitList& limits);

@@ -106,7 +106,6 @@ util::Error SetOwner(const std::string& path, const Owner& owner)
   return util::Error::Success();
 }
 
-#ifndef EXTERNAL_TOOL
 Owner GetOwner(const RealPath& path)
 {
   return GetOwner(path.ToString());
@@ -117,6 +116,5 @@ util::Error SetOwner(const RealPath& path, const Owner& owner)
 {
   return SetOwner(path.ToString(), owner);
 }
-#endif
 
 } /* fs namespace */

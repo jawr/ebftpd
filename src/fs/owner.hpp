@@ -3,10 +3,7 @@
 
 #include <ostream>
 #include "acl/types.hpp"
-
-#ifndef EXTERNAL_TOOL
 #include "fs/path.hpp"
-#endif
 
 namespace util
 {
@@ -31,10 +28,8 @@ public:
 Owner GetOwner(const std::string& path);
 util::Error SetOwner(const std::string& path, const Owner& owner);
 
-#ifndef EXTERNAL_TOOL
 Owner GetOwner(const RealPath& path);
 util::Error SetOwner(const RealPath& path, const Owner& owner);
-#endif
 
 inline std::ostream& operator<<(std::ostream& os, const Owner& owner)
 {

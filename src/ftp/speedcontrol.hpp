@@ -25,7 +25,7 @@ private:
   int minimumSpeed;
   int maximumSpeed;
   const TransferState& state;
-  std::vector<const cfg::setting::SpeedLimit*> globalLimits;
+  std::vector<const cfg::SpeedLimit*> globalLimits;
   SpeedCounter& globalCounter;
   boost::posix_time::ptime lastMinimumOk;
   SpeedInfoOpt lastSpeedInfo;
@@ -49,7 +49,7 @@ private:
 protected:
   SpeedControl(int minimumSpeed, int maximumSpeed, 
                   const TransferState& state, 
-                  std::vector<const cfg::setting::SpeedLimit*>&& globalLimits,
+                  std::vector<const cfg::SpeedLimit*>&& globalLimits,
                   SpeedCounter& globalCounter) :
     minimumSpeed(minimumSpeed),
     maximumSpeed(maximumSpeed),

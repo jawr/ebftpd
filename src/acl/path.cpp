@@ -33,7 +33,7 @@ bool HiddenFile(const fs::VirtualPath& path)
   return false;
 }
 
-bool Evaluate(const std::vector<cfg::setting::Right>& rights, 
+bool Evaluate(const std::vector<cfg::Right>& rights, 
               const User& user, const fs::VirtualPath& path)
 {
   std::string group;

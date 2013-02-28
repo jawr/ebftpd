@@ -95,7 +95,8 @@ bool STORCommand::CalcCRC(const fs::VirtualPath& path)
 void STORCommand::Execute()
 {
   namespace pt = boost::posix_time;
-
+  namespace gd = boost::gregorian;
+  
   fs::VirtualPath path(fs::PathFromUser(argStr));
   
   util::Error e(acl::path::Filter(client.User(), path.Basename()));
@@ -222,9 +223,22 @@ void STORCommand::Execute()
     control.Reply(ftp::ProtocolNotSupported, os.str());
     return;
   }
-  
-  static const size_t bufferSize = 16384;
 
+  auto section = cfg::Get().SectionMatch(path.ToString());
+  
+  auto transferLogGuard = util::MakeScopeExit([&]
+  {
+    if (cfg::Get().TransferLog().Uploads())
+    {
+      bool okay = std::uncaught_exception();
+      logs::Transfer(fs::MakeReal(path).ToString(), "up", client.User().Name(), client.User().PrimaryGroup(), 
+                     (data.State().StartTime() - pt::ptime(gd::date(1970, 1, 1))).total_microseconds() / 1000000.0, 
+                     data.State().Bytes() / 1024, data.State().Duration().total_microseconds() / 1000000.0,
+                     okay, section ? section->Name() : std::string());
+      }
+  });
+
+  static const size_t bufferSize = 16384;
   bool calcCrc = CalcCRC(path);
   std::unique_ptr<util::CRC32> crc32(cfg::Get().AsyncCRC() ? 
                                      new util::AsyncCRC32(bufferSize, 10) :
@@ -299,8 +313,6 @@ void STORCommand::Execute()
     control.Reply(ftp::DataClosedOkay, "Transfer aborted @ " + stats::AutoUnitSpeedString(speed / 1024)); 
     throw cmd::NoPostScriptError();
   }
-
-  auto section = cfg::Get().SectionMatch(path.ToString());
   
   if (exec::PostCheck(client, path, 
                       calcCrc ? crc32->HexString() : "000000", speed, 

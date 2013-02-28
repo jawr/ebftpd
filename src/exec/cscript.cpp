@@ -12,7 +12,7 @@ namespace exec
 {
 
 bool Cscript(ftp::Client& client, const std::string& group, 
-      const cfg::setting::Cscript& cscript, const std::string& fullCommand, 
+      const cfg::Cscript& cscript, const std::string& fullCommand, 
       CscriptType type, ftp::ReplyCode failCode)
 {                      
   util::ProcessReader::ArgvType argv =

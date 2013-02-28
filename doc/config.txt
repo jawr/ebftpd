@@ -148,6 +148,12 @@ default:          yes yes 0
 description:      configure destinations for siteop log
                   database is specified as size as it's automatically rotated (0 to disable database)
 ------------------------------------------------------------------------------------------------------------------------
+usage:            transfer_log <console yes|no> <file yes|no> <database size> <uploads yes|no> <downloads yes|no>
+required:         no
+default:          no no 0 no no
+description:      configure destinations for transfer log
+                  database is specified as size as it's automatically rotated (0 to disable database)
+------------------------------------------------------------------------------------------------------------------------
 usage:            calc_crc <file mask> [<file mask> ..]
 required:         no
 default:          none

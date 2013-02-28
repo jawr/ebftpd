@@ -60,6 +60,11 @@ void LogSink::Write(const char* field, const char* value)
   Builder()->append(field, value);
 }
 
+void LogSink::Write(const char* field, const boost::posix_time::ptime& value)
+{
+  Builder()->append(field, ToDateT(value));
+}
+
 void LogSink::Flush()
 {
   mongo::BSONObjBuilder* bab = buffer.get();

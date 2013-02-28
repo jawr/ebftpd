@@ -17,6 +17,7 @@ Logger siteop;
 Logger error;
 Logger debug;
 Logger db;
+Logger transfer;
 
 std::shared_ptr<StreamSink> consoleSink;
 
@@ -27,7 +28,7 @@ void InitialisePreConfig()
   debug.PushSink(consoleSink);
 }
 
-void InitialiseLog(Logger& logger, const cfg::setting::Log& config)
+void InitialiseLog(Logger& logger, const cfg::Log& config)
 {
   if (config.Console())
   {
@@ -39,14 +40,12 @@ void InitialiseLog(Logger& logger, const cfg::setting::Log& config)
     logger.PushSink(std::make_shared<FileSink>(util::path::Join(cfg::Get().Datapath(), 
               "logs/" + config.Name() + ".log")));
   }
-  
-#ifndef EXTERNAL_TOOL
+
   if (config.Database())
   {
     logger.PushSink(std::make_shared<db::LogSink>("log." + config.Name(), 
               config.CollectionSize()));
   }
-#endif
 }
 
 bool InitialisePostConfig()
@@ -57,23 +56,20 @@ bool InitialisePostConfig()
   const cfg::Config& config = cfg::Get();
   InitialiseLog(db, config.DatabaseLog());
 
-#ifndef EXTERNAL_TOOL
   try
   {
-#endif
     InitialiseLog(events,config.EventLog()); 
     InitialiseLog(security, config.SecurityLog());
     InitialiseLog(siteop, config.SiteopLog());
     InitialiseLog(error, config.ErrorLog());
     InitialiseLog(debug, config.DebugLog());
-#ifndef EXTERNAL_TOOL
+    InitialiseLog(transfer, config.TransferLog());
   }
   catch (const db::LogCreationError&)
   {
     Database("Creation of one or more database log collections failed.");
     return false;
   }
-#endif
   
   return true;
 }

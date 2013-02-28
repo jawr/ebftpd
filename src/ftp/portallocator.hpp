@@ -23,14 +23,14 @@ class PortAllocator;
 class PortAllocatorImpl
 {
   std::mutex mutex;
-  cfg::setting::Ports ports;
-  std::vector<cfg::setting::PortRange>::const_iterator it;
+  cfg::Ports ports;
+  std::vector<cfg::PortRange>::const_iterator it;
   uint16_t nextPort;
   
   PortAllocatorImpl() : nextPort(0) { }
   
 public:
-  void SetPorts(const cfg::setting::Ports& ports)
+  void SetPorts(const cfg::Ports& ports)
   {
     std::lock_guard<std::mutex> lock(mutex);
     this->ports = ports;
@@ -66,7 +66,7 @@ class PortAllocator
   static PortAllocatorImpl instance;
   
 public:
-  static inline void SetPorts(const cfg::setting::Ports& ports)
+  static inline void SetPorts(const cfg::Ports& ports)
   { instance.SetPorts(ports); }
 
   static inline uint16_t NextPort()

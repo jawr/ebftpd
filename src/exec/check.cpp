@@ -14,7 +14,7 @@ namespace exec
 {
 
 boost::optional<const fs::Path>
-LookupCheck(const std::vector<cfg::setting::CheckScript>& checks, const fs::VirtualPath& path)
+LookupCheck(const std::vector<cfg::CheckScript>& checks, const fs::VirtualPath& path)
 {
   for (const auto& check : checks)
   {

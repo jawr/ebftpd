@@ -47,92 +47,93 @@ class Config
   std::string tlsCiphers;
   int port;
   // glftpd
-  setting::AsciiDownloads asciiDownloads;
-  setting::AsciiUploads asciiUploads;
+  ::cfg::AsciiDownloads asciiDownloads;
+  ::cfg::AsciiUploads asciiUploads;
   int freeSpace;
   std::string sitenameLong;
   std::string sitenameShort;
   std::string loginPrompt;
   std::vector<std::string> master;
-  std::vector<setting::SecureIp> secureIp;
-  std::vector<setting::SecurePass> securePass;
+  std::vector< ::cfg::SecureIp> secureIp;
+  std::vector< ::cfg::SecurePass> securePass;
   std::string datapath;
   std::vector<std::string> bouncerIp;
   bool bouncerOnly;
-  std::vector<setting::SpeedLimit> maximumSpeed;
-  std::vector<setting::SpeedLimit> minimumSpeed;
-  setting::SimXfers simXfers;
+  std::vector<SpeedLimit> maximumSpeed;
+  std::vector<SpeedLimit> minimumSpeed;
+  ::cfg::SimXfers simXfers;
   std::vector<std::string> calcCrc;
   std::vector<std::string> xdupe;
   std::vector<std::string> validIp;
   std::vector<std::string> activeAddr;
   std::vector<std::string> pasvAddr;
-  setting::Ports activePorts;
-  setting::Ports pasvPorts;
-  std::vector<setting::AllowFxp> allowFxp;
-  std::vector<setting::Right> welcomeMsg;
-  std::vector<setting::Right> goodbyeMsg;
+  Ports activePorts;
+  Ports pasvPorts;
+  std::vector< ::cfg::AllowFxp> allowFxp;
+  std::vector< ::cfg::Right> welcomeMsg;
+  std::vector< ::cfg::Right> goodbyeMsg;
   std::string banner;
-  std::vector<setting::Alias> alias;
+  std::vector< ::cfg::Alias> alias;
   std::vector<std::string> cdpath;
   
-  setting::Log securityLog;
-  setting::Log databaseLog;
-  setting::Log eventLog;
-  setting::Log errorLog;
-  setting::Log debugLog;
-  setting::Log siteopLog;
+  Log securityLog;
+  Log databaseLog;
+  Log eventLog;
+  Log errorLog;
+  Log debugLog;
+  Log siteopLog;
+  ::cfg::TransferLog transferLog;
   
   // ind rights
-  std::vector<setting::Right> delete_; // delete is reserved
-  std::vector<setting::Right> deleteown;
-  std::vector<setting::Right> overwrite;
-  std::vector<setting::Right> resume;
-  std::vector<setting::Right> rename;
-  std::vector<setting::Right> renameown;
-  std::vector<setting::Right> filemove;
-  std::vector<setting::Right> makedir;
-  std::vector<setting::Right> upload;
-  std::vector<setting::Right> download;
-  std::vector<setting::Right> nuke;
-  std::vector<setting::Right> hideinwho;
-  std::vector<setting::Right> freefile;
-  std::vector<setting::Right> nostats;
-  std::vector<setting::Right> hideowner;
+  std::vector< ::cfg::Right> delete_; // delete is reserved
+  std::vector< ::cfg::Right> deleteown;
+  std::vector< ::cfg::Right> overwrite;
+  std::vector< ::cfg::Right> resume;
+  std::vector< ::cfg::Right> rename;
+  std::vector< ::cfg::Right> renameown;
+  std::vector< ::cfg::Right> filemove;
+  std::vector< ::cfg::Right> makedir;
+  std::vector< ::cfg::Right> upload;
+  std::vector< ::cfg::Right> download;
+  std::vector< ::cfg::Right> nuke;
+  std::vector< ::cfg::Right> hideinwho;
+  std::vector< ::cfg::Right> freefile;
+  std::vector< ::cfg::Right> nostats;
+  std::vector< ::cfg::Right> hideowner;
 
   std::vector<std::string> eventpath;
   std::vector<std::string> dupepath;
   std::vector<std::string> indexpath;
 
   // end rights
-  std::vector<setting::PathFilter> pathFilter;
-  setting::MaxUsers maxUsers;
-  std::vector<setting::ACLInt> maxUstats;
-  std::vector<setting::ACLInt> maxGstats;
+  std::vector< ::cfg::PathFilter> pathFilter;
+  ::cfg::MaxUsers maxUsers;
+  std::vector<ACLInt> maxUstats;
+  std::vector<ACLInt> maxGstats;
   std::vector<std::string> bannedUsers;
-  std::vector<setting::Right> showDiz;
+  std::vector< ::cfg::Right> showDiz;
   bool dlIncomplete;
-  std::vector<setting::Cscript> cscript;
+  std::vector< ::cfg::Cscript> cscript;
   std::vector<std::string> idleCommands;
   int totalUsers;
-  setting::Lslong lslong;
-  std::vector<setting::HiddenFiles> hiddenFiles;
+  ::cfg::Lslong lslong;
+  std::vector< ::cfg::HiddenFiles> hiddenFiles;
   std::vector<std::string> noretrieve;
   int multiplierMax;
   long emptyNuke;
-  std::vector<setting::Creditcheck> creditcheck;
-  std::vector<setting::Creditloss> creditloss;
-  setting::NukedirStyle nukedirStyle;
-  std::vector<setting::Msgpath> msgpath;
-  std::vector<setting::Privpath> privpath;
-  std::vector<setting::SiteCmd> siteCmd;
+  std::vector< ::cfg::Creditcheck> creditcheck;
+  std::vector< ::cfg::Creditloss> creditloss;
+  ::cfg::NukedirStyle nukedirStyle;
+  std::vector< ::cfg::Msgpath> msgpath;
+  std::vector< ::cfg::Privpath> privpath;
+  std::vector< ::cfg::SiteCmd> siteCmd;
   int maxSitecmdLines;
-  setting::IdleTimeout idleTimeout;
-  setting::Database database;
+  ::cfg::IdleTimeout idleTimeout;
+  ::cfg::Database database;
   ::cfg::WeekStart weekStart;
-  std::vector<setting::CheckScript> preCheck;
-  std::vector<setting::CheckScript> preDirCheck;
-  std::vector<setting::CheckScript> postCheck;
+  std::vector<CheckScript> preCheck;
+  std::vector<CheckScript> preDirCheck;
+  std::vector<CheckScript> postCheck;
   std::unordered_map<std::string, acl::ACL> commandACLs;  
   std::map<std::string, Section> sections;
   ::cfg::EPSVFxp epsvFxp;
@@ -172,14 +173,14 @@ public:
 
   int Version() const { return version; }
 
-  const setting::Database& Database() const { return database; }
+  const ::cfg::Database& Database() const { return database; }
   const std::string& Sitepath() const { return sitepath; }
   const std::string& Pidfile() const { return pidfile; }
   const std::string& TlsCertificate() const { return tlsCertificate; }
   const std::string& TlsCiphers() const { return tlsCiphers; }
   int Port() const { return port; }
-  const setting::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
-  const setting::AsciiUploads& AsciiUploads() const { return asciiUploads; } 
+  const ::cfg::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
+  const ::cfg::AsciiUploads& AsciiUploads() const { return asciiUploads; } 
   int FreeSpace() const { return freeSpace; }
   const std::string& SitenameLong() const { return sitenameLong; }
   const std::string& SitenameShort() const { return sitenameShort; }
@@ -189,85 +190,86 @@ public:
   {
     return std::find(master.begin(), master.end(), login) != master.end();
   }
-  const std::vector<setting::SecureIp>& SecureIp() const { return secureIp; }
-  const std::vector<setting::SecurePass>& SecurePass() const { return securePass; }
+  const std::vector< ::cfg::SecureIp>& SecureIp() const { return secureIp; }
+  const std::vector< ::cfg::SecurePass>& SecurePass() const { return securePass; }
   const std::string& Datapath() const { return datapath; }
   //const std::vector<std::string>& BouncerIp() const { return bouncerIp; }
   bool IsBouncer(const std::string& ip) const;
   bool BouncerOnly() const { return bouncerOnly; }
-  const std::vector<setting::SpeedLimit>& MaximumSpeed() const { return maximumSpeed; }
-  const std::vector<setting::SpeedLimit>& MinimumSpeed() const { return minimumSpeed; }
-  const setting::SimXfers& SimXfers() const { return simXfers; }
+  const std::vector<SpeedLimit>& MaximumSpeed() const { return maximumSpeed; }
+  const std::vector<SpeedLimit>& MinimumSpeed() const { return minimumSpeed; }
+  const ::cfg::SimXfers& SimXfers() const { return simXfers; }
   const std::vector<std::string>& CalcCrc() const { return calcCrc; }
   const std::vector<std::string>& Xdupe() const { return xdupe; }
   const std::vector<std::string>& ValidIp() const { return validIp; }
   const std::vector<std::string>& ActiveAddr() const { return activeAddr; }
   const std::vector<std::string>& PasvAddr() const { return pasvAddr; }
-  const setting::Ports& ActivePorts() const { return activePorts; }
-  const setting::Ports& PasvPorts() const { return pasvPorts; }
-  const std::vector<setting::AllowFxp>& AllowFxp() const { return allowFxp; }
-  const std::vector<setting::Right>& WelcomeMsg() const { return welcomeMsg; }
-  const std::vector<setting::Right>& GoodbyeMsg() const { return goodbyeMsg; }
+  const Ports& ActivePorts() const { return activePorts; }
+  const Ports& PasvPorts() const { return pasvPorts; }
+  const std::vector< ::cfg::AllowFxp>& AllowFxp() const { return allowFxp; }
+  const std::vector< ::cfg::Right>& WelcomeMsg() const { return welcomeMsg; }
+  const std::vector< ::cfg::Right>& GoodbyeMsg() const { return goodbyeMsg; }
   const std::string& Banner() const { return banner; }
-  const std::vector<setting::Alias>& Alias() const { return alias; }
+  const std::vector< ::cfg::Alias>& Alias() const { return alias; }
   const std::vector<std::string>& Cdpath() const { return cdpath; }
   
-  const setting::Log SecurityLog() const { return securityLog; }
-  const setting::Log DatabaseLog() const { return databaseLog; }
-  const setting::Log EventLog() const { return eventLog; }
-  const setting::Log ErrorLog() const { return errorLog; }
-  const setting::Log DebugLog() const { return debugLog; }
-  const setting::Log SiteopLog() const { return siteopLog; }
+  const Log SecurityLog() const { return securityLog; }
+  const Log DatabaseLog() const { return databaseLog; }
+  const Log EventLog() const { return eventLog; }
+  const Log ErrorLog() const { return errorLog; }
+  const Log DebugLog() const { return debugLog; }
+  const Log SiteopLog() const { return siteopLog; }
+  const ::cfg::TransferLog TransferLog() const { return transferLog; }
 
   // rights section
-  const std::vector<setting::Right>& Delete() const { return delete_; } 
-  const std::vector<setting::Right>& Deleteown() const { return deleteown; } 
-  const std::vector<setting::Right>& Overwrite() const { return overwrite; } 
-  const std::vector<setting::Right>& Resume() const { return resume; } 
-  const std::vector<setting::Right>& Rename() const { return rename; } 
-  const std::vector<setting::Right>& Renameown() const { return renameown; } 
-  const std::vector<setting::Right>& Filemove() const { return filemove; } 
-  const std::vector<setting::Right>& Makedir() const { return makedir; } 
-  const std::vector<setting::Right>& Upload() const { return upload; } 
-  const std::vector<setting::Right>& Download() const { return download; } 
-  const std::vector<setting::Right>& Nuke() const { return nuke; } 
-  const std::vector<setting::Right>& Hideinwho() const { return hideinwho; } 
-  const std::vector<setting::Right>& Freefile() const { return freefile; } 
-  const std::vector<setting::Right>& Nostats() const { return nostats; } 
-  const std::vector<setting::Right>& Hideowner() const { return hideowner; } 
+  const std::vector< ::cfg::Right>& Delete() const { return delete_; } 
+  const std::vector< ::cfg::Right>& Deleteown() const { return deleteown; } 
+  const std::vector< ::cfg::Right>& Overwrite() const { return overwrite; } 
+  const std::vector< ::cfg::Right>& Resume() const { return resume; } 
+  const std::vector< ::cfg::Right>& Rename() const { return rename; } 
+  const std::vector< ::cfg::Right>& Renameown() const { return renameown; } 
+  const std::vector< ::cfg::Right>& Filemove() const { return filemove; } 
+  const std::vector< ::cfg::Right>& Makedir() const { return makedir; } 
+  const std::vector< ::cfg::Right>& Upload() const { return upload; } 
+  const std::vector< ::cfg::Right>& Download() const { return download; } 
+  const std::vector< ::cfg::Right>& Nuke() const { return nuke; } 
+  const std::vector< ::cfg::Right>& Hideinwho() const { return hideinwho; } 
+  const std::vector< ::cfg::Right>& Freefile() const { return freefile; } 
+  const std::vector< ::cfg::Right>& Nostats() const { return nostats; } 
+  const std::vector< ::cfg::Right>& Hideowner() const { return hideowner; } 
 
   bool IsEventLogged(const std::string& path) const;
   bool IsDupeLogged(const std::string& path) const;
   bool IsIndexed(const std::string& path) const;
   const std::vector<std::string>& Indexed() const { return indexpath; }
 
-  const std::vector<setting::PathFilter>& PathFilter() const { return pathFilter; }
-  const setting::MaxUsers& MaxUsers() const { return maxUsers; }
-  const std::vector<setting::ACLInt>& MaxUstats() const { return maxUstats; }
-  const std::vector<setting::ACLInt>& MaxGstats() const { return maxGstats; }
+  const std::vector< ::cfg::PathFilter>& PathFilter() const { return pathFilter; }
+  const ::cfg::MaxUsers& MaxUsers() const { return maxUsers; }
+  const std::vector<ACLInt>& MaxUstats() const { return maxUstats; }
+  const std::vector<ACLInt>& MaxGstats() const { return maxGstats; }
   const std::vector<std::string>& BannedUsers() const { return bannedUsers; }
-  const std::vector<setting::Right>& ShowDiz() const { return showDiz; }
+  const std::vector< ::cfg::Right>& ShowDiz() const { return showDiz; }
   bool DlIncomplete() const { return dlIncomplete; }
-  const std::vector<setting::Cscript>& Cscript() const { return cscript; }
+  const std::vector< ::cfg::Cscript>& Cscript() const { return cscript; }
   const std::vector<std::string>& IdleCommands() const { return idleCommands; }
   int TotalUsers() const { return totalUsers; }
-  const setting::Lslong& Lslong() const { return lslong; }
-  const std::vector<setting::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
+  const ::cfg::Lslong& Lslong() const { return lslong; }
+  const std::vector< ::cfg::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
   const std::vector<std::string>& Noretrieve() const { return noretrieve; }
   int MultiplierMax() const { return multiplierMax; }
   long EmptyNuke() const { return emptyNuke; }
-  const std::vector<setting::Creditcheck>& Creditcheck() const { return creditcheck; }
-  const std::vector<setting::Creditloss>& Creditloss() const { return creditloss; }
-  const setting::NukedirStyle& Nukedirtyle() const { return nukedirStyle; }
-  const std::vector<setting::Msgpath>& Msgpath() const { return msgpath; }
-  const std::vector<setting::Privpath>& Privpath() const { return privpath; }
-  const std::vector<setting::SiteCmd>& SiteCmd() const { return siteCmd; }
+  const std::vector< ::cfg::Creditcheck>& Creditcheck() const { return creditcheck; }
+  const std::vector< ::cfg::Creditloss>& Creditloss() const { return creditloss; }
+  const ::cfg::NukedirStyle& Nukedirtyle() const { return nukedirStyle; }
+  const std::vector< ::cfg::Msgpath>& Msgpath() const { return msgpath; }
+  const std::vector< ::cfg::Privpath>& Privpath() const { return privpath; }
+  const std::vector< ::cfg::SiteCmd>& SiteCmd() const { return siteCmd; }
   int MaxSitecmdLines() const { return maxSitecmdLines; }
-  const setting::IdleTimeout& IdleTimeout() const { return idleTimeout; }
+  const ::cfg::IdleTimeout& IdleTimeout() const { return idleTimeout; }
   ::cfg::WeekStart WeekStart() const { return weekStart; }
-  const std::vector<setting::CheckScript>& PreCheck() const { return preCheck; }
-  const std::vector<setting::CheckScript>& PreDirCheck() const { return preDirCheck; }
-  const std::vector<setting::CheckScript>& PostCheck() const { return postCheck; }  
+  const std::vector<CheckScript>& PreCheck() const { return preCheck; }
+  const std::vector<CheckScript>& PreDirCheck() const { return preDirCheck; }
+  const std::vector<CheckScript>& PostCheck() const { return postCheck; }  
   const std::map<std::string, Section>& Sections() const { return sections; }
   boost::optional<const Section&> SectionMatch(const std::string& path) const;
   ::cfg::EPSVFxp EPSVFxp() const { return epsvFxp; }

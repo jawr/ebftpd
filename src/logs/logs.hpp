@@ -112,6 +112,18 @@ void Error(const std::string& format, const Args&... args)
   error.PushEntry("message", util::Format()(format, args...).String());
 }
 
+inline void Transfer(const std::string& path, const std::string& direction, 
+      const std::string& username, const std::string& groupname, 
+      double startTime, long long kBytes, double xfertime, 
+      bool okay, const std::string& section)
+{
+  extern Logger transfer;
+  transfer.PushEntry(QuoteOn(), "epoch start", startTime, "direction", direction,
+                     "username", username, "groupname", groupname,
+                     "size", kBytes, "seconds", xfertime, "okay", okay,
+                     "section", section, "path", path);
+}
+
 void InitialisePreConfig();
 bool InitialisePostConfig();
 

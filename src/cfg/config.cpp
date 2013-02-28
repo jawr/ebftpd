@@ -63,6 +63,7 @@ Config::Config(const std::string& configPath, bool tool) :
   errorLog("errors", true, true, 0),
   debugLog("debug", true, true, 0),
   siteopLog("siteop", true, true, 0),
+  transferLog("transfer", false, false, 0, false, false),
   dlIncomplete(true),
   totalUsers(-1),
   multiplierMax(10),
@@ -90,6 +91,8 @@ Config::Config(const std::string& configPath, bool tool) :
     std::string::size_type pos = line.find_first_of('#');
     if (pos != std::string::npos) line.erase(pos);
     if (line.empty()) continue;
+    
+    boost::replace_all(line, "[:hash:]", "#");
     
     try 
     {
@@ -125,7 +128,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1, -1);
     std::string command(util::ToUpperCopy(opt.substr(7)));
     if (std::find_if(siteCmd.begin(), siteCmd.end(), 
-        [&](const setting::SiteCmd& sc)
+        [&](const ::cfg::SiteCmd& sc)
         { return command == sc.Command();}) == siteCmd.end() && !tool)
     {
       throw ConfigError("Invalid custom command acl keyword: " + command);
@@ -137,7 +140,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   if (opt == "database")
   {
     ParameterCheck(opt, toks, 3, 5);
-    database = setting::Database(toks);
+    database = ::cfg::Database(toks);
   }
   else
   if (opt == "sitepath")
@@ -179,11 +182,11 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "ascii_downloads")
   {
-    asciiDownloads = setting::AsciiDownloads(toks);
+    asciiDownloads = ::cfg::AsciiDownloads(toks);
   }
   else if (opt == "ascii_uploads")
   {
-    asciiUploads = setting::AsciiUploads(toks);
+    asciiUploads = ::cfg::AsciiUploads(toks);
   }
   else if (opt == "free_space")
   {
@@ -218,7 +221,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "dl_incomplete")
   {
     ParameterCheck(opt, toks, 1);
-    dlIncomplete = util::BoolLexicalCast(toks[0]);
+    dlIncomplete = YesNoToBoolean(toks[0]);
   }
   else if (opt == "sitename_long")
   {
@@ -248,37 +251,42 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "security_log")
   {
     ParameterCheck(opt, toks, 3, 3);
-    securityLog = setting::Log("security", toks);
+    securityLog = Log("security", toks);
   }
   else if (opt == "database_log")
   {
     ParameterCheck(opt, toks, 2, 2);
-    databaseLog = setting::Log("database", toks);
+    databaseLog = Log("database", toks);
   }
   else if (opt == "event_log")
   {
     ParameterCheck(opt, toks, 3, 3);
-    eventLog = setting::Log("events", toks);
+    eventLog = Log("events", toks);
   }
   else if (opt == "debug_log")
   {
     ParameterCheck(opt, toks, 3, 3);
-    debugLog = setting::Log("debug", toks);
+    debugLog = Log("debug", toks);
   }
   else if (opt == "error_log")
   {
     ParameterCheck(opt, toks, 3, 3);
-    errorLog = setting::Log("errors", toks);
+    errorLog = Log("errors", toks);
   }
   else if (opt == "siteop_log")
   {
     ParameterCheck(opt, toks, 3, 3);
-    siteopLog = setting::Log("siteop", toks);
+    siteopLog = Log("siteop", toks);
+  }
+  else if (opt == "transfer_log")
+  {
+    ParameterCheck(opt, toks, 5, 5);
+    transferLog = ::cfg::TransferLog("transfer", toks);
   }
   else if (opt == "bouncer_only")
   {
     ParameterCheck(opt, toks, 1);
-    bouncerOnly = util::BoolLexicalCast(toks[0]);
+    bouncerOnly = YesNoToBoolean(toks[0]);
   }
   else if (opt == "calc_crc")
   {
@@ -329,7 +337,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "sim_xfers")
   {
     ParameterCheck(opt, toks, 2);
-    simXfers = setting::SimXfers(toks);
+    simXfers = ::cfg::SimXfers(toks);
   }
   else if (opt == "secure_ip")
   {
@@ -349,11 +357,11 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "active_ports")
   {
     ParameterCheck(opt, toks, 1, -1);
-    activePorts = setting::Ports(toks);
+    activePorts = Ports(toks);
   }
   else if (opt == "pasv_ports")
   {
-    pasvPorts = setting::Ports(toks);
+    pasvPorts = Ports(toks);
   }
   else if (opt == "allow_fxp")
   {
@@ -483,7 +491,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "max_users")
   {
     ParameterCheck(opt, toks, 2);
-    maxUsers = setting::MaxUsers(toks);
+    maxUsers = ::cfg::MaxUsers(toks);
   }
   else if (opt == "max_ustats")
   {
@@ -503,7 +511,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "lslong")
   {
     ParameterCheck(opt, toks, 2);
-    lslong = setting::Lslong(toks);
+    lslong = ::cfg::Lslong(toks);
   }
   else if (opt == "hidden_files")
   {
@@ -523,7 +531,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "nukedir_style")
   {
     ParameterCheck(opt, toks, 3);
-    nukedirStyle = setting::NukedirStyle(toks);
+    nukedirStyle = NukedirStyle(toks);
   }
   else if (opt == "msg_path")
   {
@@ -543,7 +551,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "idle_timeout")
   {
     ParameterCheck(opt, toks, 3);
-    idleTimeout = setting::IdleTimeout(toks);
+    idleTimeout = ::cfg::IdleTimeout(toks);
   }
   else if (opt == "week_start")
   {
@@ -600,17 +608,17 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "async_crc")
   {
     ParameterCheck(opt, toks, 1);
-    asyncCRC = util::BoolLexicalCast(toks[0]);
+    asyncCRC = YesNoToBoolean(toks[0]);
   }
   else if (opt == "ident_lookup")
   {
     ParameterCheck(opt, toks, 1);
-    identLookup = util::BoolLexicalCast(toks[0]);
+    identLookup = YesNoToBoolean(toks[0]);
   }
   else if (opt == "dns_lookup")
   {
     ParameterCheck(opt, toks, 1);
-    dnsLookup = util::BoolLexicalCast(toks[0]);
+    dnsLookup = YesNoToBoolean(toks[0]);
   }
   else if (opt == "log_addresses")
   {
@@ -650,7 +658,7 @@ void Config::ParseSection(const std::string& opt, std::vector<std::string>& toks
   else if (opt == "separate_credits")
   {
     ParameterCheck(opt, toks, 1);
-    currentSection->separateCredits = util::BoolLexicalCast(toks[0]);
+    currentSection->separateCredits = YesNoToBoolean(toks[0]);
   }
   else if (opt == "ratio")
   {

@@ -1,5 +1,6 @@
 #include <ctime>
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "logs/streamsink.hpp"
 #include "logs/util.hpp"
 
@@ -22,6 +23,11 @@ void StreamSink::Write(const char* field, double value)
 }
 
 void StreamSink::Write(const char* field, bool value)
+{
+  Write(field, boost::lexical_cast<std::string>(value));
+}
+
+void StreamSink::Write(const char* field, const boost::posix_time::ptime& value)
 {
   Write(field, boost::lexical_cast<std::string>(value));
 }

@@ -38,6 +38,7 @@ boost::tribool CheckWeeklyAllotment(const acl::User& user, const std::string& se
 void RETRCommand::Execute()
 {
   namespace pt = boost::posix_time;
+  namespace gd = boost::gregorian;
   
   off_t offset = data.RestartOffset();
   if (offset > 0 && data.DataType() == ftp::DataType::ASCII)
@@ -187,6 +188,18 @@ void RETRCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
+  auto transferLogGuard = util::MakeScopeExit([&]
+  {
+    if (cfg::Get().TransferLog().Downloads())
+    {
+      bool okay = std::uncaught_exception();
+      logs::Transfer(fs::MakeReal(path).ToString(), "down", client.User().Name(), client.User().PrimaryGroup(), 
+                     (data.State().StartTime() - pt::ptime(gd::date(1970, 1, 1))).total_microseconds() / 1000000.0, 
+                     data.State().Bytes() / 1024, data.State().Duration().total_microseconds() / 1000000.0, 
+                     okay, section ? section->Name() : std::string());
+      }
+  });
+  
   bool aborted = false;
   try
   {
@@ -268,6 +281,7 @@ void RETRCommand::Execute()
   
   (void) countGuard;
   (void) dataGuard;
+  (void) transferLogGuard;
 }
 
 } /* rfc namespace */

@@ -34,8 +34,8 @@ public:
   void Write(const char* field, double value);
   void Write(const char* field, bool value); 
   void Write(const char* field, const char* value);
-  void Write(const char* field, const std::string& value)
-  { Write(field, value.c_str()); }
+  void Write(const char* field, const std::string& value) { Write(field, value.c_str()); }
+  void Write(const char* field, const boost::posix_time::ptime& value);
   
   void Formatting(bool tag, char quoteChar, const std::pair<char, char>& bracketChar)
   {

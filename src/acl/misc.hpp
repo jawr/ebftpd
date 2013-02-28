@@ -5,12 +5,11 @@
 #include <boost/optional/optional_fwd.hpp>
 #include "acl/types.hpp"
 
-namespace cfg { namespace setting
+namespace cfg
 {
 class SpeedLimit;
 class Creditcheck;
 class Creditloss;
-}
 }
 
 namespace fs
@@ -49,10 +48,10 @@ int MaxGroups(const User& user);
 namespace speed
 {
 
-std::vector<const cfg::setting::SpeedLimit*>
+std::vector<const cfg::SpeedLimit*>
 UploadMaximum(const User& user, const fs::Path& path);
 
-std::vector<const cfg::setting::SpeedLimit*>
+std::vector<const cfg::SpeedLimit*>
 DownloadMaximum(const User& user, const fs::Path& path);
 
 int UploadMinimum(const User& user, const fs::Path& path);
@@ -66,10 +65,10 @@ bool AllowFxpSend(const User& user, bool& logging);
 bool AllowFxpReceive(const User& user, bool& logging);
 bool AllowSiteCmd(const User& user, const std::string& keyword);
 
-boost::optional<const cfg::setting::Creditcheck&> 
+boost::optional<const cfg::Creditcheck&> 
 CreditCheck(const User& user, const fs::VirtualPath& path);
 
-boost::optional<const cfg::setting::Creditloss&> 
+boost::optional<const cfg::Creditloss&> 
 CreditLoss(const User& user, const fs::VirtualPath& path);
 
 class IPStrength;

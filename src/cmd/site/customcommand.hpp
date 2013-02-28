@@ -10,10 +10,10 @@ namespace cmd { namespace site
 class CustomCommand : public Command
 {
 protected:
-  cfg::setting::SiteCmd custSiteCmd;
+  cfg::SiteCmd custSiteCmd;
   
 public:
-  CustomCommand(cfg::setting::SiteCmd& custSiteCmd, ftp::Client& client, 
+  CustomCommand(cfg::SiteCmd& custSiteCmd, ftp::Client& client, 
                 const std::string& argStr, const Args& args) :
     Command(client, client.Control(), client.Data(), argStr, args),
     custSiteCmd(custSiteCmd) { }
@@ -24,7 +24,7 @@ public:
 class CustomEXECCommand : public CustomCommand
 {
 public:
-  CustomEXECCommand(cfg::setting::SiteCmd& custSiteCmd, ftp::Client& client, 
+  CustomEXECCommand(cfg::SiteCmd& custSiteCmd, ftp::Client& client, 
                     const std::string& argStr, const Args& args) :
     CustomCommand(custSiteCmd, client, argStr, args) { }
     
@@ -34,7 +34,7 @@ public:
 class CustomTEXTCommand : public CustomCommand
 {
 public:
-  CustomTEXTCommand(cfg::setting::SiteCmd& custSiteCmd, ftp::Client& client, 
+  CustomTEXTCommand(cfg::SiteCmd& custSiteCmd, ftp::Client& client, 
                     const std::string& argStr, const Args& args) :
     CustomCommand(custSiteCmd, client, argStr, args) { }
 
@@ -45,7 +45,7 @@ public:
 class CustomALIASCommand : public CustomCommand
 {
 public:
-  CustomALIASCommand(cfg::setting::SiteCmd& custSiteCmd, ftp::Client& client, 
+  CustomALIASCommand(cfg::SiteCmd& custSiteCmd, ftp::Client& client, 
                     const std::string& argStr, const Args& args) :
     CustomCommand(custSiteCmd, client, argStr, args) { }
 

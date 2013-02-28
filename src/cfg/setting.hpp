@@ -17,7 +17,7 @@ class seconds;
 }
 }
 
-namespace cfg { namespace setting
+namespace cfg
 {
 
 class Database
@@ -426,7 +426,26 @@ public:
   long CollectionSize() const { return database; }
 };
 
-// end namespace
+class TransferLog : public Log
+{
+  bool uploads;
+  bool downloads;
+  
+public:
+  TransferLog(const std::string& name, bool console, bool file, 
+              long database, bool uploads, bool downloads) : 
+    Log(name, console, file, database),
+    uploads(uploads), downloads(downloads)
+  { }
+  
+  TransferLog(const std::string& name, const std::vector<std::string>& toks);
+  
+  bool Uploads() const { return uploads; }
+  bool Downloads() const { return downloads; }
+};
+
+bool YesNoToBoolean(std::string s);
+
 }
-}
+
 #endif

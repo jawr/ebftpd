@@ -7,8 +7,16 @@
 #include "cfg/error.hpp"
 #include "util/string.hpp"
 
-namespace cfg { namespace setting
+namespace cfg
 {
+
+bool YesNoToBoolean(std::string s)
+{
+  util::ToLower(s);
+  if (s == "yes") return true;
+  if (s == "no") return false;
+  throw boost::bad_lexical_cast();
+}
 
 Database::Database() :
   name("ebftpd"), 
@@ -90,8 +98,8 @@ SecureIp::SecureIp(std::vector<std::string> toks)
 {
   int numOctets = boost::lexical_cast<int>(toks[0]);
   if (numOctets < 0) throw boost::bad_lexical_cast();
-  bool isHostname = util::BoolLexicalCast(toks[1]);
-  bool hasIdent = util::BoolLexicalCast(toks[2]);
+  bool isHostname = YesNoToBoolean(toks[1]);
+  bool hasIdent = YesNoToBoolean(toks[2]);
   strength = acl::IPStrength(numOctets, isHostname, hasIdent);
   toks.erase(toks.begin(), toks.begin()+3);
   acl = acl::ACL(util::Join(toks, " "));
@@ -146,9 +154,9 @@ Ports::Ports(const std::vector<std::string>& toks)
 
 AllowFxp::AllowFxp(std::vector<std::string> toks)   
 {
-  downloads = util::BoolLexicalCast(toks[0]);
-  uploads   = util::BoolLexicalCast(toks[1]);
-  logging   = util::BoolLexicalCast(toks[2]);
+  downloads = YesNoToBoolean(toks[0]);
+  uploads   = YesNoToBoolean(toks[1]);
+  logging   = YesNoToBoolean(toks[2]);
   toks.erase(toks.begin(), toks.begin() + 3);
   acl = acl::ACL(util::Join(toks, " "));
 }
@@ -436,14 +444,18 @@ CheckScript::CheckScript(const std::vector<std::string>& toks) :
 
 Log::Log(const std::string& name, const std::vector<std::string>& toks) :
   name(name),
-  console(util::BoolLexicalCast(toks[0])),
-  file(util::BoolLexicalCast(toks[1])),
-  database(toks.size() == 3 && boost::lexical_cast<long>(toks[2]))
+  console(YesNoToBoolean(toks[0])),
+  file(YesNoToBoolean(toks[1])),
+  database(toks.size() >= 3 && boost::lexical_cast<long>(toks[2]))
 {
   if (database < 0) throw boost::bad_lexical_cast();
 }
 
-// end namespace
-}
+TransferLog::TransferLog(const std::string& name, const std::vector<std::string>& toks) :
+  Log(name, toks),
+  uploads(YesNoToBoolean(toks[3])),
+  downloads(YesNoToBoolean(toks[4]))
+{
 }
 
+}

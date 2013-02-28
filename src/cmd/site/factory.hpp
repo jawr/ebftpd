@@ -37,10 +37,10 @@ public:
 template <class CommandT>
 class CustomCreator : public CreatorBase<cmd::Command>
 {
-  cfg::setting::SiteCmd custSiteCmd;
+  cfg::SiteCmd custSiteCmd;
   
 public:
-  CustomCreator(const cfg::setting::SiteCmd& custSiteCmd) : custSiteCmd(custSiteCmd) { }
+  CustomCreator(const cfg::SiteCmd& custSiteCmd) : custSiteCmd(custSiteCmd) { }
   cmd::Command* Create(ftp::Client& client, const std::string& argStr, const Args&)
   {
     // prepend custom command arguments to user passed arguments

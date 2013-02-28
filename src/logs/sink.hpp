@@ -4,6 +4,12 @@
 #include <string>
 #include <utility>
 
+namespace boost { namespace posix_time
+{
+class ptime;
+}
+}
+
 namespace logs
 {
 
@@ -15,7 +21,8 @@ struct Sink
   virtual void Write(const char* field, double value) = 0;
   virtual void Write(const char* field, bool value) = 0;
   virtual void Write(const char* field, const char* value) = 0;
-  void Write(const char* field, const std::string& value) { Write(field, value.c_str()); }
+  virtual void Write(const char* field, const std::string& value) = 0;
+  virtual void Write(const char* field, const boost::posix_time::ptime& value) = 0;
   virtual void Formatting(bool /* tag */, char /* quoteChar */, 
                           const std::pair<char, char>& /* bracketChar */) { }
 
