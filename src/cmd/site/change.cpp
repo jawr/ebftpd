@@ -16,7 +16,7 @@
 #include "logs/logs.hpp"
 #include "acl/flags.hpp"
 #include "fs/path.hpp"
-#include "cmd/util.hpp"
+#include "cfg/util.hpp"
 #include "acl/group.hpp"
 
 namespace cmd { namespace site
@@ -55,10 +55,10 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
     "Comment"                                                                           },
     
   { "max_up_speed",   1,  "change",               &CHANGECommand::CheckMaxUpSpeed,
-    "Maximum upload speed in kbyte/s (0 is unlimited)"                                  },
+    "Maximum upload speed <kbyte/s>[M|G] (0 is unlimited)"                                  },
     
   { "max_down_speed", 1,  "change",               &CHANGECommand::CheckMaxDownSpeed,
-    "Maximum download speed in kbyte/s (0 is unlimited)"                                },
+    "Maximum download speed <kbyte/s>[M|G] (0 is unlimited)"                                },
     
   { "max_sim_up",     1,  "change",               &CHANGECommand::CheckMaxSimUp,
     "Maximum simultaneous uploads (-1 is unlimited, 0 to disallow)"                     },
@@ -209,7 +209,14 @@ CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
   }
 
   long long allotment;
-  if (!ParseCredits(args[3], allotment)) throw cmd::SyntaxError();
+  try
+  {
+     allotment = cfg::ParseSize(args[3]);
+  }
+  catch (const std::bad_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
   
   if (!section.empty()) display = section + "(";
   if (allotment == 0) display += "Disabled";
@@ -409,14 +416,13 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxUpSpeed()
 {
   try
   {
-    long long speed = boost::lexical_cast<long long>(args[3]);
-    if (speed < 0) throw boost::bad_lexical_cast();
+    long long speed = cfg::ParseSize(args[3]);
     if (speed == 0) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(speed) + "KB/s";
     
     return [speed](acl::User& user) -> bool { user.SetMaxUpSpeed(speed); return true; };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -426,14 +432,13 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxDownSpeed()
 {
   try
   {
-    long long speed = boost::lexical_cast<long long>(args[3]);
-    if (speed < 0) throw boost::bad_lexical_cast();
+    long long speed = cfg::ParseSize(args[3]);
     if (speed == 0) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(speed) + "KB/s";
 
     return [speed](acl::User& user) -> bool { user.SetMaxDownSpeed(speed); return true; };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }

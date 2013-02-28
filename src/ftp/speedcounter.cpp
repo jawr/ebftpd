@@ -29,7 +29,7 @@ SpeedCounter::Update(const SpeedInfoOpt& last, const SpeedInfo& current, const S
 
     sleep = std::max(sleep, stats::SpeedLimitSleep(it->second.second.xfertime / it->second.first, 
                                                    it->second.second.bytes, 
-                                                   getSpeedLimit(*limit)));
+                                                   getSpeedLimit(*limit) * 1024));
   }
   return sleep;
 }

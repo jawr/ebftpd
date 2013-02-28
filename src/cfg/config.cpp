@@ -8,6 +8,7 @@
 #include "main.hpp"
 #include "util/path/path.hpp"
 #include "util/format.hpp"
+#include "cfg/util.hpp"
 
 namespace util
 {
@@ -52,7 +53,7 @@ Config::Config(const std::string& configPath, bool tool) :
   tool(tool),
   currentSection(nullptr),
   port(-1),
-  freeSpace(1024),
+  freeSpace(ParseSize("1G")),
   sitenameLong("EBFTPD"),
   sitenameShort("EB"),
   datapath("data"),
@@ -102,7 +103,7 @@ Config::Config(const std::string& configPath, bool tool) :
     {
       throw ConfigError(util::Format()("Error in config at line %1%: %2%", i, e.Message()));
     }
-    catch (const std::bad_cast& e)
+    catch (const std::bad_cast&)
     {
       throw ConfigError(util::Format()("Error in config at line %1%: Invalid value", i));
     }
@@ -191,8 +192,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "free_space")
   {
     ParameterCheck(opt, toks, 1);
-    freeSpace = boost::lexical_cast<int>(toks[0]);
-    if (freeSpace < 0) throw boost::bad_lexical_cast();
+    freeSpace = ParseSize(toks[0]);
   }
   else if (opt == "total_users")
   {
@@ -209,8 +209,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "empty_nuke")
   {
     ParameterCheck(opt, toks, 1);
-    emptyNuke = boost::lexical_cast<int>(toks[0]);
-    if (emptyNuke < 0) throw boost::bad_lexical_cast();
+    emptyNuke = ParseSize(toks[0]);
   }
   else if (opt == "max_sitecmd_lines")
   {
@@ -663,15 +662,8 @@ void Config::ParseSection(const std::string& opt, std::vector<std::string>& toks
   else if (opt == "ratio")
   {
     ParameterCheck(opt, toks, 1);
-    try
-    {
-      currentSection->ratio = boost::lexical_cast<int>(toks[0]);
-      if (currentSection->ratio < 0) throw boost::bad_lexical_cast();
-    }
-    catch (const boost::bad_lexical_cast&)
-    {
-      throw ConfigError("ratio must be zero or larger");
-    }
+    currentSection->ratio = boost::lexical_cast<int>(toks[0]);
+    if (currentSection->ratio < 0) throw boost::bad_lexical_cast();
   }
   else if (opt == "endsection")
   {

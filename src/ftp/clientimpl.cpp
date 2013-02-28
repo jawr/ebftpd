@@ -225,7 +225,7 @@ void ClientImpl::ExecuteCommand(const std::string& commandLine)
   }
   else if (CheckState(def->RequiredState()) &&
            (state != ClientState::LoggedIn ||
-            exec::Cscripts(parent, args[0], currentCommand, exec::CscriptType::PRE, 
+            exec::Cscripts(parent, args[0], currentCommand, exec::CscriptType::Pre, 
                 def->FailCode())))
   {
     cmd::CommandPtr command(def->Create(parent, argStr, args));
@@ -240,7 +240,7 @@ void ClientImpl::ExecuteCommand(const std::string& commandLine)
         command->Execute();
 
         if (state == ClientState::LoggedIn)
-          exec::Cscripts(parent, args[0], currentCommand, exec::CscriptType::POST, 
+          exec::Cscripts(parent, args[0], currentCommand, exec::CscriptType::Post, 
                   ftp::ActionNotOkay);
       }
       catch (const cmd::SyntaxError&)

@@ -9,7 +9,7 @@
 #include "cfg/get.hpp"
 #include "cmd/error.hpp"
 #include "logs/logs.hpp"
-#include "cmd/util.hpp"
+#include "cfg/util.hpp"
 
 namespace cmd { namespace site
 {
@@ -47,7 +47,14 @@ void GIVECommand::Execute()
   }
 
   long long credits;
-  if (!ParseCredits(args[2], credits)) throw cmd::SyntaxError();
+  try
+  {
+    credits = cfg::ParseSize(args[2]);
+  }
+  catch (const std::bad_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
 
   bool own = false;
   std::ostringstream os;

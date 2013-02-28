@@ -23,7 +23,7 @@ bool Cscript(ftp::Client& client, const std::string& group,
     std::string messages;
     int exitStatus = Script(client, argv, messages);
     
-    if (type == CscriptType::POST)
+    if (type == CscriptType::Post)
     {
       if (!messages.empty())
       {
@@ -48,7 +48,7 @@ bool Cscript(ftp::Client& client, const std::string& group,
   }
   catch (const util::SystemError& e)
   {
-    if (type == CscriptType::PRE)
+    if (type == CscriptType::Pre)
       client.Control().Reply(failCode, "Unable to execute cscript: " + e.Message());
     logs::Error("Failed to execute cscript: %1%: %2%",
                 util::Join(argv, " "), e.Message());
@@ -69,7 +69,7 @@ bool Cscripts(ftp::Client& client, const std::string& command,
     {
       if (!Cscript(client, group, cscript, fullCommand, type, failCode))
       {
-        if (type == CscriptType::PRE) return false;
+        if (type == CscriptType::Pre) return false;
       }
     }
   }

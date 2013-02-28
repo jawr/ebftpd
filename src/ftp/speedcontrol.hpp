@@ -22,8 +22,8 @@ namespace ftp
 class SpeedControl
 {
 private:
-  int minimumSpeed;
-  int maximumSpeed;
+  long long minimumSpeed;
+  long long maximumSpeed;
   const TransferState& state;
   std::vector<const cfg::SpeedLimit*> globalLimits;
   SpeedCounter& globalCounter;
@@ -66,10 +66,10 @@ public:
     if (minimumSpeed == 0 && maximumSpeed == 0 && globalLimits.empty()) return;
 
     auto speedInfo = ftp::SpeedInfo(state.Duration(), state.Bytes());
-
+    
     if (minimumSpeed > 0)
     {
-      CheckMinimum(speedInfo.Speed());
+      CheckMinimum(speedInfo.Speed() / 1024);
     }
     
     boost::posix_time::time_duration sleepTime(boost::posix_time::microseconds(0));

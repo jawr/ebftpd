@@ -8,7 +8,7 @@
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
 #include "logs/logs.hpp"
-#include "cmd/util.hpp"
+#include "cfg/util.hpp"
 
 namespace cmd { namespace site
 {
@@ -45,8 +45,15 @@ void TAKECommand::Execute()
   }
 
   long long credits;
-  if (!ParseCredits(args[2], credits)) throw cmd::SyntaxError();
-
+  try
+  {
+    credits = cfg::ParseSize(args[2]); 
+  }
+  catch (const std::bad_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
+  
   user->DecrSectionCreditsForce(section, credits);
   
   std::ostringstream os;

@@ -7,7 +7,6 @@
 namespace cmd
 {
 
-bool ParseCredits(std::string s, long long& credits);
 bool SplitArgs(const std::string& command, std::vector<std::string>& args);
 
 } /* cmd namespace */

@@ -6,17 +6,10 @@
 #include "cfg/setting.hpp"
 #include "cfg/error.hpp"
 #include "util/string.hpp"
+#include "cfg/util.hpp"
 
 namespace cfg
 {
-
-bool YesNoToBoolean(std::string s)
-{
-  util::ToLower(s);
-  if (s == "yes") return true;
-  if (s == "no") return false;
-  throw boost::bad_lexical_cast();
-}
 
 Database::Database() :
   name("ebftpd"), 
@@ -56,20 +49,20 @@ bool Database::NeedAuth() const
 
 
 AsciiDownloads::AsciiDownloads(const std::vector<std::string>& toks) :
-  size(-1)
+  kBytes(-1)
 {
   try
   {
-    size = boost::lexical_cast<int>(toks[0]);
+    kBytes = ParseSize(toks[0]);
   }
-  catch (const boost::bad_lexical_cast&) { }
-  if (size == 0) size = -1;
+  catch (const std::bad_cast&) { }
+  if (kBytes == 0) kBytes = -1;
   masks.assign(toks.begin() + 1, toks.end());
 }
 
 bool AsciiDownloads::Allowed(off_t size, const std::string& path) const
 {
-  if (this->size > 0 && size > this->size) return false;
+  if (kBytes > 0 && size / 1024 > kBytes) return false;
   if (masks.empty()) return true;
   for (auto& mask : masks)
   {
@@ -112,11 +105,11 @@ SecurePass::SecurePass(std::vector<std::string> toks) :
   acl = acl::ACL(util::Join(toks, " "));
 }
 
-SpeedLimit::SpeedLimit(std::vector<std::string> toks)
+SpeedLimit::SpeedLimit(std::vector<std::string> toks) :
+  path(toks[0]),
+  downloads(ParseSize(toks[1])),
+  uploads(ParseSize(toks[2]))
 {
-  path = toks[0];
-  downloads = boost::lexical_cast<long>(toks[1]);
-  uploads = boost::lexical_cast<long>(toks[2]);
   toks.erase(toks.begin(), toks.begin() + 3);
   acl = acl::ACL(util::Join(toks, " "));
 }
@@ -284,27 +277,21 @@ Creditloss::Creditloss(std::vector<std::string> toks)
   acl = acl::ACL(util::Join(toks, " "));
 }
 
+NukedirStyle::NukedirStyle() :
+  action(Keep), 
+  emptyKBytes(ParseSize("1M"))
+{
+}
+
 NukedirStyle::NukedirStyle(const std::vector<std::string>& toks)   
 {
   format = toks[0];
-  int i = boost::lexical_cast<int>(toks[1]);
-  switch (i)
-  {
-    case 0:
-      type = DELETE_ALL;
-      break;
-    case 1:
-      type = DELETE_FILES;
-      break;
-    case 2:
-      type = KEEP;
-      break;
-    default:
-      throw boost::bad_lexical_cast();
-      break;
-  }
-  emptyBytes = boost::lexical_cast<int>(toks[2]);
-  if (emptyBytes < 0) throw boost::bad_lexical_cast();
+  std::string action = util::ToLowerCopy(toks[1]);
+  if (action == "deleteall") action = DeleteAll;
+  else if (action == "deletefiles") action = DeleteFiles;
+  else if (action == "keep") action = Keep;
+  else throw boost::bad_lexical_cast();
+  emptyKBytes = ParseSize(toks[2]);
 }
 
 Msgpath::Msgpath(const std::vector<std::string>& toks)   
@@ -326,11 +313,11 @@ SiteCmd::SiteCmd(const std::vector<std::string>& toks)
   command = util::ToUpperCopy(toks[0]);
   description = toks[1];
   std::string typeStr(util::ToUpperCopy(toks[2]));
-  if (typeStr == "EXEC") type = Type::EXEC;
-  else if (typeStr == "TEXT") type = Type::TEXT;
+  if (typeStr == "EXEC") type = Type::Exec;
+  else if (typeStr == "TEXT") type = Type::Text;
   else if (typeStr == "ALIAS")
   {
-    type = Type::ALIAS;
+    type = Type::Alias;
     util::ToUpper(target);
   }
   else
@@ -343,8 +330,8 @@ Cscript::Cscript(const std::vector<std::string>& toks)
 {
   command = util::ToUpperCopy(toks[0]);
   std::string when = util::ToLowerCopy(toks[1]);
-  if (when == "pre") type = Type::PRE;
-  else if (when == "post") type = Type::POST;
+  if (when == "pre") type = Type::Pre;
+  else if (when == "post") type = Type::Post;
   else throw boost::bad_lexical_cast();
   path = toks[2];
 }

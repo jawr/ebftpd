@@ -5,36 +5,6 @@
 namespace cmd
 {
 
-bool ParseCredits(std::string s, long long& credits)
-{
-  if (s.empty()) return false;
-  
-  std::string unit = "K";
-  if (std::isalpha(s.back()))
-  {
-    unit.assign(s.end() - 1, s.end());
-    s.erase(s.end() - 1, s.end());
-    if (s.empty()) return false;
-    util::ToUpper(unit);
-  }
-  
-  try
-  {
-    credits = boost::lexical_cast<long long>(s);
-    if (credits < 0) throw boost::bad_lexical_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    return false;
-  }
-  
-  if (unit == "M") credits *= 1024;
-  else if (unit == "G") credits *= 1024 * 1024;
-  else if (unit != "K") return false;
-  
-  return true;
-}
-
 bool SplitArgs(const std::string& command, std::vector<std::string>& args)
 {
   args.clear();

@@ -40,7 +40,7 @@ double CalculateSpeed(long long bytes, const boost::posix_time::ptime& start,
 
 boost::posix_time::time_duration SpeedLimitSleep(
       const boost::posix_time::time_duration& xfertime, 
-      long long bytes, long limit);
+      long long bytes, long long limitBytes);
         
 std::string AutoUnitSpeedString(double speed);
 std::string AutoUnitString(double kBytes);

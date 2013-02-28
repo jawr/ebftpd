@@ -38,7 +38,7 @@ void SITECommand::Execute()
   {
     control.Reply(ftp::SyntaxError, def->Syntax());
   }
-  else if (exec::Cscripts(client, shortCommand, fullCommand, exec::CscriptType::PRE,
+  else if (exec::Cscripts(client, shortCommand, fullCommand, exec::CscriptType::Pre,
               ftp::ActionNotOkay))
   {
     cmd::CommandPtr command(def->Create(client, argStr, args));
@@ -57,7 +57,7 @@ void SITECommand::Execute()
       try
       {
         command->Execute();
-        exec::Cscripts(client, shortCommand, fullCommand, exec::CscriptType::POST, 
+        exec::Cscripts(client, shortCommand, fullCommand, exec::CscriptType::Post, 
                 ftp::ActionNotOkay);
       }
       catch (const cmd::SyntaxError&)

@@ -49,7 +49,7 @@ class Config
   // glftpd
   ::cfg::AsciiDownloads asciiDownloads;
   ::cfg::AsciiUploads asciiUploads;
-  int freeSpace;
+  long long freeSpace;
   std::string sitenameLong;
   std::string sitenameShort;
   std::string loginPrompt;
@@ -120,7 +120,7 @@ class Config
   std::vector< ::cfg::HiddenFiles> hiddenFiles;
   std::vector<std::string> noretrieve;
   int multiplierMax;
-  long emptyNuke;
+  long long emptyNuke;
   std::vector< ::cfg::Creditcheck> creditcheck;
   std::vector< ::cfg::Creditloss> creditloss;
   ::cfg::NukedirStyle nukedirStyle;
@@ -181,7 +181,7 @@ public:
   int Port() const { return port; }
   const ::cfg::AsciiDownloads& AsciiDownloads() const { return asciiDownloads; } 
   const ::cfg::AsciiUploads& AsciiUploads() const { return asciiUploads; } 
-  int FreeSpace() const { return freeSpace; }
+  long long FreeSpace() const { return freeSpace; }
   const std::string& SitenameLong() const { return sitenameLong; }
   const std::string& SitenameShort() const { return sitenameShort; }
   const std::string& LoginPrompt() const { return loginPrompt; }
@@ -257,7 +257,7 @@ public:
   const std::vector< ::cfg::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
   const std::vector<std::string>& Noretrieve() const { return noretrieve; }
   int MultiplierMax() const { return multiplierMax; }
-  long EmptyNuke() const { return emptyNuke; }
+  long long EmptyNuke() const { return emptyNuke; }
   const std::vector< ::cfg::Creditcheck>& Creditcheck() const { return creditcheck; }
   const std::vector< ::cfg::Creditloss>& Creditloss() const { return creditloss; }
   const ::cfg::NukedirStyle& Nukedirtyle() const { return nukedirStyle; }

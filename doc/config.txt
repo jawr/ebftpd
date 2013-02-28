@@ -42,7 +42,7 @@ required:         no
 default:          none
 description:      path to a text file to display before login
 ------------------------------------------------------------------------------------------------------------------------
-usage:            ascii_downloads <size in bytes> <file mask> [<file mask> ..]
+usage:            ascii_downloads <kbytes>[M|G] <file mask> [<file mask> ..]
 required:         no
 default:          none
 description:      prevent ascii downloads of files larger than size or not matching specified masks
@@ -52,10 +52,10 @@ required:         no
 default:          none
 description:      prevent ascii uploads of files not matching specified masks
 ------------------------------------------------------------------------------------------------------------------------
-usage:            free_space <mbytes>
+usage:            free_space <kbytes>[M|G]
 required:         no
 default:          1024
-description:      prevent uploads if free space drops below the specified number of mbytes
+description:      prevent uploads if free space drops below the specified number of kbytes
 ------------------------------------------------------------------------------------------------------------------------
 usage:            total_users <number>>
 required:         no
@@ -67,7 +67,7 @@ required:         no
 default:          10
 description:      maximum multiplier allowed to be passed to site nuke command
 ------------------------------------------------------------------------------------------------------------------------
-usage:            empty_nuke <kbytes>
+usage:            empty_nuke <kbytes>[M|G]
 required:         no
 default:          102400 (100MB)
 description:      penalty for being nuked for empty directory
@@ -113,7 +113,7 @@ required:         no
 default:          no
 description:      prevent direct connections from non-bouncers? (loopback excluded)
 ------------------------------------------------------------------------------------------------------------------------
-usage:            security_log <console yes|no> <file yes|no> <database size>
+usage:            security_log <console yes|no> <file yes|no> <database kbytes>[M|G]
 required:         no
 default:          yes yes 0
 description:      configure destinations for security log
@@ -124,31 +124,31 @@ required:         no
 default:          yes yes
 description:      configure destinations for database log
 ------------------------------------------------------------------------------------------------------------------------
-usage:            event_log <console yes|no> <file yes|no> <database size>
+usage:            event_log <console yes|no> <file yes|no> <database kbytes>[M|G]
 required:         no
 default:          yes yes 0
 description:      configure destinations for event log
                   database is specified as size as it's automatically rotated (0 to disable database)
 ------------------------------------------------------------------------------------------------------------------------
-usage:            debug_log <console yes|no> <file yes|no> <database size>
+usage:            debug_log <console yes|no> <file yes|no> <database kbytes>[M|G]
 required:         no
 default:          yes yes 0
 description:      configure destinations for debug log
                   database is specified as size as it's automatically rotated (0 to disable database)
 ------------------------------------------------------------------------------------------------------------------------
-usage:            error_log <console yes|no> <file yes|no> <database size>
+usage:            error_log <console yes|no> <file yes|no> <database kbytes>[M|G]
 required:         no
 default:          yes yes 0
 description:      configure destinations for error log
                   database is specified as size as it's automatically rotated (0 to disable database)
 ------------------------------------------------------------------------------------------------------------------------
-usage:            siteop_log <console yes|no> <file yes|no> <database size>
+usage:            siteop_log <console yes|no> <file yes|no> <database kbytes>[M|G]
 required:         no
 default:          yes yes 0
 description:      configure destinations for siteop log
                   database is specified as size as it's automatically rotated (0 to disable database)
 ------------------------------------------------------------------------------------------------------------------------
-usage:            transfer_log <console yes|no> <file yes|no> <database size> <uploads yes|no> <downloads yes|no>
+usage:            transfer_log <console yes|no> <file yes|no> <database kbytes>[M|G] <uploads yes|no> <downloads yes|no>
 required:         no
 default:          no no 0 no no
 description:      configure destinations for transfer log
@@ -194,12 +194,12 @@ required:         no
 default:          none
 description:      list of file masks that cannot be downloaded
 ------------------------------------------------------------------------------------------------------------------------
-usage:            maximum_speed <path mask> <down bytes/s> <up bytes/s> <acls>
+usage:            maximum_speed <path mask> <down kbytes/s>[M|G] <up kbytes/s>[M|G] <acls>
 required:         no
 default:          * -1 -1 *
 description:      path based maximum speed limits (throttled when exceeded) (-1 unlimited)
 ------------------------------------------------------------------------------------------------------------------------
-usage:            minimum_speed <path mask> <down bytes/s> <up bytes/s> <acls>
+usage:            minimum_speed <path mask> <down kbytes/s>[M|G] <up kbytes/s>[M|G] <acls>
 required:         no
 default:          * -1 -1 *
 description:      path based minimum speed limits (transfer aborted when not met) (-1 unlmited)
@@ -394,7 +394,7 @@ required:         no
 default:          none
 description:      download ratio based on path mask for those with specified acls
 ------------------------------------------------------------------------------------------------------------------------
-usage:            nukedir_style <format> <0|1|2> <empty bytes>
+usage:            nukedir_style <format> <0|1|2> <empty kbytes>[M|G]
 required:         no
 default:          NUKED-%N 2 1048576
 description:      specify how nuked directories are handled

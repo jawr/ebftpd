@@ -56,7 +56,7 @@ struct SpeedInfo
     if (xfertime.total_microseconds() == 0)
       return bytes;
     else
-      return bytes / xfertime.total_microseconds() / 1000000.0;
+      return bytes / (xfertime.total_microseconds() / 1000000.0);
   }
 };
 
@@ -66,9 +66,9 @@ class SpeedCounter
 {
   std::mutex mutex;
   std::unordered_map<std::string, std::pair<int, SpeedInfo>> speeds;
-  std::function<int(const cfg::SpeedLimit&)> getSpeedLimit;
+  std::function<long long(const cfg::SpeedLimit&)> getSpeedLimit;
 
-  SpeedCounter(const std::function<int(const cfg::SpeedLimit&)>& getSpeedLimit) :
+  SpeedCounter(const std::function<long long(const cfg::SpeedLimit&)>& getSpeedLimit) :
     getSpeedLimit(getSpeedLimit)
   { }
   

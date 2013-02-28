@@ -16,12 +16,12 @@ int MaximumDownloads()
   return cfg::Get().SimXfers().MaxDownloads();
 }
 
-int UploadSpeedLimit(const cfg::SpeedLimit& limit)
+long long UploadSpeedLimit(const cfg::SpeedLimit& limit)
 {
   return limit.Uploads();
 }
 
-int DownloadSpeedLimit(const cfg::SpeedLimit& limit)
+long long DownloadSpeedLimit(const cfg::SpeedLimit& limit)
 {
   return limit.Downloads();
 }

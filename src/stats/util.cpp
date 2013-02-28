@@ -25,11 +25,11 @@ double CalculateSpeed(long long bytes, const boost::posix_time::ptime& start,
   return CalculateSpeed(bytes, end - start);
 }
 
-boost::posix_time::time_duration SpeedLimitSleep(
+boost::posix_time::time_duration SpeedLimitSleep( 
       const boost::posix_time::time_duration& xfertime, 
-      long long bytes, long limit)
+      long long bytes, long long limitBytes)
 {
-  auto minXfertime = boost::posix_time::microseconds((bytes / static_cast<double>(limit)) * 1000000);
+  auto minXfertime = boost::posix_time::microseconds((bytes / static_cast<double>(limitBytes)) * 1000000);
   if (minXfertime < xfertime) return boost::posix_time::microseconds(0);
   return std::min<boost::posix_time::time_duration>(boost::posix_time::
           microseconds(100000), minXfertime - xfertime);

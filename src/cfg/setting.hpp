@@ -69,11 +69,11 @@ public:
 
 class AsciiDownloads
 {
-  off_t size;
+  long long kBytes;
   std::vector<std::string> masks;
   
 public:
-  AsciiDownloads() : size(-1) { }
+  AsciiDownloads() : kBytes(-1) { }
   AsciiDownloads(const std::vector<std::string>& toks);
   bool Allowed(off_t size, const std::string& path) const;
 };
@@ -103,6 +103,7 @@ class SecurePass
 {
   acl::PasswdStrength strength;
   acl::ACL acl;
+  
 public:
   SecurePass(std::vector<std::string> toks);
   const acl::ACL& ACL() const { return acl; }
@@ -112,6 +113,7 @@ public:
 class BouncerIp
 {
   std::vector<std::string> addrs;
+  
 public:
   BouncerIp(const std::vector<std::string>& toks);
   const std::vector<std::string>& Addrs() const { return addrs; }
@@ -120,15 +122,15 @@ public:
 class SpeedLimit
 {
   std::string path;
-  long downloads;
-  long uploads;
+  long long downloads;
+  long long uploads;
   acl::ACL acl;
   
 public:
   SpeedLimit(std::vector<std::string> toks);
   const std::string& Path() const { return path; }
-  long Uploads() const { return downloads; }
-  long Downloads() const { return uploads; }
+  long long Uploads() const { return downloads; }
+  long long Downloads() const { return uploads; }
   const acl::ACL& ACL() const { return acl; }
 };
 
@@ -147,6 +149,7 @@ public:
 class PasvAddr
 {
   std::string addr;
+  
 public:
   PasvAddr(const std::vector<std::string>& toks);
   const std::string& Addr() const { return addr; }
@@ -156,6 +159,7 @@ class PortRange
 {
   int from;
   int to;
+
 public:
   PortRange(int from, int to) : from(from), to(to) { }
   int From() const { return from; }
@@ -165,6 +169,7 @@ public:
 class Ports
 {
   std::vector<PortRange> ranges;
+  
 public:
   Ports() = default;
   Ports(const std::vector<std::string>& toks);
@@ -183,6 +188,7 @@ public:
     downloads(true), uploads(true), 
     logging(false), acl("*")
   { }
+  
   AllowFxp(std::vector<std::string> toks);
   bool Downloads() const { return downloads; }
   bool Uploads() const { return uploads; }
@@ -194,6 +200,7 @@ class Alias
 {
   std::string name;
   std::string path;
+  
 public:
   Alias(const std::vector<std::string>& toks);
   const std::string& Name() const { return name; }
@@ -223,6 +230,7 @@ class MaxUsers
 {
   int users;
   int exemptUsers;
+  
 public:
   MaxUsers() : users(50), exemptUsers(5) { }
   MaxUsers(const std::vector<std::string>& toks);
@@ -232,13 +240,12 @@ public:
 
 class Lslong
 {
-  std::string bin;
   std::string options;
   int maxRecursion;
+  
 public:
   Lslong() : options("l"), maxRecursion(2) { }
   Lslong(std::vector<std::string> toks);
-  const std::string& Bin() const { return bin; }
   const std::string& Options() const { return options; }
   int MaxRecursion() const { return maxRecursion; }
 };
@@ -247,6 +254,7 @@ class HiddenFiles
 {
   std::string path;
   std::vector<std::string> masks;
+  
 public:
   HiddenFiles(std::vector<std::string> toks);
   const std::string& Path() const { return path; }
@@ -257,6 +265,7 @@ class Requests
 {
   std::string path;
   int max;
+  
 public:
   Requests() : max(10) { }
   Requests(const std::vector<std::string>& toks);
@@ -293,19 +302,19 @@ public:
 class NukedirStyle
 {
 public:
-  enum Type { DELETE_ALL, DELETE_FILES, KEEP };
+  enum Action { DeleteAll, DeleteFiles, Keep };
 
 private:
   std::string format;
-  Type type;
-  long emptyBytes;
+  Action action;
+  long long emptyKBytes;
 
 public:
-  NukedirStyle() : type(KEEP), emptyBytes(1024 * 1024) { }
+  NukedirStyle();
   NukedirStyle(const std::vector<std::string>& toks);
   const std::string& Format() const { return format; }
-  long EmptyBytes() const { return emptyBytes; }
-  Type GetType() const { return type; }
+  long long EmptyKBytes() const { return emptyKBytes; }
+  Action GetAction() const { return action; }
 };
 
 class Msgpath
@@ -335,7 +344,7 @@ public:
 class SiteCmd
 {
 public:
-  enum class Type { EXEC, TEXT, ALIAS };
+  enum class Type { Exec, Text, Alias };
   
 private:
   std::string command;
@@ -356,7 +365,7 @@ public:
 class Cscript
 {
 public:
-  enum class Type { PRE, POST };
+  enum class Type { Pre, Post };
 
 private:
   std::string command;
@@ -443,8 +452,6 @@ public:
   bool Uploads() const { return uploads; }
   bool Downloads() const { return downloads; }
 };
-
-bool YesNoToBoolean(std::string s);
 
 }
 
