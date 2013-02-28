@@ -21,6 +21,7 @@
 #include "db/stats/stats.hpp"
 #include "stats/types.hpp"
 #include "stats/stat.hpp"
+#include "ftp/online.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -192,12 +193,19 @@ void RETRCommand::Execute()
   {
     if (cfg::Get().TransferLog().Downloads())
     {
-      bool okay = std::uncaught_exception();
+      bool okay = !std::uncaught_exception();
       logs::Transfer(fs::MakeReal(path).ToString(), "down", client.User().Name(), client.User().PrimaryGroup(), 
                      (data.State().StartTime() - pt::ptime(gd::date(1970, 1, 1))).total_microseconds() / 1000000.0, 
                      data.State().Bytes() / 1024, data.State().Duration().total_microseconds() / 1000000.0, 
                      okay, section ? section->Name() : std::string());
       }
+  });
+  
+  ftp::OnlineWriter::Get().StartTransfer(boost::this_thread::get_id(), 
+        stats::Direction::Download, data.State().StartTime());
+  auto onlineGuard = util::MakeScopeExit([&]
+  {
+    ftp::OnlineWriter::Get().StopTransfer(boost::this_thread::get_id());
   });
   
   bool aborted = false;
@@ -207,6 +215,7 @@ void RETRCommand::Execute()
     bool dlIncomplete = cfg::Get().DlIncomplete();
     std::vector<char> asciiBuf;
     char buffer[16384];
+    auto threadId = boost::this_thread::get_id();
     
     while (true)
     {
@@ -230,6 +239,7 @@ void RETRCommand::Execute()
       
       data.Write(bufp, len);
       speedControl.Apply();
+      ftp::OnlineWriter::Get().TransferUpdate(threadId, data.State().Bytes());
     }
   }
   catch (const ftp::TransferAborted&) { aborted = true; }
@@ -282,6 +292,7 @@ void RETRCommand::Execute()
   (void) countGuard;
   (void) dataGuard;
   (void) transferLogGuard;
+  (void) onlineGuard;
 }
 
 } /* rfc namespace */

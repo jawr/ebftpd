@@ -120,7 +120,7 @@ inline void Transfer(const std::string& path, const std::string& direction,
   extern Logger transfer;
   transfer.PushEntry(QuoteOn(), "epoch start", startTime, "direction", direction,
                      "username", username, "groupname", groupname,
-                     "size", kBytes, "seconds", xfertime, "okay", okay,
+                     "size", kBytes, "seconds", xfertime, "okay", okay ? "okay" : "fail",
                      "section", section, "path", path);
 }
 

@@ -12,9 +12,9 @@ default:          none
 description:      path to the site root as seen by users (this is relative to true os root)
 ------------------------------------------------------------------------------------------------------------------------
 usage:            pidfile <path>
-required:         no
+required:         yes
 default:          none (suggest /ebftpd/etc/ebftpd.pid)
-description:      path to store a pid file to prevent mutliple instances of the server
+description:      path to store a pid file to prevent mutliple instances of the server and for ipc communication
 ------------------------------------------------------------------------------------------------------------------------
 port              port <port number>
 required:         yes

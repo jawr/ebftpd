@@ -28,6 +28,8 @@
 #include "acl/misc.hpp"
 #include "util/misc.hpp"
 #include "ftp/task/task.hpp"
+#include "ftp/online.hpp"
+#include "fs/directory.hpp"
 
 namespace ftp
 {
@@ -72,6 +74,7 @@ void ClientImpl::SetState(ClientState state)
                  logs::QuoteOn(), "user", user->Name(), 
                 "group", user->PrimaryGroup(), 
                 "tagline", user->Tagline());
+    OnlineWriter::Get().LoggedOut(boost::this_thread::get_id());
   }
 }
 
@@ -112,6 +115,8 @@ void ClientImpl::SetLoggedIn(bool kicked)
               logs::QuoteOn(), "user", user->Name(), 
               "group", user->PrimaryGroup(), 
               "tagline", user->Tagline());
+              
+  OnlineWriter::Get().LoggedIn(boost::this_thread::get_id(), parent, fs::WorkDirectory().ToString());
 }
 
 void ClientImpl::SetWaitingPassword(const acl::User& user, bool kickLogin)
@@ -214,6 +219,11 @@ void ClientImpl::ExecuteCommand(const std::string& commandLine)
   currentCommand = args[0];
   if (!argStr.empty()) currentCommand += " " + argStr;
   
+  if (State() == ClientState::LoggedIn)
+  {
+    OnlineWriter::Get().Command(boost::this_thread::get_id(), currentCommand);
+  }
+  
   cmd::rfc::CommandDefOptRef def(cmd::rfc::Factory::Lookup(args[0]));
   if (!def)
   {
@@ -257,6 +267,11 @@ void ClientImpl::ExecuteCommand(const std::string& commandLine)
   }
   
   currentCommand = "";
+  
+  if (State() == ClientState::LoggedIn)
+  {
+    OnlineWriter::Get().Idle(boost::this_thread::get_id());
+  }
 }
 
 bool ClientImpl::ReloadUser()
@@ -304,7 +319,7 @@ void ClientImpl::Handle()
       timeoutPtr = &timeout;
     }
     
-    std::string command = control.NextCommand(timeoutPtr);
+    std::string command = control.NextCommand(timeoutPtr);    
     if (userUpdated && !ReloadUser()) break;
     ExecuteCommand(command);
     cfg::UpdateLocal();

@@ -52,4 +52,5 @@ list(APPEND ALL_LIBRARIES
   ${Boost_LIBRARIES}
   ${Execinfo_LIBRARIES}
   ${Pthread_LIBRARIES}
+  rt
 )

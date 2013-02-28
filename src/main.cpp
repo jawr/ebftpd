@@ -29,6 +29,7 @@
 #include "db/initialise.hpp"
 #include "util/scopeguard.hpp"
 #include "db/replicator.hpp"
+#include "ftp/online.hpp"
 
 #include "version.hpp"
 
@@ -212,6 +213,8 @@ int main(int argc, char** argv)
     logs::Error("Error while creating root user and group and default user template");
     return 1;
   }
+
+  ftp::OnlineWriter::Initialise(ftp::SharedMemoryID());
   
   int exitStatus = 0;
   if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))

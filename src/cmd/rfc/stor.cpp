@@ -25,6 +25,7 @@
 #include "util/path/status.hpp"
 #include "acl/flags.hpp"
 #include "ftp/xdupe.hpp"
+#include "ftp/online.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -211,8 +212,11 @@ void STORCommand::Execute()
     if (data.State().Type() != ftp::TransferType::None)
     {
       data.Close();
-      db::stats::Upload(client.User(), data.State().Bytes() / 1024, 
-                        data.State().Duration().total_milliseconds());            
+      if (data.State().Bytes() > 0)
+      {
+        db::stats::Upload(client.User(), data.State().Bytes() / 1024, 
+                          data.State().Duration().total_milliseconds());
+      }
     }
   });  
   
@@ -230,12 +234,19 @@ void STORCommand::Execute()
   {
     if (cfg::Get().TransferLog().Uploads())
     {
-      bool okay = std::uncaught_exception();
+      bool okay = !std::uncaught_exception();
       logs::Transfer(fs::MakeReal(path).ToString(), "up", client.User().Name(), client.User().PrimaryGroup(), 
                      (data.State().StartTime() - pt::ptime(gd::date(1970, 1, 1))).total_microseconds() / 1000000.0, 
                      data.State().Bytes() / 1024, data.State().Duration().total_microseconds() / 1000000.0,
                      okay, section ? section->Name() : std::string());
       }
+  });
+  
+  ftp::OnlineWriter::Get().StartTransfer(boost::this_thread::get_id(), 
+        stats::Direction::Upload, data.State().StartTime());
+  auto onlineGuard = util::MakeScopeExit([&]
+  {
+    ftp::OnlineWriter::Get().StopTransfer(boost::this_thread::get_id());
   });
 
   static const size_t bufferSize = 16384;
@@ -245,6 +256,7 @@ void STORCommand::Execute()
                                      new util::CRC32());
   bool aborted = false;
   fileOkay = false;
+  auto threadId = boost::this_thread::get_id();
   
   try
   {
@@ -270,6 +282,7 @@ void STORCommand::Execute()
       
       if (calcCrc) crc32->Update(reinterpret_cast<uint8_t*>(bufp), len);
       speedControl.Apply();
+      ftp::OnlineWriter::Get().TransferUpdate(threadId, data.State().Bytes());
     }
   }
   catch (const util::net::EndOfStream&) { }
@@ -333,6 +346,7 @@ void STORCommand::Execute()
   (void) countGuard;
   (void) fileGuard;
   (void) dataGuard;
+  (void) onlineGuard;
 }
 
 } /* rfc namespace */
