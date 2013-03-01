@@ -242,13 +242,6 @@ void STORCommand::Execute()
       }
   });
   
-  ftp::OnlineWriter::Get().StartTransfer(boost::this_thread::get_id(), 
-        stats::Direction::Upload, data.State().StartTime());
-  auto onlineGuard = util::MakeScopeExit([&]
-  {
-    ftp::OnlineWriter::Get().StopTransfer(boost::this_thread::get_id());
-  });
-
   static const size_t bufferSize = 16384;
   bool calcCrc = CalcCRC(path);
   std::unique_ptr<util::CRC32> crc32(cfg::Get().AsyncCRC() ? 
@@ -261,6 +254,8 @@ void STORCommand::Execute()
   try
   {
     ftp::UploadSpeedControl speedControl(client, path);
+    ftp::OnlineTransferUpdater onlineUpdater(boost::this_thread::get_id(), stats::Direction::Upload,
+                                             data.State().StartTime());
     std::vector<char> asciiBuf;
     char buffer[bufferSize];
     
@@ -281,7 +276,7 @@ void STORCommand::Execute()
       fout->write(bufp, len);
       
       if (calcCrc) crc32->Update(reinterpret_cast<uint8_t*>(bufp), len);
-      ftp::OnlineWriter::Get().TransferUpdate(threadId, data.State().Bytes());
+      onlineUpdater.Update(data.State().Bytes());
       speedControl.Apply();
     }
   }
@@ -346,7 +341,6 @@ void STORCommand::Execute()
   (void) countGuard;
   (void) fileGuard;
   (void) dataGuard;
-  (void) onlineGuard;
 }
 
 } /* rfc namespace */

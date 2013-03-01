@@ -11,6 +11,7 @@ namespace ftp
 {
 
 std::unique_ptr<OnlineWriter> OnlineWriter::instance;
+boost::posix_time::milliseconds OnlineTransferUpdater::interval(10);
 
 OnlineXfer::OnlineXfer(stats::Direction direction, const boost::posix_time::ptime& start) :
   start(start),

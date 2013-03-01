@@ -206,6 +206,38 @@ public:
   }
 };
 
+class OnlineTransferUpdater
+{
+  boost::thread::id tid;
+  boost::posix_time::ptime nextUpdate;
+  
+  static boost::posix_time::milliseconds interval;
+  
+public:
+  OnlineTransferUpdater(const boost::thread::id& tid, stats::Direction direction,
+                        const boost::posix_time::ptime& start) :
+    tid(tid),
+    nextUpdate(start)
+  {
+    OnlineWriter::Get().StartTransfer(tid, direction, start);
+  }
+  
+  ~OnlineTransferUpdater()
+  {
+    OnlineWriter::Get().StopTransfer(tid);
+  }
+  
+  void Update(long long bytes)
+  {
+    auto now = boost::posix_time::microsec_clock::local_time();
+    if (now >= nextUpdate)
+    {
+      OnlineWriter::Get().TransferUpdate(tid, bytes);
+      nextUpdate = now + interval;
+    }
+  }
+};
+
 std::string SharedMemoryID(pid_t pid = -1);
 bool SharedMemoryID(const std::string& pidFile, std::string& id);
 

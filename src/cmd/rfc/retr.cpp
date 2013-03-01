@@ -201,21 +201,16 @@ void RETRCommand::Execute()
       }
   });
   
-  ftp::OnlineWriter::Get().StartTransfer(boost::this_thread::get_id(), 
-        stats::Direction::Download, data.State().StartTime());
-  auto onlineGuard = util::MakeScopeExit([&]
-  {
-    ftp::OnlineWriter::Get().StopTransfer(boost::this_thread::get_id());
-  });
-  
   bool aborted = false;
   try
   {
     ftp::DownloadSpeedControl speedControl(client, path);
+    ftp::OnlineTransferUpdater onlineUpdater(boost::this_thread::get_id(), stats::Direction::Download,
+                                             data.State().StartTime());
+    
     bool dlIncomplete = cfg::Get().DlIncomplete();
     std::vector<char> asciiBuf;
     char buffer[16384];
-    auto threadId = boost::this_thread::get_id();
     
     while (true)
     {
@@ -239,7 +234,7 @@ void RETRCommand::Execute()
       
       data.Write(bufp, len);
 
-      ftp::OnlineWriter::Get().TransferUpdate(threadId, data.State().Bytes());
+      onlineUpdater.Update(data.State().Bytes());
       speedControl.Apply();
     }
   }
@@ -293,7 +288,6 @@ void RETRCommand::Execute()
   (void) countGuard;
   (void) dataGuard;
   (void) transferLogGuard;
-  (void) onlineGuard;
 }
 
 } /* rfc namespace */
