@@ -47,6 +47,7 @@ const std::vector<std::string> Config::requiredSettings
 const std::string Config::configFile = "ebftpd.conf";
 const std::vector<std::string> Config::configSearch = { "../etc", "etc", "." };
 std::string Config::lastConfigPath;
+boost::optional<MaxUsers> Config::maxOnline;
 
 Config::Config(const std::string& configPath, bool tool) : 
   version(++latestVersion),
@@ -110,6 +111,8 @@ Config::Config(const std::string& configPath, bool tool) :
   }
 
   SanityCheck();
+
+  if (!maxOnline) maxOnline.reset(maxUsers);
 }
 
 void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)

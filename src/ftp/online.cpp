@@ -1,14 +1,28 @@
+#include <cstring>
 #include <sstream>
 #include <fstream>
 #include "ftp/online.hpp"
 #include "ftp/client.hpp"
 #include "acl/user.hpp"
+#include "util/error.hpp"
 #include "main.hpp"
 
 using namespace boost::interprocess;
 
 namespace ftp
 {
+
+namespace
+{
+long ThreadIdToLong(const boost::thread::id& tid)
+{
+  std::stringstream ss;
+  ss << tid;
+  long ltid;
+  ss >> std::hex >> ltid;
+  return ltid;
+}
+}
 
 std::unique_ptr<OnlineWriter> OnlineWriter::instance;
 boost::posix_time::milliseconds OnlineTransferUpdater::interval(10);
@@ -20,53 +34,47 @@ OnlineXfer::OnlineXfer(stats::Direction direction, const boost::posix_time::ptim
 {
 }
 
-OnlineClientData::OnlineClientData(
-      ShmCharAlloc& alloc, acl::UserID uid, const std::string& ident, 
+OnlineClient::OnlineClient(
+      acl::UserID uid, const std::string& ident, 
       const std::string& ip, const std::string& hostname,
       const std::string& workDir) :
   uid(uid), 
   lastCommand(boost::posix_time::second_clock::local_time()),
-  command("", alloc), 
-  workDir(workDir.c_str(), alloc), 
-  ident(ident.c_str(), alloc), 
-  ip(ip.c_str(), alloc), 
-  hostname(hostname.c_str(), alloc)
+  command{0}
 {
-}
-
-OnlineClient::OnlineClient(const OnlineClientData& data) :
-  uid(data.uid), 
-  lastCommand(data.lastCommand),
-  command(data.command.c_str()), 
-  workDir(data.workDir.c_str()),
-  ident(data.ident.c_str()),
-  ip(data.ip.c_str()), 
-  hostname(data.hostname.c_str()),
-  xfer(data.xfer)
-{
+  strncpy(this->ident, ident.c_str(), sizeof(this->ident));
+  strncpy(this->ip, ip.c_str(), sizeof(this->ip));
+  strncpy(this->hostname, hostname.c_str(), sizeof(this->hostname));
+  strncpy(this->workDir, workDir.c_str(), sizeof(this->workDir));
 }
 
 OnlineData::OnlineData(boost::interprocess::managed_shared_memory& segment) :
-  clients(std::less<boost::thread::id>(), 
-          ShmOnlineMapAlloc(segment.get_segment_manager()))
+  clients(std::less<long>(), ShmOnlineMapAlloc(segment.get_segment_manager()))
 {
 }
 
-OnlineWriter::OnlineWriter(const std::string& id) :
+OnlineWriter::OnlineWriter(const std::string& id, int maxClients) :
   id(id), data(nullptr)
 {
-  OpenSharedMemory();
+  OpenSharedMemory(maxClients);
 }
 
-void OnlineWriter::OpenSharedMemory()
+void OnlineWriter::OpenSharedMemory(int maxClients)
 {  
-  segment.reset(new managed_shared_memory(open_or_create, id.c_str(), 65535));
+  try
+  {
+    segment.reset(new managed_shared_memory(open_or_create, id.c_str(), 12960 * (maxClients + 1)));
 
-  segment->construct<OnlineData>("online")(*segment);
-  data = segment->find<OnlineData>("online").first;
-
-  scoped_lock<interprocess_mutex> lock(data->mutex);
-  data->clients.clear();
+    segment->construct<OnlineData>("online")(*segment);
+    data = segment->find<OnlineData>("online").first;
+    if (!data) throw util::SystemError(ENOMEM);
+    scoped_lock<interprocess_mutex> lock(data->mutex);
+    data->clients.clear();
+  }
+  catch (const interprocess_exception& e)
+  {
+    throw util::SystemError(ENOMEM);
+  }
 }
 
 OnlineWriter::~OnlineWriter()
@@ -74,45 +82,58 @@ OnlineWriter::~OnlineWriter()
   shared_memory_object::remove(id.c_str());
 }
 
-void OnlineWriter::LoggedIn(
-      const boost::thread::id& tid, acl::UserID uid, const std::string& ident, 
-      const std::string& ip, const std::string& hostname,
-      const std::string& workDir)
+void OnlineWriter::LoggedIn(long tid, Client& client, const std::string& workDir)
 {
   scoped_lock<interprocess_mutex> lock(data->mutex);
-  ShmCharAlloc alloc(segment->get_segment_manager());
-  data->clients.insert(std::make_pair(tid, OnlineClientData(alloc, uid, ident, ip, hostname, workDir)));  
+  data->clients.insert(std::make_pair(tid, OnlineClient(client.User().ID(), client.Ident(), 
+              client.IP(), client.Hostname(), workDir)));  
 }
 
 void OnlineWriter::LoggedIn(const boost::thread::id& tid, Client& client, const std::string& workDir)
 {
-  LoggedIn(tid, client.User().ID(), client.Ident(), client.IP(), client.Hostname(), workDir);
+  LoggedIn(ThreadIdToLong(tid), client, workDir);
 }
 
-void OnlineWriter::LoggedOut(const boost::thread::id& tid)
+void OnlineWriter::LoggedOut(long tid)
 {
   scoped_lock<interprocess_mutex> lock(data->mutex);
   data->clients.erase(tid);
 }
 
-void OnlineWriter::Command(const boost::thread::id& tid, const std::string& command)
+void OnlineWriter::LoggedOut(const boost::thread::id& tid)
+{
+  LoggedOut(ThreadIdToLong(tid));
+}
+
+void OnlineWriter::Command(long tid, const std::string& command)
 {
   scoped_lock<interprocess_mutex> lock(data->mutex);
   auto it = data->clients.find(tid);
   verify(it != data->clients.end());
-  it->second.command.assign(command.c_str());
+  strncpy(it->second.command, command.c_str(), sizeof(it->second.command));
+}
+
+void OnlineWriter::Command(const boost::thread::id& tid, const std::string& command)
+{
+  Command(ThreadIdToLong(tid), command);
+}
+
+void OnlineWriter::Idle(long tid)
+{
+  scoped_lock<interprocess_mutex> lock(data->mutex);
+  auto it = data->clients.find(tid);
+  verify(it != data->clients.end());
+  it->second.command[0] = '\0';
+  it->second.lastCommand = boost::posix_time::second_clock::local_time();
 }
 
 void OnlineWriter::Idle(const boost::thread::id& tid)
 {
-  scoped_lock<interprocess_mutex> lock(data->mutex);
-  auto it = data->clients.find(tid);
-  verify(it != data->clients.end());
-  it->second.command.clear();
-  it->second.lastCommand = boost::posix_time::second_clock::local_time();
+  Idle(ThreadIdToLong(tid));
 }
 
-void OnlineWriter::StartTransfer(const boost::thread::id& tid, stats::Direction direction, const boost::posix_time::ptime& start)
+void OnlineWriter::StartTransfer(long tid, stats::Direction direction, 
+                                 const boost::posix_time::ptime& start)
 {
   scoped_lock<interprocess_mutex> lock(data->mutex);
   auto it = data->clients.find(tid);
@@ -120,7 +141,7 @@ void OnlineWriter::StartTransfer(const boost::thread::id& tid, stats::Direction 
   it->second.xfer.reset(OnlineXfer(direction, start));
 }
 
-void OnlineWriter::TransferUpdate(const boost::thread::id& tid, long long bytes)
+void OnlineWriter::TransferUpdate(long tid, long long bytes)
 {
   scoped_lock<interprocess_mutex> lock(data->mutex);
   auto it = data->clients.find(tid);
@@ -129,7 +150,7 @@ void OnlineWriter::TransferUpdate(const boost::thread::id& tid, long long bytes)
   it->second.xfer->bytes = bytes;
 }
 
-void OnlineWriter::StopTransfer(const boost::thread::id& tid)
+void OnlineWriter::StopTransfer(long tid)
 {
   scoped_lock<interprocess_mutex> lock(data->mutex);
   auto it = data->clients.find(tid);
@@ -219,6 +240,20 @@ void OnlineReader::Unlock() const
 {
   locked = false;
   if (data) data->mutex.unlock();
+}
+
+OnlineTransferUpdater::OnlineTransferUpdater(
+        const boost::thread::id& tid, stats::Direction direction,
+        const boost::posix_time::ptime& start) :
+  tid(ThreadIdToLong(tid)),
+  nextUpdate(start)
+{
+  OnlineWriter::Get().StartTransfer(this->tid, direction, start);
+}
+
+OnlineTransferUpdater::~OnlineTransferUpdater()
+{
+  OnlineWriter::Get().StopTransfer(tid);
 }
 
 std::string SharedMemoryID(pid_t pid)

@@ -60,12 +60,19 @@ void StopStartCheck()
   if (shared->Port() != old.Port()) settings.push_back("port");
   if (shared->TlsCertificate() != old.TlsCertificate()) settings.push_back("tls_certificate");
   if (shared->TlsCiphers() != old.TlsCiphers()) settings.push_back("tls_ciphers");
+  
   if (shared->Database().Address() != old.Database().Address() ||   
       shared->Database().Port() != old.Database().Port())
   {
     settings.push_back("database");
   }
 
+  if (shared->MaxUsers().Users() != old.MaxUsers().Users() ||
+      shared->MaxUsers().ExemptUsers() != old.MaxUsers().ExemptUsers())
+  {
+    settings.push_back("max_users");
+  }
+  
   if (!settings.empty())
   {
     throw StopStartNeeded("Full stop start required for these settings: " + 

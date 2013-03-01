@@ -3,23 +3,19 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/segment_manager.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/containers/map.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
+#include <limits.h>
+#include <netinet/in.h>
 #include "acl/types.hpp"
 #include "stats/types.hpp"
 #include "util/verify.hpp"
 
 namespace ftp
 {
-
-typedef boost::interprocess::managed_shared_memory::segment_manager SegmentManager;
-typedef boost::interprocess::allocator<char, SegmentManager> ShmCharAlloc;
-typedef boost::interprocess::basic_string<char, std::char_traits<char>, ShmCharAlloc> ShmString;
-typedef boost::interprocess::allocator<void, SegmentManager> ShmVoidAlloc;
 
 struct OnlineXfer
 {
@@ -30,40 +26,34 @@ struct OnlineXfer
   OnlineXfer(stats::Direction direction, const boost::posix_time::ptime& start);
 };
 
-struct OnlineClientData
-{
-	acl::UserID uid;
-	boost::posix_time::ptime lastCommand;
-	ShmString command;
-	ShmString workDir;
-	ShmString ident;
-	ShmString ip;
-	ShmString hostname;
-	
-  boost::optional<OnlineXfer> xfer;
-	
-	OnlineClientData(ShmCharAlloc& alloc, acl::UserID uid, const std::string& ident, 
-                   const std::string& ip, const std::string& hostname,
-                   const std::string& workDir);
-};
-
 struct OnlineClient
 {
+  static const unsigned maximumIdentLength = 513;
+
 	acl::UserID uid;
 	boost::posix_time::ptime lastCommand;
-	std::string command;
-	std::string workDir;
-	std::string ident;
-	std::string ip;
-	std::string hostname;
+	char command[BUFSIZ];
+	char workDir[PATH_MAX];
+	char ident[maximumIdentLength];
+	char ip[INET6_ADDRSTRLEN];
+	char hostname[HOST_NAME_MAX];
 	
   boost::optional<OnlineXfer> xfer;
-	
-	OnlineClient(const OnlineClientData& data);
+
+	OnlineClient(acl::UserID uid, const std::string& ident, 
+               const std::string& ip, const std::string& hostname,
+               const std::string& workDir);
+               
+  bool IsIdle() const { return command[0] == '\0'; }
 };
 
-typedef boost::interprocess::allocator<std::pair<const boost::thread::id, OnlineClientData>, SegmentManager> ShmOnlineMapAlloc;
-typedef boost::interprocess::map<boost::thread::id, OnlineClientData, std::less<boost::thread::id>, ShmOnlineMapAlloc> ShmOnlineMap;
+typedef boost::interprocess::managed_shared_memory::segment_manager SegmentManager;
+typedef boost::interprocess::allocator<std::pair<const long, OnlineClient>, 
+                                       SegmentManager> ShmOnlineMapAlloc;
+typedef boost::interprocess::map<long, 
+                                 OnlineClient, 
+                                 std::less<long>, 
+                                 ShmOnlineMapAlloc> ShmOnlineMap;
 
 struct OnlineData
 {
@@ -74,6 +64,7 @@ struct OnlineData
 };
 
 class Client;
+class OnlineTransferUpdater;
 
 class OnlineWriter
 {
@@ -83,28 +74,34 @@ class OnlineWriter
 
 	static std::unique_ptr<OnlineWriter> instance;
 
-  OnlineWriter(const std::string& id);
-  void OpenSharedMemory();
+  OnlineWriter(const std::string& id, int maxClients);
+  void OpenSharedMemory(int maxClients);
 
+  void LoggedIn(long tid, Client& client, const std::string& workDir);
+	void LoggedOut(long tid);
+	void Command(long tid, const std::string& command);
+	void Idle(long tid);
+
+	void StartTransfer(long tid, stats::Direction direction, const boost::posix_time::ptime& start);
+	void TransferUpdate(long tid, long long bytes);
+	void StopTransfer(long tid);
+  
 public:
   ~OnlineWriter();
-	void LoggedIn(const boost::thread::id& tid, acl::UserID uid, const std::string& ident, 
-								const std::string& ip, const std::string& hostname,
-								const std::string& workDir);
+  
   void LoggedIn(const boost::thread::id& tid, Client& client, const std::string& workDir);
 	void LoggedOut(const boost::thread::id& tid);
 	void Command(const boost::thread::id& tid, const std::string& command);
 	void Idle(const boost::thread::id& tid);
-	void StartTransfer(const boost::thread::id& tid, stats::Direction direction, const boost::posix_time::ptime& start);
-	void TransferUpdate(const boost::thread::id& tid, long long bytes);
-	void StopTransfer(const boost::thread::id& tid);
   
-	static void Initialise(const std::string& id)
+	static void Initialise(const std::string& id, int maxClients)
   {
-    instance.reset(new OnlineWriter(id));
+    instance.reset(new OnlineWriter(id, maxClients));
   }
   
   static OnlineWriter& Get() { return *instance; }
+  
+  friend class OnlineTransferUpdater;
 };
 
 class OnlineReaderLock;
@@ -208,24 +205,16 @@ public:
 
 class OnlineTransferUpdater
 {
-  boost::thread::id tid;
+  long tid;
   boost::posix_time::ptime nextUpdate;
   
   static boost::posix_time::milliseconds interval;
   
 public:
   OnlineTransferUpdater(const boost::thread::id& tid, stats::Direction direction,
-                        const boost::posix_time::ptime& start) :
-    tid(tid),
-    nextUpdate(start)
-  {
-    OnlineWriter::Get().StartTransfer(tid, direction, start);
-  }
+                        const boost::posix_time::ptime& start);
   
-  ~OnlineTransferUpdater()
-  {
-    OnlineWriter::Get().StopTransfer(tid);
-  }
+  ~OnlineTransferUpdater();
   
   void Update(long long bytes)
   {

@@ -236,6 +236,7 @@ public:
   MaxUsers(const std::vector<std::string>& toks);
   int Users() const { return users; }
   int ExemptUsers() const { return exemptUsers; }
+  int Total() const { return users + exemptUsers; }
 };
 
 class Lslong

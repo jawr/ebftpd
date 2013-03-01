@@ -65,7 +65,7 @@ std::string CompileWhosOnline(const std::string& id, text::Template& templ)
     body.RegisterValue("ip", client.ip);
     body.RegisterValue("hostname", client.hostname);
     body.RegisterValue("work_dir", client.workDir);
-    body.RegisterValue("ident_address", client.ident + "@" + client.hostname);
+    body.RegisterValue("ident_address", client.ident + std::string("@") + client.hostname);
     
     // below needs santising for hideinwho config option
     
@@ -98,7 +98,7 @@ std::string CompileWhosOnline(const std::string& id, text::Template& templ)
     }
     else // not transfering
     {
-      if (client.command.empty()) // idle
+      if (client.IsIdle()) // idle
       {
         ++idlers;
         action << "IDLE " << (boost::posix_time::second_clock::local_time() - client.lastCommand);
@@ -132,7 +132,7 @@ std::string CompileWhosOnline(const std::string& id, text::Template& templ)
   foot.RegisterValue("up_avg_speed", uploaders == 0 ? 0 : upTotalSpeed / uploaders);
   foot.RegisterValue("down_total_speed", downTotalSpeed);
   foot.RegisterValue("down_avg_speed", downloaders == 0 ? 0 : downTotalSpeed / downloaders);
-  foot.RegisterValue("max_online_users", cfg::Get().MaxUsers().Users());
+  foot.RegisterValue("max_online_users", cfg::Config::MaxOnline().Users());
   os << foot.Compile();
   return os.str();
 }

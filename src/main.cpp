@@ -214,7 +214,15 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  ftp::OnlineWriter::Initialise(ftp::SharedMemoryID());
+  try
+  {
+    ftp::OnlineWriter::Initialise(ftp::SharedMemoryID(), cfg::Config::MaxOnline().Total());
+  }
+  catch (const util::SystemError& e)
+  {
+    logs::Error("Shared memory segment failed to initialise: %1%", e.Message());
+    return 1;
+  }
   
   int exitStatus = 0;
   if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))

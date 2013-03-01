@@ -155,6 +155,7 @@ class Config
   static const std::string configFile;
   static const std::vector<std::string> configSearch;
   static std::string lastConfigPath;
+  static boost::optional< ::cfg::MaxUsers> maxOnline;
   
   Config(const Config&) = default;
   Config& operator=(const Config&) = default;
@@ -291,6 +292,8 @@ public:
   { aclKeywords.insert(keywords.begin(), keywords.end()); }
   
   static ConfigPtr Load(std::string configPath = lastConfigPath, bool tool = false);
+  
+  static const ::cfg::MaxUsers& MaxOnline() { return *maxOnline; }
   
   friend void UpdateLocal();
 };

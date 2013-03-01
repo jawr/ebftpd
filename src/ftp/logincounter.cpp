@@ -8,19 +8,18 @@ namespace ftp
 
 CounterResult LoginCounter::Start(acl::UserID uid, int limit, bool kickLogin, bool exempt)
 {
-  const cfg::Config& config = cfg::Get();
   std::lock_guard<std::mutex> lock(mutex);
   int& count = personal[uid];
   if (limit != -1 && count - kickLogin >= limit)
   {
     return CounterResult::PersonalFail;
   }
-  int maxUsers = config.MaxUsers().Users();
-  if (exempt) maxUsers += config.MaxUsers().ExemptUsers();
+/*  int maxUsers = cfg::Config::MaxOnline().Users();
+  if (exempt) maxUsers += cfg::Config::MaxOnline().ExemptUsers();
   if (global - kickLogin > maxUsers)
   {
     return CounterResult::GlobalFail;
-  }
+  }*/
   ++count;
   ++global;
   return CounterResult::Okay;
