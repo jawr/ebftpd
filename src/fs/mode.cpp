@@ -130,11 +130,7 @@ void Mode::Apply(mode_t oldMode, mode_t umask, mode_t& newMode) const
 
 void InitialiseUmask()
 {
- cfg::ConnectUpdatedSlot([]()
-  {
-    mode_t mask = cfg::Get().Umask();
-    if (mask != -1) umask(mask);
-  });
+ cfg::ConnectUpdatedSlot([]() { umask(cfg::Get().Umask()); });
 }
 
 mode_t CurrentUmask()

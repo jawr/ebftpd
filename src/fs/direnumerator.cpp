@@ -61,14 +61,15 @@ void DirEnumerator::Readdir()
     return;
   }
 
-  std::shared_ptr<DIR> dp(opendir(path.CString()), closedir);
-  if (!dp.get()) throw util::SystemError(errno);
+  DIR* dp = opendir(path.CString());
+  if (!dp) throw util::SystemError(errno);
+  std::shared_ptr<DIR> dpGuard(dp, closedir);
   
   struct dirent de;
   struct dirent* dep;
   while (true)
   {
-    readdir_r(dp.get(), &de, &dep);
+    readdir_r(dp, &de, &dep);
     if (!dep) break;
 
      if (!strcmp(de.d_name, ".") || !strcmp(de.d_name, "..")) continue;
