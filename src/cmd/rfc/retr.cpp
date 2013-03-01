@@ -238,8 +238,9 @@ void RETRCommand::Execute()
       }
       
       data.Write(bufp, len);
-      speedControl.Apply();
+
       ftp::OnlineWriter::Get().TransferUpdate(threadId, data.State().Bytes());
+      speedControl.Apply();
     }
   }
   catch (const ftp::TransferAborted&) { aborted = true; }

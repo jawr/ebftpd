@@ -281,8 +281,8 @@ void STORCommand::Execute()
       fout->write(bufp, len);
       
       if (calcCrc) crc32->Update(reinterpret_cast<uint8_t*>(bufp), len);
-      speedControl.Apply();
       ftp::OnlineWriter::Get().TransferUpdate(threadId, data.State().Bytes());
+      speedControl.Apply();
     }
   }
   catch (const util::net::EndOfStream&) { }

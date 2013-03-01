@@ -10,12 +10,12 @@
 namespace cmd
 {
 
-std::string CompileWhosOnline(text::Template& templ)
+std::string CompileWhosOnline(const std::string& id, text::Template& templ)
 {
   std::vector<ftp::OnlineClient> clients;
   
   {
-    ftp::OnlineReader reader(ftp::SharedMemoryID());  
+    ftp::OnlineReader reader(id);  
     
     {
       ftp::OnlineReaderLock lock(reader);
@@ -35,7 +35,18 @@ std::string CompileWhosOnline(text::Template& templ)
   
   auto& body = templ.Body();
   
-  int index = 0;
+  int count = 0;
+  int idlers = 0;
+  int active = 0;
+  int uploaders = 0;
+  int downloaders = 0;
+  double upFastest = 0;
+  double downFastest = 0;
+  double upSlowest = -1;
+  double downSlowest = -1;
+  double upTotalSpeed = 0;
+  double downTotalSpeed = 0;
+  
   for (const auto& client : clients)
   {
     auto it = std::find_if(users.begin(), users.end(), 
@@ -45,7 +56,7 @@ std::string CompileWhosOnline(text::Template& templ)
                     });
     if (it == users.end()) continue;
     
-    body.RegisterValue("index", ++index);
+    body.RegisterValue("count", ++count);
     body.RegisterValue("user", it->Name());
     body.RegisterValue("group", it->PrimaryGroup());
     body.RegisterValue("tagline", it->Tagline());
@@ -61,22 +72,40 @@ std::string CompileWhosOnline(text::Template& templ)
     std::ostringstream action;
     if (client.xfer) // transfering
     {
-      if (client.xfer->direction == stats::Direction::Upload)
-        action << "UP @ ";
-      else
-        action << "DN @ ";
+      double speed = stats::CalculateSpeed(client.xfer->bytes, client.xfer->start, 
+                        boost::posix_time::microsec_clock::local_time()) / 1024;
       
-      action << stats::AutoUnitSpeedString(stats::CalculateSpeed(client.xfer->bytes, 
-                    client.xfer->start, boost::posix_time::microsec_clock::local_time()) / 1024);
+      if (client.xfer->direction == stats::Direction::Upload)
+      {
+        ++uploaders;
+        upTotalSpeed += speed;
+        if (upSlowest == -1) upSlowest = speed;
+        else upSlowest = std::min(upSlowest, speed);
+        upFastest = std::max(upFastest, speed);
+        action << "UP @ ";
+      }
+      else
+      {
+        ++downloaders;
+        downTotalSpeed += speed;
+        if (downSlowest == -1) downSlowest = speed;
+        else downSlowest = std::max(downSlowest, speed);
+        downFastest = std::max(downFastest, speed);
+        action << "DN @ ";
+      }
+      
+      action << stats::AutoUnitSpeedString(speed);
     }
     else // not transfering
     {
       if (client.command.empty()) // idle
       {
+        ++idlers;
         action << "IDLE " << (boost::posix_time::second_clock::local_time() - client.lastCommand);
       }
       else // executing command
       {
+        ++active;
         action << client.command;
       }
     }
@@ -85,12 +114,32 @@ std::string CompileWhosOnline(text::Template& templ)
     os << body.Compile();
   }
   
+  if (upSlowest == -1) upSlowest = 0;
+  if (downSlowest == -1) downSlowest = 0;
+  
   auto& foot = templ.Foot();
-  foot.RegisterValue("online_users", index);
-  foot.RegisterValue("all_online_users", index);
+  foot.RegisterValue("online_users", count);
+  foot.RegisterValue("all_online_users", count);
+  foot.RegisterValue("idlers", idlers);
+  foot.RegisterValue("active", active);
+  foot.RegisterValue("uploaders", uploaders);
+  foot.RegisterValue("downloaders", downloaders);
+  foot.RegisterValue("up_fastest_speed", upFastest);
+  foot.RegisterValue("up_slowest_speed", upSlowest);
+  foot.RegisterValue("down_fastest_speed", downFastest);
+  foot.RegisterValue("down_slowest_speed", downSlowest);
+  foot.RegisterValue("up_total_speed", upTotalSpeed);
+  foot.RegisterValue("up_avg_speed", uploaders == 0 ? 0 : upTotalSpeed / uploaders);
+  foot.RegisterValue("down_total_speed", downTotalSpeed);
+  foot.RegisterValue("down_avg_speed", downloaders == 0 ? 0 : downTotalSpeed / downloaders);
   foot.RegisterValue("max_online_users", cfg::Get().MaxUsers().Users());
   os << foot.Compile();
   return os.str();
+}
+
+std::string CompileWhosOnline(text::Template& templ)
+{
+  return CompileWhosOnline(ftp::SharedMemoryID(), templ);
 }
 
 } /* cmd namespace */

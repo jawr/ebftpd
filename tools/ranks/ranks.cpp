@@ -1,13 +1,9 @@
 #include <iostream>
 #include <sstream>
-#include <mongo/client/dbclient.h>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
-#include <boost/bind.hpp>
 #include <boost/optional.hpp>
-#include "util/passwd.hpp"
-#include "cfg/config.hpp"
 #include "cfg/get.hpp"
 #include "cfg/error.hpp"
 #include "version.hpp"

@@ -12,6 +12,7 @@ namespace cmd
 {
 
 std::string CompileWhosOnline(text::Template& templ);
+std::string CompileWhosOnline(const std::string& id, text::Template& templ);
 
 } /* cmd namespace */
 
