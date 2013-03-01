@@ -249,7 +249,6 @@ void STORCommand::Execute()
                                      new util::CRC32());
   bool aborted = false;
   fileOkay = false;
-  auto threadId = boost::this_thread::get_id();
   
   try
   {

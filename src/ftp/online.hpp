@@ -10,6 +10,9 @@
 #include <boost/optional.hpp>
 #include <boost/unordered_map.hpp>
 #include <limits.h>
+#if defined(__FreeBSD__)
+#include <sys/param.h>
+#endif
 #include <netinet/in.h>
 #include "acl/types.hpp"
 #include "stats/types.hpp"
@@ -37,7 +40,11 @@ struct OnlineClient
 	char workDir[PATH_MAX];
 	char ident[maximumIdentLength];
 	char ip[INET6_ADDRSTRLEN];
+#if defined(__FreeBSD__)
+  char hostname[MAXHOSTNAMELEN];
+#else
 	char hostname[HOST_NAME_MAX];
+#endif
 	
   boost::optional<OnlineXfer> xfer;
 
