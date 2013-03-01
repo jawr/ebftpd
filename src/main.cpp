@@ -30,6 +30,7 @@
 #include "util/scopeguard.hpp"
 #include "db/replicator.hpp"
 #include "ftp/online.hpp"
+#include "fs/mode.hpp"
 
 #include "version.hpp"
 
@@ -160,6 +161,7 @@ int main(int argc, char** argv)
     cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
     ftp::InitialisePortAllocators();
     ftp::InitialiseAddrAllocators();
+    fs::InitialiseUmask();
     
     try
     {

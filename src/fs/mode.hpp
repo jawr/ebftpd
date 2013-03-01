@@ -50,6 +50,10 @@ public:
   void Apply(mode_t oldMode, mode_t umask, mode_t& newMode) const;
 };
 
+mode_t NumericModeFromString(const std::string& str);
+void InitialiseUmask();
+mode_t CurrentUmask();
+
 } /* fs namespace */
 
 #endif

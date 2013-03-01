@@ -503,6 +503,11 @@ usage:            log_addresses <never|errors|always>
 required:         no
 default:          always
 description:      when to log client ip and/or hostnames
+------------------------------------------------------------------------------------------------------------------------
+usage:            umask <mode>
+required:         no
+default:          system / parent process default
+description:      changes file and direction creation mask
 
 section / endsection block
 ------------------------------------------------------------------------------------------------------------------------

@@ -1,13 +1,14 @@
 #include <cctype>
 #include <sys/stat.h>
 #include "fs/mode.hpp"
+#include "cfg/get.hpp"
 
 // this is based on chmod in the gnu coreutils package
 
 namespace fs
 {
 
-void Mode::CompileNumericMode(const std::string& str)
+mode_t NumericModeFromString(const std::string& str)
 {
   if (str.empty() || 
       (str.length() > 3 &&
@@ -21,9 +22,14 @@ void Mode::CompileNumericMode(const std::string& str)
     value += (*it - '0') * factor;
     factor *= 8;
   }
-  
+
+  return value;
+}
+
+void Mode::CompileNumericMode(const std::string& str)
+{
   changes.emplace_back(Operator::Equals, 
-      ::fs::Mode::Type::Normal, S_IRWXU | S_IRWXG | S_IRWXO, value);
+      ::fs::Mode::Type::Normal, S_IRWXU | S_IRWXG | S_IRWXO, NumericModeFromString(str));
 }
 
 void Mode::CompileSymbolicMode(const std::string& str)
@@ -120,6 +126,22 @@ void Mode::Apply(mode_t oldMode, mode_t umask, mode_t& newMode) const
         break;
     }
   }
+}
+
+void InitialiseUmask()
+{
+ cfg::ConnectUpdatedSlot([]()
+  {
+    mode_t mask = cfg::Get().Umask();
+    if (mask != -1) umask(mask);
+  });
+}
+
+mode_t CurrentUmask()
+{
+  mode_t mask;
+  umask(mask = umask(0));
+  return mask;
 }
 
 } /* fs namespace */

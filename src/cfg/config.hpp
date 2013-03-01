@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <map>
 #include <boost/optional.hpp>
+#include <sys/types.h>
 #include "cfg/setting.hpp"
 #include "cfg/section.hpp"
 #include "util/enumstrings.hpp"
@@ -143,6 +144,7 @@ class Config
   bool identLookup;
   bool dnsLookup;
   ::cfg::LogAddresses logAddresses;
+  mode_t umask;
   
   acl::ACL tlsControl;
   acl::ACL tlsListing;
@@ -284,6 +286,7 @@ public:
   bool IdentLookup() const { return identLookup; }
   bool DNSLookup() const { return dnsLookup; }
   ::cfg::LogAddresses LogAddresses() const { return logAddresses; }
+  mode_t Umask() const { return umask; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

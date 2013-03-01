@@ -9,6 +9,7 @@
 #include "util/path/path.hpp"
 #include "util/format.hpp"
 #include "cfg/util.hpp"
+#include "fs/mode.hpp"
 
 namespace util
 {
@@ -79,6 +80,7 @@ Config::Config(const std::string& configPath, bool tool) :
   identLookup(true),
   dnsLookup(true),
   logAddresses(cfg::LogAddresses::Always),
+  umask(fs::CurrentUmask()),
   tlsControl("*"),
   tlsListing("*"),
   tlsData("!*"),
@@ -627,6 +629,18 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1);
     if (!util::EnumFromString(toks[0], logAddresses))
       throw boost::bad_lexical_cast();
+  }
+  else if (opt == "umask")
+  {
+    ParameterCheck(opt, toks, 1);
+    try
+    {
+      umask = fs::NumericModeFromString(toks[0]);
+    }
+    catch (const fs::InvalidModeString&)
+    {
+      throw boost::bad_lexical_cast();
+    }
   }
   else if (opt == "tls_control")
   {
