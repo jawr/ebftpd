@@ -48,8 +48,8 @@ OnlineClient::OnlineClient(
   strncpy(this->workDir, workDir.c_str(), sizeof(this->workDir));
 }
 
-OnlineData::OnlineData(boost::interprocess::managed_shared_memory& segment) :
-  clients(std::less<long>(), ShmOnlineMapAlloc(segment.get_segment_manager()))
+OnlineData::OnlineData(boost::interprocess::managed_shared_memory& segment, int maxClients) :
+  clients(maxClients, std::hash<long>(), std::equal_to<long>(), segment.get_allocator<ShmOnlineMap::mapped_type>())
 {
 }
 
@@ -63,9 +63,9 @@ void OnlineWriter::OpenSharedMemory(int maxClients)
 {  
   try
   {
-    segment.reset(new managed_shared_memory(open_or_create, id.c_str(), 12960 * (maxClients + 1)));
+    segment.reset(new managed_shared_memory(open_or_create, id.c_str(), clientSize * (maxClients + 1)));
 
-    segment->construct<OnlineData>("online")(*segment);
+    segment->construct<OnlineData>("online")(*segment, maxClients);
     data = segment->find<OnlineData>("online").first;
     if (!data) throw util::SystemError(ENOMEM);
     scoped_lock<interprocess_mutex> lock(data->mutex);

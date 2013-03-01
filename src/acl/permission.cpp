@@ -5,6 +5,11 @@
 namespace acl
 {
 
+Permission* new_clone(Permission const& other)
+{
+  return other.Clone();
+}
+
 boost::tribool FlagPermission::Evaluate(const ACLInfo& info) const
 {
   if (flags.find('*') != std::string::npos) return !negate;

@@ -14,12 +14,12 @@ CounterResult LoginCounter::Start(acl::UserID uid, int limit, bool kickLogin, bo
   {
     return CounterResult::PersonalFail;
   }
-/*  int maxUsers = cfg::Config::MaxOnline().Users();
+  int maxUsers = cfg::Config::MaxOnline().Users();
   if (exempt) maxUsers += cfg::Config::MaxOnline().ExemptUsers();
   if (global - kickLogin > maxUsers)
   {
-    return CounterResult::GlobalFail;
-  }*/
+//    return CounterResult::GlobalFail;
+  }
   ++count;
   ++global;
   return CounterResult::Okay;

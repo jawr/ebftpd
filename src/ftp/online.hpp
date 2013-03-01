@@ -8,6 +8,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
+#include <boost/unordered_map.hpp>
 #include <limits.h>
 #include <netinet/in.h>
 #include "acl/types.hpp"
@@ -50,17 +51,14 @@ struct OnlineClient
 typedef boost::interprocess::managed_shared_memory::segment_manager SegmentManager;
 typedef boost::interprocess::allocator<std::pair<const long, OnlineClient>, 
                                        SegmentManager> ShmOnlineMapAlloc;
-typedef boost::interprocess::map<long, 
-                                 OnlineClient, 
-                                 std::less<long>, 
-                                 ShmOnlineMapAlloc> ShmOnlineMap;
+typedef boost::unordered_map<long, OnlineClient, std::hash<long>, std::equal_to<long>, ShmOnlineMapAlloc> ShmOnlineMap;
 
 struct OnlineData
 {
   ShmOnlineMap clients;
   boost::interprocess::interprocess_mutex mutex;
   
-  OnlineData(boost::interprocess::managed_shared_memory& segment);
+  OnlineData(boost::interprocess::managed_shared_memory& segment, int maxClients);
 };
 
 class Client;
@@ -73,6 +71,8 @@ class OnlineWriter
   OnlineData* data;
 
 	static std::unique_ptr<OnlineWriter> instance;
+  constexpr static float clientOverhead = 0.02;
+  constexpr static size_t clientSize = sizeof(OnlineClient) * (1 + clientOverhead);
 
   OnlineWriter(const std::string& id, int maxClients);
   void OpenSharedMemory(int maxClients);

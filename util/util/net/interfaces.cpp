@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <memory>
 #include <sys/types.h>
 #include <ifaddrs.h>
 #include <sys/socket.h>
@@ -14,6 +15,7 @@ void Interfaces::Load()
 {
   struct ifaddrs* ifaddr, *ifa;
   if (getifaddrs(&ifaddr) == -1) return throw NetworkSystemError(errno);
+  std::shared_ptr<struct ifaddrs> ifaddrGuard(ifaddr, freeifaddrs);
 
   IPAddress ip;
   for (ifa = ifaddr; ifa; ifa = ifa->ifa_next)

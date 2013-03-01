@@ -20,6 +20,7 @@ public:
   virtual ~Permission() { }
   virtual Permission* Clone() const = 0;
   virtual boost::tribool Evaluate(const ACLInfo& info) const = 0;
+  friend Permission* new_clone(const Permission& other);
 };
 
 class FlagPermission : public Permission
