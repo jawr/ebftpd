@@ -21,7 +21,7 @@ class Replicator
   boost::thread thread;
   std::vector<std::shared_ptr<Replicable>> caches;
 
-  static std::shared_ptr<Replicator> instance;
+  static std::unique_ptr<Replicator> instance;
   static const int maximumRetries = 20;
   
   Replicator() = default;

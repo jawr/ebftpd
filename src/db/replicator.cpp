@@ -94,7 +94,7 @@ public:
 
 }
 
-std::shared_ptr<Replicator> Replicator::instance;
+std::unique_ptr<Replicator> Replicator::instance;
 
 void Replicator::LogFailed(const std::list<std::shared_ptr<Replicable>>& failed)
 {

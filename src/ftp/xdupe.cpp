@@ -128,8 +128,7 @@ std::vector<std::string> BuildDupeList(ftp::Client& client, const fs::VirtualPat
   return dupes;
 }
 
-std::vector<std::function<std::string(const 
-      std::vector<std::string>& dupes)>> modeFunctions =
+std::function<std::string(const std::vector<std::string>& dupes)> modeFunctions[] =
 {
   nullptr,
   &MessageOne,

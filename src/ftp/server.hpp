@@ -1,22 +1,51 @@
 #ifndef __FTP_SERVER_HPP
 #define __FTP_SERVER_HPP
 
-#include <ostream>
+#include <cstdint>
+#include <functional>
 #include <vector>
-#include <unordered_set>
+#include <ostream>
 #include <queue>
 #include <atomic>
 #include <mutex>
 #include <memory>
 #include <poll.h>
-#include <boost/ptr_container/ptr_list.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/ptr_container/ptr_unordered_map.hpp>
+#include <boost/ptr_container/ptr_unordered_set.hpp>
+#include <boost/thread/once.hpp>
 #include "ftp/task/types.hpp"
 #include "ftp/task/task.hpp"
 #include "util/thread.hpp"
 #include "util/net/tcplistener.hpp"
 #include "util/net/tcpsocket.hpp"
 #include "util/interruptpipe.hpp"
+
+namespace std
+{
+  template <>
+  class hash<ftp::Client> : public unary_function<ftp::Client, size_t>
+  {
+    std::hash<intptr_t> hash;
+    
+  public:
+    size_t operator()(const ftp::Client& client) const
+    {
+      return hash(reinterpret_cast<intptr_t>(&client));
+    }
+  };
+
+  template <>
+  class equal_to<ftp::Client> : public binary_function<ftp::Client, ftp::Client, bool>
+  {
+    std::equal_to<intptr_t> equal_to;
+
+  public:
+    size_t operator()(const ftp::Client& client1, const ftp::Client& client2) const
+    {
+      return equal_to(reinterpret_cast<intptr_t>(&client1), reinterpret_cast<intptr_t>(&client2));
+    }
+  };
+}
 
 namespace ftp
 {
@@ -25,41 +54,42 @@ class Client;
 
 class Server : public util::Thread
 {
-  std::unordered_map<int, std::shared_ptr<util::net::TCPListener>> servers;
+  boost::ptr_unordered_map<int, util::net::TCPListener> servers;
   std::vector<struct pollfd> fds;
   util::InterruptPipe interruptPipe;
 
-  std::vector<std::string> validIPs;
-  int32_t port;
-
-  std::unordered_set<std::shared_ptr<Client>> clients;
+  boost::ptr_unordered_set<Client, std::hash<Client>, std::equal_to<Client>> clients;
 
   std::mutex queueMutex;
   std::queue<TaskPtr> queue;
   
-  std::atomic_bool isShutdown;
+  std::atomic_bool shutdown;
   
+  Server();
+
+  void Listen(const std::vector<std::string>& validIPs, int port);
   void AcceptClients();
   void AcceptClient(util::net::TCPListener& server);
 
   void Run();
   void HandleTasks();
   void StopClients();
-  void CleanupClient(const std::shared_ptr<Client>& client);
-
-  void InnerSetShutdown();
+  void CleanupClient(Client& client);
+  void PushTask(const TaskPtr& task);  
   
-  Server() : port(-1), isShutdown(false) { }
-
-  static void PushTask(const TaskPtr& task);  
-  static Server instance;
+  static std::unique_ptr<Server> instance;
+  static boost::once_flag instanceOnce;
+  
+  static void CreateInstance();
   
 public:
-  static bool Initialise(const std::vector<std::string>& validIPs, int32_t port);
+  static bool Initialise(const std::vector<std::string>& validIPs, int port);
+  static void Cleanup();
+  static Server& Get();
   
-  static void StartThread();
-  static void JoinThread();
-  static void SetShutdown();
+  void StartThread();
+  void JoinThread();
+  void Shutdown();
 
   friend class task::KickUser;
   friend class task::GetOnlineUsers;

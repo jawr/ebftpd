@@ -1,10 +1,11 @@
 #ifndef __FTP_PORTALLOCATER_HPP
 #define __FTP_PORTALLOCATER_HPP
 
+#include <memory>
 #include <cassert>
 #include <vector>
-#include <cstdint>
 #include <mutex>
+#include <boost/thread/once.hpp>
 #include "util/net/endpoint.hpp"
 #include "cfg/get.hpp"
 
@@ -25,7 +26,7 @@ class PortAllocatorImpl
   std::mutex mutex;
   cfg::Ports ports;
   std::vector<cfg::PortRange>::const_iterator it;
-  uint16_t nextPort;
+  int nextPort;
   
   PortAllocatorImpl() : nextPort(0) { }
   
@@ -37,7 +38,7 @@ public:
     it = this->ports.Ranges().begin();
   }
 
-  uint16_t inline NextPort()
+  int inline NextPort()
   {
     std::lock_guard<std::mutex> lock(mutex);
     if (ports.Ranges().empty()) return util::net::Endpoint::AnyPort();
@@ -63,26 +64,31 @@ public:
 template <PortType type>
 class PortAllocator
 {
-  static PortAllocatorImpl instance;
+  static std::unique_ptr<PortAllocatorImpl> instance;
+  static boost::once_flag instanceOnce;
+  
+  static void CreateInstance() { instance.reset(new PortAllocatorImpl()); }
   
 public:
-  static inline void SetPorts(const cfg::Ports& ports)
-  { instance.SetPorts(ports); }
-
-  static inline uint16_t NextPort()
-  { return instance.NextPort(); }
+  static PortAllocatorImpl& Get()
+  {
+    boost::call_once(&CreateInstance, instanceOnce);
+    return *instance;
+  }
 };
 
 template <PortType type>
-PortAllocatorImpl PortAllocator<type>::instance;
+std::unique_ptr<PortAllocatorImpl> PortAllocator<type>::instance;
+template <PortType type>
+boost::once_flag PortAllocator<type>::instanceOnce = BOOST_ONCE_INIT;
 
 template class PortAllocator<PortType::Passive>;
 template class PortAllocator<PortType::Active>;
 
 inline void InitialisePortAllocators()
 {
-  cfg::ConnectUpdatedSlot([]() { PortAllocator<ftp::PortType::Active>::SetPorts(cfg::Get().ActivePorts()); });
-  cfg::ConnectUpdatedSlot([]() { PortAllocator<ftp::PortType::Passive>::SetPorts(cfg::Get().PasvPorts()); });
+  cfg::ConnectUpdatedSlot([]() { PortAllocator<ftp::PortType::Active>::Get().SetPorts(cfg::Get().ActivePorts()); });
+  cfg::ConnectUpdatedSlot([]() { PortAllocator<ftp::PortType::Passive>::Get().SetPorts(cfg::Get().PasvPorts()); });
 }
 
 } /* ftp namespace */

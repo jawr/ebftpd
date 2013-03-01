@@ -1,10 +1,12 @@
 #ifndef __FTP_ADDRALLOCATER_HPP
 #define __FTP_ADDRALLOCATER_HPP
 
+#include <memory>
 #include <cassert>
 #include <vector>
 #include <cstdint>
 #include <mutex>
+#include <boost/thread/once.hpp>
 #include "util/net/endpoint.hpp"
 #include "cfg/get.hpp"
 
@@ -53,26 +55,31 @@ public:
 template <AddrType type>
 class AddrAllocator
 {
-  static AddrAllocatorImpl instance;
+  static std::unique_ptr<AddrAllocatorImpl> instance;
+  static boost::once_flag instanceOnce;
+  
+  static void CreateInstance() { instance.reset(new AddrAllocatorImpl()); }
   
 public:
-  static inline void SetAddrs(const std::vector<std::string>& addresses)
-  { instance.SetAddrs(addresses); }
-
-  static inline std::string NextAddr()
-  { return instance.NextAddr(); }
+  static AddrAllocatorImpl& Get()
+  {
+    boost::call_once(&CreateInstance, instanceOnce);
+    return *instance;
+  }
 };
 
 template <AddrType type>
-AddrAllocatorImpl AddrAllocator<type>::instance;
+std::unique_ptr<AddrAllocatorImpl> AddrAllocator<type>::instance;
+template <AddrType type>
+boost::once_flag AddrAllocator<type>::instanceOnce = BOOST_ONCE_INIT;
 
 template class AddrAllocator<AddrType::Passive>;
 template class AddrAllocator<AddrType::Active>;
 
 inline void InitialiseAddrAllocators()
 {
-  cfg::ConnectUpdatedSlot([]() { AddrAllocator<ftp::AddrType::Active>::SetAddrs(cfg::Get().ActiveAddr()); });
-  cfg::ConnectUpdatedSlot([]() { AddrAllocator<ftp::AddrType::Passive>::SetAddrs(cfg::Get().PasvAddr()); });
+  cfg::ConnectUpdatedSlot([]() { AddrAllocator<ftp::AddrType::Active>::Get().SetAddrs(cfg::Get().ActiveAddr()); });
+  cfg::ConnectUpdatedSlot([]() { AddrAllocator<ftp::AddrType::Passive>::Get().SetAddrs(cfg::Get().PasvAddr()); });
 }
 
 } /* ftp namespace */

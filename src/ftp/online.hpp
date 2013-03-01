@@ -99,6 +99,11 @@ public:
     instance.reset(new OnlineWriter(id, maxClients));
   }
   
+  static void Cleanup()
+  {
+    instance = nullptr;
+  }
+  
   static OnlineWriter& Get() { return *instance; }
   
   friend class OnlineTransferUpdater;

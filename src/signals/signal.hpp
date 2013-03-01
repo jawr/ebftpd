@@ -1,6 +1,7 @@
 #ifndef __SIGNAL__SIGNAL_HPP
 #define __SIGNAL__SIGNAL_HPP
 
+#include <memory>
 #include "util/thread.hpp"
 #include "util/error.hpp"
 
@@ -11,7 +12,7 @@ class Handler : public util::Thread
 {
   void Run();
   
-  static Handler instance;
+  static std::unique_ptr<Handler> instance;
   
 public:
   static void StartThread();

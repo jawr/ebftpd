@@ -15,7 +15,7 @@ namespace ftp { namespace task
 
 void Task::Push()
 {
-  ftp::Server::PushTask(shared_from_this());
+  ftp::Server::Get().PushTask(shared_from_this());
 }
 
 void KickUser::Execute(Server& server)
@@ -23,9 +23,9 @@ void KickUser::Execute(Server& server)
   int kicked = 0;
   for (auto& client : server.clients)
   {
-    if (client->User().ID() == uid)
+    if (client.User().ID() == uid)
     {
-      client->Interrupt();
+      client.Interrupt();
       ++kicked;
       if (oneOnly) break;
     }
@@ -39,13 +39,13 @@ void LoginKickUser::Execute(Server& server)
   Result result;
   for (auto& client: server.clients)
   {
-    if (client->User().ID() == uid && client->State() == ftp::ClientState::LoggedIn)
+    if (client.User().ID() == uid && client.State() == ftp::ClientState::LoggedIn)
     {
       if (!result.kicked)
       {
-        client->Interrupt();
+        client.Interrupt();
         result.kicked = true;
-        result.idleTime = client->IdleTime();
+        result.idleTime = client.IdleTime();
       }
       
       ++result.logins;
@@ -59,9 +59,9 @@ void GetOnlineUsers::Execute(Server& server)
 {
   for (auto& client: server.clients)
   {
-    if (client->State() != ClientState::LoggedIn) continue;
-    users.emplace_back(client->User().ID(), client->Data().State(), client->IdleTime(), 
-                       client->CurrentCommand(), client->Ident(), client->Hostname());
+    if (client.State() != ClientState::LoggedIn) continue;
+    users.emplace_back(client.User().ID(), client.Data().State(), client.IdleTime(), 
+                       client.CurrentCommand(), client.Ident(), client.Hostname());
   }
   
   promise.set_value(true);
@@ -106,16 +106,17 @@ void ReloadConfig::Execute(Server&)
 
 void Exit::Execute(Server&)
 {
-  ftp::Server::SetShutdown();
+  logs::Debug("Server interrupted!");
+  ftp::Server::Get().Shutdown();
 }
 
 void UserUpdate::Execute(Server& server)
 {
   for (auto& client: server.clients)
   {
-    if (client->State() == ClientState::LoggedIn && client->User().ID() == uid)
+    if (client.State() == ClientState::LoggedIn && client.User().ID() == uid)
     {
-      client->SetUserUpdated();
+      client.SetUserUpdated();
     }
   }
 }

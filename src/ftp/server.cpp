@@ -12,23 +12,60 @@
 namespace ftp
 {
 
-Server Server::instance;
+std::unique_ptr<Server> Server::instance;
+boost::once_flag Server::instanceOnce = BOOST_ONCE_INIT;
+
+Server::Server() :
+  shutdown(false)
+{
+}
+
+void Server::Listen(const std::vector<std::string>& validIPs, int port)
+{
+  assert(!validIPs.empty());
+  util::net::Endpoint ep;
+  try
+  {
+    fds.resize(validIPs.size() + 1);
+    int fdsIndex = 0;
+    for (const auto& ip : validIPs)
+    {
+      ep = util::net::Endpoint(ip, port);
+      std::unique_ptr<util::net::TCPListener> listener(new util::net::TCPListener(ep));
+      int fd = listener->Socket();
+      
+      fds[fdsIndex].fd = fd;
+      fds[fdsIndex].events = POLLIN;
+      ++fdsIndex;
+      
+      servers.insert(fd, listener.release());
+      logs::Debug("Listening for clients on %1%", ep);
+    }
+    
+    fds[fdsIndex].fd = interruptPipe.ReadFd();
+    fds[fdsIndex].events = POLLIN;
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    logs::Error("Unable to listen for clients on %1%: %2%", ep, e.Message());
+    throw e;
+  }
+}
 
 void Server::StartThread()
 {
   logs::Debug("Starting listener thread..");
-  instance.Start();
+  Start();
 }
 
 void Server::JoinThread()
 {
-  instance.Join();
+  Join();
 }
 
-void Server::SetShutdown()
-{   
-  logs::Debug("Stopping listener thread..");
-  instance.InnerSetShutdown();
+void Server::Cleanup()
+{
+  instance = nullptr;
 }
 
 void Server::HandleTasks()
@@ -48,59 +85,52 @@ void Server::HandleTasks()
   }
 }
 
-bool Server::Initialise(const std::vector<std::string>& validIPs, int32_t port)
+bool Server::Initialise(const std::vector<std::string>& validIPs, int port)
 {
-  assert(!validIPs.empty());
-  util::net::Endpoint ep;
   try
   {
-    instance.fds.resize(validIPs.size() + 1);
-    int fdsIndex = 0;
-    for (const auto& ip : validIPs)
-    {
-      ep = util::net::Endpoint(ip, port);
-      std::shared_ptr<util::net::TCPListener> listener(new util::net::TCPListener(ep));
-      int fd = listener->Socket();
-      
-      instance.fds[fdsIndex].fd = fd;
-      instance.fds[fdsIndex].events = POLLIN;
-      ++fdsIndex;
-      
-      instance.servers.insert(std::make_pair(fd, listener));
-      logs::Debug("Listening for clients on %1%", ep);
-    }
-    
-    instance.fds[fdsIndex].fd = instance.interruptPipe.ReadFd();
-    instance.fds[fdsIndex].events = POLLIN;
+    Get().Listen(validIPs, port);
   }
-  catch (const util::net::NetworkError& e)
+  catch (const util::net::NetworkError&)
   {
-    logs::Error("Unable to listen for clients on %1%: %2%", ep, e.Message());
     return false;
   }
   
   return true;
 }
 
+void Server::CreateInstance()
+{
+  instance.reset(new Server());
+}
+
+Server& Server::Get()
+{
+  boost::call_once(&CreateInstance, instanceOnce);
+  return *instance;
+}
+
+
 void Server::StopClients()
 {
   logs::Debug("Stopping all connected clients..");
+
   for (auto& client : clients)
-    client->Interrupt();
-    
+    client.Interrupt();
+  
   for (auto& client : clients)
-    client->Join();
+    client.Join();
     
   clients.clear();
 }
 
 void Server::AcceptClient(util::net::TCPListener& server)
 {
-  std::shared_ptr<ftp::Client> client(new ftp::Client());
+  std::unique_ptr<ftp::Client> client(new ftp::Client());
   if (client->Accept(server)) 
   {
     client->Start();
-    clients.insert(client);
+    clients.insert(client.release());
   }
 }
 
@@ -131,7 +161,7 @@ void Server::AcceptClients()
     for (auto it = fds.begin(); it != fds.end() - 1; ++it)
     {
       if (it->revents & POLLIN)
-        AcceptClient(*servers.at(it->fd));
+        AcceptClient(servers.at(it->fd));
     }
   }
 }
@@ -139,7 +169,7 @@ void Server::AcceptClients()
 void Server::Run()
 {
   util::SetProcessTitle("SERVER");
-  while (!isShutdown)
+  while (!shutdown)
   {
     AcceptClients();
   }
@@ -147,26 +177,27 @@ void Server::Run()
   StopClients();
 }
 
-void Server::InnerSetShutdown()
+void Server::Shutdown()
 {
-  isShutdown = true;
+  logs::Debug("Stopping listener thread..");
+  shutdown = true;
   interruptPipe.Interrupt();
 }
 
 void Server::PushTask(const TaskPtr& task)
 {
   { 
-    std::lock_guard<std::mutex> lock(instance.queueMutex); 
-    instance.queue.push(task);
+    std::lock_guard<std::mutex> lock(queueMutex); 
+    queue.push(task);
   }
   
-  instance.interruptPipe.Interrupt();
+  interruptPipe.Interrupt();
 }
 
-void Server::CleanupClient(const std::shared_ptr<Client>& client)
+void Server::CleanupClient(Client& client)
 {
-  assert(client->State() == ClientState::Finished);
-  client->Join();
+  assert(client.State() == ClientState::Finished);
+  client.Join();
   clients.erase(client);
   logs::Debug("Client finished");
 }

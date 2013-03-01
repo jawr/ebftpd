@@ -79,6 +79,7 @@ void OnlineWriter::OpenSharedMemory(int maxClients)
 
 OnlineWriter::~OnlineWriter()
 {
+  segment = nullptr;
   shared_memory_object::remove(id.c_str());
 }
 
@@ -204,6 +205,7 @@ OnlineReader::OnlineReader(const std::string& id) :
 
 OnlineReader::~OnlineReader()
 {
+  segment = nullptr;
   shared_memory_object::remove(id.c_str());
 }
 

@@ -105,10 +105,10 @@ public:
 
 class ClientFinished : public Task
 {
-  std::shared_ptr<Client> client;
+  Client& client;
   
 public:
-  ClientFinished(const std::shared_ptr<Client>& client) : client(client) { }
+  ClientFinished(Client& client) : client(client) { }
   void Execute(Server& server);
 };
 

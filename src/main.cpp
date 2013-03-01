@@ -90,6 +90,7 @@ bool ParseOptions(int argc, char** argv, bool& foreground, std::string& configPa
 
 bool Daemonise(bool foreground)
 {
+  return true;
   const std::string& pidfile = cfg::Get().Pidfile();
   if (!pidfile.empty())
   {
@@ -129,114 +130,120 @@ bool Daemonise(bool foreground)
 
 int main(int argc, char** argv)
 {
-  std::string configPath;
-  bool foreground; 
-  
-  if (!ParseOptions(argc, argv, foreground, configPath)) return 1;
+  int exitStatus = 0;
 
-  logs::InitialisePreConfig();
-  
-  logs::Debug("Starting %1%..", programFullname);
-  auto byeExit = util::MakeScopeExit([]() { logs::Debug("Bye!"); });
-  
   {
-    util::Error e = signals::Initialise();
-    if (!e)
+    std::string configPath;
+    bool foreground; 
+
+    if (!ParseOptions(argc, argv, foreground, configPath)) return 1;
+
+    logs::InitialisePreConfig();
+    
+    logs::Debug("Starting %1%..", programFullname);
+    auto byeExit = util::MakeScopeExit([]() { logs::Debug("Bye!"); });
+    
     {
-      logs::Error("Failed to setup signal handlers: %1%", e.Message());
-      return 1;
+      util::Error e = signals::Initialise();
+      if (!e)
+      {
+        logs::Error("Failed to setup signal handlers: %1%", e.Message());
+        return 1;
+      }
+      signals::Handler::StartThread();
     }
-    signals::Handler::StartThread();
-  }
-  
-  auto signalsExit = util::MakeScopeExit([]() { signals::Handler::StopThread(); });
+    
+    auto signalsExit = util::MakeScopeExit([]() { signals::Handler::StopThread(); });
 
-  cmd::rfc::Factory::Initialise();
-  cmd::site::Factory::Initialise();
-  cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
-  ftp::InitialisePortAllocators();
-  ftp::InitialiseAddrAllocators();
-  
-  try
-  {
-    logs::Debug("Loading config file..");
-    cfg::UpdateShared(cfg::Config::Load(configPath));
-  }
-  catch (const cfg::ConfigError& e)
-  {
-    logs::Error("Failed to load config: %1%", e.Message());
-    return 1;
-  }
-  
-  if (!logs::InitialisePostConfig()) return 1;
-  
-  if (cfg::Get().TlsCertificate().empty())
-  {
-    logs::Debug("No TLS certificate set in config, TLS disabled.");
-  }
-  else
-  {
+    cmd::rfc::Factory::Initialise();
+    cmd::site::Factory::Initialise();
+    cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
+    ftp::InitialisePortAllocators();
+    ftp::InitialiseAddrAllocators();
+    
     try
     {
-      logs::Debug("Initialising TLS context..");
-      util::net::TLSServerContext::Initialise(
-          cfg::Get().TlsCertificate(), cfg::Get().TlsCiphers());
-      util::net::TLSClientContext::Initialise(
-          cfg::Get().TlsCertificate(), cfg::Get().TlsCiphers());
+      logs::Debug("Loading config file..");
+      cfg::UpdateShared(cfg::Config::Load(configPath));
     }
-    catch (const util::net::NetworkError& e)
+    catch (const cfg::ConfigError& e)
     {
-      logs::Error("TLS failed to initialise: %1%", e.Message());
+      logs::Error("Failed to load config: %1%", e.Message());
       return 1;
     }
+    
+    if (!logs::InitialisePostConfig()) return 1;
+    
+    if (cfg::Get().TlsCertificate().empty())
+    {
+      logs::Debug("No TLS certificate set in config, TLS disabled.");
+    }
+    else
+    {
+      try
+      {
+        logs::Debug("Initialising TLS context..");
+        util::net::TLSServerContext::Initialise(
+            cfg::Get().TlsCertificate(), cfg::Get().TlsCiphers());
+        util::net::TLSClientContext::Initialise(
+            cfg::Get().TlsCertificate(), cfg::Get().TlsCiphers());
+      }
+      catch (const util::net::NetworkError& e)
+      {
+        logs::Error("TLS failed to initialise: %1%", e.Message());
+        return 1;
+      }
+    }
+
+    logs::Debug("Initialising Templates..");
+    try
+    {
+      text::Factory::Initialize();
+    }
+    catch (const text::TemplateError& e)
+    {
+      logs::Error("Templates failed to initialise: %1%", e.Message());
+      return 1;
+    }
+    
+    if (!db::Initialise([](acl::UserID uid)
+          { std::make_shared<ftp::task::UserUpdate>(uid)->Push(); }))
+    {
+      return 1;
+    }
+    
+    if (!acl::CreateDefaults())
+    {
+      logs::Error("Error while creating root user and group and default user template");
+      return 1;
+    }
+
+    try
+    {
+      ftp::OnlineWriter::Initialise(ftp::SharedMemoryID(), cfg::Config::MaxOnline().Total());
+    }
+    catch (const util::SystemError& e)
+    {
+      logs::Error("Shared memory segment failed to initialise: %1%", e.Message());
+      return 1;
+    }
+    
+    if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
+    {
+      logs::Error("Listener failed to initialise!");
+      exitStatus = 1;
+    }
+    else if (Daemonise(foreground))
+    {
+      db::Replicator::Get().Start();
+      ftp::Server::Get().StartThread();
+      ftp::Server::Get().JoinThread();
+      db::Replicator::Get().Stop();
+      ftp::Server::Cleanup();
+    }
+
+    ftp::OnlineWriter::Cleanup();
   }
 
-  logs::Debug("Initialising Templates..");
-  try
-  {
-    text::Factory::Initialize();
-  }
-  catch (const text::TemplateError& e)
-  {
-    logs::Error("Templates failed to initialise: %1%", e.Message());
-    return 1;
-  }
-  
-  if (!db::Initialise([](acl::UserID uid)
-        { std::make_shared<ftp::task::UserUpdate>(uid)->Push(); }))
-  {
-    return 1;
-  }
-  
-  if (!acl::CreateDefaults())
-  {
-    logs::Error("Error while creating root user and group and default user template");
-    return 1;
-  }
-
-  try
-  {
-    ftp::OnlineWriter::Initialise(ftp::SharedMemoryID(), cfg::Config::MaxOnline().Total());
-  }
-  catch (const util::SystemError& e)
-  {
-    logs::Error("Shared memory segment failed to initialise: %1%", e.Message());
-    return 1;
-  }
-  
-  int exitStatus = 0;
-  if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
-  {
-    logs::Error("Listener failed to initialise!");
-    exitStatus = 1;
-  }
-  else if (Daemonise(foreground))
-  {
-    db::Replicator::Get().Start();
-    ftp::Server::StartThread();
-    ftp::Server::JoinThread();
-    db::Replicator::Get().Stop();
-  }
-  
   return exitStatus;
 }

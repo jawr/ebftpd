@@ -59,7 +59,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
     std::string firstAddr;
     while (true)
     {
-      std::string addr = AddrAllocator<AddrType::Passive>::NextAddr();
+      std::string addr = AddrAllocator<AddrType::Passive>::Get().NextAddr();
       if (addr.empty()) break;
       
       if (addr == firstAddr)
@@ -88,10 +88,10 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
 
   if (!listener) listener.reset(new util::net::TCPListener());
     
-  boost::optional<uint16_t> firstPort;
+  boost::optional<int> firstPort;
   while (true)
   {
-    uint16_t port = PortAllocator<PortType::Passive>::NextPort();
+    int port = PortAllocator<PortType::Passive>::Get().NextPort();
     if (!firstPort) firstPort.reset(port);
     else if (port == *firstPort) 
       throw util::net::NetworkError("All ports exhausted.");
@@ -122,7 +122,7 @@ void Data::InitActive(const util::net::Endpoint& ep)
   std::string firstAddr;
   while (true)
   {
-    std::string addr = AddrAllocator<AddrType::Active>::NextAddr();
+    std::string addr = AddrAllocator<AddrType::Active>::Get().NextAddr();
     if (addr.empty()) break;
     
     if (addr == firstAddr)
@@ -142,10 +142,10 @@ void Data::InitActive(const util::net::Endpoint& ep)
   
   if (!localIP) localIP = util::net::IPAddress(ep.Family());
   
-  boost::optional<uint16_t> firstPort;
+  boost::optional<int> firstPort;
   while (true)
   {
-    uint16_t localPort = PortAllocator<PortType::Active>::NextPort();
+    int localPort = PortAllocator<PortType::Active>::Get().NextPort();
     if (!firstPort) firstPort.reset(localPort);
     else if (localPort == *firstPort) 
       throw util::net::NetworkError("All ports exhausted.");

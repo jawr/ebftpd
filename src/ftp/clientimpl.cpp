@@ -42,6 +42,7 @@ ClientImpl::ClientImpl(Client& parent) :
   userUpdated(false),
   state(ClientState::LoggedOut),
   passwordAttemps(0),
+  xdupeMode(xdupe::Mode::Disabled),
   kickLogin(false),
   idleTimeout(boost::posix_time::seconds(cfg::Get().IdleTimeout().Timeout())),
   ident("*")
@@ -557,7 +558,7 @@ void ClientImpl::Run()
   auto finishedGuard = util::MakeScopeExit([&]
   {
     SetState(ClientState::Finished);
-    std::make_shared<ftp::task::ClientFinished>(parent.shared_from_this())->Push();
+    std::make_shared<ftp::task::ClientFinished>(parent)->Push();
     if (user) db::mail::LogOffPurgeTrash(user->ID());
     LogTraffic();
   });

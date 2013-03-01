@@ -15,18 +15,20 @@
 namespace signals
 {
 
-Handler Handler::instance;
+std::unique_ptr<Handler> Handler::instance;
 
 void Handler::StartThread()
 {
+  instance.reset(new Handler());
   logs::Debug("Starting signal handling thread..");
-  instance.Start();
+  instance->Start();
 }
 
 void Handler::StopThread()
 {
   logs::Debug("Stopping signal handling thread..");
-  instance.Stop();
+  instance->Stop();
+  instance = nullptr;
 }
 
 void Handler::Run()
@@ -70,7 +72,6 @@ void Handler::Run()
       case SIGQUIT  :
       case SIGINT   :
       {
-        logs::Debug("Server interrupted!");
         std::make_shared<ftp::task::Exit>()->Push();
         return;
       }
