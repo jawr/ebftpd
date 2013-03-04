@@ -40,9 +40,9 @@ private:
   std::unique_ptr<UserData> data;
   std::unique_ptr<db::User> db;
 
+protected:
   User();
   User(UserData&& data_);
-
   bool HasSecondaryGID(GroupID gid) const;
   void SetPasswordNoSave(const std::string& password);
   void CleanGadminGIDs();
@@ -62,7 +62,10 @@ public:
   bool Rename(const std::string& name);
 
   const std::vector<std::string>& IPMasks() const;
-  bool AddIPMask(const std::string& ipMask, std::vector<std::string>* deleted = nullptr);
+  bool AddIPMask(const std::string& ipMask, std::vector<std::string>* deleted);
+  bool AddIPMask(const std::string& ipMask)
+  { return AddIPMask(ipMask, nullptr); }
+  
   void DelIPMask(const std::string& ipMask);
   std::string DelIPMask(size_t index);
   void ClearIPMasks();
@@ -82,7 +85,7 @@ public:
 
   acl::GroupID PrimaryGID() const;
   std::string PrimaryGroup() const;
-  const std::vector<GroupID> SecondaryGIDs() const;
+  const std::vector<GroupID>& SecondaryGIDs() const;
   bool HasGID(GroupID gid) const;
 
   void SetPrimaryGID(acl::GroupID gid);
@@ -91,7 +94,7 @@ public:
   void SetGIDs(const std::vector<acl::GroupID>& gids);
   void ToggleGIDs(const std::vector<acl::GroupID>& gids);
   
-  const std::unordered_set<GroupID> GadminGIDs() const;
+  const std::unordered_set<GroupID>& GadminGIDs() const;
   bool HasGadminGID(GroupID gid) const;
 
   void AddGadminGID(GroupID gid);
@@ -172,8 +175,10 @@ public:
   static boost::optional<User> FromTemplate(const std::string& name, 
                             const std::string& password, acl::UserID creator, 
                             const User& templateUser);
-  static std::vector<acl::UserID> GetUIDs(const std::string& multiStr = "*");
-  static std::vector<acl::User> GetUsers(const std::string& multiStr = "*");
+  static std::vector<acl::UserID> GetUIDs(const std::string& multiStr);
+  static std::vector<acl::UserID> GetUIDs() { return GetUIDs("*"); }
+  static std::vector<acl::User> GetUsers(const std::string& multiStr);
+  static std::vector<acl::User> GetUsers() { return GetUsers("*"); }
   
   static size_t TotalUsers();
 };

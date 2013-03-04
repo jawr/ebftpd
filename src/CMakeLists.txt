@@ -49,6 +49,7 @@ file(GLOB_RECURSE SUBSRCS text/*.cpp)
 list(APPEND SRCS ${SUBSRCS})
 
 add_library(eb SHARED version.cpp ${SRCS})
+add_library(eb_static STATIC version.cpp ${SRCS})
 add_dependencies(eb version)
 
 install(TARGETS ebftpd eb RUNTIME DESTINATION bin LIBRARY DESTINATION lib)

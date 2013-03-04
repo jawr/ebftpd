@@ -21,7 +21,8 @@ class Group
 {
   std::unique_ptr<GroupData> data;
   std::unique_ptr<db::Group> db;
-  
+
+protected:  
   Group();
   Group(GroupData&& data_);
   
