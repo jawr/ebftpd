@@ -209,6 +209,7 @@ void ClientImpl::IdleReset(std::string commandLine)
 
 void ClientImpl::ExecuteCommand(const std::string& commandLine)
 {
+  if (commandLine.empty()) return;
   std::vector<std::string> args;
   util::Split(args, commandLine, " ", true);
   if (args.empty()) throw ProtocolError("Empty command.");
