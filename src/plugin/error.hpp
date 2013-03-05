@@ -6,21 +6,27 @@
 namespace plugin
 {
 
-struct ScriptError : public util::RuntimeError
+struct PluginError : public util::RuntimeError
 {
 public:
-  ScriptError() : std::runtime_error("Unknown script error") { }
-	ScriptError(const std::string& message) : std::runtime_error(message) { }
+  PluginError() : std::runtime_error("Unknown script error") { }
+	PluginError(const std::string& message) : std::runtime_error(message) { }
 };
 
-struct ValueError : public ScriptError
+struct InitialiseError : public PluginError
+{
+public:
+  InitialiseError(const std::string& message) : std::runtime_error(message) { }
+};
+
+struct ValueError : public PluginError
 {
 public:
   ValueError() : std::runtime_error("Value error") { }
   ValueError(const std::string& message) : std::runtime_error(message) { }
 };
 
-struct NotConstructable : public ScriptError
+struct NotConstructable : public PluginError
 {
   NotConstructable() : std::runtime_error("Not constructible") { }
 };

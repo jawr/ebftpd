@@ -31,6 +31,7 @@
 #include "db/replicator.hpp"
 #include "ftp/online.hpp"
 #include "fs/mode.hpp"
+#include "plugin/plugin.hpp"
 
 #include "version.hpp"
 
@@ -162,7 +163,8 @@ int main(int argc, char** argv)
     ftp::InitialisePortAllocators();
     ftp::InitialiseAddrAllocators();
     fs::InitialiseUmask();
-    
+    plugin::InitialiseFactories();
+
     try
     {
       logs::Debug("Loading config file..");
@@ -173,9 +175,17 @@ int main(int argc, char** argv)
       logs::Error("Failed to load config: %1%", e.Message());
       return 1;
     }
-    
+
     if (!logs::InitialisePostConfig()) return 1;
-    
+
+/*std::cout << factory.get() << std::endl;    
+    plugin::FactoryManager::Get().Register(factory);
+    {
+      auto plugins = plugin::FactoryManager::Get().CreatePlugins();
+      std::cout << plugins.size() << std::endl;
+      for (auto& plugin : plugins) plugin->RunScript("test.lua");
+    }
+*/
     if (cfg::Get().TlsCertificate().empty())
     {
       logs::Debug("No TLS certificate set in config, TLS disabled.");
@@ -245,6 +255,7 @@ int main(int argc, char** argv)
     }
 
     ftp::OnlineWriter::Cleanup();
+    plugin::FactoryManager::Get().Cleanup();
   }
 
   return exitStatus;

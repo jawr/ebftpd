@@ -674,19 +674,69 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   }
   else if (opt == "tls_control")
   {
+    ParameterCheck(opt, toks, 1, -1);
     tlsControl = acl::ACL(util::Join(toks, " "));
   }
   else if (opt == "tls_listing")
   {
+    ParameterCheck(opt, toks, 1, -1);
     tlsListing = acl::ACL(util::Join(toks, " "));
   }
   else if (opt == "tls_data")
   {
+    ParameterCheck(opt, toks, 1, -1);
     tlsData = acl::ACL(util::Join(toks, " "));
   }
   else if (opt == "tls_fxp")
   {
+    ParameterCheck(opt, toks, 1, -1);
     tlsFxp = acl::ACL(util::Join(toks, " "));
+  }
+  else if (opt == "load_plugin")
+  {
+    ParameterCheck(opt, toks, 1, -1);
+    util::ToLower(toks[0]);
+    auto it = std::find_if(plugins.begin(), plugins.end(),
+                [&toks](const Plugin& plugin)
+                {
+                  return plugin.Name() == toks[0];
+                });
+    if (it != plugins.end())
+    {
+      throw ConfigError("Plugin already exists: " + toks[0]);
+    }
+    plugins.emplace_back(toks);
+  }
+  else if (opt == "load_script")
+  {
+    ParameterCheck(opt, toks, 2, -1);
+    util::ToLower(toks[0]);
+    auto it1 = std::find_if(plugins.begin(), plugins.end(),
+                [&toks](const Plugin& plugin)
+                {
+                  return plugin.Name() == toks[0];
+                });
+    if (it1 == plugins.end())
+    {
+      throw ConfigError("No plugin loaded named: " + toks[0]);
+    }
+    else
+    {
+      for (auto it2 = toks.begin() + 1; it2 != toks.end(); ++it2)
+      {
+        it1->AddScript(*it2);
+      }
+    }
+  }
+  else if (opt == "plugin_path")
+  {
+   ParameterCheck(opt, toks, 1); 
+   pluginpath = toks[0];
+  }
+  else if (opt == "script_path")
+  {
+   ParameterCheck(opt, toks, 1);
+   scriptpath = toks[0];
   }
   else
   {
@@ -764,6 +814,19 @@ void Config::SanityCheck()
   for (const std::string& setting : requiredSettings)
   {
     if (!CheckSetting(setting)) throw RequiredSettingError(setting);
+  }
+  
+  if (!plugins.empty() && pluginpath.empty()) throw ConfigError("Plugins cannot be loaded without a plugin_path set");
+  
+  if (scriptpath.empty())
+  {
+    int scripts = 0;
+    for (const auto& plugin : plugins)
+    {
+      scripts += plugin.Scripts().size();
+    }
+    
+    if (scripts > 0) throw ConfigError("Scripts cannot be loaded without a script_path set");
   }
   
   if (loginPrompt.empty())

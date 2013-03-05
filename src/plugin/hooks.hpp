@@ -133,12 +133,13 @@ public:
     verify(eventHooks.empty());
   }
 
-  void TriggerEvent(Event event, Client& client, const EventHookArgs& args)
+  void TriggerEvent(Event event, ftp::Client& client, const EventHookArgs& args)
   {
     auto range = eventHooks.equal_range(event);
     for (auto it = range.first; it != range.second; ++it)
     {
-      it->second.function(client, args);
+      Client pluginClient(client);
+      it->second.function(pluginClient, args);
     }
   }
   
@@ -161,14 +162,15 @@ public:
     }
   }
   
-  bool TriggerCommand(Client& client, const std::string& commandLine, const std::vector<std::string>& args)
+  bool TriggerCommand(ftp::Client& client, const std::string& commandLine, const std::vector<std::string>& args)
   {
     assert(args.size() >= 2);
     assert(args[0] == "SITE");
     auto it = commandHooks.find(args[1]);
     if (it == commandHooks.end()) return false;
-    if (!it->second.acl.Evaluate(client.User())) throw cmd::PermissionError();
-    HookResult result = it->second.function(client, commandLine, args);
+    if (!it->second.acl.Evaluate(client.User().ACLInfo())) throw cmd::PermissionError();
+    Client pluginClient(client);
+    HookResult result = it->second.function(pluginClient, commandLine, args);
     // check result -- possibly do some logging
     return true;
   }

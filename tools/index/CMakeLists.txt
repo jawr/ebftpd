@@ -4,7 +4,7 @@ include ("../../cmake/Defaults.cmake")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
 include_directories (${SERVER_SRC} ../../util)
 add_executable (index index.cpp)
-add_dependencies(index version cb util)
+add_dependencies(index version eb util)
 target_link_libraries(index eb util ${ALL_LIBRARIES})
 install(TARGETS index RUNTIME DESTINATION bin)
 

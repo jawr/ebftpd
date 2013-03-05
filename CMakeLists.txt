@@ -9,7 +9,7 @@ add_subdirectory(src)
 add_subdirectory(tools)
 add_subdirectory(util)
 add_subdirectory(data)
-
+add_subdirectory(plugins)
 
 install(FILES ebftpd.conf.example DESTINATION etc)
 

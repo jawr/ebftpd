@@ -76,6 +76,9 @@ class Config
   std::string banner;
   std::vector< ::cfg::Alias> alias;
   std::vector<std::string> cdpath;
+  std::vector<Plugin> plugins;
+  std::string pluginpath;
+  std::string scriptpath;
   
   Log securityLog;
   Log databaseLog;
@@ -299,7 +302,10 @@ public:
   bool DNSLookup() const { return dnsLookup; }
   ::cfg::LogAddresses LogAddresses() const { return logAddresses; }
   mode_t Umask() const { return umask; }
-
+  const std::vector<Plugin>& Plugins() const { return plugins; }
+  const std::string& Pluginpath() const { return pluginpath; }
+  const std::string& Scriptpath() const { return scriptpath; }
+  
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }
   

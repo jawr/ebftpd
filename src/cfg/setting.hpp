@@ -454,6 +454,19 @@ public:
   bool Downloads() const { return downloads; }
 };
 
+class Plugin
+{
+  std::string name;
+  std::vector<std::string> scripts;
+  
+public:
+  Plugin(const std::vector<std::string>& toks);
+  
+  void AddScript(const std::string& script) { scripts.emplace_back(script); }
+  const std::string& Name() const { return name; }
+  const std::vector<std::string>& Scripts() const { return scripts; }
+};
+
 }
 
 #endif
