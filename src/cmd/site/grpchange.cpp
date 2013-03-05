@@ -117,7 +117,7 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckMaxAllotSize()
   try
   {
     long long allotment = boost::lexical_cast<long long>(args[3]);
-    if (allotment < 0) throw boost::bad_lexical_cast();
+    if (allotment < -1) throw boost::bad_lexical_cast();
     if (allotment == -1) display = "Unlimited";
     else display = boost::lexical_cast<std::string>(allotment);
     

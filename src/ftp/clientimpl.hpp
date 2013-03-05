@@ -110,7 +110,7 @@ public:
   const boost::posix_time::seconds& IdleTimeout() const
   { return idleTimeout; }
   
-  const boost::posix_time::ptime LoggedInAt() const
+  const boost::posix_time::ptime& LoggedInAt() const
   { return loggedInAt; }
   
   void SetXDupeMode(xdupe::Mode xdupeMode)

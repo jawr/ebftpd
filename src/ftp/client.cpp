@@ -103,7 +103,7 @@ const boost::posix_time::seconds& Client::IdleTimeout() const
   return pimpl->IdleTimeout();
 }
 
-const boost::posix_time::ptime Client::LoggedInAt() const
+const boost::posix_time::ptime& Client::LoggedInAt() const
 {
   return pimpl->LoggedInAt();
 }
