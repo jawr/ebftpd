@@ -450,17 +450,17 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "event_path")
   {
     ParameterCheck(opt, toks, 1, -1);
-    eventpath.insert(bouncerIp.end(), toks.begin(), toks.end());
+    eventpath.insert(eventpath.end(), toks.begin(), toks.end());
   }
   else if (opt == "dupe_path")
   {
     ParameterCheck(opt, toks, 1, -1);
-    dupepath.insert(bouncerIp.end(), toks.begin(), toks.end());
+    dupepath.insert(dupepath.end(), toks.begin(), toks.end());
   }
   else if (opt == "index_path")
   {
     ParameterCheck(opt, toks, 1, -1);
-    indexpath.insert(bouncerIp.end(), toks.begin(), toks.end());
+    indexpath.insert(indexpath.end(), toks.begin(), toks.end());
   } 
   else if (opt == "hideinwho")
   {
