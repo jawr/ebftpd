@@ -6,11 +6,26 @@
 #include "cfg/get.hpp"
 #include "util/path/path.hpp"
 #include "logs/logs.hpp"
+#include "util/string.hpp"
 
 namespace plugin
 {
 
 std::unique_ptr<FactoryManager> FactoryManager::instance;
+
+Plugin::Plugin(const std::shared_ptr<Factory>& factory) :
+  factory(factory),
+  name(util::ToLowerCopy(factory->Name()))
+{
+  CommandHooks::Get().Acquire();
+  EventHooks::Get().Acquire();
+}
+
+Plugin::~Plugin()
+{
+  CommandHooks::Get().Release();
+  EventHooks::Get().Release();
+}
 
 void FactoryManager::Rehash()
 {

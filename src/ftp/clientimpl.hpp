@@ -16,6 +16,7 @@
 #include "ftp/xdupe.hpp"
 #include "util/processreader.hpp"
 #include "ftp/enums.hpp"
+#include "plugin/plugin.hpp"
 
 namespace util
 {
@@ -59,6 +60,8 @@ class ClientImpl : public util::Thread
   std::string ip;
   std::string hostname;
   
+  std::vector<std::shared_ptr<plugin::Plugin>> plugins;
+  
   static std::atomic_bool siteopOnly;
   
   static const int maxPasswordAttemps = 3;
@@ -73,6 +76,7 @@ class ClientImpl : public util::Thread
   void IdleReset(std::string commandLine)  ;
   bool ReloadUser();
   std::string SanitiseAddress(std::string address, LogAddresses log) const;
+  void RunScripts();
   
   ClientImpl& operator=(ClientImpl&&) = delete;
   ClientImpl& operator=(const ClientImpl&) = delete;

@@ -30,6 +30,7 @@
 #include "ftp/task/task.hpp"
 #include "ftp/online.hpp"
 #include "fs/directory.hpp"
+#include "plugin/hooks.hpp"
 
 namespace ftp
 {
@@ -45,7 +46,8 @@ ClientImpl::ClientImpl(Client& parent) :
   xdupeMode(xdupe::Mode::Disabled),
   kickLogin(false),
   idleTimeout(boost::posix_time::seconds(cfg::Get().IdleTimeout().Timeout())),
-  ident("*")
+  ident("*"),
+  plugins(plugin::FactoryManager::Get().CreatePlugins())
 {
 }
 
@@ -511,6 +513,28 @@ bool ClientImpl::IdntParse(const std::string& command)
   return IdntUpdate(ident, ip, hostname);
 }
 
+void ClientImpl::RunScripts()
+{
+  const cfg::Config& config = cfg::Get();
+  for (const auto& pluginConfig : config.Plugins())
+  {
+    if (pluginConfig.Scripts().empty()) continue;
+    auto it = std::find_if(plugins.begin(), plugins.end(),
+                [&pluginConfig](const std::shared_ptr<plugin::Plugin>& plugin)
+                {
+                  return plugin->Name() == pluginConfig.Name();
+                });
+    if (it == plugins.end()) continue;
+    plugin::Plugin& plugin = **it;
+    for (const auto& script : pluginConfig.Scripts())
+    {
+      plugin.RunScript(script);
+    }
+  }
+  
+  plugin::Hooks::Get().TriggerEvent(plugin::Event::Connected, parent);
+}
+
 void ClientImpl::InnerRun()
 {
   if (!cfg::Get().IsBouncer(ip))
@@ -545,6 +569,7 @@ void ClientImpl::InnerRun()
   if (!PreCheckAddress()) return;
   
   LookupIdent();
+  RunScripts();
   
   logs::Debug("Servicing client connected from %1%@%2%", ident, HostnameAndIP(LogAddresses::Normal));
     
@@ -562,6 +587,8 @@ void ClientImpl::Run()
     std::make_shared<ftp::task::ClientFinished>(parent)->Push();
     if (user) db::mail::LogOffPurgeTrash(user->ID());
     LogTraffic();
+    plugin::Hooks::Get().TriggerEvent(plugin::Event::Disconnected, parent);
+    plugin::Hooks::Get().Clear();
   });
 
  try

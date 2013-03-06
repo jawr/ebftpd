@@ -351,6 +351,7 @@ CommandDefOpt Factory::Lookup(const std::string& command, bool noCustom)
   {
     CommandDefsMap::const_iterator it = factory->defs.find(command);
     if (it != factory->defs.end()) def.reset(it->second);
+    else def = plugin::Hooks::Get().LookupCommand(command);
   }
   return def;
 }

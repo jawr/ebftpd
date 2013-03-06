@@ -10,6 +10,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 #include <boost/thread/tss.hpp>
 #include "util/verify.hpp"
 #include "util/string.hpp"
@@ -41,10 +42,17 @@ public:
 namespace plugin
 {
 
+inline HookID GenerateID()
+{
+  boost::mt19937 ran(time(NULL));
+  boost::uuids::random_generator generateID(&ran);
+  return generateID();
+}
+
 enum class Event
 {
-  Load,
-  Unload,
+  Connected,
+  Disconnected,
   LoggedIn,
   LoggedOut,
   BeforeCommand,
@@ -79,19 +87,9 @@ typedef std::function<HookResult(Client&, const EventHookArgs&)> EventHookFuncti
 typedef std::function<HookResult(Client&, const std::string&, const std::vector<std::string>&)> CommandHookFunction;
 typedef boost::uuids::uuid HookID;
 
-class Hooks
+class CommandHooks
 {
-  struct EventHook
-  {
-    EventHookFunction function;
-    HookID id;
-    
-    EventHook(const EventHookFunction& function, HookID&& id) :
-      function(function),
-      id(id)
-    { }
-  };
-  
+public:
   struct CommandHook
   {
     CommandHookFunction function;
@@ -112,57 +110,37 @@ class Hooks
     { }
   };
   
-  std::unordered_multimap<Event, EventHook> eventHooks;
+private:
+  int pluginCount;    // plugin count kept to ensure hooks are not cleared until all plugins destroyed
   std::unordered_map<std::string, CommandHook> commandHooks;
   
-  boost::mt19937 ran;
-  boost::uuids::random_generator generateID;
+  static boost::thread_specific_ptr<CommandHooks> instance;
+
+  static const CommandHook& TakeSecond(const std::pair<std::string, CommandHook>& kv)
+  {
+    return kv.second;
+  }
   
-  static boost::thread_specific_ptr<Hooks> instance;
-
-  Hooks() : 
-    ran(time(NULL)),
-    generateID(&ran)
-  { }
-
 public:
-  ~Hooks()
+  CommandHooks() : pluginCount(pluginCount) { }
+  
+  void Acquire()
   {
-    // must always be cleared before lua_State is closed
-    // so must be cleared explicitly using Clear()
-    verify(eventHooks.empty());
+    ++pluginCount;
+  }
+  
+  void Release()
+  {
+    if (--pluginCount <= 0)
+    {
+      verify(pluginCount == 0);
+      commandHooks.clear();
+    }
   }
 
-  void TriggerEvent(Event event, ftp::Client& client, const EventHookArgs& args)
-  {
-    auto range = eventHooks.equal_range(event);
-    for (auto it = range.first; it != range.second; ++it)
-    {
-      Client pluginClient(client);
-      it->second.function(pluginClient, args);
-    }
-  }
-  
-  HookID ConnectEvent(Event event, const EventHookFunction& function)
-  {
-    auto it = eventHooks.insert(std::make_pair(event, EventHook(function, generateID())));
-    return it->second.id;
-  }
-  
-  void DisconnectEvent(const HookID& id)
-  {
-    auto it = std::find_if(eventHooks.begin(), eventHooks.end(),
-                  [&id](const std::pair<Event, EventHook>& kv)
-                  {
-                    return kv.second.id == id;
-                  });
-    if (it != eventHooks.end())
-    {
-      eventHooks.erase(it);
-    }
-  }
-  
-  bool TriggerCommand(ftp::Client& client, const std::string& commandLine, const std::vector<std::string>& args)
+  typedef decltype(boost::make_transform(commandHooks.cbegin(), TakeSecond) iterator;
+
+  bool Trigger(ftp::Client& client, const std::string& commandLine, const std::vector<std::string>& args)
   {
     assert(args.size() >= 2);
     assert(args[0] == "SITE");
@@ -175,20 +153,18 @@ public:
     return true;
   }
   
-  boost::optional<HookID> ConnectCommand(std::string command, const std::string& description, 
-                                         const std::string& acl, const CommandHookFunction& function)
+  boost::optional<HookID> Connect(const std::string& command, const std::string& description, 
+                                  const std::string& acl, const CommandHookFunction& function)
   {
-    util::ToUpper(command);
     // site factory singleton needs to be fixed
     //if (cmd::site::Factory::Lookup(command)) return boost::none;
-    auto it = commandHooks.insert(std::make_pair(command, 
-                  CommandHook(function, generateID(),command, 
-                              description, acl)));
+    auto commandHook = CommandHook(function, GenerateID(),command, description, acl);
+    auto it = commandHooks.insert(std::make_pair(command, std::move(commandHook)));
     if (!it.second) return boost::none;
     return boost::make_optional(it.first->second.id);
   }
   
-  void DisconnectCommand(const HookID& id)
+  void Disconnect(const HookID& id)
   {
     auto it = std::find_if(commandHooks.begin(), commandHooks.end(),
                   [&id](const std::pair<std::string, CommandHook>& kv)
@@ -199,15 +175,96 @@ public:
     {
       commandHooks.erase(it);
     }
+  }  
+  
+  static EventHooks& Get()
+  {
+    Hooks* hooks = instance.get();
+    if (!hooks)
+    {
+      hooks = new Hooks();
+      instance.reset(hooks);
+    }
+    return *hooks;
+  }
+  
+  iterator begin()
+  {
+    return boost::make_transform_iterator(commandHooks.begin(), TakeSecond);
+  }
+  
+  iterator end()
+  {
+    return boost::make_transform_iterator(commandHooks.end(), TakeSecond);
+  }
+  
+};
+
+class EventHooks
+{
+  struct EventHook
+  {
+    EventHookFunction function;
+    HookID id;
+    
+    EventHook(const EventHookFunction& function, HookID&& id) :
+      function(function),
+      id(id)
+    { }
+  };
+  
+  std::unordered_multimap<Event, EventHook> eventHooks;
+    
+  static boost::thread_specific_ptr<Hooks> instance;
+
+public:
+  ~Hooks()
+  {
+    // must always be cleared before lua_State is closed
+    // so must be cleared explicitly using Clear()
+    verify(eventHooks.empty());
+  }
+
+  void Trigger(Event event, ftp::Client& client, const EventHookArgs& args)
+  {
+    auto range = eventHooks.equal_range(event);
+    for (auto it = range.first; it != range.second; ++it)
+    {
+      Client pluginClient(client);
+      it->second.function(pluginClient, args);
+    }
+  }
+
+  void Trigger(Event event, ftp::Client& client)
+  {
+    Trigger(event, client, EventHookArgs());
+  }
+  
+  HookID Connect(Event event, const EventHookFunction& function)
+  {
+    auto it = eventHooks.insert(std::make_pair(event, EventHook(function, GenerateID())));
+    return it->second.id;
+  }
+  
+  void Disconnect(const HookID& id)
+  {
+    auto it = std::find_if(eventHooks.begin(), eventHooks.end(),
+                  [&id](const std::pair<Event, EventHook>& kv)
+                  {
+                    return kv.second.id == id;
+                  });
+    if (it != eventHooks.end())
+    {
+      eventHooks.erase(it);
+    }
   }
   
   void Clear()
   {
     eventHooks.clear();
-    commandHooks.clear();
   }
   
-  static Hooks& Get()
+  static EventHooks& Get()
   {
     Hooks* hooks = instance.get();
     if (!hooks)
@@ -243,6 +300,6 @@ inline bool IntegerToHookResult(int iresult, HookResult& result)
   return true;
 }
 
-} /* script namespace */
+/* script namespace */
 
 #endif

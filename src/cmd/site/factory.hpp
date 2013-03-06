@@ -91,14 +91,16 @@ public:
   
   CommandDef(const std::string& aclKeyword,
              const CreatorBasePtr& creator) :
-    minimumArgs(0), maximumArgs(-1), aclKeyword(aclKeyword), 
-    creator(creator) { }
+    minimumArgs(0), 
+    maximumArgs(-1), 
+    aclKeyword(aclKeyword), 
+    creator(creator)
+  { }
   
   bool CheckArgs(const std::vector<std::string>& args) const
   {
     int argsSize = static_cast<int>(args.size()) - 1;
-    return (argsSize >= minimumArgs &&
-            (maximumArgs == -1 || argsSize <= maximumArgs));
+    return (argsSize >= minimumArgs && (maximumArgs == -1 || argsSize <= maximumArgs));
   }
   
   CommandPtr Create(ftp::Client& client, const std::string& argStr, const Args& args) const

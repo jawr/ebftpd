@@ -26,7 +26,7 @@ public:
   }
   
   ~Plugin() { Cleanup(); }
-  void RunScript(const std::string& path);
+  void RunScript(const std::string& file);
 };
 
 class Factory : public plugin::Factory

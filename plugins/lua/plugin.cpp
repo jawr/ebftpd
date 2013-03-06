@@ -25,12 +25,15 @@ extern "C"
 #include "plugin/mail.hpp"
 #include "plugin/hooks.hpp"
 #include "plugin/error.hpp"
+#include "plugin/client.hpp"
 #include "cfg/get.hpp"
 #include "cfg/error.hpp"
 #include "fs/owner.hpp"
 #include "db/mail/message.hpp"
 #include "db/mail/mail.hpp"
 #include "plugin/plugin.hpp"
+#include "util/path/path.hpp"
+#include "ftp/xdupe.hpp"
 
 namespace luabind
 {
@@ -273,7 +276,7 @@ struct default_converter<util::Error> : native_converter_base<util::Error>
 
   util::Error from(lua_State* /* L */, int /* index */)
   {
-    return util::Error::Failure("Should never get here");
+    verify(false);
   }
   
   void to(lua_State* L, const util::Error& e)
@@ -310,6 +313,50 @@ struct default_converter<db::mail::Status> : native_converter_base<db::mail::Sta
   void to(lua_State* L, db::mail::Status status)
   {
 		lua_pushstring(L, util::EnumToString(status).c_str());
+  }
+};  
+
+template <>
+struct default_converter<ftp::xdupe::Mode> : native_converter_base<ftp::xdupe::Mode>
+{
+  static int compute_score(lua_State* L, int index)
+  {
+    return lua_type(L, index) == LUA_TNUMBER ? 0 : -1;
+  }
+
+  ftp::xdupe::Mode from(lua_State* L, int index)
+  {
+    int i = static_cast<int>(lua_tonumber(L, index));
+    if (i < static_cast<int>(ftp::xdupe::Mode::Disabled) ||
+        i > static_cast<int>(ftp::xdupe::Mode::Four))
+    {
+      throw plugin::ValueError();
+    }
+    return static_cast<ftp::xdupe::Mode>(i);
+  }
+  
+  void to(lua_State* L, ftp::xdupe::Mode mode)
+  {
+    lua_pushnumber(L, static_cast<int>(mode));
+  }
+};  
+
+template <>
+struct default_converter<ftp::ClientState> : native_converter_base<ftp::ClientState>
+{
+  static int compute_score(lua_State* /* L */, int /* index */)
+  {
+    return 1;
+  }
+
+  ftp::ClientState from(lua_State* /* L */, int /* index */)
+  {
+    verify(false);
+  }
+  
+  void to(lua_State* L, ftp::ClientState state)
+  {
+    lua_pushnumber(L, static_cast<int>(state));
   }
 };  
 
@@ -682,6 +729,8 @@ void DoBinding(lua_State* L)
     class_<plugin::Event>("Event")
       .enum_("constants")
       [
+        value("connected",          static_cast<int>(plugin::Event::Connected)),
+        value("disconnected",       static_cast<int>(plugin::Event::Disconnected)),
         value("logged_in",          static_cast<int>(plugin::Event::LoggedIn)),
         value("logged_out",         static_cast<int>(plugin::Event::LoggedOut)),
         value("before_command",     static_cast<int>(plugin::Event::BeforeCommand)),
@@ -698,7 +747,47 @@ void DoBinding(lua_State* L)
       ],
       
     def("hook_command",   &HookCommand),
-    def("unhook_command", &UnhookCommand)
+    def("unhook_command", &UnhookCommand),
+    
+    class_<plugin::Client>("Client")
+      .def(constructor<>())
+      .property("logged_in_at",           &plugin::Client::LoggedInAt)
+      .property("idle_time",              &plugin::Client::IdleTime)
+      .property("idle_timeout",           &plugin::Client::IdleTimeout)
+      .def("set_idle_timeout",            &plugin::Client::SetIdleTimeout)
+      .property("state",                  &plugin::Client::State)
+      .property("user",                   (boost::optional<plugin::User&> (plugin::Client::*)()) &plugin::Client::User)
+      .property("user",                   (boost::optional<const plugin::User&> (plugin::Client::*)() const) &plugin::Client::User)
+      .property("xdupe_mode",             &plugin::Client::XDupeMode)
+      .def("set_xdupe_mode",              &plugin::Client::SetXDupeMode)
+      .property("ip",                     &plugin::Client::IP)
+      .property("ident",                  &plugin::Client::Ident)
+      .property("hostname",               &plugin::Client::Hostname)
+      .property("single_line_replies",    &plugin::Client::SingleLineReplies)
+      .def("set_single_line_replies",     &plugin::Client::SetSingleLineReplies)
+      .def("reply",                       &plugin::Client::Reply)
+      .def("part_reply",                  &plugin::Client::PartReply)
+      .scope
+      [
+        class_<ftp::ClientState>("State")
+          .enum_("constants")
+          [
+            value("logged_out",         static_cast<int>(ftp::ClientState::LoggedOut)),
+            value("waiting_password",   static_cast<int>(ftp::ClientState::WaitingPassword)),
+            value("logged_in",          static_cast<int>(ftp::ClientState::LoggedIn)),
+            value("finished",           static_cast<int>(ftp::ClientState::Finished))
+          ],
+          
+        class_<ftp::xdupe::Mode>("XDupeMode")
+          .enum_("constants")
+          [
+            value("disabled",           static_cast<int>(ftp::xdupe::Mode::Disabled)),
+            value("one",                static_cast<int>(ftp::xdupe::Mode::One)),
+            value("two",                static_cast<int>(ftp::xdupe::Mode::Two)),
+            value("three",              static_cast<int>(ftp::xdupe::Mode::Three)),
+            value("four",               static_cast<int>(ftp::xdupe::Mode::Four))
+          ]
+      ]
   ];
   
   // setup string enumerations for message status at Message.Status.enum
@@ -736,8 +825,9 @@ void Plugin::Cleanup()
   }
 }
 
-void Plugin::RunScript(const std::string& path)
+void Plugin::RunScript(const std::string& file)
 {
+  std::string path = util::path::Join(cfg::Get().Scriptpath(), file);
   int error = luaL_loadfile(L, path.c_str());
   if (error != 0) throw plugin::PluginError(LuaStrerror(error));
   error = lua_pcall(L, 0, LUA_MULTRET, 0);

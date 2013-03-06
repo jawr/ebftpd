@@ -12,27 +12,7 @@
 namespace plugin
 {
 
-class Factory;
-
-// either of these classes should throw InitialiseError on construction failure
-
-// client specific plugin instance
-class Plugin
-{
-  // store an instance of factory to ensure it is never
-  // destructed before the plugins
-  std::shared_ptr<Factory> factory;
-
-  Plugin& operator=(Plugin&&) = delete;
-  Plugin& operator=(const Plugin&) = delete;
-  Plugin(Plugin&&) = delete;
-  Plugin(const Plugin&) = delete;
-  
-public:
-  Plugin(const std::shared_ptr<Factory>& factory) : factory(factory) { }
-  virtual ~Plugin() { }
-  virtual void RunScript(const std::string& path) = 0;
-};
+class Plugin;
 
 // global plugin instance for creating client specific instances
 class Factory : public std::enable_shared_from_this<Factory>
@@ -48,6 +28,29 @@ public:
   virtual const char* Name() const = 0;        // name of plugin
   virtual const char* Version() const = 0;     // version of plugin
   virtual Plugin* Create() = 0; // create a plugin instance for a client
+};
+
+// either of these classes should throw InitialiseError on construction failure
+
+// client specific plugin instance
+// must be constructed in the client thread, not before in main thread
+class Plugin
+{
+  // store an instance of factory to ensure it is never
+  // destructed before the plugins
+  std::shared_ptr<Factory> factory;
+  std::string name;
+
+  Plugin& operator=(Plugin&&) = delete;
+  Plugin& operator=(const Plugin&) = delete;
+  Plugin(Plugin&&) = delete;
+  Plugin(const Plugin&) = delete;
+  
+public:
+  Plugin(const std::shared_ptr<Factory>& factory);
+  virtual ~Plugin();
+  virtual void RunScript(const std::string& file) = 0;
+  const std::string& Name() const { return name; }
 };
 
 class FactoryHolder

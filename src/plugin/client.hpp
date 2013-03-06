@@ -10,6 +10,7 @@
 #include "acl/user.hpp"
 #include "plugin/user.hpp"
 #include "plugin/locks.hpp"
+#include "plugin/error.hpp"
 
 namespace plugin
 {
@@ -17,9 +18,14 @@ namespace plugin
 class Client
 {
   ftp::Client* client;
+  plugin::User user;
   
 public:
-  explicit Client(ftp::Client& client) : client(&client) { }
+  Client() { throw NotConstructable(); }
+  explicit Client(ftp::Client& client) :
+    client(&client),
+    user(client.User())
+  { }
   
   const boost::posix_time::ptime& LoggedInAt() const
   {
@@ -46,16 +52,16 @@ public:
     return client->State();
   }
 
-  boost::optional<plugin::User> User()
+  boost::optional<plugin::User&> User()
   {
     if (client->State() != ftp::ClientState::LoggedIn) return boost::none;
-    return boost::optional<plugin::User>(plugin::User(client->User()));
+    return boost::optional<plugin::User&>(user);
   }
 
-  boost::optional<const plugin::User> User() const
+  boost::optional<const plugin::User&> User() const
   {
     if (client->State() != ftp::ClientState::LoggedIn) return boost::none;
-    return boost::optional<const plugin::User>(plugin::User(client->User()));
+    return boost::optional<const plugin::User&>(user);
   }
 
   ftp::xdupe::Mode XDupeMode() const
