@@ -1,111 +1,271 @@
-#ifndef __PLUGIN_FACTORY_HPP
-#define __PLUGIN_FACTORY_HPP
+#ifndef __PLUGIN_PLUGIN_HPP
+#define __PLUGIN_PLUGIN_HPP
 
-#include <memory>
-#include <string>
 #include <vector>
-#include <unordered_map>
-#include <boost/thread/mutex.hpp>
+#include <memory>
+#include <cassert>
+#include <utility>
+#include <dlfcn.h>
+#include <boost/thread/once.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/optional/optional_fwd.hpp>
+#include <boost/variant/variant_fwd.hpp>
 
-#include <iostream>
+namespace ftp
+{
+class Client;
+}
 
 namespace plugin
 {
 
-class Plugin;
+class PluginFactory;
 
-// global plugin instance for creating client specific instances
-class Factory : public std::enable_shared_from_this<Factory>
+class PluginDriver
 {
-  Factory& operator=(Factory&&) = delete;
-  Factory& operator=(const Factory&) = delete;
-  Factory(Factory&&) = delete;
-  Factory(const Factory&) = delete;
+	struct Data
+	{
+		Data& operator=(const Data&) = delete;
+		Data(const Data&) = delete;
+	
+		PluginFactory* factory;
+		void* handle;
+		
+		Data() : factory(nullptr), handle(nullptr) { }
+		~Data();
+	};
   
+  std::shared_ptr<Data> data;
+	
 public:
-  Factory() = default;
-  virtual ~Factory() { }
-  virtual const char* Name() const = 0;        // name of plugin
-  virtual const char* Version() const = 0;     // version of plugin
-  virtual Plugin* Create() = 0; // create a plugin instance for a client
+  PluginDriver(const std::string& name);
+  
+  PluginFactory& operator*() { return *data->factory; }
+  const PluginFactory& operator*() const { return *data->factory; }
+  
+  PluginFactory* operator->() { return data->factory; }
+  const PluginFactory* operator->() const { return data->factory; }
+  
+  static PluginDriver Load(const std::string& path);
 };
 
-// either of these classes should throw InitialiseError on construction failure
+class CommandHooks;
+class CommandHook;
+class EventHooks;
 
-// client specific plugin instance
-// must be constructed in the client thread, not before in main thread
 class Plugin
 {
-  // store an instance of factory to ensure it is never
-  // destructed before the plugins
-  std::shared_ptr<Factory> factory;
-  std::string name;
-
-  Plugin& operator=(Plugin&&) = delete;
-  Plugin& operator=(const Plugin&) = delete;
-  Plugin(Plugin&&) = delete;
+  Plugin operator=(const Plugin&) = delete;
+  Plugin operator=(Plugin&&) = delete;
   Plugin(const Plugin&) = delete;
+  Plugin(Plugin&&) = delete;
+  
+  PluginDriver driver;                // referenced counted copy of driver to prevent desrtuction before plugin 
+
+protected:
+  std::unique_ptr< ::plugin::CommandHooks> commandHooks;
+  std::unique_ptr< ::plugin::EventHooks> eventHooks;
+
+  void LoadScripts();                                 // script engine plugins must call this method as their last task
+                                                      // during construction, this will load any scripts defined in the config
+  void LoadScript(const std::string& /* path */) { }  // must be overrode for script engine plugins
   
 public:
-  Plugin(const std::shared_ptr<Factory>& factory);
+  Plugin(const PluginDriver& driver);
   virtual ~Plugin();
-  virtual void RunScript(const std::string& file) = 0;
-  const std::string& Name() const { return name; }
+  
+  const char* Name() const;
+  virtual void Lock() { }             // locking mechanisms for scripting languages that require locking around
+  virtual void Unlock() { }           // the interperter (python)
+  
+  ::plugin::CommandHooks& CommandHooks() { return *commandHooks; }
+  const ::plugin::CommandHooks& CommandHooks() const { return *commandHooks; }
+  
+  ::plugin::EventHooks& EventHooks() { return *eventHooks; }
+  const ::plugin::EventHooks& EventHooks() const { return *eventHooks; }
 };
 
-class FactoryHolder
+struct PluginFactory
 {
-  std::string path;
-  std::shared_ptr<void> library;
-  std::shared_ptr< ::plugin::Factory> factory;
+  PluginFactory& operator=(const PluginFactory&) = delete;
+  PluginFactory& operator=(PluginFactory&&) = delete;
+  PluginFactory(const PluginFactory&) = delete;
+  PluginFactory(PluginFactory&&) = delete;
+
+  PluginFactory() = default;
   
-public:
-  FactoryHolder(const std::string& path, 
-                const std::shared_ptr<void>& library,
-                const std::shared_ptr<Factory>& factory) :
-    path(path),
-    library(library),
-    factory(factory)
-  { }
-  
-  const std::string& Path() const { return path; }
-  ::plugin::Factory& Factory() { return *factory; }
-  const ::plugin::Factory& Factory() const { return *factory; }
+  virtual ~PluginFactory() { }
+	virtual const char* Name() const = 0;                   // single word name for plugin, should match shared object name 'name.so'
+	virtual const char* Description() const = 0;            // full description / multiple word name
+	virtual const char* PluginVersion() const = 0;          // version of the plugin
+  virtual const char* ServerVersion() const = 0;          // version of ebftpd built against
+	virtual const char* Author() const = 0;                 // plugin author
+	virtual Plugin* Create(const PluginDriver& driver) const = 0;  // factory method
 };
 
-class FactoryManager
+class PluginManager;
+
+typedef boost::variant<std::string, long long, double, int> EventHookArg;
+typedef std::vector<EventHookArg> EventHookArgs;
+enum class Event;
+
+class PluginCollection
 {
-  boost::mutex mutex;
-  std::unordered_map<std::string, FactoryHolder> factories;
-  
-  static std::unique_ptr<FactoryManager> instance;
-  
-public:
-  // create and return all the plugins currently registered for
-  // a new client connection
-  std::vector<std::shared_ptr<Plugin>> CreatePlugins()
+  struct Data
   {
-    std::vector<std::shared_ptr<Plugin>> plugins;
-    boost::lock_guard<boost::mutex> lock(mutex);
-    for (auto& kv : factories)
+    Data& operator=(const Data&) = delete;
+    Data(const Data&) = delete;
+    
+    std::vector<Plugin*> plugins;
+    
+    Data() = default;
+    
+    ~Data()
     {
-      plugins.emplace_back(kv.second.Factory().Create());
+      for (auto plugin : plugins)
+        delete plugin;
     }
-    return plugins;
-  }
-
-  void Rehash();
-  void Cleanup();
+  };
   
-  static FactoryManager& Get()
+  std::shared_ptr<Data> data;
+  
+  PluginCollection() :
+    data(new Data())
+  { }
+    
+public:
+  boost::optional<std::pair<CommandHook, Plugin*>> LookupCommand(const std::string& command);
+  bool TriggerEvent(Event event, ftp::Client& client, const EventHookArgs& args);
+  bool TriggerEvent(Event event, ftp::Client& client);
+
+  friend class PluginManager;
+};
+
+class PluginManager
+{
+  mutable boost::shared_mutex mutex;
+  std::vector<PluginDriver> drivers;
+
+  static boost::once_flag instanceOnce;
+  static std::unique_ptr<PluginManager> instance;
+  
+  PluginManager& operator=(const PluginManager&) = delete;
+  PluginManager& operator=(PluginManager&&) = delete;
+  PluginManager(const PluginManager&) = delete;
+  PluginManager(PluginManager&&) = delete;
+
+  PluginManager() = default;
+  
+  void LoadDriver(const std::string& name);
+  void UnloadDriver(const std::string& name);
+  
+  static void CreateInstance()
   {
-    if (!instance.get()) instance.reset(new FactoryManager());
+    instance.reset(new PluginManager());
+  }
+  
+  void UnloadAllNoLock();
+  
+public:
+  ~PluginManager();
+
+  PluginCollection CreatePlugins() const;
+  void Reload();
+  void UnloadAll();
+  
+  static PluginManager& Get()
+  {
+    boost::call_once(&CreateInstance, instanceOnce);
     return *instance;
   }
 };
 
-FactoryHolder CreateFactory(const std::string& path);
-void InitialiseFactories();
+class PluginState
+{
+	static __thread Plugin* currentPlugin;
+
+  PluginState& operator=(const PluginState&) = delete;
+  PluginState& operator=(PluginState&&) = delete;
+	PluginState(const PluginState&) = delete;
+  PluginState(PluginState&&) = delete;
+  
+  PluginState() = default;
+  
+public:
+	static void SwapInPlugin(Plugin& plugin)
+	{
+		currentPlugin = &plugin;
+	}
+	
+	static void SwapOutPlugin()
+	{
+		currentPlugin = nullptr;
+	}
+	
+	static Plugin& Current()
+	{
+		assert(currentPlugin);
+		return *currentPlugin;
+	}
+};
+
+
+class ScopeSwapPlugin
+{
+  ScopeSwapPlugin& operator=(const ScopeSwapPlugin&) = delete;
+  ScopeSwapPlugin& operator=(ScopeSwapPlugin&&) = delete;
+  ScopeSwapPlugin(const ScopeSwapPlugin&) = delete;
+  ScopeSwapPlugin(ScopeSwapPlugin&&) = delete;
+  
+public:
+	ScopeSwapPlugin(Plugin& plugin)
+	{
+		PluginState::SwapInPlugin(plugin);
+	}
+	
+	~ScopeSwapPlugin()
+	{
+		PluginState::SwapOutPlugin();
+	}
+};
+
+struct LockGuard
+{
+  LockGuard& operator=(const LockGuard&) = delete;
+  LockGuard& operator=(LockGuard&&) = delete;
+  LockGuard(const LockGuard&) = delete;
+  LockGuard(LockGuard&&) = delete;
+
+	LockGuard()
+	{
+		PluginState::Current().Lock();
+	}
+	
+	~LockGuard()
+	{
+		PluginState::Current().Unlock();
+	}
+};
+
+struct UnlockGuard
+{
+  UnlockGuard& operator=(const UnlockGuard&) = delete;
+  UnlockGuard& operator=(UnlockGuard&&) = delete;
+  UnlockGuard(const UnlockGuard&) = delete;
+  UnlockGuard(UnlockGuard&&) = delete;
+
+  UnlockGuard()
+  {
+		PluginState::Current().Unlock();
+  }
+  
+  ~UnlockGuard()
+  {
+		PluginState::Current().Lock();
+  }
+};
+
+void Initialise();
 
 } /* plugin namespace */
 

@@ -5,11 +5,10 @@
 #include <utility>
 #include <boost/optional.hpp>
 #include "acl/user.hpp"
-#include "plugin/util.hpp"
 #include "plugin/error.hpp"
 #include "acl/util.hpp"
 #include "acl/flags.hpp"
-#include "plugin/locks.hpp"
+#include "plugin/plugin.hpp"
 
 namespace plugin
 {

@@ -2,12 +2,11 @@
 #define __PLUGIN_GROUP_HPP
 
 #include <boost/optional.hpp>
-#include "plugin/util.hpp"
 #include "acl/group.hpp"
-#include "plugin/locks.hpp"
 #include "util/error.hpp"
 #include "acl/util.hpp"
 #include "plugin/error.hpp"
+#include "plugin/plugin.hpp"
 
 namespace plugin
 {

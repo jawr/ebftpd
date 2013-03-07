@@ -22,7 +22,7 @@ extern "C"
 #include "lua/plugin.hpp"
 #include "plugin/user.hpp"
 #include "plugin/group.hpp"
-#include "plugin/mail.hpp"
+//#include "plugin/mail.hpp"
 #include "plugin/hooks.hpp"
 #include "plugin/error.hpp"
 #include "plugin/client.hpp"
@@ -499,25 +499,28 @@ public:
   }
 };
 
-plugin::HookID HookEvent(plugin::Event event, const luabind::object& function)
+plugin::HookID HookEvent(plugin::Event event, const luabind::object& function, bool always)
 {
-  return plugin::Hooks::Get().ConnectEvent(event, EventHookFunction(function));
+  return plugin::PluginState::Current().EventHooks().Connect(
+            event, EventHookFunction(function), always);
 }
 
 void UnhookEvent(const plugin::HookID& hookId)
 {
-  plugin::Hooks::Get().DisconnectEvent(hookId);
+  plugin::PluginState::Current().EventHooks().Disconnect(hookId);
 }
 
-boost::optional<plugin::HookID> HookCommand(const std::string& command, const std::string& description, 
-                                    const std::string& acl, const luabind::object& function)
+boost::optional<plugin::HookID> HookCommand(
+        const std::string& command, const std::string& description, 
+        const std::string& acl, const luabind::object& function)
 {
-  return plugin::Hooks::Get().ConnectCommand(command, description, acl, CommandHookFunction(function));
+  return plugin::PluginState::Current().CommandHooks().Connect(
+            command, description, "", acl, CommandHookFunction(function));
 }
 
 void UnhookCommand(const plugin::HookID& hookId)
 {
-  plugin::Hooks::Get().DisconnectCommand(hookId);
+  plugin::PluginState::Current().CommandHooks().Disconnect(hookId);
 }
 
 void TranslateThreadInterrupted(lua_State* L, const boost::thread_interrupted&)
@@ -706,10 +709,10 @@ void DoBinding(lua_State* L)
     class_<db::mail::Message>("Message")
       .def(constructor<const std::string&, acl::UserID, const std::string&,
                        const boost::posix_time::ptime&>())
-      .scope
+/*      .scope
       [
         class_<plugin::MailStatus>("Status")
-      ]
+      ]*/
       .property("sender",     &db::mail::Message::Sender)
       .property("recipent",   &db::mail::Message::Recipient)
       .property("body",       &db::mail::Message::Body)
@@ -800,9 +803,9 @@ void DoBinding(lua_State* L)
   }
 }
 
-Plugin* Factory::Create()
+Plugin* Factory::Create(const plugin::PluginDriver& driver) const
 {
-  return new Plugin(shared_from_this());
+  return new Plugin(driver);
 }
 
 void Plugin::Initialise()
@@ -819,15 +822,13 @@ void Plugin::Cleanup()
 {
   if (L)
   {
-    plugin::Hooks::Get().Clear();
     lua_close(L);
     L = nullptr;
   }
 }
 
-void Plugin::RunScript(const std::string& file)
+void Plugin::LoadScript(const std::string& path)
 {
-  std::string path = util::path::Join(cfg::Get().Scriptpath(), file);
   int error = luaL_loadfile(L, path.c_str());
   if (error != 0) throw plugin::PluginError(LuaStrerror(error));
   error = lua_pcall(L, 0, LUA_MULTRET, 0);
@@ -846,12 +847,9 @@ void Plugin::RunScript(const std::string& file)
 
 } /* lua namespace */
 
-extern "C"
-{
-lua::Factory* CreateFactory()
+extern "C" lua::Factory* CreateFactory()
 {
   return new lua::Factory();
-}
 }
 
 #ifdef __LUA_TEST

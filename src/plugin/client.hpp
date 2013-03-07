@@ -5,12 +5,11 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include "ftp/client.hpp"
-#include "plugin/util.hpp"
 #include "ftp/control.hpp"
 #include "acl/user.hpp"
 #include "plugin/user.hpp"
-#include "plugin/locks.hpp"
 #include "plugin/error.hpp"
+#include "plugin/plugin.hpp"
 
 namespace plugin
 {

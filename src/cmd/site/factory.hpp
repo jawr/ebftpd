@@ -9,6 +9,7 @@
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 #include "cfg/setting.hpp"
+#include "plugin/hooks.hpp"
 
 namespace cmd { namespace site
 {
@@ -60,6 +61,22 @@ public:
     return new CommandT(custSiteCmd, client, cArgStr, cArgs);
   }
 };
+
+class PluginCreator : public cmd::site::CreatorBase<cmd::Command>
+{
+  plugin::Plugin& plugin;
+  plugin::CommandHookFunction function;
+  
+public:
+  PluginCreator(plugin::Plugin& plugin, const plugin::CommandHookFunction& function) :
+    plugin(plugin),
+    function(function)
+  { }
+  
+  cmd::Command* Create(ftp::Client& client, const std::string& argStr, const cmd::Args& args, 
+                       plugin::Plugin& plugin, const plugin::CommandHookFunction& function);
+};
+
 
 typedef std::shared_ptr<CreatorBase<cmd::Command>> CreatorBasePtr;
 
@@ -130,6 +147,7 @@ private:
  
 public:
   static CommandDefOpt LookupCustom(const std::string& command);
+  static CommandDefOpt LookupPlugin(ftp::Client& client, const std::string& command);
   static CommandDefOpt Lookup(const std::string& command, bool noCustom = false);
   
   static void Initialise() { factory.reset(new Factory()); }

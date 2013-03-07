@@ -2,6 +2,7 @@
 #define __LUA_PLUGIN_HPP
 
 #include "plugin/plugin.hpp"
+#include "version.hpp"
 
 struct lua_State;
 
@@ -16,30 +17,36 @@ class Plugin : public plugin::Plugin
 
   void Initialise();
   void Cleanup();
+  void LoadScript(const std::string& path);
   
 public:
-  Plugin(const std::shared_ptr<plugin::Factory>& factory) :
-    plugin::Plugin(factory),
+  Plugin(const plugin::PluginDriver& driver) :
+    plugin::Plugin(driver),
     L(nullptr)
   {
     Initialise();
   }
   
   ~Plugin() { Cleanup(); }
-  void RunScript(const std::string& file);
 };
 
-class Factory : public plugin::Factory
+class Factory : public plugin::PluginFactory
 {
   constexpr static const char* name = "Lua";
-  constexpr static const char* version = "0.1";
+  constexpr static const char* description = "Lua scripting";
+  constexpr static const char* pluginVersion = "0.1";
+  constexpr static const char* serverVersion = EBFTPD_VERSION;
+  constexpr static const char* author = "ebftpd team";
   
   void Initialise();
   
 public:
   const char* Name() const { return name; }
-  const char* Version() const { return version; }
-  Plugin* Create();
+  const char* Description() const { return description; }
+  const char* PluginVersion() const { return pluginVersion; }
+  const char* ServerVersion() const { return serverVersion; }
+  const char* Author() const { return author; }
+  Plugin* Create(const plugin::PluginDriver& driver) const;
 };
 
 } /* lua namespace */

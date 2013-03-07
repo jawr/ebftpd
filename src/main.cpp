@@ -163,7 +163,7 @@ int main(int argc, char** argv)
     ftp::InitialisePortAllocators();
     ftp::InitialiseAddrAllocators();
     fs::InitialiseUmask();
-    plugin::InitialiseFactories();
+    plugin::Initialise();
 
     try
     {
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
     }
 
     ftp::OnlineWriter::Cleanup();
-    plugin::FactoryManager::Get().Cleanup();
+    plugin::PluginManager::Get().UnloadAll();
   }
 
   return exitStatus;

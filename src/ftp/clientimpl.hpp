@@ -76,7 +76,6 @@ class ClientImpl : public util::Thread
   void IdleReset(std::string commandLine)  ;
   bool ReloadUser();
   std::string SanitiseAddress(std::string address, LogAddresses log) const;
-  void RunScripts();
   
   ClientImpl& operator=(ClientImpl&&) = delete;
   ClientImpl& operator=(const ClientImpl&) = delete;

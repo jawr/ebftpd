@@ -310,48 +310,55 @@ CommandDefOpt Factory::LookupCustom(const std::string& command)
     }
   }
   
-  if (!match) return CommandDefOpt();
-  
-  CommandDefOpt def;
-  std::string aclKeyword("custom-" + command);
+  if (!match) return boost::none;
+
+  std::string aclKeyword("custom-" + util::ToLowerCopy(command));
   switch (match->GetType())
   {
     case cfg::SiteCmd::Type::Exec  :
     {
-      def.reset(CommandDef(util::ToLowerCopy(aclKeyword), 
+      return boost::make_optional(CommandDef(aclKeyword, 
           CreatorBasePtr(new CustomCreator<CustomEXECCommand>(*match))));
-      break;
     }
     case cfg::SiteCmd::Type::Text  :
     {
-      def.reset(CommandDef(util::ToLowerCopy(aclKeyword), 
+      return boost::make_optional(CommandDef(aclKeyword, 
           CreatorBasePtr(new CustomCreator<CustomTEXTCommand>(*match))));
-      break;
     }
     case cfg::SiteCmd::Type::Alias :
     {
-      def.reset(CommandDef(util::ToLowerCopy(aclKeyword), 
+      return boost::make_optional(CommandDef(aclKeyword, 
           CreatorBasePtr(new CustomCreator<CustomALIASCommand>(*match))));
-      break;
-    }
-    default                                 :
-    {
-      verify(false);
     }
   }
   
-  return def;
+  verify(false);
 }
 
-CommandDefOpt Factory::Lookup(const std::string& command, bool noCustom)
+CommandDefOpt Factory::LookupPlugin(ftp::Client& client, const std::string& command)
+{
+  auto result = client.Plugins().LookupCommand(command);
+  if (!result) return boost::none;
+  
+  std::string aclKeyword("custom-" + util::ToLowerCopy(command));
+  CommandHook& hook = result->first;
+  auto creator = std::make_shared<PluginCreator>(hook.function, *result->second);
+  return boost::make_optional(CommandDef(aclKeyword, creator));
+}
+
+CommandDefOpt Factory::Lookup(ftp::Client& client, const std::string& command, bool noCustom)
 {
   CommandDefOpt def;
-  if (!noCustom) def = LookupCustom(command);
+  if (!noCustom)
+  {
+    def = LookupCustom(command);
+    if (!def) def = LookupPlugin(client);
+  }
+  
   if (!def)
   {
     CommandDefsMap::const_iterator it = factory->defs.find(command);
     if (it != factory->defs.end()) def.reset(it->second);
-    else def = plugin::Hooks::Get().LookupCommand(command);
   }
   return def;
 }
@@ -367,6 +374,13 @@ std::unordered_set<std::string> Factory::ACLKeywords()
   }
   return keywords;
 }
+
+cmd::Command* PluginCreator::Create(ftp::Client& client, const std::string& argStr, const cmd::Args& args, 
+                                    plugin::Plugin& plugin, const plugin::CommandHookFunction& function)
+{
+  return new PluginCommand(client, argStr, args, plugin, function);
+}
+
 
 } /* site namespace */
 } /* cmd namespace */
