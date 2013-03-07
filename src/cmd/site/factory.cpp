@@ -100,6 +100,11 @@ Factory::Factory()
                       CreatorBasePtr(new Creator<USERSCommand>()),  
                       "Syntax: SITE USERS [<criteria> ..]",
                       "Detailed list of users" }, },
+    { "UTIME",      { 2, -1,  "utime",
+                      std::make_shared<Creator<UTIMECommand>>(),
+                      "Syntax: SITE UTIME <path> <atime-val> <mtime-val> <ctime-val> UTC\n"
+                      "        SITE UTIME <mtime-val> <path>",
+                      "Set filesystem times" }, },
     { "GIVE",       { 2,  -1,  "give|giveown",
                       CreatorBasePtr(new Creator<GIVECommand>()),
                       "Syntax: SITE GIVE [-S <section>] <user> <credits>G|M [<message>]",

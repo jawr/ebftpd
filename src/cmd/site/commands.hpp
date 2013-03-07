@@ -390,6 +390,18 @@ public:
   void Execute();
 };
 
+class UTIMECommand : public Command
+{
+  void Style1(std::string& path, std::string& atime, std::string& mtime);
+  void Style2(std::string& path, std::string& atime, std::string& mtime);
+  
+public:
+  UTIMECommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, client.Control(), client.Data(), argStr, args) { }
+
+  void Execute();
+};
+
 class VERSCommand : public Command
 {
 public:

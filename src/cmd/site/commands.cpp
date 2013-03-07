@@ -5,6 +5,7 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/regex.hpp>
 #include <cassert>
 #include <cctype>
 #include <ctype.h>
@@ -14,6 +15,7 @@
 #include <ostream>
 #include <sstream>
 #include <vector>
+#include <ctime>
 #include "cmd/site/commands.hpp"
 #include "acl/acl.hpp"
 #include "acl/flags.hpp"
@@ -1158,7 +1160,6 @@ void RANKSCommand::Execute()
   }
 
   int maxNumber = acl::stats::MaxUsers(client.User());
-  std::cout << maxNumber << std::endl;
   if (maxNumber != -1)
   {
     number = std::min(maxNumber, number);
@@ -2007,6 +2008,86 @@ void USERSCommand::Execute()
 
   return;    
 }
+
+void UTIMECommand::Style1(std::string& path, std::string& atime, std::string& mtime)
+{
+  boost::regex pattern("(.+) (\\d{14}) (\\d{14}) \\d{14} UTC", boost::regex::icase);
+  boost::smatch match;
+  if (!boost::regex_match(argStr, match, pattern)) throw cmd::SyntaxError();
+
+  path = match[1].str();
+  atime = match[2].str();
+  mtime = match[3].str();
+}
+
+void UTIMECommand::Style2(std::string& path, std::string& atime, std::string& mtime)
+{
+  path = argStr.substr(args[1].length() + 1);
+  util::Trim(path);
+  atime = args[1];
+  if (atime.length() != 14)
+  {
+    if (atime.length() != 12) throw cmd::SyntaxError();
+    atime += "00";
+  }
+  mtime = atime;
+}
+
+void UTIMECommand::Execute()
+{
+  std::string pathStr;
+  std::string atime;
+  std::string mtime;
+  
+  try
+  {
+    Style1(pathStr, atime, mtime);
+  }
+  catch (const cmd::SyntaxError&)
+  {
+    Style2(pathStr, atime, mtime);
+  }
+  
+  struct tm atm;
+  if (!strptime(atime.c_str(), "%Y%m%d%H%M%S", &atm)) throw cmd::SyntaxError();
+
+  struct tm mtm;
+  if (!strptime(mtime.c_str(), "%Y%m%d%H%M%S", &mtm)) throw cmd::SyntaxError();
+  
+  auto path = fs::PathFromUser(pathStr);
+  util::Error e(acl::path::FileAllowed<acl::path::Modify>(client.User(), path));
+  if (!e)
+  {
+    control.Reply(ftp::ActionNotOkay, pathStr + ": " + e.Message());
+    return;
+  }
+  
+  try
+  {
+    if (!util::path::Status(fs::MakeReal(path).ToString()).IsRegularFile())
+    {
+      control.Reply(ftp::ActionNotOkay, pathStr + ": Not a plain file.");
+      return;
+    }
+  }
+  catch (const util::SystemError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, pathStr + ": " + e.Message());
+    return;
+  }
+  
+  struct timeval tv[2] =  { { timegm(&atm), 0 }, { timegm(&mtm), 0 } };
+
+  auto real(fs::MakeReal(path));
+  if (utimes(real.CString(), tv))
+  {
+    control.Reply(ftp::ActionNotOkay, pathStr + ": " + util::Error::Failure(errno).Message());
+    return;
+  }
+  
+  control.Reply(ftp::FileStatus, "UTIME OK");
+}
+
 
 void VERSCommand::Execute()
 {

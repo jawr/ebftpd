@@ -1,0 +1,281 @@
+<html><head>
+<meta http-equiv="Content-Language" content="en-gb">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Preserving the time and date of files uploaded to a FTP server</title>
+</head>
+
+<body>
+
+<h1>&nbsp;</h1>
+<div align="center">
+  <center>
+  <table style="border-collapse: collapse" id="AutoNumber1" border="2" bordercolor="#111111" cellpadding="0" cellspacing="0" width="63%">
+    <tbody><tr>
+      <td align="center" width="100%">
+      <p align="center"><font size="6">Preserving the time and date<br>
+      of files uploaded to a FTP server</font></p></td>
+    </tr>
+  </tbody></table>
+  </center>
+</div>
+<p align="left"><b>The problem</b></p>
+<p align="left">The original FTP specification and recent extensions to it do not include any way 
+to preserve the time and data for files
+<i>uploaded</i> to a FTP server.<br>
+The modification time of a file is often used by users sorting directory 
+listings or by scripts deciding if one file is newer than another file.<br>
+A mechanism is need where files can be uploaded to a server and the time and 
+date preserved.</p>
+<p align="left">Two systems to preserve the time and date are currently used by 
+some FTP cliets and FTP servers. These are the <b>SITE UTIME</b> and <b>MDTM</b> 
+commands.<br>
+Both of these have problems.<b> SITE UTIME</b> this implemented in different 
+ways by different applications.<br>
+<b>MDTM</b> is ambiguous if files with filenames containing dates are present.</p>
+<p align="left"><b>The solution<br>
+</b>The solution is to define a new command, submit it to IETF as a Internet 
+Draft and ultmatly produce a RFC.<br>
+This web page defines two alternative commands and acts as an initial starting 
+point for the Internet Draft.<br>
+The new commands <b>SRFT (S</b>et
+<b>R</b>emote <b>F</b>ile <b>T</b>ime) and <b>MODA</b> (Modify Attributes) are 
+defined.<br>
+One of these two commands will be selected.</p>
+<hr>
+<p align="left"><u><b>SITE commands</b></u></p>
+<p align="left">The FTP command "<b>SITE</b>" can be used to extend the FTP protocol 
+and to allow site specific commands to be carried out by the FTP server.</p>
+<p align="left">Several FTP implementation have created a <b>SITE UTIME</b> 
+command which lets a FTP client set the time and date attributes of a file on the server.<br>
+The command gets its name from the C library function called <i>utime</i> 
+which sets access time and modification time of a file.<br>
+The purpose of SITE commands is to allow FTP clients and servers to implement 
+extra commands as they see fit and as such there is no single standard for these 
+commands.<br>
+&nbsp;</p>
+<p align="left">An investigation of various open source FTP applications and 
+conversations with FTP authors have revealed three flavours of the <b>SITE UTIME</b> 
+command in common usage</p>
+<p align="left"><b>Type 1</b></p>
+<table style="border-collapse: collapse" id="AutoNumber3" border="0" bordercolor="#111111" cellpadding="0" cellspacing="0" height="28" width="100%">
+  <tbody><tr>
+    <td height="28" width="19%">&nbsp;</td>
+    <td height="28" width="81%">
+    <table style="border-collapse: collapse" id="AutoNumber2" border="1" bordercolor="#111111" cellpadding="0" cellspacing="0" height="18" width="89%">
+      <tbody><tr>
+        <td height="18" width="100%"><b>SITE &lt;sp&gt; UTIME &lt;sp&gt; filename &lt;sp&gt; 
+        datetime1 &lt;sp&gt; datetime2 &lt;sp&gt; datetime3 &lt;sp&gt; UTC</b></td>
+      </tr>
+    </tbody></table>
+    </td>
+  </tr>
+</tbody></table>
+<p>&nbsp;&nbsp;&nbsp; filename is the name of the file to modify<br>
+&nbsp;&nbsp;&nbsp;
+datetime#1 is the file's access time, converted to UTC and in the format 
+YYYYMMDDhhmmss<br>
+&nbsp;&nbsp;&nbsp;
+datetime#2 is the file's modification time, converted to UTC and in the format 
+YYYYMMDDhhmmss<br>
+&nbsp;&nbsp;&nbsp;
+datetime#3 is the file's creation time, converted to UTC and in the format 
+YYYYMMDDhhmmss<br>
+<br>
+Unfortunately the filename is sent as the first parameter and this causes problems when there 
+is a <i>space</i> within the filename. FTP servers need to parse the command 
+line carefully. For example in the case of SITE UTIME data log.txt 
+20050101123000 20050101123000 20050101123000 UTC, an incorrect parser would 
+identify the 2nd parameter (ie datetime1) as "log.txt"</p>
+<p><b>Type 2</b></p>
+<table style="border-collapse: collapse" id="AutoNumber4" border="0" bordercolor="#111111" cellpadding="0" cellspacing="0" height="28" width="100%">
+  <tbody><tr>
+    <td height="28" width="19%">&nbsp;</td>
+    <td height="28" width="81%">
+    <table style="border-collapse: collapse" id="AutoNumber5" border="1" bordercolor="#111111" cellpadding="0" cellspacing="0" height="18" width="89%">
+      <tbody><tr>
+        <td height="18" width="100%"><b>SITE &lt;sp&gt; UTIME &lt;sp&gt; datatime &lt;sp&gt; 
+        filename</b></td>
+      </tr>
+    </tbody></table>
+    </td>
+  </tr>
+</tbody></table>
+<p>&nbsp;&nbsp;&nbsp; filename is the name of the file to modify<br>
+&nbsp;&nbsp;&nbsp;
+datetime is the file's modification time and in the format YYYYMMDDhhmmss<br>
+<br>
+<b>Type 3</b></p>
+<table style="border-collapse: collapse" id="AutoNumber6" border="0" bordercolor="#111111" cellpadding="0" cellspacing="0" height="28" width="100%">
+  <tbody><tr>
+    <td height="28" width="19%">&nbsp;</td>
+    <td height="28" width="81%">
+    <table style="border-collapse: collapse" id="AutoNumber7" border="1" bordercolor="#111111" cellpadding="0" cellspacing="0" height="18" width="89%">
+      <tbody><tr>
+        <td height="18" width="100%"><b>SITE &lt;sp&gt; UTIME &lt;sp&gt; datatime &lt;sp&gt; 
+        filename</b></td>
+      </tr>
+    </tbody></table>
+    </td>
+  </tr>
+</tbody></table>
+<p>&nbsp;&nbsp;&nbsp; filename is the name of the file to modify<br>
+&nbsp;&nbsp;&nbsp;
+datetime is the file's modification time and in the format YYYYMMDDhhmm. Note it 
+does not include the seconds.<br>
+<br>
+&nbsp;</p>
+<p>&nbsp;</p>
+<p>Type 1 commands are used by the lftp client, the ncftp client (version3), the 
+wzdFTPd server and the Crush FTP server<br>
+Type 2 commands are used by the gftp client<br>
+Type 3 commands are used by the ProFTPd client</p>
+<p>In addition NFTP, OS/2's FTPServer and the Perl Net::FTPServer all implement 
+a SITE UTIME command but the parameters are not known at this time.</p>
+<p>&nbsp;</p>
+<p><b>Announcing the SITE UTIME command</b></p>
+<p>Some FTP servers report their support for a <b>SITE UTIME</b> in response to
+<b>SITE HELP</b> or <b>HELP SITE</b> commands.</p>
+<hr>
+<p align="left"><u><b>MDTM command overloading</b></u></p>
+
+<p align="left">The <b>MDTM</b> command was introduced with the FTP Extensions Internet Draft. 
+It is used by a client to <i>read</i> the modification time of a file on the 
+server.<br>
+It has since been used by several FTP clients and several FTP servers to <i>set</i> 
+the modification time of a file on the server.</p>
+
+<p align="left">To <i>read</i> the modification the following command is used:-<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>MDTM &lt;sp&gt; 
+filename<br>
+</b>This returns the files time and date in YYYYMMDDhhmmss format.</p>
+
+<p align="left">To <i>set</i> the modification time of a file on the server, the 
+following command is used:-<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>MDTM &lt;sp&gt; YYYYMMDDhhmmss &lt;sp&gt; 
+filename<br>
+<br>
+</b>The problem with using MDTM to set the time of a file is the command is 
+ambiguous.</p>
+
+<p align="left">For example. The command <b>MDTM 20050414173042 log.txt</b> could mean <b><i>either<br>
+&nbsp;&nbsp;&nbsp; </i></b>&nbsp;&nbsp;&nbsp; a) GET the time and date of a file called "20050414173042 log.txt"<br>
+OR&nbsp;&nbsp;&nbsp; b) Try to SET the time and date of a 
+file called log.txt to 14th April 2005, 17:30.42<br>
+<br>
+<b>Announcing the MDTM command<br>
+</b>The presence of the MDTM command to <i>read</i> the time and date of a file 
+on the server is announced in the <b>FEAT</b> command.<br>
+FTP servers which allow MDTM to <i>set</i> the time and date of a file on the 
+server are unable to announce this and FTP clients must simply try the command 
+to see what the response is.</p>
+
+<hr>
+<p align="left"><b>SRFT. A New FTP command to Set Remote File Time</b></p>
+<p align="left">This proposed FTP command is a direct replacement for the 
+overloaded use of <b>MDTM.<br>
+</b>The command has the following structure</p>
+<p align="left">&nbsp;&nbsp;&nbsp; <b>SRFT &lt;sp&gt;&nbsp;datetime 
+&lt;sp&gt; filename<br>
+<br>
+</b>&nbsp;&nbsp;&nbsp; filename is the name of the file to modify<br>
+&nbsp;&nbsp;&nbsp; datetime is the file's modification time and in the format YYYYMMDDhhmmss[.mmmm]. 
+The full definition for this is given below.</p>
+<p align="left">FTP clients which use MDTM to change the data and time of a file 
+can simply issue the <b>SRFT</b> command instead. The syntax is identical to the 
+overloaded <b>MDTM</b> command making the change very simple to implement.<br>
+&nbsp;</p>
+<p align="left"><b>Announcing the SRFT command</b></p>
+
+<p align="left">The <b>SRFT</b> command will be announced in the response to the
+<b>FEAT</b> command so that FTP clients can automatically detect that a server 
+supports this command</p>
+
+<hr>
+<p align="left"><b>MODA. A New FTP command to Modify the Attributes of a Remote 
+File</b></p>
+<p align="left">This proposed FTP command is based on the same concepts as the 
+proposed <b>MLST</b> command and allows a wide range of file attributes to be 
+set by a client.</p>
+<p align="left">FTP servers will respond to the <b>FEAT</b> command with a 
+string containing a list of attributes that the server can set.<br>
+For example the following response indicates a server can have the modification 
+date/time, creation date/time and file accessed data/time attributes updated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>MODA modify*;created*;accessed*;</b></p>
+<p align="left">In this example, the response indicates a server can only have 
+the modification date/time and accessed date/time set. This would be the case 
+with a Unix based FTP server which does not have a notion of file creation 
+dates.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>MODA modify*;accessed*;</b></p>
+<p align="left">&nbsp;</p>
+<p align="left">FTP clients can then issue <b>MODA</b> commands with the correct 
+parameters to set specific attributes on the server.<br>
+The syntax is</p>
+<p align="left">&nbsp;&nbsp;&nbsp; <b>MODA &lt;sp&gt; [list of attributes to set of 
+the form attribute name = attribute value, separated by semi-colons] &lt;sp&gt; 
+filename</b></p>
+<p align="left">The <b>modify, created and accessed</b> attributes will take a 
+date/time of the format YYYYMMDDhhmmss[.mmmm]. The full definition for this is 
+given below.</p>
+<p align="left">Examples</p>
+<p align="left">&nbsp;&nbsp;&nbsp; The following command will set the 
+modification date of a file<b><br>
+</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>MODA modify=20050414132045; 
+thefile.txt </b></p>
+<p align="left">&nbsp;&nbsp;&nbsp; The following command will set the 
+modification date and created date of a file<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>MODA 
+modify=20050414132045;created=20041225081530 thefile.txt </b></p>
+<p align="left">&nbsp;</p>
+<p align="left">The FTP client must only issue a <b>MODA</b> command which the 
+FTP server has already announced via the <b>FEAT</b> command. If a Windows FTP 
+client issues a <b>MODA</b> command with a <b>created</b> attribute to a Unix 
+server which has not included <b>created*;</b> in its response to <b>FEAT</b>, 
+the server should reject the command.</p>
+<p align="left">Note that Microsoft Windows systems support the file creation 
+dates but Unix systems do not support this.</p>
+<p align="left">&nbsp;</p>
+<p align="left">&nbsp;</p>
+<p align="left"><b>Other attributes<br>
+</b>The <b>MODA</b> command allows for other attributes to be defined, either 
+formally or as <i>local extensions</i> as defined in the MLST definition.<br>
+Additional attributes could in include file read/write premissions, owner 
+settings and group settings. This would allow a single command to implement SITE 
+CHOWN, SITE CHGRP and SITE CHMOD commands.</p>
+<p align="left">However the primary aim of this command (at this time) to to 
+allow the modification date/time of uploaded files to be set.</p>
+<hr>
+<p align="left"><b>Date and Time Parameter Format</b></p>
+<p align="left">The date/time is in the format</p>
+<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; YYYYMMDDhhmmss[.mmmm]</p>
+<p align="left">The time and date will be converted to UTC. Clients and Servers can then adjust the time for their local 
+Time Zone accordingly.<br>
+YYYY = year (0000 to 9999), MM = month (01 to 12), DD = day (01 to 31),<br>
+hh = hours (00 to 23), mm = minutes (00 to 59) and ss = seconds (00 to 59).<br>
+The Year, Month, Day, Hours, Minutes and Seconds fields must all be included.</p>
+<p align="left">[.mmmm] is an optional sequence of digits to support 
+milliseconds.<br>
+It is an arbitrary length and not limited to 4 significant digits.</p>
+<p align="left">Servers should accept times both with and without milliseconds. 
+If their file system does not support milliseconds, this part of the datetime 
+can be ignored.<br>
+Clients can send a time with or without milliseconds, depending on their file 
+system and implementation.</p>
+<p align="left">It is anticipated that most implementations will not make use of 
+the milliseconds part of the time/date.</p>
+<p align="left">&nbsp;</p>
+<hr>
+<p align="left">&nbsp;</p>
+<p align="left">&nbsp;</p>
+<p><b>Consultation Period</b></p>
+<p>The author of this report, Roger Hardiman, would like to hear from interested 
+parties regarding the two proposed commands to see which will benefit the FTP 
+community. Conversations with the authors of lftp, wzdFTPd, ProFTPd, Filezilla 
+and CoreFTP have already begun and initial feedback is that a new documented 
+command to set the modification time of files would be accepted and implemented.</p>
+<p>(c) Roger Hardiman. May 2005, 2007, 2009</p>
+
+
+
+</body></html>

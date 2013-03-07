@@ -409,6 +409,12 @@ void MFMTCommand::Execute()
   util::Trim(pathStr);
   fs::VirtualPath path(fs::PathFromUser(pathStr));
 
+  struct tm tm;
+  if (!strptime(args[1].c_str(), "%Y%m%d%H%M%S", &tm)) throw cmd::SyntaxError();
+  
+  time_t t = timegm(&tm);
+  struct timeval tv[2] =  { { t, 0 }, { t, 0 } };
+
   util::Error e(acl::path::FileAllowed<acl::path::Modify>(client.User(), path));
   if (!e)
   {
@@ -426,15 +432,9 @@ void MFMTCommand::Execute()
   }
   catch (const util::SystemError& e)
   {
-    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
+    control.Reply(ftp::ActionNotOkay, pathStr + ": " + e.Message());
     return;
   }
-  
-  struct tm tm;
-  if (!strptime(args[1].c_str(), "%Y%m%d%H%M%S", &tm)) throw cmd::SyntaxError();
-  
-  time_t t = timegm(&tm);
-  struct timeval tv[2] =  { { t, 0 }, { t, 0 } };
   
   auto real(fs::MakeReal(path));
   if (utimes(real.CString(), tv))
@@ -873,7 +873,7 @@ void SIZECommand::Execute()
     auto e = acl::path::FileAllowed<acl::path::View>(client.User(), path);
     if (!e) throw util::SystemError(e.Errno());
       
-    util::path::Status status(path.ToString());
+    util::path::Status status(fs::MakeReal(path).ToString());
     if (status.IsRegularFile())
       control.Reply(ftp::FileStatus, 
         boost::lexical_cast<std::string>(status.Size())); 
