@@ -89,18 +89,24 @@ class Config
   std::vector< ::cfg::Right> delete_; // delete is reserved
   std::vector< ::cfg::Right> deleteown;
   std::vector< ::cfg::Right> overwrite;
+  std::vector< ::cfg::Right> overwriteown;
   std::vector< ::cfg::Right> resume;
+  std::vector< ::cfg::Right> resumeown;
   std::vector< ::cfg::Right> rename;
   std::vector< ::cfg::Right> renameown;
   std::vector< ::cfg::Right> filemove;
+  std::vector< ::cfg::Right> filemoveown;
   std::vector< ::cfg::Right> makedir;
   std::vector< ::cfg::Right> upload;
   std::vector< ::cfg::Right> download;
+  std::vector< ::cfg::Right> downloadown;
   std::vector< ::cfg::Right> nuke;
   std::vector< ::cfg::Right> hideinwho;
   std::vector< ::cfg::Right> freefile;
   std::vector< ::cfg::Right> nostats;
   std::vector< ::cfg::Right> hideowner;
+  std::vector< ::cfg::Right> modify;
+  std::vector< ::cfg::Right> modifyown;
 
   std::vector<std::string> eventpath;
   std::vector<std::string> dupepath;
@@ -228,13 +234,19 @@ public:
   const std::vector< ::cfg::Right>& Delete() const { return delete_; } 
   const std::vector< ::cfg::Right>& Deleteown() const { return deleteown; } 
   const std::vector< ::cfg::Right>& Overwrite() const { return overwrite; } 
+  const std::vector< ::cfg::Right>& Overwriteown() const { return overwriteown; } 
   const std::vector< ::cfg::Right>& Resume() const { return resume; } 
+  const std::vector< ::cfg::Right>& Resumeown() const { return resumeown; } 
   const std::vector< ::cfg::Right>& Rename() const { return rename; } 
   const std::vector< ::cfg::Right>& Renameown() const { return renameown; } 
   const std::vector< ::cfg::Right>& Filemove() const { return filemove; } 
+  const std::vector< ::cfg::Right>& Filemoveown() const { return filemoveown; } 
   const std::vector< ::cfg::Right>& Makedir() const { return makedir; } 
   const std::vector< ::cfg::Right>& Upload() const { return upload; } 
   const std::vector< ::cfg::Right>& Download() const { return download; } 
+  const std::vector< ::cfg::Right>& Downloadown() const { return downloadown; } 
+  const std::vector< ::cfg::Right>& Modify() const { return modify; } 
+  const std::vector< ::cfg::Right>& Modifyown() const { return modifyown; } 
   const std::vector< ::cfg::Right>& Nuke() const { return nuke; } 
   const std::vector< ::cfg::Right>& Hideinwho() const { return hideinwho; } 
   const std::vector< ::cfg::Right>& Freefile() const { return freefile; } 

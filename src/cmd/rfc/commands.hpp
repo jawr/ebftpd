@@ -119,6 +119,33 @@ public:
   void Execute();
 };
 
+class MFFCommand : public Command
+{
+public:
+  MFFCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, client.Control(), client.Data(), argStr, args) { }
+
+  void Execute();
+};
+
+class MFCTCommand : public Command
+{
+public:
+  MFCTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, client.Control(), client.Data(), argStr, args) { }
+
+  void Execute();
+};
+
+class MFMTCommand : public Command
+{
+public:
+  MFMTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, client.Control(), client.Data(), argStr, args) { }
+
+  void Execute();
+};
+
 class MDTMCommand : public Command
 {
 public:

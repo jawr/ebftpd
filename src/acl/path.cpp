@@ -86,24 +86,62 @@ struct Traits<Upload>
 template <>
 struct Traits<Resume>
 {
-  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+private:
+  static util::Error AllowedOwner(const User& user, const fs::VirtualPath& path)
+  {
+    if (Evaluate(cfg::Get().Resumeown(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+
+  static util::Error AllowedOther(const User& user, const fs::VirtualPath& path)
   {
     if (Evaluate(cfg::Get().Resume(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
   }
+  
+public:
+  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+  {
+    fs::Owner owner = GetOwner(fs::MakeReal(path));
+    if (owner.UID() == user.ID() && AllowedOwner(user, path))
+      return util::Error::Success();
+    else
+      return AllowedOther(user, path);
+  }
 };
 
 template <>
 struct Traits<Overwrite>
 {
-  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+private:
+  static util::Error AllowedOwner(const User& user, const fs::VirtualPath& path)
+  {
+    if (Evaluate(cfg::Get().Overwriteown(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+
+  static util::Error AllowedOther(const User& user, const fs::VirtualPath& path)
   {
     if (Evaluate(cfg::Get().Overwrite(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
+  }
+  
+public:
+  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+  {
+    fs::Owner owner = GetOwner(fs::MakeReal(path));
+    if (owner.UID() == user.ID() && AllowedOwner(user, path))
+      return util::Error::Success();
+    else
+      return AllowedOther(user, path);
   }
 };
 
@@ -133,20 +171,38 @@ private:
     }
     return util::Error::Success();
   }
-  
-public:
-  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+
+  static util::Error AllowedOwner(const User& user, const fs::VirtualPath& path)
+  {
+    if (Evaluate(cfg::Get().Downloadown(), user, path))
+      return CheckNoretrieve(path);
+    else
+      return util::Error::Failure(EACCES);
+  }
+
+  static util::Error AllowedOther(const User& user, const fs::VirtualPath& path)
   {
     if (Evaluate(cfg::Get().Download(), user, path))
       return CheckNoretrieve(path);
     else
       return util::Error::Failure(EACCES);
+  }  
+  
+public:
+  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+  {
+    fs::Owner owner = GetOwner(fs::MakeReal(path));
+    if (owner.UID() == user.ID() && AllowedOwner(user, path))
+      return util::Error::Success();
+    else
+      return AllowedOther(user, path);
   }
 };
 
 template <>
 struct Traits<Rename>
 {
+private:
   static util::Error AllowedOwner(const User& user, const fs::VirtualPath& path)
   {
     if (Evaluate(cfg::Get().Renameown(), user, path))
@@ -163,6 +219,7 @@ struct Traits<Rename>
       return util::Error::Failure(EACCES);
   }
   
+public:
   static util::Error Allowed(const User& user, const fs::VirtualPath& path)
   {
     fs::Owner owner = GetOwner(fs::MakeReal(path));
@@ -176,12 +233,62 @@ struct Traits<Rename>
 template <>
 struct Traits<Filemove>
 {
-  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+private:
+  static util::Error AllowedOwner(const User& user, const fs::VirtualPath& path)
+  {
+    if (Evaluate(cfg::Get().Filemoveown(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+
+  static util::Error AllowedOther(const User& user, const fs::VirtualPath& path)
   {
     if (Evaluate(cfg::Get().Filemove(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
+  }
+  
+public:
+  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+  {
+    fs::Owner owner = GetOwner(fs::MakeReal(path));
+    if (owner.UID() == user.ID() && AllowedOwner(user, path))
+      return util::Error::Success();
+    else
+      return AllowedOther(user, path);
+  }
+};
+
+template <>
+struct Traits<Modify>
+{
+private:
+  static util::Error AllowedOwner(const User& user, const fs::VirtualPath& path)
+  {
+    if (Evaluate(cfg::Get().Modifyown(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+  
+  static util::Error AllowedOther(const User& user, const fs::VirtualPath& path)
+  {
+    if (Evaluate(cfg::Get().Modify(), user, path))
+      return util::Error::Success();
+    else
+      return util::Error::Failure(EACCES);
+  }
+  
+public:
+  static util::Error Allowed(const User& user, const fs::VirtualPath& path)
+  {
+    fs::Owner owner = GetOwner(fs::MakeReal(path));
+    if (owner.UID() == user.ID() && AllowedOwner(user, path))
+      return util::Error::Success();
+    else
+      return AllowedOther(user, path);
   }
 };
 
@@ -200,6 +307,7 @@ struct Traits<Nuke>
 template <>
 struct Traits<Delete>
 {
+private:
   static util::Error AllowedOwner(const User& user, const fs::VirtualPath& path)
   {
     if (Evaluate(cfg::Get().Deleteown(), user, path))
@@ -215,7 +323,8 @@ struct Traits<Delete>
     else
       return util::Error::Failure(EACCES);
   }
-
+  
+public:
   static util::Error Allowed(const User& user, const fs::VirtualPath& path)
   {
     fs::Owner owner = GetOwner(fs::MakeReal(path));
@@ -330,6 +439,7 @@ template util::Error FileAllowed<Hideinwho>(const User& user, const fs::VirtualP
 template util::Error FileAllowed<Freefile>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Nostats>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Hideowner>(const User& user, const fs::VirtualPath& path);
+template util::Error FileAllowed<Modify>(const User& user, const fs::VirtualPath& path);
 
 template <Type type>
 util::Error DirAllowed(const User& user, const fs::VirtualPath& path)

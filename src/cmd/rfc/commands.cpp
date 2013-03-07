@@ -2,6 +2,9 @@
 #include <sstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
+#include <utime.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #include "cmd/rfc/commands.hpp"
 #include "cmd/rfc/factory.hpp"
 #include "acl/flags.hpp"
@@ -392,6 +395,57 @@ void LPSVCommand::Execute()
   return;
 }
 
+void MFFCommand::Execute()
+{
+}
+
+void MFCTCommand::Execute()
+{
+}
+
+void MFMTCommand::Execute()
+{
+  std::string pathStr(argStr.substr(args[1].length() + 1));
+  util::Trim(pathStr);
+  fs::VirtualPath path(fs::PathFromUser(pathStr));
+
+  util::Error e(acl::path::FileAllowed<acl::path::Modify>(client.User(), path));
+  if (!e)
+  {
+    control.Reply(ftp::ActionNotOkay, pathStr + ": " + e.Message());
+    return;
+  }
+  
+  try
+  {
+    if (!util::path::Status(fs::MakeReal(path).ToString()).IsRegularFile())
+    {
+      control.Reply(ftp::ActionNotOkay, pathStr + ": Not a plain file.");
+      return;
+    }
+  }
+  catch (const util::SystemError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
+    return;
+  }
+  
+  struct tm tm;
+  if (!strptime(args[1].c_str(), "%Y%m%d%H%M%S", &tm)) throw cmd::SyntaxError();
+  
+  time_t t = timegm(&tm);
+  struct timeval tv[2] =  { { t, 0 }, { t, 0 } };
+  
+  auto real(fs::MakeReal(path));
+  if (utimes(real.CString(), tv))
+  {
+    control.Reply(ftp::ActionNotOkay, pathStr + ": " + util::Error::Failure(errno).Message());
+    return;
+  }
+  
+  control.Reply(ftp::FileStatus, "Modify=" + args[1] + "; " + pathStr);
+}
+
 void MDTMCommand::Execute()
 {
   fs::VirtualPath path(fs::PathFromUser(argStr));
@@ -422,7 +476,7 @@ void MDTMCommand::Execute()
   
   char timestamp[15];
   strftime(timestamp, sizeof(timestamp), "%Y%m%d%H%M%S",
-           localtime(&status.Native().st_mtime));
+           gmtime(&status.Native().st_mtime));
   control.Reply(ftp::FileStatus, timestamp);
 }
 

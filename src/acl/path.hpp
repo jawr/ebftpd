@@ -33,7 +33,8 @@ enum Type
   Hideinwho,
   Freefile,
   Nostats,
-  Hideowner
+  Hideowner,
+  Modify
 };
 
 template <Type type>

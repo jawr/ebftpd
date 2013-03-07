@@ -407,10 +407,20 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 2, -1);
     overwrite.emplace_back(toks);
   }
+  else if (opt == "overwriteown")
+  {
+    ParameterCheck(opt, toks, 2, -1);
+    overwriteown.emplace_back(toks);
+  }
   else if (opt == "resume")
   {
     ParameterCheck(opt, toks, 2, -1);
     resume.emplace_back(toks);
+  }
+  else if (opt == "resumeown")
+  {
+    ParameterCheck(opt, toks, 2, -1);
+    resumeown.emplace_back(toks);
   }
   else if (opt == "rename")
   {
@@ -427,6 +437,11 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 2, -1);
     filemove.emplace_back(toks);
   }
+  else if (opt == "filemoveown")
+  {
+    ParameterCheck(opt, toks, 2, -1);
+    filemoveown.emplace_back(toks);
+  }
   else if (opt == "makedir")
   {
     ParameterCheck(opt, toks, 2, -1);
@@ -441,6 +456,21 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 2, -1);
     download.emplace_back(toks);
+  }
+  else if (opt == "downloadown")
+  {
+    ParameterCheck(opt, toks, 2, -1);
+    downloadown.emplace_back(toks);
+  }
+  else if (opt == "modify")
+  {
+    ParameterCheck(opt, toks, 2, -1);
+    modify.emplace_back(toks);
+  }
+  else if (opt == "modifyown")
+  {
+    ParameterCheck(opt, toks, 2, -1);
+    modifyown.emplace_back(toks);
   }
   else if (opt == "nuke")
   {
