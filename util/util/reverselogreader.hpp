@@ -22,16 +22,16 @@ class ReverseLogReader
   {
     struct stat st;
     if (stat(path.c_str(), &st) < 0) throw util::SystemError(errno);
-    
+    if (st.st_size == 0) return;
+
     fd = open(path.c_str(), O_RDONLY);
     if (fd < 0) throw util::SystemError(errno);
-    
+
     data = reinterpret_cast<char*>(mmap(0, st.st_size, PROT_READ, MAP_SHARED, fd, 0));
     if (!data) throw util::SystemError(errno);
     pos = st.st_size;
     
-    while (pos > -1 && (data[pos] == '\r'  || 
-           data[pos] == '\n' || data[pos] == '\0'))
+    while (pos > -1 && (data[pos] == '\r'  ||  data[pos] == '\n' || data[pos] == '\0'))
     {
       --pos;
     }
@@ -39,7 +39,7 @@ class ReverseLogReader
   
 public:
 	ReverseLogReader(const std::string& path) :
-    fd(-1), data(nullptr) 
+    fd(-1), data(nullptr), pos(-1)
   {
     Open(path);
   }

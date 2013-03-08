@@ -151,6 +151,7 @@ class Config
   bool dnsLookup;
   ::cfg::LogAddresses logAddresses;
   mode_t umask;
+  int defaultLogLines;
   
   acl::ACL tlsControl;
   acl::ACL tlsListing;
@@ -299,6 +300,7 @@ public:
   bool DNSLookup() const { return dnsLookup; }
   ::cfg::LogAddresses LogAddresses() const { return logAddresses; }
   mode_t Umask() const { return umask; }
+  int DefaultLogLines() const { return defaultLogLines; }
 
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

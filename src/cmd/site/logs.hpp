@@ -19,10 +19,7 @@ class LOGSCommand : public Command
   void Show(const std::string& path);
   
 public:
-  LOGSCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args),
-    number(defaultNumberLines) { }
-
+  LOGSCommand(ftp::Client& client, const std::string& argStr, const Args& args);
   void Execute();
 };
 

@@ -81,6 +81,7 @@ Config::Config(const std::string& configPath, bool tool) :
   dnsLookup(true),
   logAddresses(cfg::LogAddresses::Always),
   umask(fs::CurrentUmask()),
+  defaultLogLines(100),
   tlsControl("*"),
   tlsListing("*"),
   tlsData("!*"),
@@ -671,6 +672,12 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     {
       throw boost::bad_lexical_cast();
     }
+  }
+  else if (opt == "default_log_lines")
+  {
+    ParameterCheck(opt, toks, 1);
+    defaultLogLines = boost::lexical_cast<int>(toks[0]);
+    if (defaultLogLines < 0) throw boost::bad_lexical_cast();
   }
   else if (opt == "tls_control")
   {

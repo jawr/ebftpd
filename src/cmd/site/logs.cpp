@@ -10,6 +10,12 @@
 namespace cmd { namespace site
 {
 
+LOGSCommand::LOGSCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+  Command(client, client.Control(), client.Data(), argStr, args),
+  number(cfg::Get().DefaultLogLines())
+{
+}
+
 bool LOGSCommand::ParseArgs()
 {
   int n = 1;
