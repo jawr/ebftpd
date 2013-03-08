@@ -29,9 +29,9 @@ FileLock::~FileLock()
   }
 }
 
-FileLockPtr FileLock::Create(const std::string& path)
+std::shared_ptr<FileLock> FileLock::Create(const std::string& path)
 {
-  return FileLockPtr(new FileLock(path));
+  return std::shared_ptr<FileLock>(new FileLock(path));
 }
 
 } /* fs namespace */

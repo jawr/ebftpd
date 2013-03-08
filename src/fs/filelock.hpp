@@ -7,7 +7,6 @@ namespace fs
 {
 
 class FileLock;
-typedef std::shared_ptr<FileLock> FileLockPtr;
 
 class FileLock
 {
@@ -18,7 +17,7 @@ class FileLock
 public:
   ~FileLock();
 
-  static FileLockPtr Create(const std::string& path);
+  static std::shared_ptr<FileLock> Create(const std::string& path);
 };
 
 } /* fs namespace */

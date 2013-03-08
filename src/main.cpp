@@ -52,8 +52,7 @@ bool ParseOptions(int argc, char** argv, bool& foreground, std::string& configPa
   desc.add_options()
     ("help,h", "display this help message")
     ("version,v", "display version")
-    ("config-path,c", po::value<std::string>(),
-     "specify location of config file")
+    ("config-path,c", po::value<std::string>(), "specify location of config file")
     ("foreground,f", "run server in foreground")
     ("siteop-only,s", "run server in siteop only mode");
 
@@ -89,9 +88,8 @@ bool ParseOptions(int argc, char** argv, bool& foreground, std::string& configPa
   return true;
 }
 
-bool Daemonise(bool foreground)
+bool AlreadyRunning()
 {
-  return true;
   const std::string& pidfile = cfg::Get().Pidfile();
   if (!pidfile.empty())
   {
@@ -102,10 +100,14 @@ bool Daemonise(bool foreground)
         logs::Error("Failed to read the pidfile: %1%", e.Message());
       else
         logs::Error("Server already running. If it's not, delete the pid file at: %1%", pidfile);
-      return false;
+      return true;
     }
   }
-  
+  return false;
+}
+
+bool Daemonise(bool foreground)
+{
   if (!foreground)
   {
     logs::Debug("Forking into the background..");
@@ -117,6 +119,7 @@ bool Daemonise(bool foreground)
     }
   }
   
+  const std::string& pidfile = cfg::Get().Pidfile();
   if (!pidfile.empty())
   {
     util::Error e = util::daemonise::CreatePIDFile(pidfile);
@@ -230,18 +233,21 @@ int main(int argc, char** argv)
       return 1;
     }
     
-    if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
+    if (!AlreadyRunning())
     {
-      logs::Error("Listener failed to initialise!");
-      exitStatus = 1;
-    }
-    else if (Daemonise(foreground))
-    {
-      db::Replicator::Get().Start();
-      ftp::Server::Get().StartThread();
-      ftp::Server::Get().JoinThread();
-      db::Replicator::Get().Stop();
-      ftp::Server::Cleanup();
+      if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
+      {
+        logs::Error("Listener failed to initialise!");
+        exitStatus = 1;
+      }
+      else if (Daemonise(foreground))
+      {
+        db::Replicator::Get().Start();
+        ftp::Server::Get().StartThread();
+        ftp::Server::Get().JoinThread();
+        db::Replicator::Get().Stop();
+        ftp::Server::Cleanup();
+      }
     }
 
     ftp::OnlineWriter::Cleanup();

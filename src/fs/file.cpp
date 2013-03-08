@@ -96,7 +96,7 @@ FileSinkPtr CreateFile(const acl::User& user, const VirtualPath& path)
 
   SetOwner(MakeReal(path), Owner(user.ID(), user.PrimaryGID()));
 
-  return FileSinkPtr(new FileSink(fd, boost::iostreams::close_handle));
+  return std::make_shared<FileSink>(fd, boost::iostreams::close_handle);
 }
 
 FileSinkPtr AppendFile(const acl::User& user, const VirtualPath& path, off_t offset)
@@ -114,7 +114,7 @@ FileSinkPtr AppendFile(const acl::User& user, const VirtualPath& path, off_t off
   int fd = open(MakeReal(path).CString(), O_WRONLY | O_APPEND);
   if (fd < 0) throw util::SystemError(errno);
  
- FileSinkPtr fout(new FileSink(fd, boost::iostreams::close_handle));
+  auto fout = std::make_shared<FileSink>(fd, boost::iostreams::close_handle);
 
   try
   {
@@ -138,7 +138,7 @@ FileSourcePtr OpenFile(const acl::User& user, const VirtualPath& path)
 
   int fd = open(MakeReal(path).CString(), O_RDONLY);
   if (fd < 0) throw util::SystemError(errno);
-  return FileSourcePtr(new FileSource(fd, boost::iostreams::close_handle));
+  return std::make_shared<FileSource>(fd, boost::iostreams::close_handle);
 }
 
 util::Error UniqueFile(const acl::User& user, const VirtualPath& path, 

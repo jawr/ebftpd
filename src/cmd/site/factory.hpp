@@ -61,14 +61,12 @@ public:
   }
 };
 
-typedef std::shared_ptr<CreatorBase<cmd::Command>> CreatorBasePtr;
-
 class CommandDef
 {
   int minimumArgs;
   int maximumArgs;
   std::string aclKeyword;
-  CreatorBasePtr creator;
+  std::shared_ptr<CreatorBase<cmd::Command>> creator;
   std::string syntax;
   std::string description;
 
@@ -78,7 +76,7 @@ public:
   
   CommandDef(int minimumArgs, int maximumArgs,
              const std::string& aclKeyword,
-             const CreatorBasePtr& creator,
+             const std::shared_ptr<CreatorBase<cmd::Command>>& creator,
              const std::string& syntax,
              const std::string& description) :
     minimumArgs(minimumArgs),
@@ -90,7 +88,7 @@ public:
   { }
   
   CommandDef(const std::string& aclKeyword,
-             const CreatorBasePtr& creator) :
+             const std::shared_ptr<CreatorBase<cmd::Command>>& creator) :
     minimumArgs(0), maximumArgs(-1), aclKeyword(aclKeyword), 
     creator(creator) { }
   

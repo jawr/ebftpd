@@ -29,22 +29,20 @@ public:
   }
 };
 
-typedef std::shared_ptr<CreatorBase<cmd::Command>> CreatorBasePtr;
-
 class CommandDef
 {
   int minimumArgs;
   int maximumArgs;
   ftp::ClientState requiredState;
   ftp::ReplyCode failCode;
-  CreatorBasePtr creator;
+  std::shared_ptr<CreatorBase<cmd::Command>> creator;
   std::string syntax;
   
 public:
   CommandDef(int minimumArgs, int maximumArgs, 
              ftp::ClientState requiredState,
              ftp::ReplyCode failCode,
-             const CreatorBasePtr& creator,
+             const std::shared_ptr<CreatorBase<cmd::Command>>& creator,
              const std::string& syntax) :
     minimumArgs(minimumArgs),
     maximumArgs(maximumArgs),
