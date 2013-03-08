@@ -68,7 +68,7 @@ protected:
 
   void LoadScripts();                                 // script engine plugins must call this method as their last task
                                                       // during construction, this will load any scripts defined in the config
-  void LoadScript(const std::string& /* path */) { }  // must be overrode for script engine plugins
+  virtual void LoadScript(const std::string& /* path */) { }  // must be overrode for script engine plugins
   
 public:
   Plugin(const PluginDriver& driver);

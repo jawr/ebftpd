@@ -809,7 +809,7 @@ void SITECommand::Execute()
   std::string fullCommand = shortCommand;
   if (!argStr.empty()) fullCommand += " " + argStr;
 
-  cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(args[0]));
+  auto def(cmd::site::Factory::Lookup(client, args[0]));
   if (!def)
   { 
     control.Reply(ftp::CommandUnrecognised, "Command not understood");

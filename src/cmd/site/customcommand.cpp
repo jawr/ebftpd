@@ -61,7 +61,7 @@ void CustomALIASCommand::Execute()
   cmd::SplitArgs(custSiteCmd.Target(), tArgs);
   args.insert(args.begin() + 1, tArgs.begin() + 1, tArgs.end());
   
-  cmd::site::CommandDefOpt def(cmd::site::Factory::Lookup(tArgs[0], true));
+  auto def(cmd::site::Factory::Lookup(client, tArgs[0], true));
   if (!def)
   { 
     control.Reply(ftp::CommandUnrecognised, "Command not understood");
@@ -101,10 +101,16 @@ void CustomALIASCommand::Execute()
 
 void PluginCommand::Execute()
 {
-  plugin::Client client(this->client);
-  plugin::ScopeSwapPlugin swapGuard(plugin); (void) swapGuard;
-  function(client, argStr, args);
-  verify(false);
+  using namespace plugin;
+  Client pluginClient(this->client);
+  ScopeSwapPlugin swapGuard(plugin); (void) swapGuard;
+  auto result = function(pluginClient, argStr, args);
+  if (result == HookResult::Okay) return;
+  if (result == HookResult::SyntaxError) throw cmd::SyntaxError();
+
+  logs::Error("Error while executing plugin command hook: %1%: %2% %3%: %4%:",
+              plugin.Name(), args[0], argStr, util::EnumToString(result));
+  throw cmd::NoPostScriptError();
 }
 
 

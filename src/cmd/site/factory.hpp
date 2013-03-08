@@ -73,8 +73,7 @@ public:
     function(function)
   { }
   
-  cmd::Command* Create(ftp::Client& client, const std::string& argStr, const cmd::Args& args, 
-                       plugin::Plugin& plugin, const plugin::CommandHookFunction& function);
+  cmd::Command* Create(ftp::Client& client, const std::string& argStr, const cmd::Args& args);
 };
 
 class CommandDef
@@ -145,7 +144,7 @@ private:
 public:
   static CommandDefOpt LookupCustom(const std::string& command);
   static CommandDefOpt LookupPlugin(ftp::Client& client, const std::string& command);
-  static CommandDefOpt Lookup(const std::string& command, bool noCustom = false);
+  static CommandDefOpt Lookup(ftp::Client& client, const std::string& command, bool noCustom = false);
   
   static void Initialise() { factory.reset(new Factory()); }
   static const CommandDefsMap& Commands() { return factory->defs; }

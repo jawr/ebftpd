@@ -148,6 +148,16 @@ void Client::SetState(ClientState state)
   pimpl->SetState(state);
 }
 
+plugin::PluginCollection& Client::Plugins()
+{
+  return pimpl->Plugins();
+}
+
+const plugin::PluginCollection& Client::Plugins() const
+{
+  return pimpl->Plugins();
+}
+
 void Client::Interrupt()
 {
   pimpl->Interrupt();

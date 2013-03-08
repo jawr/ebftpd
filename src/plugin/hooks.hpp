@@ -50,19 +50,18 @@ enum class Event
   AfterCommandOkay,
   AfterCommandFail,
   BeforeUpload,
-  AfterUpload,
-  UploadOkay,
-  UploadFail,
+  AfterUploadOkay,
+  AfterUploadFail,
   BeforeDownload,
-  AfterDownload,
-  DownloadOkay,
-  DownloadFail
+  AfterDownloadOkay,
+  AfterDownloadFail
 };
 
 enum class HookResult
 {
   Okay,
   Error,
+  SyntaxError,
   Failure,
   NoReturnValue,
   InvalidReturnValue,
@@ -154,11 +153,40 @@ public:
   HookID Connect(Event event, const EventHookFunction& function, bool always);
   void Disconnect(const HookID& id);
 };
-
 std::string HookIDToString(const HookID& id);
 bool HookIDFromString(const std::string& s, HookID& id);
 bool IntegerToHookResult(int iresult, HookResult& result);
 
+/*
+typedef boost::variant<std::string, long long, double, int> EventHookArg;
+typedef std::vector<EventHookArg> EventHookArgs;
+*/
+
+inline EventHookArgs MakeEventArgs(EventHookArgs& hargs)
+{
+  return std::move(hargs);
+}
+
+template <typename T, typename... Args>
+inline EventHookArgs MakeEventArgs(EventHookArgs& hargs, T&& arg, Args&&... args)
+{
+  hargs.emplace_back(arg);
+  return MakeEventArgs(hargs, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+inline EventHookArgs MakeEventArgs(Args&&... args)
+{
+  EventHookArgs hargs;
+  return MakeEventArgs(hargs, std::forward<Args>(args)...);
+}
+
 } /* plugin namespace */
+
+namespace util
+{
+template <> const char* EnumStrings<plugin::HookResult>::values[];
+template <> const char* EnumStrings<plugin::Event>::values[];
+}
 
 #endif

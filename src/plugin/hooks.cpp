@@ -105,3 +105,40 @@ void EventHooks::Disconnect(const HookID& id)
 }
 
 } /* plugin namespace */
+
+namespace util
+{
+
+template <> const char* EnumStrings<plugin::HookResult>::values[] =
+{
+  "Okay",
+  "Error",
+  "Syntax error",
+  "Unknown failure",
+  "Missing return value",
+  "Invalid return value",
+  
+  "First",
+  "Last",
+  ""
+};
+
+template <> const char* EnumStrings<plugin::Event>::values[] =
+{
+  "connected",
+  "disconnected",
+  "logged in",
+  "logged out",
+  "before command",
+  "after command okay",
+  "after command fail",
+  "before upload",
+  "after upload okay",
+  "after upload fail",
+  "before download",
+  "after download okay",
+  "after download fail",
+  ""
+};
+
+}

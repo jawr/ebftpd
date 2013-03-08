@@ -26,6 +26,8 @@
 #include "acl/flags.hpp"
 #include "ftp/xdupe.hpp"
 #include "ftp/online.hpp"
+#include "plugin/plugin.hpp"
+#include "plugin/hooks.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -114,8 +116,12 @@ void STORCommand::Execute()
     throw cmd::NoPostScriptError();
   }
   
-  if (!exec::PreCheck(client, path)) throw cmd::NoPostScriptError();
-
+  if (!exec::PreCheck(client, path) ||
+      !client.Plugins().TriggerEvent(plugin::Event::BeforeUpload, client, plugin::MakeEventArgs(path.ToString())))
+  {
+    throw cmd::NoPostScriptError();
+  }
+  
   switch(ftp::Counter::Upload().Start(client.User().ID(), 
          client.User().MaxSimUp(), 
          client.User().HasFlag(acl::Flag::Exempt)))

@@ -37,12 +37,13 @@ class ACLInfo;
 class User
 {
 private:
-  std::unique_ptr<UserData> data;
+  std::shared_ptr<UserData> data;
   std::unique_ptr<db::User> db;
 
 protected:
   User();
   User(UserData&& data_);
+  User(const std::shared_ptr<UserData>& data);
   bool HasSecondaryGID(GroupID gid) const;
   void SetPasswordNoSave(const std::string& password);
   void CleanGadminGIDs();
@@ -165,6 +166,8 @@ public:
   void SetDefaultWeeklyAllotment(long long allotment) { SetSectionWeeklyAllotment("", allotment); }
 
   void Purge() const;
+  
+  User ShallowCopy() const;
   
   ::acl::ACLInfo ACLInfo() const;
   

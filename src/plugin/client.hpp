@@ -17,14 +17,18 @@ namespace plugin
 class Client
 {
   ftp::Client* client;
-  plugin::User user;
+  mutable boost::optional<plugin::User> user;
   
 public:
   Client() { throw NotConstructable(); }
   explicit Client(ftp::Client& client) :
-    client(&client),
-    user(client.User())
-  { }
+    client(&client)
+  {
+    if (client.State() == ftp::ClientState::LoggedIn)
+    {
+      user.reset(plugin::User(client.User().ShallowCopy()));
+    }
+  }
   
   const boost::posix_time::ptime& LoggedInAt() const
   {
@@ -53,14 +57,12 @@ public:
 
   boost::optional<plugin::User&> User()
   {
-    if (client->State() != ftp::ClientState::LoggedIn) return boost::none;
-    return boost::optional<plugin::User&>(user);
-  }
-
-  boost::optional<const plugin::User&> User() const
-  {
-    if (client->State() != ftp::ClientState::LoggedIn) return boost::none;
-    return boost::optional<const plugin::User&>(user);
+    if (!user)
+    {
+      if (client->State() != ftp::ClientState::LoggedIn) return boost::none;
+      user.reset(plugin::User(client->User().ShallowCopy()));
+    }
+    return boost::optional<plugin::User&>(*user);
   }
 
   ftp::xdupe::Mode XDupeMode() const
@@ -106,6 +108,7 @@ public:
 
   void PartReply(ftp::ReplyCode code, const std::string& message)
   {
+    std::cout << long(this) << " " << long(&(*user)) << std::endl;
     UnlockGuard unlock; (void) unlock;
     client->Control().PartReply(code, message);
   }

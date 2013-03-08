@@ -30,7 +30,7 @@
 #include "ftp/task/task.hpp"
 #include "ftp/online.hpp"
 #include "fs/directory.hpp"
-//#include "plugin/hooks.hpp"
+#include "plugin/hooks.hpp"
 
 namespace ftp
 {
@@ -46,8 +46,8 @@ ClientImpl::ClientImpl(Client& parent) :
   xdupeMode(xdupe::Mode::Disabled),
   kickLogin(false),
   idleTimeout(boost::posix_time::seconds(cfg::Get().IdleTimeout().Timeout())),
-  ident("*")/*,
-  plugins(plugin::FactoryManager::Get().CreatePlugins())*/
+  ident("*"),
+  plugins(plugin::PluginManager::Get().CreatePlugins())
 {
 }
 
@@ -78,6 +78,7 @@ void ClientImpl::SetState(ClientState state)
                 "group", user->PrimaryGroup(), 
                 "tagline", user->Tagline());
     OnlineWriter::Get().LoggedOut(boost::this_thread::get_id());
+    plugins.TriggerEvent(plugin::Event::LoggedOut, parent);
   }
 }
 
@@ -120,6 +121,7 @@ void ClientImpl::SetLoggedIn(bool kicked)
               "tagline", user->Tagline());
               
   OnlineWriter::Get().LoggedIn(boost::this_thread::get_id(), parent, fs::WorkDirectory().ToString());
+  plugins.TriggerEvent(plugin::Event::LoggedIn, parent);
 }
 
 void ClientImpl::SetWaitingPassword(const acl::User& user, bool kickLogin)
@@ -239,8 +241,8 @@ void ClientImpl::ExecuteCommand(const std::string& commandLine)
   }
   else if (CheckState(def->RequiredState()) &&
            (state != ClientState::LoggedIn ||
-            exec::Cscripts(parent, args[0], currentCommand, exec::CscriptType::Pre, 
-                def->FailCode())))
+            exec::Cscripts(parent, args[0], currentCommand, exec::CscriptType::Pre, def->FailCode())) &&
+           plugins.TriggerEvent(plugin::Event::BeforeCommand, parent, plugin::MakeEventArgs(currentCommand)))
   {
     cmd::CommandPtr command(def->Create(parent, argStr, args));
     if (!command)
@@ -256,6 +258,7 @@ void ClientImpl::ExecuteCommand(const std::string& commandLine)
         if (state == ClientState::LoggedIn)
           exec::Cscripts(parent, args[0], currentCommand, exec::CscriptType::Post, 
                   ftp::ActionNotOkay);
+        plugins.TriggerEvent(plugin::Event::AfterCommandOkay, parent, plugin::MakeEventArgs(currentCommand));
       }
       catch (const cmd::SyntaxError&)
       {
@@ -263,7 +266,7 @@ void ClientImpl::ExecuteCommand(const std::string& commandLine)
       }
       catch (const cmd::NoPostScriptError&)
       {
-        // do nothing - skip post cscript
+        plugins.TriggerEvent(plugin::Event::AfterCommandFail, parent, plugin::MakeEventArgs(currentCommand));
       }
 
       IdleReset(commandLine);
@@ -548,6 +551,8 @@ void ClientImpl::InnerRun()
   
   LookupIdent();
   
+  plugins.TriggerEvent(plugin::Event::Connected, parent);
+  
   logs::Debug("Servicing client connected from %1%@%2%", ident, HostnameAndIP(LogAddresses::Normal));
     
   DisplayBanner();
@@ -564,8 +569,7 @@ void ClientImpl::Run()
     std::make_shared<ftp::task::ClientFinished>(parent)->Push();
     if (user) db::mail::LogOffPurgeTrash(user->ID());
     LogTraffic();
-//    plugin::Hooks::Get().TriggerEvent(plugin::Event::Disconnected, parent);
-//    plugin::Hooks::Get().Clear();
+    plugins.TriggerEvent(plugin::Event::Disconnected, parent);
   });
 
  try

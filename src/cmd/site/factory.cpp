@@ -322,22 +322,15 @@ CommandDefOpt Factory::LookupCustom(const std::string& command)
   {
     case cfg::SiteCmd::Type::Exec  :
     {
-      def.reset(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomEXECCommand>>(*match)));
-      break;
+      return boost::make_optional(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomEXECCommand>>(*match)));
     }
     case cfg::SiteCmd::Type::Text  :
     {
-      def.reset(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomTEXTCommand>>(*match)));
-      break;
+      return boost::make_optional(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomTEXTCommand>>(*match)));
     }
     case cfg::SiteCmd::Type::Alias :
     {
-      def.reset(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomALIASCommand>>(*match)));
-      break;
-    }
-    default                                 :
-    {
-      verify(false);
+      return boost::make_optional(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomALIASCommand>>(*match)));
     }
   }
   
@@ -350,8 +343,8 @@ CommandDefOpt Factory::LookupPlugin(ftp::Client& client, const std::string& comm
   if (!result) return boost::none;
   
   std::string aclKeyword("custom-" + util::ToLowerCopy(command));
-  CommandHook& hook = result->first;
-  auto creator = std::make_shared<PluginCreator>(hook.function, *result->second);
+  plugin::CommandHook& hook = result->first;
+  auto creator = std::make_shared<PluginCreator>(*result->second, hook.function);
   return boost::make_optional(CommandDef(aclKeyword, creator));
 }
 
@@ -361,7 +354,7 @@ CommandDefOpt Factory::Lookup(ftp::Client& client, const std::string& command, b
   if (!noCustom)
   {
     def = LookupCustom(command);
-    if (!def) def = LookupPlugin(client);
+    if (!def) def = LookupPlugin(client, command);
   }
   
   if (!def)
@@ -384,8 +377,7 @@ std::unordered_set<std::string> Factory::ACLKeywords()
   return keywords;
 }
 
-cmd::Command* PluginCreator::Create(ftp::Client& client, const std::string& argStr, const cmd::Args& args, 
-                                    plugin::Plugin& plugin, const plugin::CommandHookFunction& function)
+cmd::Command* PluginCreator::Create(ftp::Client& client, const std::string& argStr, const cmd::Args& args)
 {
   return new PluginCommand(client, argStr, args, plugin, function);
 }

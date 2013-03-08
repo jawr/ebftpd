@@ -28,6 +28,12 @@ User::User(UserData&& data_) :
 {
 }
 
+User::User(const std::shared_ptr<UserData>& data_) :
+  data(data_),
+  db(new db::User(*data))
+{
+}
+
 User& User::operator=(User&& rhs)
 {
   data = std::move(rhs.data);
@@ -624,6 +630,11 @@ void User::DecrSectionCreditsForce(const std::string& section, long long kBytes)
 void User::Purge() const
 {
   db->Purge();
+}
+
+User User::ShallowCopy() const
+{
+  return User(data);
 }
 
 ::acl::ACLInfo User::ACLInfo() const

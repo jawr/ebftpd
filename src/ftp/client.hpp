@@ -35,6 +35,11 @@ class Endpoint;
 }
 }
 
+namespace plugin
+{
+class PluginCollection;
+}
+
 namespace ftp 
 {
 
@@ -92,7 +97,9 @@ public:
   const std::string& CurrentCommand() const;
   ClientState State() const;
   void SetState(ClientState state);
-  void Interrupt();
+  plugin::PluginCollection& Plugins();
+  const plugin::PluginCollection& Plugins() const;
+    void Interrupt();
   void LogTraffic() const;
   static bool SetSiteopOnly();
   static bool SetReopen();

@@ -60,7 +60,7 @@ class ClientImpl : public util::Thread
   std::string ip;
   std::string hostname;
   
-  std::vector<std::shared_ptr<plugin::Plugin>> plugins;
+  plugin::PluginCollection plugins;
   
   static std::atomic_bool siteopOnly;
   
@@ -144,6 +144,9 @@ public:
   }
 
   void SetState(ClientState state);
+  
+  plugin::PluginCollection& Plugins() { return plugins; }
+  const plugin::PluginCollection& Plugins() const { return plugins; }
   
   void Interrupt();
   

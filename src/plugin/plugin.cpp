@@ -42,7 +42,7 @@ void Plugin::LoadScripts()
               {
                 return pluginConfig.Name() == name;
               });
-              
+
   verify(it != config.Plugins().end());
   const cfg::Plugin& pluginConfig = *it;
   
@@ -84,7 +84,6 @@ PluginDriver::PluginDriver(const std::string& path) :
 
 PluginDriver::Data::~Data()
 {
-
   delete factory;
   if (handle) dlclose(handle);
 }

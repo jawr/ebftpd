@@ -34,6 +34,7 @@ extern "C"
 #include "plugin/plugin.hpp"
 #include "util/path/path.hpp"
 #include "ftp/xdupe.hpp"
+#include "logs/logs.hpp"
 
 namespace luabind
 {
@@ -432,10 +433,13 @@ public:
 
     // call function
     int nargs = args.size() + 1;    
-    if (!lua_pcall(L, nargs, 1, 0) != 0)
+    if (lua_pcall(L, nargs, 1, 0) != 0)
     {
+      logs::Error("Error while executing event hook: %1%", lua_tostring(L, -1));
       return plugin::HookResult::Failure;
     }
+    
+    std::cout << "???????" << std::endl;
     
     // process return value
     if (lua_isnil(L, -1))
@@ -499,7 +503,7 @@ public:
   }
 };
 
-plugin::HookID HookEvent(plugin::Event event, const luabind::object& function, bool always)
+plugin::HookID HookEvent(plugin::Event event, bool always, const luabind::object& function)
 {
   return plugin::PluginState::Current().EventHooks().Connect(
             event, EventHookFunction(function), always);
@@ -740,13 +744,11 @@ void DoBinding(lua_State* L)
         value("after_command_okay", static_cast<int>(plugin::Event::AfterCommandOkay)),
         value("after_command_fail", static_cast<int>(plugin::Event::AfterCommandFail)),
         value("before_upload",      static_cast<int>(plugin::Event::BeforeUpload)),
-        value("after_upload",       static_cast<int>(plugin::Event::AfterUpload)),
-        value("upload_okay",        static_cast<int>(plugin::Event::UploadOkay)),
-        value("upload_fail",        static_cast<int>(plugin::Event::UploadFail)),
+        value("upload_okay",        static_cast<int>(plugin::Event::AfterUploadOkay)),
+        value("upload_fail",        static_cast<int>(plugin::Event::AfterUploadFail)),
         value("before_download",    static_cast<int>(plugin::Event::BeforeDownload)),
-        value("after_download",     static_cast<int>(plugin::Event::AfterDownload)),
-        value("download_okay",      static_cast<int>(plugin::Event::DownloadOkay)),
-        value("download_fail",      static_cast<int>(plugin::Event::DownloadFail))
+        value("download_okay",      static_cast<int>(plugin::Event::AfterDownloadOkay)),
+        value("download_fail",      static_cast<int>(plugin::Event::AfterDownloadFail))
       ],
       
     def("hook_command",   &HookCommand),
@@ -760,7 +762,6 @@ void DoBinding(lua_State* L)
       .def("set_idle_timeout",            &plugin::Client::SetIdleTimeout)
       .property("state",                  &plugin::Client::State)
       .property("user",                   (boost::optional<plugin::User&> (plugin::Client::*)()) &plugin::Client::User)
-      .property("user",                   (boost::optional<const plugin::User&> (plugin::Client::*)() const) &plugin::Client::User)
       .property("xdupe_mode",             &plugin::Client::XDupeMode)
       .def("set_xdupe_mode",              &plugin::Client::SetXDupeMode)
       .property("ip",                     &plugin::Client::IP)
@@ -794,13 +795,13 @@ void DoBinding(lua_State* L)
   ];
   
   // setup string enumerations for message status at Message.Status.enum
-  {
+ /* {
     luabind::object global = luabind::globals(L);
     luabind::object status = global["ebftpd"]["Message"]["Status"];
     status["unread"] = "unread";
     status["trash"] = "trash";
     status["saved"] = "saved";
-  }
+  }*/
 }
 
 Plugin* Factory::Create(const plugin::PluginDriver& driver) const
@@ -816,10 +817,14 @@ void Plugin::Initialise()
   lua_sethook(L, &ThreadInterruptionCheck, LUA_MASKCOUNT, 1);
   luaL_openlibs(L);
   DoBinding(L);
+  LoadScripts();
 }
 
 void Plugin::Cleanup()
 {
+  commandHooks = nullptr;
+  eventHooks = nullptr;
+  
   if (L)
   {
     lua_close(L);
@@ -872,7 +877,7 @@ int main(int argc, char** argv)
   {
     std::unique_ptr<plugin::Factory> factory(new lua::Factory());
     std::unique_ptr<plugin::Plugin> plugin(factory->Create());
-    plugin->RunScript(argv[1]);
+    plugin->LoadScript(argv[1]);
   }
   catch (const plugin::PluginError& e)
   {
