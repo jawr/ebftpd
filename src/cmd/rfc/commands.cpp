@@ -247,6 +247,7 @@ void FEATCommand::Execute()
   control.PartReply(ftp::NoCode, " SIZE");
   control.PartReply(ftp::NoCode, " SSCN");
   control.PartReply(ftp::NoCode, " CPSV");
+  control.PartReply(ftp::NoCode, " MFMT");
   control.Reply(ftp::SystemStatus, "End.");
   return;
   
