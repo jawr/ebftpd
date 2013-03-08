@@ -9,6 +9,7 @@
 #include "cmd/command.hpp"
 #include "ftp/client.hpp"
 #include "cfg/setting.hpp"
+#include "plugin/hooks.hpp"
 
 namespace cmd { namespace site
 {
@@ -61,6 +62,21 @@ public:
   }
 };
 
+class PluginCreator : public cmd::site::CreatorBase<cmd::Command>
+{
+  plugin::Plugin& plugin;
+  plugin::CommandHookFunction function;
+  
+public:
+  PluginCreator(plugin::Plugin& plugin, const plugin::CommandHookFunction& function) :
+    plugin(plugin),
+    function(function)
+  { }
+  
+  cmd::Command* Create(ftp::Client& client, const std::string& argStr, const cmd::Args& args, 
+                       plugin::Plugin& plugin, const plugin::CommandHookFunction& function);
+};
+
 class CommandDef
 {
   int minimumArgs;
@@ -89,14 +105,16 @@ public:
   
   CommandDef(const std::string& aclKeyword,
              const std::shared_ptr<CreatorBase<cmd::Command>>& creator) :
-    minimumArgs(0), maximumArgs(-1), aclKeyword(aclKeyword), 
-    creator(creator) { }
+    minimumArgs(0), 
+    maximumArgs(-1), 
+    aclKeyword(aclKeyword), 
+    creator(creator)
+  { }
   
   bool CheckArgs(const std::vector<std::string>& args) const
   {
     int argsSize = static_cast<int>(args.size()) - 1;
-    return (argsSize >= minimumArgs &&
-            (maximumArgs == -1 || argsSize <= maximumArgs));
+    return (argsSize >= minimumArgs && (maximumArgs == -1 || argsSize <= maximumArgs));
   }
   
   CommandPtr Create(ftp::Client& client, const std::string& argStr, const Args& args) const
@@ -126,6 +144,7 @@ private:
  
 public:
   static CommandDefOpt LookupCustom(const std::string& command);
+  static CommandDefOpt LookupPlugin(ftp::Client& client, const std::string& command);
   static CommandDefOpt Lookup(const std::string& command, bool noCustom = false);
   
   static void Initialise() { factory.reset(new Factory()); }

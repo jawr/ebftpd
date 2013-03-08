@@ -30,6 +30,7 @@
 #include "ftp/task/task.hpp"
 #include "ftp/online.hpp"
 #include "fs/directory.hpp"
+//#include "plugin/hooks.hpp"
 
 namespace ftp
 {
@@ -45,7 +46,8 @@ ClientImpl::ClientImpl(Client& parent) :
   xdupeMode(xdupe::Mode::Disabled),
   kickLogin(false),
   idleTimeout(boost::posix_time::seconds(cfg::Get().IdleTimeout().Timeout())),
-  ident("*")
+  ident("*")/*,
+  plugins(plugin::FactoryManager::Get().CreatePlugins())*/
 {
 }
 
@@ -562,6 +564,8 @@ void ClientImpl::Run()
     std::make_shared<ftp::task::ClientFinished>(parent)->Push();
     if (user) db::mail::LogOffPurgeTrash(user->ID());
     LogTraffic();
+//    plugin::Hooks::Get().TriggerEvent(plugin::Event::Disconnected, parent);
+//    plugin::Hooks::Get().Clear();
   });
 
  try

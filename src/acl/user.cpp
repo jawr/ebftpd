@@ -92,12 +92,13 @@ acl::GroupID User::PrimaryGID() const
   return data->primaryGid;
 }
 
-const std::vector<GroupID> User::SecondaryGIDs() const
+const std::vector<GroupID>& User::SecondaryGIDs() const
 {
   return data->secondaryGids;
 }
 
-const std::unordered_set<GroupID> User::GadminGIDs() const {
+const std::unordered_set<GroupID>& User::GadminGIDs() const
+{
   return data->gadminGids;
 }
 

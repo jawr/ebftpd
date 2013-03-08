@@ -302,6 +302,10 @@ public:
   mode_t Umask() const { return umask; }
   int DefaultLogLines() const { return defaultLogLines; }
 
+  const std::vector<Plugin>& Plugins() const { return plugins; }
+  const std::string& Pluginpath() const { return pluginpath; }
+  const std::string& Scriptpath() const { return scriptpath; }
+  
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }
   

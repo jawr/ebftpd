@@ -8,6 +8,7 @@
 #include "exec/reader.hpp"
 #include "cmd/error.hpp"
 #include "cfg/get.hpp"
+#include "plugin/plugin.hpp"
 
 namespace cmd { namespace site
 {
@@ -97,6 +98,15 @@ void CustomALIASCommand::Execute()
     }
   }
 }
+
+void PluginCommand::Execute()
+{
+  plugin::Client client(this->client);
+  plugin::ScopeSwapPlugin swapGuard(plugin); (void) swapGuard;
+  function(client, argStr, args);
+  verify(false);
+}
+
 
 } /* site namespace */
 } /* cmd namespace */

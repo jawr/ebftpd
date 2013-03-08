@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8)
-project (ebftpd-tools)
+project (ebftpd)
 add_subdirectory(chown)
 add_subdirectory(index)
 add_subdirectory(passchk)

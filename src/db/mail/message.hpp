@@ -41,7 +41,7 @@ private:
 public:
   Message(const std::string& sender, acl::UserID recipient, 
           const std::string& body, 
-          boost::posix_time::ptime& timeSent) :
+          const boost::posix_time::ptime& timeSent) :
     sender(sender), recipient(recipient),
     body(body), timeSent(timeSent), status(db::mail::Status::Unread) { }
   

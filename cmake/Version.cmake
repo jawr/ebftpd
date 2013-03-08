@@ -30,4 +30,4 @@ if(EXISTS ${DEST})
 	endif()
 endif()
 
-file(WRITE ${DEST} "const char* version = \"${VERS}\";\n")
+file(WRITE ${DEST} "#define EBFTPD_VERSION \"${VERS}\"\n")

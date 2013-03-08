@@ -16,6 +16,7 @@
 #include "ftp/xdupe.hpp"
 #include "util/processreader.hpp"
 #include "ftp/enums.hpp"
+#include "plugin/plugin.hpp"
 
 namespace util
 {
@@ -58,6 +59,8 @@ class ClientImpl : public util::Thread
   std::string ident;
   std::string ip;
   std::string hostname;
+  
+  std::vector<std::shared_ptr<plugin::Plugin>> plugins;
   
   static std::atomic_bool siteopOnly;
   
@@ -110,7 +113,7 @@ public:
   const boost::posix_time::seconds& IdleTimeout() const
   { return idleTimeout; }
   
-  const boost::posix_time::ptime LoggedInAt() const
+  const boost::posix_time::ptime& LoggedInAt() const
   { return loggedInAt; }
   
   void SetXDupeMode(xdupe::Mode xdupeMode)

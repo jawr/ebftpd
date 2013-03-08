@@ -445,4 +445,11 @@ TransferLog::TransferLog(const std::string& name, const std::vector<std::string>
 {
 }
 
+Plugin::Plugin(const std::vector<std::string>& toks) :
+  name(util::ToLowerCopy(toks[0])),
+  scripts(toks.begin() + 1, toks.end())
+{
+}
+
+
 }

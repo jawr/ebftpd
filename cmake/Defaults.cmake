@@ -1,42 +1,43 @@
 # Variable definitions
-set (CMAKE_EXE_LINKER_FLAGS "-Wl,-z,origin")
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set (MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
-set (CMAKE_MODULE_PATH ${MODULES_DIR} ${CMAKE_MODULE_PATH})
-set (SCRIPTS_DIR ${CMAKE_CURRENT_LIST_DIR}/../scripts)
-set (UNITY_SCRIPT ${SCRIPTS_DIR}/unity.sh)
-set (CMAKE_CXX_FLAGS "-Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x -pedantic -Winit-self -Wno-deprecated")
-set (SERVER_SRC ${CMAKE_CURRENT_LIST_DIR}/../src)
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,-z,origin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(CMAKE_MODULE_PATH ${MODULES_DIR} ${CMAKE_MODULE_PATH})
+set(SCRIPTS_DIR ${CMAKE_CURRENT_LIST_DIR}/../scripts)
+set(UNITY_SCRIPT ${SCRIPTS_DIR}/unity.sh)
+set(CMAKE_CXX_FLAGS "-Wnon-virtual-dtor -Wall -Wextra -g -ggdb -std=c++0x -pedantic -Winit-self -Wno-deprecated")
+set(SERVER_SRC ${CMAKE_CURRENT_LIST_DIR}/../src)
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "\$ORIGIN/lib:\$ORIGIN/:\$ORIGIN/../lib")
 
 # Configure OpenSSL library
-find_package (OpenSSL REQUIRED)
-link_directories (${OpenSSL_LIBRARY_DIRS})
-include_directories (${OpenSSL_INCLUDE_DIRS})
+find_package(OpenSSL REQUIRED)
+link_directories(${OpenSSL_LIBRARY_DIRS})
+include_directories(${OpenSSL_INCLUDE_DIRS})
 
 # Configure BOOST libraries
-set (Boost_USE_STATIC_LIBS OFF)
-set (Boost_USE_MULTITHREADED ON)
-set (Boost_USE_STATIC_RUNTIME OFF)
-find_package (Boost 1.49.0 REQUIRED  
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost 1.49.0 REQUIRED  
               thread regex iostreams system filesystem 
               date_time program_options signals)
-link_directories (${Boost_LIBRARY_DIRS})
-include_directories (${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
 
 # Configure MongoDB client library
-find_package (MongoDB REQUIRED)
-include_directories (${MongoDB_INCLUDE_DIRS})
+find_package(MongoDB REQUIRED)
+include_directories(${MongoDB_INCLUDE_DIRS})
 
 # Check for pthreads
-find_package (Pthread REQUIRED)
-include_directories (${Pthread_INCLUDE_DIRS})
+find_package(Pthread REQUIRED)
+include_directories(${Pthread_INCLUDE_DIRS})
 
 # Some OSes seem to use external libexecinfo
-find_package (Execinfo REQUIRED)
+find_package(Execinfo REQUIRED)
 include_directories(${Execinfo_INCLUDE_DIRS})
 
 

@@ -3,6 +3,7 @@
 
 #include "cmd/command.hpp"
 #include "cfg/setting.hpp"
+#include "plugin/hooks.hpp"
 
 namespace cmd { namespace site
 {
@@ -49,6 +50,23 @@ public:
                     const std::string& argStr, const Args& args) :
     CustomCommand(custSiteCmd, client, argStr, args) { }
 
+  void Execute();
+};
+
+class PluginCommand : public cmd::Command
+{
+  plugin::Plugin& plugin;
+  plugin::CommandHookFunction function;
+  
+public:
+  PluginCommand(ftp::Client& client, const std::string& argStr, const cmd::Args& args,
+                plugin::Plugin& plugin, const plugin::CommandHookFunction& function) :
+    cmd::Command(client, client.Control(), client.Data(), argStr, args),
+    plugin(plugin),
+    function(function)
+  {
+  }
+  
   void Execute();
 };
 

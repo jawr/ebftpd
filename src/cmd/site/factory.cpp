@@ -315,9 +315,8 @@ CommandDefOpt Factory::LookupCustom(const std::string& command)
     }
   }
   
-  if (!match) return CommandDefOpt();
-  
-  CommandDefOpt def;
+  if (!match) return boost::none;
+
   std::string aclKeyword("custom-" + util::ToLowerCopy(command));
   switch (match->GetType())
   {
@@ -342,13 +341,29 @@ CommandDefOpt Factory::LookupCustom(const std::string& command)
     }
   }
   
-  return def;
+  verify(false);
 }
 
-CommandDefOpt Factory::Lookup(const std::string& command, bool noCustom)
+CommandDefOpt Factory::LookupPlugin(ftp::Client& client, const std::string& command)
+{
+  auto result = client.Plugins().LookupCommand(command);
+  if (!result) return boost::none;
+  
+  std::string aclKeyword("custom-" + util::ToLowerCopy(command));
+  CommandHook& hook = result->first;
+  auto creator = std::make_shared<PluginCreator>(hook.function, *result->second);
+  return boost::make_optional(CommandDef(aclKeyword, creator));
+}
+
+CommandDefOpt Factory::Lookup(ftp::Client& client, const std::string& command, bool noCustom)
 {
   CommandDefOpt def;
-  if (!noCustom) def = LookupCustom(command);
+  if (!noCustom)
+  {
+    def = LookupCustom(command);
+    if (!def) def = LookupPlugin(client);
+  }
+  
   if (!def)
   {
     CommandDefsMap::const_iterator it = factory->defs.find(command);
@@ -368,6 +383,13 @@ std::unordered_set<std::string> Factory::ACLKeywords()
   }
   return keywords;
 }
+
+cmd::Command* PluginCreator::Create(ftp::Client& client, const std::string& argStr, const cmd::Args& args, 
+                                    plugin::Plugin& plugin, const plugin::CommandHookFunction& function)
+{
+  return new PluginCommand(client, argStr, args, plugin, function);
+}
+
 
 } /* site namespace */
 } /* cmd namespace */
