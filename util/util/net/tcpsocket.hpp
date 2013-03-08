@@ -36,7 +36,7 @@ private:
                const Endpoint* localEndpoint);
   
   char GetcharBuffered();
-  void SetTimeout();
+  void SetTimeout(int socket);
   
   void PopulateLocalEndpoint(int socket);
   void PopulateRemoteEndpoint(int socket);

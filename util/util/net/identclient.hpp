@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <boost/noncopyable.hpp>
 #include "util/net/tcpsocket.hpp"
 #include "util/net/endpoint.hpp"
 
@@ -10,8 +11,8 @@ namespace util { namespace net
 {
 
 class TCPSocket;
-
-class IdentClient
+ 
+class IdentClient : boost::noncopyable
 {
   TCPSocket socket;
   Endpoint localEndpoint;

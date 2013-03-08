@@ -78,7 +78,7 @@ void TCPSocket::Connect(const Endpoint& remoteEndpoint, const Endpoint* localEnd
   int optVal = 1;
   setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof(optVal));
 
-  SetTimeout();
+  SetTimeout(socket);
   
   if (localEndpoint)
   {
@@ -219,7 +219,7 @@ void TCPSocket::Write(const char* buffer, size_t bufferLen)
   }
 }
 
-void TCPSocket::SetTimeout()
+void TCPSocket::SetTimeout(int socket)
 {
   if (setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &timeout.Timeval(), sizeof(timeout.Timeval())) < 0)
     throw NetworkSystemError(errno);
@@ -231,7 +231,7 @@ void TCPSocket::SetTimeout()
 void TCPSocket::SetTimeout(const util::TimePair& timeout)
 {
   this->timeout = timeout;
-  SetTimeout();
+  SetTimeout(socket);
 }
 
 char TCPSocket::GetcharBuffered()
