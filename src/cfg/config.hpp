@@ -152,6 +152,9 @@ class Config
   ::cfg::LogAddresses logAddresses;
   mode_t umask;
   int defaultLogLines;
+  std::vector<Plugin> plugins;
+  std::string pluginpath;
+  std::string scriptpath;
   
   acl::ACL tlsControl;
   acl::ACL tlsListing;
