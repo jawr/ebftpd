@@ -43,7 +43,10 @@ public:
     format(boost::bind(replyFunction, boost::ref(code), _1))
   { }
   
-  template <typename Enum>
+  template <
+    typename Enum,
+    typename = typename std::enable_if<std::is_enum<Enum>::value>::type
+  >
   Format& operator()(ReplyCode code, Enum e)
   {
     this->code = code;
@@ -51,7 +54,11 @@ public:
     return *this;
   }
 
-  template <typename Enum, typename... Args>
+  template <
+    typename Enum,
+    typename... Args,
+    typename = typename std::enable_if<std::is_enum<Enum>::value>::type
+  >
   Format& operator()(ReplyCode code, Enum e, const Args&... args)
   {
     this->code = code;

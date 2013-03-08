@@ -249,6 +249,7 @@ void FEATCommand::Execute()
   auto singleLineGuard = util::MakeScopeExit([&]{ control.SetSingleLineReplies(singleLineReplies); });  
 
   control.PartReply(ftp::SystemStatus, "Extended feature support:");
+  control.FlushReply(false);
   control.PartReply(ftp::NoCode, " AUTH TLS");
   control.PartReply(ftp::NoCode, " EPRT");
   control.PartReply(ftp::NoCode, " EPSV");
@@ -261,6 +262,7 @@ void FEATCommand::Execute()
   control.PartReply(ftp::NoCode, " SSCN");
   control.PartReply(ftp::NoCode, " CPSV");
   control.PartReply(ftp::NoCode, " MFMT");
+  control.FlushReply(false);
   control.Reply(ftp::SystemStatus, "End.");
 
   (void) singleLineReplies;
@@ -300,7 +302,8 @@ void LISTCommand::Execute()
   if (data.Protection()) os << " using TLS/SSL";
   os << ".";
   control.Reply(ftp::TransferStatusOkay, os.str());
-
+  control.FlushReply();
+  
   try
   {
     data.Open(ftp::TransferType::List);
@@ -953,6 +956,7 @@ void STATCommand::Execute()
   std::string forcedOptions = "l" + config.Lslong().Options();
     
   control.PartReply(ftp::DirectoryStatus, "Status of " + fs::MakePretty(MakeVirtual(path)).ToString() + ":");
+  control.FlushReply(false);
   DirectoryList dirList(client, control, path, ListOptions(options, forcedOptions),
                         config.Lslong().MaxRecursion());
   

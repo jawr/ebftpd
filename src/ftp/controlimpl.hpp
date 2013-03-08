@@ -45,7 +45,7 @@ class ControlImpl
   ReplyCode lastCode;
   std::string commandLine;
   bool singleLineReplies;
-  std::vector<std::string> deferred;
+  std::ostringstream buffer;
   
   long bytesRead;
   long bytesWrite;
@@ -70,10 +70,9 @@ public:
   
   void PartReply(ReplyCode code, const std::string& message);
   void Reply(ReplyCode code, const std::string& message);
+  bool FlushReply(bool final = true);
 
-  void SetSingleLineReplies(bool singleLineReplies)
-  { this->singleLineReplies = singleLineReplies; }
-  
+  void SetSingleLineReplies(bool singleLineReplies) { this->singleLineReplies = singleLineReplies; }
   bool SingleLineReplies() const { return singleLineReplies; }
   
   void NegotiateTLS();

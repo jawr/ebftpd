@@ -216,6 +216,7 @@ void STORCommand::Execute()
   if (data.Protection()) os << " using TLS/SSL";
   os << ".";
   control.Reply(ftp::TransferStatusOkay, os.str());
+  control.FlushReply();
   
   try
   {

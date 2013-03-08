@@ -64,19 +64,17 @@ public:
   ::ftp::Format PartFormat;
   ::ftp::Format Format;
   
-  void PartReply(ReplyCode code, const std::string& message);
-  void Reply(ReplyCode code, const std::string& message);
+  ::ftp::Format PartReply;
+  ::ftp::Format Reply;
 
+  //void PartReply(ReplyCode code, const std::string& message);
+  //void Reply(ReplyCode code, const std::string& message);
+  bool FlushReply(bool final = true);
   void SetSingleLineReplies(bool singleLineReplies);
-  
   bool SingleLineReplies() const;
-  
   void NegotiateTLS();
-  
   void Write(const char* buffer, size_t len);
-  
   const util::net::Endpoint& RemoteEndpoint() const;
- 
   const util::net::Endpoint& LocalEndpoint() const;
   
   bool IsTLS() const;

@@ -46,6 +46,7 @@ void ControlImpl::Accept(util::net::TCPListener& listener)
 
 void ControlImpl::SendReply(ReplyCode code, bool part, const std::string& message)
 {
+  assert(code != CodeNotSet);
   if (singleLineReplies && part) return;
   
   std::ostringstream reply;
@@ -57,36 +58,32 @@ void ControlImpl::SendReply(ReplyCode code, bool part, const std::string& messag
   const std::string& str = reply.str();
   Write(str.c_str(), str.length());
 
-  if (lastCode != code && lastCode != CodeNotSet && code != ftp::NoCode)
-    throw ProtocolError("Invalid reply code sequence.");
-  if (code != ftp::NoCode) lastCode = code;
+  lastCode = code;
 }
 
 void ControlImpl::PartReply(ReplyCode code, const std::string& messages)
 {
-  assert(code != CodeNotSet);
+  lastCode = code;
   
-  if (code == ftp::CodeDeferred)
-  {
-    std::vector<std::string> splitMessages;
-    util::Split(splitMessages, messages, "\n");
-    deferred.insert(deferred.end(), splitMessages.begin(), splitMessages.end());
-  }
-  else
-    MultiReply(code, false, messages);
+  const std::string& s = buffer.str();
+  if (!s.empty() && s.back() != '\n') buffer << '\n';
+  buffer << messages;
 }
 
 void ControlImpl::Reply(ReplyCode code, const std::string& messages)
 {
-  assert(code != CodeNotSet && code != CodeDeferred);
-  if (!deferred.empty())
-  {
-    MultiReply(code, false, deferred);
-    deferred.clear();
-  }
-  
-  MultiReply(code, true, messages);
+  PartReply(code, messages);
+}
+
+bool ControlImpl::FlushReply(bool final)
+{
+  assert(lastCode != CodeNotSet);
+  const std::string& s = buffer.str();
+  if (s.empty()) return false;
+  MultiReply(lastCode, final, s);
+  buffer.str(std::string());
   lastCode = CodeNotSet;
+  return true;
 }
 
 void ControlImpl::MultiReply(ReplyCode code, bool final, const std::vector<std::string>& messages)

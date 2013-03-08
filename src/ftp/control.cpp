@@ -22,7 +22,9 @@ namespace ftp
 Control::Control() :
   pimpl(new ControlImpl(&socket)),
   PartFormat(boost::bind(&ControlImpl::PartReply, &*pimpl, _1, _2)),
-  Format(boost::bind(&ControlImpl::Reply, &*pimpl, _1, _2))
+  Format(boost::bind(&ControlImpl::Reply, &*pimpl, _1, _2)),
+  PartReply(boost::bind(&ControlImpl::PartReply, &*pimpl, _1, _2)),
+  Reply(boost::bind(&ControlImpl::Reply, &*pimpl, _1, _2))
 {
 }
 
@@ -39,7 +41,7 @@ std::string Control::NextCommand(const boost::posix_time::time_duration* timeout
 {
   return pimpl->NextCommand(timeout);
 }
-
+/*
 void Control::PartReply(ReplyCode code, const std::string& message)
 {
   pimpl->PartReply(code, message);
@@ -48,6 +50,11 @@ void Control::PartReply(ReplyCode code, const std::string& message)
 void Control::Reply(ReplyCode code, const std::string& message)
 {
   pimpl->Reply(code, message);
+}*/
+
+bool Control::FlushReply(bool final)
+{
+  return pimpl->FlushReply(final);
 }
 
 void Control::SetSingleLineReplies(bool singleLineReplies)
