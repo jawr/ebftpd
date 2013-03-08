@@ -1,6 +1,7 @@
 #ifndef __UTIL_NET_TCPLISTENER_HPP
 #define __UTIL_NET_TCPLISTENER_HPP
 
+#include <mutex>
 #include <sys/socket.h>
 #include <boost/noncopyable.hpp>
 #include "util/net/endpoint.hpp"
@@ -14,6 +15,7 @@ class TCPSocket;
 class TCPListener : boost::noncopyable
 {
   util::net::Endpoint endpoint;
+  std::mutex socketMutex;
   int socket;
   int backlog;
 
@@ -44,7 +46,11 @@ public:
   
   int Socket() const { return socket; }
   /* No exceptions */
+  
+  void Shutdown();
 
+  bool IsListening() const { return socket >= 0; }
+  
   const util::net::Endpoint& Endpoint() const { return endpoint; }
   /* No exceptions */
 };

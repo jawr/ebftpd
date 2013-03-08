@@ -170,6 +170,14 @@ void STORCommand::Execute()
     }
     throw cmd::NoPostScriptError();
   }
+  catch (const util::RuntimeError& e)
+  {
+    std::ostringstream os;
+    os << "Unable to " << (data.RestartOffset() > 0 ? "append" : "create")
+       << " file: " << e.Message();
+    control.Reply(ftp::ActionNotOkay, os.str());
+    throw cmd::NoPostScriptError();
+  }
 
   bool fileOkay = data.RestartOffset() > 0;
   auto fileGuard = util::MakeScopeExit([&]

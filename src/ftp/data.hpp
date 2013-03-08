@@ -51,7 +51,7 @@ enum class SSCNMode
 class Data : public Writeable
 {
   Client& client;
-  std::unique_ptr<util::net::TCPListener> listener;
+  util::net::TCPListener listener;
   util::net::TCPSocket socket;
   bool protection;
   PassiveType pasvType;
@@ -102,7 +102,7 @@ public:
   TransferState& State() { return state; }
   const TransferState& State() const { return state; }
   
-  void Interrupt() { socket.Shutdown(); }
+  void Interrupt();
   
   long long BytesRead() const { return bytesRead; }
   long long BytesWrite() const { return bytesWrite; }

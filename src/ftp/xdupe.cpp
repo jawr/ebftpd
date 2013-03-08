@@ -18,15 +18,15 @@ std::string MessageOne(const std::vector<std::string>& dupes)
   std::ostringstream line;
   std::string::size_type len = 0;
   
-  line << "X-DUPE: ";
+  line << " X-DUPE: ";
   for (const std::string& dupe : dupes)
   {
     if (dupe.length() > maxLength)
     {
       if (len > 0) reply << line.str() << '\n';
-      reply << "X-DUPE: " << dupe.substr(0, maxLength) << '\n';
+      reply << " X-DUPE: " << dupe.substr(0, maxLength) << '\n';
       line.str("");
-      line << "X-DUPE: ";
+      line << " X-DUPE: ";
       len = 0;
       continue;
     }
@@ -35,7 +35,7 @@ std::string MessageOne(const std::vector<std::string>& dupes)
     {
       reply << line.str() << '\n';
       line.str("");
-      line << "X-DUPE: ";
+      line << " X-DUPE: ";
       len = 0;
     }
     
@@ -60,7 +60,7 @@ std::string MessageTwo(const std::vector<std::string>& dupes)
   std::ostringstream reply;
   for (const std::string& dupe : dupes)
   {
-    reply << "X-DUPE: " << dupe.substr(0, maxLength) << '\n';
+    reply << " X-DUPE: " << dupe.substr(0, maxLength) << '\n';
   }
   
   return reply.str();
@@ -71,7 +71,7 @@ std::string MessageThree(const std::vector<std::string>& dupes)
   std::ostringstream reply;
   for (const std::string& dupe : dupes)
   {
-    reply << "X-DUPE: " << dupe << '\n';
+    reply << " X-DUPE: " << dupe << '\n';
   }
   
   return reply.str();
@@ -84,7 +84,7 @@ std::string MessageFour(const std::vector<std::string>& dupes)
   std::ostringstream reply;
   std::string::size_type len = 8;
   
-  reply << "X-DUPE: ";
+  reply << " X-DUPE: ";
   for (const std::string& dupe : dupes)
   {
     if (len + dupe.length() + (len == 8 ? 0 : 1) > maxLength) break;
