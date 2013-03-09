@@ -36,10 +36,10 @@ void TCPListener::Listen()
   if (socket < 0) return throw NetworkSystemError(errno);
 
   auto socketGuard = util::MakeScopeError([&socket]() {  close(socket);  }); (void) socketGuard;
-  
+
   int optVal = 1;
   setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof(optVal));
-  
+
   socklen_t addrLen = endpoint.Length();
   struct sockaddr_storage addrStor;
   memcpy(&addrStor, endpoint.Addr(), addrLen);
