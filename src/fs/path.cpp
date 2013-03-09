@@ -67,12 +67,21 @@ const RealPath& MakeReal(const Path& path)
 {
   if (!path.cache.real)
   {
-    auto virt = fs::Resolve(WorkDirectory() / path);
+    auto virt = Resolve(WorkDirectory() / path);
     path.cache.real = new RealPath(RealPath(cfg::Get().Sitepath()) & virt);
+    std::string& p = path.cache.real->path;
     std::string noSymlinks;
-    if (util::path::Realpath(path.cache.real->ToString(), noSymlinks))
+    if (util::path::Realpath(p, noSymlinks))
     {
-      path.cache.real->path = noSymlinks;
+      p = noSymlinks;
+    }
+    else
+    {
+      // deal with paths that don't exist yet
+      if (util::path::Realpath(util::path::Dirname(p), noSymlinks))
+      {
+        p = util::path::Join(noSymlinks, util::path::Basename(p));
+      }
     }
   }
   return *path.cache.real;
@@ -92,7 +101,7 @@ const RealPath& MakeReal(const RealPath& path)
 
 VirtualPath PathFromUser(const std::string& path)
 {
-  return fs::MakeVirtual(Path(path));
+  return MakeVirtual(Path(path));
 }
 
 
