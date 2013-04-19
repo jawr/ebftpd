@@ -7,6 +7,7 @@
 #include "logs/logger.hpp"
 #include "util/format.hpp"
 #include "util/string.hpp"
+#include "logs/sink.hpp"
 
 namespace logs
 {

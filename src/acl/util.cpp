@@ -35,7 +35,7 @@ bool CreateDefaults()
       auto group = Group::Create("ebftpd");
       if (!group)
       {
-        logs::Error("Failed to create master group (ebftpd). Must exist with wrong GID.");
+        logs::Error("Failed to create master group (ebftpd).");
         return false;
       }
       
@@ -51,7 +51,7 @@ bool CreateDefaults()
       auto group = Group::Create("default");
       if (!group)
       {
-        logs::Error("Failed to create template group (default). Must exist with wrong GID.");
+        logs::Error("Failed to create template group (default).");
         return false;
       }
       
@@ -67,7 +67,7 @@ bool CreateDefaults()
       auto user = User::Create("ebftpd", "ebftpd", 0);
       if (!user)
       {
-        logs::Error("Failed to create master user (ebftpd). Must exist with wrong UID.");
+        logs::Error("Failed to create master user (ebftpd).");
         return false;
       }
 

@@ -27,7 +27,9 @@ public:
   Replicable(const std::string& collection) : 
     collection(collection), 
     state(ReplicationState::Populate)
-  { }
+  {
+    (void) state;
+  }
   
   virtual ~Replicable() { }
 

@@ -20,7 +20,7 @@ namespace fs
 
 class GlobIterator : public util::path::GlobIterator
 {
-  const acl::User* user;
+//  const acl::User* user;
   mutable std::string current;
   
   std::string& Current() const
@@ -30,7 +30,7 @@ class GlobIterator : public util::path::GlobIterator
   }
   
 public:
-  GlobIterator() : user(nullptr) { }
+  GlobIterator() = default;
   GlobIterator(const acl::User& user, const VirtualPath& path, Flags flags = NoFlags);
   
   GlobIterator& operator++()

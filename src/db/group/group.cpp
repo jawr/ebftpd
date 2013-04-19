@@ -54,7 +54,7 @@ template <> acl::GroupData Unserialize<acl::GroupData>(const mongo::BSONObj& obj
 
 bool Group::Create()
 {
-  SafeConnection conn;
+  NoErrorConnection conn;
   group.id = conn.InsertAutoIncrement("groups", group, "gid");
   if (group.id == -1) return false;
   UpdateLog();

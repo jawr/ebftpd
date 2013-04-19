@@ -13,12 +13,11 @@ namespace util
 class FutureMinder
 {
   std::mutex mutex;
-  boost::once_flag initOnce;
   std::vector<std::future<void>> futures;
 
   static bool IsReady(std::future<void>& future)
   {
-#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
+#if defined(__clang__) || (defined(__GNUC__) && __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 6))
     return future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 #else
     return future.wait_for(std::chrono::seconds(0));

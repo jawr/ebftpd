@@ -48,6 +48,11 @@ inline void LogError(std::ostringstream& os, const std::string& errmsg)
   logs::Database(os.str());
 }
 
+inline std::ostream& operator<<(std::ostream& os, const std::type_info& info)
+{
+  return (os << util::debug::Demangle(info.name()));
+}
+
 template <typename T, typename... Args>
 void LogError(std::ostringstream& os, const std::string& errmsg, const T& arg, const Args&... args)
 {
@@ -73,11 +78,6 @@ template <typename... Args>
 void LogLastError(const std::string& prefix, const mongo::BSONObj& obj, const Args&... args)
 {
   LogError(prefix, obj["err"].String(), args...);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const std::type_info& info)
-{
-  return (os << util::debug::Demangle(info.name()));
 }
 
 inline void LastErrorToException(const mongo::BSONObj& obj)

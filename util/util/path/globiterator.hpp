@@ -2,6 +2,7 @@
 #define __UTIL_PATH_GLOBITERATOR_HPP
 
 #include <iterator>
+#include <functional>
 #include <string>
 #include <vector>
 #include <memory>
