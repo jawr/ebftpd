@@ -28,7 +28,7 @@ public:
   static const std::string alpha;
   static const std::string numeric;
   
-	RandomString(size_t length, const std::string& validChars);
+  RandomString(size_t length, const std::string& validChars);
   RandomString(size_t length,
                unsigned firstASCII = firstPrintASCII, 
                unsigned lastASCII = lastPrintASCII);

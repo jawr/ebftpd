@@ -11,8 +11,8 @@ namespace util
 template <typename Lambda>
 class ScopeExit
 {
-	Lambda cleanup;
-	bool cleared;
+  Lambda cleanup;
+  bool cleared;
   
 public:
   ScopeExit& operator=(ScopeExit&& rhs)

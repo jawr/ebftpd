@@ -29,10 +29,10 @@ public:
 
   ~TCPListener();
   
-	TCPListener(int backlog = maximumBacklog);
+  TCPListener(int backlog = maximumBacklog);
   /* Throws NetworkSystemError */
   
-	TCPListener(const Endpoint& endpoint, int backlog = maximumBacklog);
+  TCPListener(const Endpoint& endpoint, int backlog = maximumBacklog);
   /* Throws NetworkSystemError, InvalidIPAddressError */
                 
   void Listen(const Endpoint& endpoint);

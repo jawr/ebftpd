@@ -18,7 +18,7 @@ template <
 >
 class SafePtr
 {
-	UnderlyingPtr ptr;
+  UnderlyingPtr ptr;
   
 public:
   SafePtr& operator=(SafePtr&& rhs) { ptr = std::move(rhs.ptr); }

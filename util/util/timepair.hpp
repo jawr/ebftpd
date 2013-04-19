@@ -12,14 +12,14 @@ namespace util
 
 class TimePair
 {
-	struct timeval pair;
+  struct timeval pair;
 
 public:
-	TimePair(time_t seconds, suseconds_t microseconds)
-	{
-		pair.tv_sec = seconds;
-		pair.tv_usec = microseconds;
-	}
+  TimePair(time_t seconds, suseconds_t microseconds)
+  {
+    pair.tv_sec = seconds;
+    pair.tv_usec = microseconds;
+  }
   
   explicit TimePair(double duration)
   {

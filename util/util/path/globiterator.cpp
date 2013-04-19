@@ -47,7 +47,7 @@ GlobIterator::GlobIterator() :
 
 GlobIterator::GlobIterator(std::string pathMask, Flags flags) :
   pathMask(pathMask),
-	flags(flags)
+  flags(flags)
 {
   Initialise();
 }
@@ -56,7 +56,7 @@ GlobIterator::GlobIterator(std::string pathMask,
                const std::function<bool(const std::string&)>& filter, 
                Flags flags) :
   pathMask(pathMask),
-	flags(flags),
+  flags(flags),
   filter(filter)
 {
   Initialise();
@@ -64,10 +64,10 @@ GlobIterator::GlobIterator(std::string pathMask,
 
 void GlobIterator::Initialise()
 {
-	verify(!pathMask.empty());
+  verify(!pathMask.empty());
   
-	try
-	{
+  try
+  {
     Tokens toks = TokenizePathMask(pathMask);
 
     auto next = std::find_if(toks.begin(), toks.end(), IsWildcard);
@@ -76,12 +76,12 @@ void GlobIterator::Initialise()
     std::string nextPath = util::Join(toks.begin(), next, "/");
     if (nextPath.empty()) nextPath = "/"; 
 
-		iter.reset(new SubIterator(nextPath, next, toks.end(), flags, filter));    
-	}
-	catch (const util::SystemError& e)
-	{
-		if ((flags & IgnoreErrors) == 0) throw;
-	}
+    iter.reset(new SubIterator(nextPath, next, toks.end(), flags, filter));    
+  }
+  catch (const util::SystemError& e)
+  {
+    if ((flags & IgnoreErrors) == 0) throw;
+  }
 }
 
 GlobIterator::SubIterator::SubIterator() : 
