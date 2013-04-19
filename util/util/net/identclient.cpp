@@ -11,14 +11,14 @@ IdentClient::IdentClient(const Endpoint& localEndpoint,
                          const Endpoint& remoteEndpoint,
                          const util::TimePair& timeout) :
   socket(Endpoint(remoteEndpoint.IP(), identPort), timeout),
-	localEndpoint(localEndpoint),
-	remoteEndpoint(remoteEndpoint)
+  localEndpoint(localEndpoint),
+  remoteEndpoint(remoteEndpoint)
 {
   Request();
 }
 
 IdentClient::IdentClient(const TCPSocket& client, const util::TimePair& timeout) :
-	socket(Endpoint(client.RemoteEndpoint().IP(), identPort), timeout),
+  socket(Endpoint(client.RemoteEndpoint().IP(), identPort), timeout),
   localEndpoint(client.LocalEndpoint()),
   remoteEndpoint(client.RemoteEndpoint())
 {

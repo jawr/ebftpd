@@ -32,7 +32,7 @@ enum class Flag : char;
 
 struct UserData;
 
-class ACLInfo;
+struct ACLInfo;
 
 class User
 {

@@ -20,10 +20,10 @@ namespace fs
 
 class DirIterator : public util::path::DirIterator
 {
-  const acl::User* user;
+  //const acl::User* user;
   
 public:
-  DirIterator() : user(nullptr) { }
+  DirIterator() = default;
   DirIterator(const acl::User& user, const VirtualPath& path);
 };
 

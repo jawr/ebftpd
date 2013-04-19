@@ -8,7 +8,7 @@ namespace acl
 {
 
 class User;
-class ACLInfo;
+struct ACLInfo;
 
 class Permission
 {

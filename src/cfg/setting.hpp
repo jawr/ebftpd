@@ -380,7 +380,7 @@ public:
   Type GetType() const { return type; }
 };
 
-class IdleTimeoutImpl;
+struct IdleTimeoutImpl;
 
 class IdleTimeout
 {

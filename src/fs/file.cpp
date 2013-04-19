@@ -104,14 +104,25 @@ FileSinkPtr AppendFile(const acl::User& user, const VirtualPath& path, off_t off
   util::Error e = PP::FileAllowed<PP::Resume>(user, path);
   if (!e) throw util::SystemError(e.Errno());
 
+  auto real = MakeReal(path);
+  try
+  {
+    if (!util::path::Status(real.ToString()).IsRegularFile())
+      throw util::RuntimeError("Not a regular file");
+  }
+  catch (const util::SystemError& e)
+  {
+    throw util::SystemError(e.Errno());
+  }
+
   unsigned long long freeBytes;
-  e = util::path::FreeDiskSpace(MakeReal(path).Dirname().ToString(), freeBytes);
+  e = util::path::FreeDiskSpace(real.Dirname().ToString(), freeBytes);
   if (!e) throw util::SystemError(e.Errno());
   
   if (static_cast<unsigned long long>(cfg::Get().FreeSpace()) > freeBytes / 1024)
     throw util::SystemError(ENOSPC);
 
-  int fd = open(MakeReal(path).CString(), O_WRONLY | O_APPEND);
+  int fd = open(real.CString(), O_WRONLY | O_APPEND);
   if (fd < 0) throw util::SystemError(errno);
  
   auto fout = std::make_shared<FileSink>(fd, boost::iostreams::close_handle);
@@ -135,8 +146,19 @@ FileSourcePtr OpenFile(const acl::User& user, const VirtualPath& path)
 {
   util::Error e = PP::FileAllowed<PP::Download>(user, path);
   if (!e) throw util::SystemError(e.Errno());
+  
+  auto real = MakeReal(path);
+  try
+  {
+    if (!util::path::Status(real.ToString()).IsRegularFile())
+      throw util::RuntimeError("Not a regular file");
+  }
+  catch (const util::SystemError& e)
+  {
+    throw util::SystemError(e.Errno());
+  }
 
-  int fd = open(MakeReal(path).CString(), O_RDONLY);
+  int fd = open(real.CString(), O_RDONLY);
   if (fd < 0) throw util::SystemError(errno);
   return std::make_shared<FileSource>(fd, boost::iostreams::close_handle);
 }

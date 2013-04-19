@@ -17,24 +17,6 @@ class TCPListener;
 
 class TCPSocket : boost::noncopyable
 {
-public:
-  class State
-  {
-    bool readable;
-    bool writeable;
-    
-  public:
-    State(bool readable, bool writeable) :
-      readable(readable), writeable(writeable) { }
-      
-    operator bool() const { return readable || writeable; }
-      
-    bool Readable() const { return readable; }
-    bool WriteAble() const { return writeable; }
-    
-    friend class TCPSocket;
-  };
-  
 private:
   static const util::TimePair defaultTimeout; // 60 seconds
   static const size_t defaultBufferSize = BUFSIZ;
@@ -54,10 +36,10 @@ private:
                const Endpoint* localEndpoint);
   
   char GetcharBuffered();
-  void SetTimeout();
+  void SetTimeout(int socket);
   
-  void PopulateLocalEndpoint();
-  void PopulateRemoteEndpoint();
+  void PopulateLocalEndpoint(int socket);
+  void PopulateRemoteEndpoint(int socket);
 
 public:
   ~TCPSocket();
@@ -116,6 +98,8 @@ public:
   
   const Endpoint& LocalEndpoint() const { return localEndpoint; }
   /* No exceptions */
+  
+  bool IsConnected() const { return socket >= 0; }
   
   bool IsTLS() const { return tls.get() != 0; }
   std::string TLSCipher() const;

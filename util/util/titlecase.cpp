@@ -20,7 +20,7 @@ namespace util
 namespace
 {
 const std::string small("a|an|and|as|at|but|by|en|for|if|in|of|on|or|the|to|v\\.?|via|vs\\.?");
-const std::string punct("!\"#$%&'‘()*+,\\-./:;?@[\\\\\\]_`{|}~");
+const std::string punct("!\"#$%&'\x91()*+,\\-./:;?@[\\\\\\]_`{|}~");
 
 boost::regex smallWords("^" + small + "$", boost::regex::icase);
 boost::regex inlinePeriod("[a-z][.][a-z]", boost::regex::icase);
@@ -29,7 +29,7 @@ boost::regex capFirst("^[" + punct + "]*?([A-Za-z])");
 boost::regex smallFirst("^([" + punct + "]*)(" + small +")\\b", boost::regex::icase);
 boost::regex smallLast("\\b(" + small + ")[" + punct + "]?$", boost::regex::icase);
 boost::regex subPhrase("([:.;?!][ ]['\"]?)(" + small + ")");
-boost::regex aposSecond("^[dol]{1}['‘]{1}[a-z]+$", boost::regex::icase);
+boost::regex aposSecond("^[dol]{1}['\x91]{1}[a-z]+$", boost::regex::icase);
 boost::regex allCaps("^[A-Z\\s" + punct + "]+$");
 boost::regex ucInitials("^(?:[A-Z]{1}\\.{1}|[A-Z]{1}\\.{1}[A-Z]{1})+$");
 boost::regex macName("^([Mm]a?c)(\\w+)");

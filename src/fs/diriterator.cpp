@@ -9,8 +9,8 @@ namespace fs
 {
 
 DirIterator::DirIterator(const acl::User& user, const VirtualPath& path) : 
-  util::path::DirIterator(PreFilter(user, path.ToString()), boost::bind(&Filter, boost::ref(user), _1)), 
-  user(&user)
+  util::path::DirIterator(PreFilter(user, path.ToString()), boost::bind(&Filter, boost::ref(user), _1))
+  //, user(&user)
 { }
 
 } /* fs namespace */

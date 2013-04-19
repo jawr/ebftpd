@@ -1,7 +1,9 @@
 #ifndef __UTIL_ENUMUTIL_HPP
 #define __UTIL_ENUMUTIL_HPP
 
-#if defined(__GNUC__)
+#if defined(__clang__)
+#include <type_traits>
+#elif defined(__GNUC__)
 #if __GNUC__ > 4 || \
     (__GNUC__ == 4 && __GNUC_MINOR__ > 6)
 #include <type_traits>

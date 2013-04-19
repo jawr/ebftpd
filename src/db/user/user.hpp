@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 #include <boost/optional.hpp>
 #include "acl/types.hpp"
 
@@ -13,7 +14,7 @@ class BSONObj;
 
 namespace acl
 {
-class UserData;
+struct UserData;
 class User;
 } 
 

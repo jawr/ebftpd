@@ -360,8 +360,7 @@ void ClientImpl::LookupIdent()
 
 bool ClientImpl::ConfirmCommand(const std::string& argStr)
 {
-  std::string command = 
-      util::CompressWhitespaceCopy(argStr);
+  std::string command = util::CompressWhitespaceCopy(argStr);
   if (command != confirmCommand)
   {
     confirmCommand = command;

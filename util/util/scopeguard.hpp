@@ -11,11 +11,11 @@ namespace util
 template <typename Lambda>
 class ScopeExit
 {
-	Lambda cleanup;
-	bool cleared;
+  Lambda cleanup;
+  bool cleared;
   
 public:
-  ScopeExit& operator=(ScopeExit& rhs)
+  ScopeExit& operator=(ScopeExit&& rhs)
   {
     cleanup = std::move(rhs.cleanup);
     cleared = rhs.cleared;
@@ -53,6 +53,9 @@ template <typename Lambda>
 class ScopeSuccess : public ScopeExit<Lambda>
 {
 public:
+  ScopeSuccess& operator=(ScopeSuccess&&) = default;
+  ScopeSuccess(ScopeSuccess&&) = default;
+
   ScopeSuccess(Lambda&& cleanup) :
     ScopeExit<Lambda>(std::forward<Lambda>(cleanup))
   { }
@@ -67,6 +70,9 @@ template <typename Lambda>
 class ScopeError : public ScopeExit<Lambda>
 {
 public:
+  ScopeError& operator=(ScopeError&&) = default;
+  ScopeError(ScopeError&&) = default;
+  
   ScopeError(Lambda&& cleanup) :
     ScopeExit<Lambda>(std::forward<Lambda>(cleanup))
   { }

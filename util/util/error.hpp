@@ -32,10 +32,10 @@ public:
 
 class Error
 {
-	bool success;
-	int errno_;
+  bool success;
+  int errno_;
   bool validErrno;
-	std::string message;
+  std::string message;
 
   Error(bool success) : success(success), errno_(0), validErrno(false),
     message(success ? "Success" : "Failure") { }

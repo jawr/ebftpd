@@ -48,7 +48,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
   using namespace util::net;
 
   socket.Close();
-  if (listener) listener->Close();
+  listener.Close();
   
   boost::optional<util::net::IPAddress> ip;
   // unable to use alternative pasv_addr if espv mode isn't Full
@@ -86,8 +86,6 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
   if (pasvType == PassiveType::PASV && ip->Family() == IPFamily::IPv6)
     FindPartnerIP(*ip, *ip);
 
-  if (!listener) listener.reset(new util::net::TCPListener());
-    
   boost::optional<int> firstPort;
   while (true)
   {
@@ -98,7 +96,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
       
     try
     {
-      listener->Listen(Endpoint(*ip, port));
+      listener.Listen(Endpoint(*ip, port));
       break;
     }
     catch (const util::net::NetworkSystemError& e)
@@ -109,14 +107,14 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
   }
 
   this->pasvType = pasvType;
-  ep = listener->Endpoint();
+  ep = listener.Endpoint();
 }
 
 void Data::InitActive(const util::net::Endpoint& ep)
 {
   pasvType = PassiveType::None;
   socket.Close();
-  listener = nullptr;
+  listener.Close();
   
   boost::optional<util::net::IPAddress> localIP;
   std::string firstAddr;
@@ -167,9 +165,13 @@ void Data::Open(TransferType transferType)
 {
   if (pasvType != PassiveType::None)
   {
-    assert(listener);
-    listener->Accept(socket);
-    listener = nullptr;
+    assert(listener.IsListening());
+    listener.Accept(socket);
+  }
+  else
+  if (!socket.IsConnected())
+  {
+    throw util::net::NetworkError("Invalid command sequence");
   }
   
   if (transferType != TransferType::List && IsFXP())
@@ -354,5 +356,12 @@ void Data::Write(const char* buffer, size_t len)
     throw util::net::NetworkError();
   }
 }
+
+void Data::Interrupt()
+{
+  socket.Shutdown();
+  listener.Shutdown();
+}
+
 
 } /* ftp namespace */

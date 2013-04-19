@@ -610,8 +610,7 @@ void PORTCommand::Execute()
   }
   catch (const util::net::NetworkError& e)
   {
-    control.Reply(ftp::CantOpenDataConnection,
-                 "Unable to open data connection: " + e.Message());
+    control.Reply(ftp::CantOpenDataConnection, "Unable to open data connection: " + e.Message());
     return;
   }
   

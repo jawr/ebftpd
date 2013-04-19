@@ -23,8 +23,9 @@
 namespace std
 {
   template <>
-  class hash<ftp::Client> : public unary_function<ftp::Client, size_t>
+  struct hash<ftp::Client> : public unary_function<ftp::Client, size_t>
   {
+  private:
     std::hash<intptr_t> hash;
     
   public:

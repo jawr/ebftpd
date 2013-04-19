@@ -79,10 +79,9 @@ void RETRCommand::Execute()
   {
     fin = fs::OpenFile(client.User(), path);
   }
-  catch (const util::SystemError& e)
+  catch (const util::RuntimeError& e)
   {
-    control.Reply(ftp::ActionNotOkay,
-                 "Unable to open file: " + e.Message());
+    control.Reply(ftp::ActionNotOkay, "Unable to open file: " + e.Message());
     throw cmd::NoPostScriptError();
   }
 
@@ -147,9 +146,7 @@ void RETRCommand::Execute()
   }
   catch (const util::net::NetworkError&e )
   {
-    control.Reply(ftp::CantOpenDataConnection,
-                 "Unable to open data connection: " +
-                 e.Message());
+    control.Reply(ftp::CantOpenDataConnection, "Unable to open data connection: " + e.Message());
     throw cmd::NoPostScriptError();
   }
 

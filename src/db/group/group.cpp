@@ -54,7 +54,7 @@ template <> acl::GroupData Unserialize<acl::GroupData>(const mongo::BSONObj& obj
 
 bool Group::Create()
 {
-  SafeConnection conn;
+  NoErrorConnection conn;
   group.id = conn.InsertAutoIncrement("groups", group, "gid");
   if (group.id == -1) return false;
   UpdateLog();
@@ -63,7 +63,7 @@ bool Group::Create()
 
 void Group::UpdateLog() const
 {
-  db::FastConnection conn;
+  FastConnection conn;
   auto entry = BSON("collection" << "groups" << "id" << group.id);
   conn.Insert("updatelog", entry);
 }
@@ -86,7 +86,7 @@ bool Group::SaveName()
     UpdateLog();
     return true;
   }
-  catch (const db::DBError&)
+  catch (const DBError&)
   {
     return false;
   }

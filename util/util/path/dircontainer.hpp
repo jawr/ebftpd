@@ -9,7 +9,7 @@ namespace util { namespace path
 template <typename IteratorType>
 class GenericDirContainer
 {
-	IteratorType it;
+  IteratorType it;
   IteratorType endIt;
   
 public:  

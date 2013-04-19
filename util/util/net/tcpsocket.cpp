@@ -3,8 +3,8 @@
 #include "util/net/tcpsocket.hpp"
 #include "util/net/tcplistener.hpp"
 #include "util/signalguard.hpp"
+#include "util/scopeguard.hpp"
 
-#include <iostream>
 namespace
 {
   util::SignalGuard pipeGuard(SIGPIPE);
@@ -43,12 +43,11 @@ TCPSocket::TCPSocket(const Endpoint& endpoint, const util::TimePair& timeout) :
   Connect(endpoint);
 }
 
-void TCPSocket::PopulateLocalEndpoint()
+void TCPSocket::PopulateLocalEndpoint(int socket)
 {
   struct sockaddr_storage localAddrStor;
   socklen_t localLen = sizeof(localAddrStor);
-  struct sockaddr* localAddr = 
-    reinterpret_cast<struct sockaddr*>(&localAddrStor);
+  struct sockaddr* localAddr = reinterpret_cast<struct sockaddr*>(&localAddrStor);
     
   if (getsockname(socket, (struct sockaddr*) localAddr, &localLen) < 0)
     throw NetworkSystemError(errno);
@@ -56,12 +55,11 @@ void TCPSocket::PopulateLocalEndpoint()
   localEndpoint = Endpoint(*localAddr, localLen);
 }
 
-void TCPSocket::PopulateRemoteEndpoint()
+void TCPSocket::PopulateRemoteEndpoint(int socket)
 {
   struct sockaddr_storage remoteAddrStor;
   socklen_t remoteLen = sizeof(remoteAddrStor);
-  struct sockaddr* remoteAddr = 
-    reinterpret_cast<struct sockaddr*>(&remoteAddrStor);
+  struct sockaddr* remoteAddr = reinterpret_cast<struct sockaddr*>(&remoteAddrStor);
 
   if (getpeername(socket, (struct sockaddr*) remoteAddr, &remoteLen) < 0)
     throw NetworkSystemError(errno);
@@ -69,29 +67,29 @@ void TCPSocket::PopulateRemoteEndpoint()
   remoteEndpoint = Endpoint(*remoteAddr, remoteLen);
 }
 
-void TCPSocket::Connect(const Endpoint& remoteEndpoint,
-                        const Endpoint* localEndpoint)
+void TCPSocket::Connect(const Endpoint& remoteEndpoint, const Endpoint* localEndpoint)
 {
-  socket = ::socket(static_cast<int>(remoteEndpoint.Family()), SOCK_STREAM, 0);
+  assert(socket < 0);
+  int socket = ::socket(static_cast<int>(remoteEndpoint.Family()), SOCK_STREAM, 0);
   if (socket < 0) throw NetworkSystemError(errno);
 
+  auto socketGuard = util::MakeScopeError([&socket]() { close(socket); }); (void) socketGuard;
+  
   int optVal = 1;
   setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof(optVal));
 
-  SetTimeout();
+  SetTimeout(socket);
   
   if (localEndpoint)
   {
     socklen_t addrLen = localEndpoint->Length();
     struct sockaddr_storage addrStor;
     memcpy(&addrStor, localEndpoint->Addr(), addrLen);
-    struct sockaddr* addr = 
-      reinterpret_cast<struct sockaddr*>(&addrStor);
+    struct sockaddr* addr = reinterpret_cast<struct sockaddr*>(&addrStor);
 
     if (bind(socket, addr, addrLen) < 0)
     {
       int errno_ = errno;
-      Close();
       throw util::net::NetworkSystemError(errno_);
     }
   }
@@ -102,7 +100,6 @@ void TCPSocket::Connect(const Endpoint& remoteEndpoint,
     if (errno != EINTR)
     {
       int errno_ = errno;
-      Close();
       if (errno_ == EWOULDBLOCK || errno_ == EAGAIN || errno_ == ETIMEDOUT)
         throw TimeoutError();
       else
@@ -111,8 +108,11 @@ void TCPSocket::Connect(const Endpoint& remoteEndpoint,
   }
   
   boost::this_thread::interruption_point();
-  PopulateRemoteEndpoint();
-  PopulateLocalEndpoint();
+  PopulateRemoteEndpoint(socket);
+  PopulateLocalEndpoint(socket);
+  
+  std::lock_guard<std::mutex> lock(socketMutex);
+  this->socket = socket;
 }
 
 void TCPSocket::Connect(const Endpoint& endpoint)
@@ -130,9 +130,9 @@ void TCPSocket::Accept(TCPListener& listener)
 {
   struct sockaddr_storage addrStor;
   socklen_t addrLen = sizeof(addrStor);
-  struct sockaddr* addr =
-    reinterpret_cast<struct sockaddr*>(&addrStor);
-    
+  struct sockaddr* addr = reinterpret_cast<struct sockaddr*>(&addrStor);
+
+  int socket;
   while ((socket = accept(listener.Socket(), addr, &addrLen)) < 0)
   {
     boost::this_thread::interruption_point();
@@ -144,10 +144,15 @@ void TCPSocket::Accept(TCPListener& listener)
         throw NetworkSystemError(errno);
     }
   }
-    
+  
+  auto socketGuard = util::MakeScopeError([&socket]() { close(socket); }); (void) socketGuard;
+  
   boost::this_thread::interruption_point();
-  PopulateRemoteEndpoint();
-  PopulateLocalEndpoint();
+  PopulateRemoteEndpoint(socket);
+  PopulateLocalEndpoint(socket);
+  
+  std::lock_guard<std::mutex> lock(socketMutex);
+  this->socket = socket;
 }
 
 void TCPSocket::HandshakeTLS(TLSSocket::HandshakeRole role)
@@ -214,21 +219,19 @@ void TCPSocket::Write(const char* buffer, size_t bufferLen)
   }
 }
 
-void TCPSocket::SetTimeout()
+void TCPSocket::SetTimeout(int socket)
 {
-  if (setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &timeout.Timeval(),
-                 sizeof(timeout.Timeval())) < 0)
+  if (setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &timeout.Timeval(), sizeof(timeout.Timeval())) < 0)
     throw NetworkSystemError(errno);
     
-  if (setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, &timeout.Timeval(),
-                 sizeof(timeout.Timeval())) < 0)
+  if (setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, &timeout.Timeval(), sizeof(timeout.Timeval())) < 0)
     throw NetworkSystemError(errno);
 }
 
 void TCPSocket::SetTimeout(const util::TimePair& timeout)
 {
   this->timeout = timeout;
-  SetTimeout();
+  SetTimeout(socket);
 }
 
 char TCPSocket::GetcharBuffered()
@@ -288,7 +291,7 @@ void TCPSocket::Getline(std::string& buffer, bool stripCRLF)
 void TCPSocket::Close()
 {
   std::lock_guard<std::mutex> lock(socketMutex);
-  if (socket != -1)
+  if (socket >= 0)
   {
     if (tls.get()) 
     {
@@ -304,7 +307,7 @@ void TCPSocket::Close()
 void TCPSocket::Shutdown()
 {
   std::lock_guard<std::mutex> lock(socketMutex);
-  if (socket != -1)  shutdown(socket, SHUT_RDWR);
+  if (socket >= 0)  shutdown(socket, SHUT_RDWR);
 }
 
 std::string TCPSocket::TLSCipher() const

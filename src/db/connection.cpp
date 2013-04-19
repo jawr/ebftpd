@@ -370,7 +370,7 @@ int Connection::NextAutoIncrement(const std::string& collection, const std::stri
     "  var sort = {};\n"
     "  sort[field] = -1;\n"
     "  var cursor = col.find({}, fieldsToReturn).sort(sort).limit(1);\n"
-    "  return NumberInt(cursor.hasNext() ? cursor.next()[field] + 1 : 0);\n"
+    "  return cursor.hasNext() ? cursor.next()[field] + 1 : 0;\n"
     "}\n";
 
   mongo::BSONArrayBuilder bab;
@@ -380,9 +380,10 @@ int Connection::NextAutoIncrement(const std::string& collection, const std::stri
 
   mongo::BSONObj info;
   mongo::BSONElement ret;
+  
   if (!Eval(javascript, info, ret, &args)) return -1;
-
-  return static_cast<int>(ret["value"].Int());
+  
+  return static_cast<int>(ret.Number());
 }
 
 std::ostream& operator<<(std::ostream& os, const mongo::BSONObj* obj)

@@ -38,7 +38,7 @@ class ReverseLogReader
   }
   
 public:
-	ReverseLogReader(const std::string& path) :
+  ReverseLogReader(const std::string& path) :
     fd(-1), data(nullptr), pos(-1)
   {
     Open(path);

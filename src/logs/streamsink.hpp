@@ -14,7 +14,6 @@ class Stream
 {
   std::shared_ptr<std::mutex> mutex;
   std::shared_ptr<std::ostream> stream;
-  bool takeOwnership;
   
 public:
   Stream(std::ostream* stream, bool takeOwnership = true) :
