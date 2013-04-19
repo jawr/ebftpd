@@ -188,7 +188,7 @@ bool AllowSiteCmd(const User& user, const std::string& keyword)
   auto info = user.ACLInfo();
   std::vector<std::string> toks;
   util::Split(toks, keyword, "|");
-	if (toks.empty()) return true;
+  if (toks.empty()) return true;
   for (auto& tok : toks)
   {
     try
