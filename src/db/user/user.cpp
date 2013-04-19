@@ -14,7 +14,7 @@ namespace db
 
 bool User::Create()
 {
-  db::SafeConnection conn;
+  NoErrorConnection conn;
   user.id = conn.InsertAutoIncrement("users", user, "uid");
   if (user.id == -1) return false;
   UpdateLog();
@@ -23,14 +23,14 @@ bool User::Create()
 
 void User::UpdateLog() const
 {
-  db::FastConnection conn;
+  FastConnection conn;
   auto entry = BSON("collection" << "users" << "id" << user.id);
   conn.Insert("updatelog", entry);
 }
 
 void User::SaveField(const std::string& field, bool updateLog) const
 {
-  db::NoErrorConnection conn;
+  NoErrorConnection conn;
   conn.SetField("users", QUERY("uid" << user.id), user, field);
   if (updateLog) UpdateLog();
 }
@@ -44,7 +44,7 @@ bool User::SaveName()
     UpdateLog();
     return true;
   }
-  catch (const db::DBError&)
+  catch (const DBError&)
   {
     return false;
   }
@@ -57,7 +57,7 @@ void User::SaveIPMasks()
 
 void User::SavePassword()
 {
-  db::NoErrorConnection conn;
+  NoErrorConnection conn;
   conn.SetFields("users", QUERY("uid" << user.id), user, { "password", "salt" });
   UpdateLog();
 }
@@ -69,7 +69,7 @@ void User::SaveFlags()
 
 void User::SaveGIDs()
 {
-  db::NoErrorConnection conn;
+  NoErrorConnection conn;
   conn.SetFields("users", QUERY("uid" << user.id), user, { "primary gid", "secondary gids", "gadmin gids" });
   UpdateLog();
 }
@@ -136,7 +136,7 @@ void User::SaveMaxSimUp()
 
 void User::SaveLoggedIn()
 {
-  db::NoErrorConnection conn;
+  NoErrorConnection conn;
   conn.SetFields("users", QUERY("uid" << user.id), user, { "logged in", "last login" });
 }
 
@@ -154,7 +154,7 @@ void User::IncrCredits(const std::string& section, long long kBytes)
 {
   auto doIncrement = [section, kBytes](acl::UserID uid)
     {
-      db::NoErrorConnection conn;
+      NoErrorConnection conn;
       auto updateExisting = [&]() -> bool
         {
           auto query = BSON("uid" << uid << 
@@ -207,7 +207,7 @@ bool User::DecrCredits(const std::string& section, long long kBytes, bool force)
   auto cmd = BSON("findandmodify" << "users" <<
                   "query" << query <<
                   "update" << update);
-  db::NoErrorConnection conn;                  
+  NoErrorConnection conn;                  
   mongo::BSONObj result;
   bool ret = conn.RunCommand(cmd, result);
   return force || (ret && result["value"].type() != mongo::jstNULL);
@@ -316,13 +316,13 @@ template <> acl::UserData Unserialize<acl::UserData>(const mongo::BSONObj& obj)
 
 boost::optional<acl::UserData> User::Load(acl::UserID uid)
 {
-  db::NoErrorConnection conn;                  
+  NoErrorConnection conn;                  
   return conn.QueryOne<acl::UserData>("users", QUERY("uid" << uid));
 }
 
 boost::optional<acl::UserData> User::Load(const std::string& name)
 {
-  db::NoErrorConnection conn;                  
+  NoErrorConnection conn;                  
   return conn.QueryOne<acl::UserData>("users", QUERY("name" << name));
 }
 
@@ -345,7 +345,7 @@ std::vector<T> GetUsersGeneric(const std::string& multiStr, const mongo::BSONObj
     {
       if (tok[0] == '=')
       {
-        acl::GroupID gid = db::NameToGID(tok.substr(1));
+        acl::GroupID gid = NameToGID(tok.substr(1));
         if (gid != -1)
         {
           gidsBab.append(gid);
@@ -364,7 +364,7 @@ std::vector<T> GetUsersGeneric(const std::string& multiStr, const mongo::BSONObj
                  BSON("secondary gids" << BSON("$in" << gids))));
   }
 
-  db::NoErrorConnection conn;
+  NoErrorConnection conn;
   return conn.QueryMulti<T>("users", query, 0, 0, fields);
 }
 
