@@ -39,7 +39,7 @@ void LoginKickUser::Execute(Server& server)
   Result result;
   for (auto& client: server.clients)
   {
-    if (client.User().ID() == uid && client.State() == ftp::ClientState::LoggedIn)
+    if (client.State() == ftp::ClientState::LoggedIn && client.User().ID() == uid)
     {
       if (!result.kicked)
       {
