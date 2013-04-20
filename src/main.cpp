@@ -154,10 +154,7 @@ int main(int argc, char** argv)
         logs::Error("Failed to setup signal handlers: %1%", e.Message());
         return 1;
       }
-      signals::Handler::StartThread();
     }
-    
-    auto signalsExit = util::MakeScopeExit([]() { signals::Handler::StopThread(); });
 
     cmd::rfc::Factory::Initialise();
     cmd::site::Factory::Initialise();
@@ -242,11 +239,13 @@ int main(int argc, char** argv)
       }
       else if (Daemonise(foreground))
       {
+        signals::Handler::StartThread();
         db::Replicator::Get().Start();
         ftp::Server::Get().StartThread();
         ftp::Server::Get().JoinThread();
         db::Replicator::Get().Stop();
         ftp::Server::Cleanup();
+        signals::Handler::StopThread();
       }
     }
 

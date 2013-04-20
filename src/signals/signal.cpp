@@ -17,6 +17,23 @@ namespace signals
 
 std::unique_ptr<Handler> Handler::instance;
 
+const char* SignalName(int signo)
+{
+  switch (signo)
+  {
+    case SIGSEGV  : return "SIGSEGV";
+    case SIGABRT  : return "SIGABRT";
+    case SIGBUS   : return "SIGBUS";
+    case SIGILL   : return "SIGILL";
+    case SIGFPE   : return "SIGFPE";
+    case SIGINT   : return "SIGINT";
+    case SIGTERM  : return "SIGTERM";
+    case SIGHUP   : return "SIGHUP";
+    case SIGQUIT  : return "SIGQUIT";
+    default       : return "UNKNOWN";
+  }  
+}
+
 void Handler::StartThread()
 {
   instance.reset(new Handler());
@@ -46,6 +63,7 @@ void Handler::Run()
   while (true)
   {
     sigwait(&mask, &signo);
+    logs::Debug("Signal received: %1% (%2%)", signo, SignalName(signo));
     switch (signo)
     {
       case SIGHUP   :
@@ -95,16 +113,7 @@ void PropogateSignal(int signo)
 
 void CrashHandler(int signo)
 {
-  const char* signame = nullptr;
-  
-  switch (signo)
-  {
-    case SIGSEGV  : signame = "SIGSEGV"; break;
-    case SIGABRT  : signame = "SIGABRT"; break;
-    case SIGBUS   : signame = "SIGBUS"; break;
-    case SIGILL   : signame = "SIGILL"; break;
-    case SIGFPE   : signame = "SIGFPE"; break;
-  }
+  const char* signame = SignalName(signo);
   
   std::stringstream ss;
   ss << "Critical error signal " << signo;
