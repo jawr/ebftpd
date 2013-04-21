@@ -52,9 +52,13 @@ class AsyncCRC32 : public CRC32
         std::unique_lock<std::mutex> lock(mutex);
         if ((*readIt)->empty)
         {
-          if (finished) break;
-          readCond.wait(lock);
-          if (finished) break;
+          if (finished) goto exitloop;
+          while (true)
+          {
+            readCond.wait(lock);
+            if (!(*readIt)->empty) break;
+            if (finished) goto exitloop;
+          }
         }
       }
       
@@ -63,11 +67,15 @@ class AsyncCRC32 : public CRC32
       mutex.lock();
       (*readIt)->empty = true;
       --pending;
+      assert(pending <= queue.size());
       mutex.unlock();
 
       writeCond.notify_one();
       if (++readIt == queue.end()) readIt = queue.begin();
     }
+    
+  exitloop:
+    return;
   }
   
   void WaitPending() const
@@ -110,6 +118,7 @@ public:
     (*writeIt)->len = len;
     (*writeIt)->empty = false;    
     ++pending;
+    assert(pending <= queue.size());
     mutex.unlock();
     
     readCond.notify_one();
