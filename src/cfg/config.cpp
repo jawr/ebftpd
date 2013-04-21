@@ -10,6 +10,7 @@
 #include "util/format.hpp"
 #include "cfg/util.hpp"
 #include "fs/mode.hpp"
+#include "cfg/defaults.hpp"
 
 namespace util
 {
@@ -55,38 +56,43 @@ Config::Config(const std::string& configPath, bool tool) :
   tool(tool),
   currentSection(nullptr),
   port(-1),
-  freeSpace(ParseSize("1G")),
-  sitenameLong("EBFTPD"),
-  sitenameShort("EB"),
-  datapath("data"),
-  bouncerOnly(false),
-  securityLog("security", true, true, 0),
-  databaseLog("database", true, true, 0),
-  eventLog("events", true, true, 0),
-  errorLog("errors", true, true, 0),
-  debugLog("debug", true, true, 0),
-  siteopLog("siteop", true, true, 0),
-  transferLog("transfer", false, false, 0, false, false),
-  dlIncomplete(true),
-  totalUsers(-1),
-  multiplierMax(10),
-  emptyNuke(102400),
-  maxSitecmdLines(1000),
-  weekStart(::cfg::WeekStart::Sunday),
-  epsvFxp(::cfg::EPSVFxp::Allow),
-  maximumRatio(10),
-  dirSizeDepth(2),
-  asyncCRC(false),
-  identLookup(true),
-  dnsLookup(true),
-  logAddresses(cfg::LogAddresses::Always),
-  umask(fs::CurrentUmask()),
-  defaultLogLines(100),
-  dataBufferSize(16384),
-  tlsControl("*"),
-  tlsListing("*"),
-  tlsData("!*"),
-  tlsFxp("!*")
+  freeSpace(defaultFreeSpace),
+  sitenameLong(defaultSitenameLong),
+  sitenameShort(defaultSitenameShort),
+  bouncerOnly(defaultBouncerOnly),
+  simXfers(defaultSimXfers),
+  securityLog(defaultSecurityLog),
+  databaseLog(defaultDatabaseLog),
+  eventLog(defaultEventLog),
+  errorLog(defaultErrorLog),
+  debugLog(defaultDebugLog),
+  siteopLog(defaultSiteopLog),
+  transferLog(defaultTransferLog),
+  maxUsers(defaultMaxUsers),
+  dlIncomplete(defaultDlIncomplete),
+  totalUsers(defaultTotalUsers),
+  lslong(defaultLslong),
+  multiplierMax(defaultMultiplierMax),
+  emptyNuke(defaultEmptyNuke),
+  nukedirStyle(defaultNukedirStyle),
+  maxSitecmdLines(defaultMaxSitecmdLines),
+  idleTimeout(defaultIdleTimeout),
+  database(defaultDatabase),
+  weekStart(defaultWeekStart),
+  epsvFxp(defaultEpsvFxp),
+  maximumRatio(defaultMaximumRatio),
+  dirSizeDepth(defaultDirSizeDepth),
+  asyncCRC(defaultAsyncCRC),
+  identLookup(defaultIdentLookup),
+  dnsLookup(defaultDnsLookup),
+  logAddresses(defaultLogAddresses),
+  umask(defaultUmask),
+  logLines(defaultLogLines),
+  dataBufferSize(defaultDataBufferSize),
+  tlsControl(defaultTlsControl),
+  tlsListing(defaultTlsListing),
+  tlsData(defaultTlsData),
+  tlsFxp(defaultTlsFxp)
 {
   std::string line;
   std::ifstream io(configPath.c_str());
@@ -127,8 +133,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     std::string keyword(opt.substr(1));
     if (aclKeywords.find(keyword) == aclKeywords.end() && !tool)
       throw ConfigError("Invalid command acl keyword: " + keyword);
-    commandACLs.insert(std::make_pair(keyword, 
-        acl::ACL(util::Join(toks, " "))));
+    commandACLs.insert(std::make_pair(keyword, acl::ACL(util::Join(toks, " "))));
   }
   else
   if (util::StartsWith(opt, "custom-"))
@@ -141,8 +146,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     {
       throw ConfigError("Invalid custom command acl keyword: " + command);
     }
-    commandACLs.insert(std::make_pair(util::ToLowerCopy(opt), 
-        acl::ACL(util::Join(toks, " "))));
+    commandACLs.insert(std::make_pair(util::ToLowerCopy(opt), acl::ACL(util::Join(toks, " "))));
   }
   else
   if (opt == "database")
@@ -674,11 +678,11 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
       throw boost::bad_lexical_cast();
     }
   }
-  else if (opt == "default_log_lines")
+  else if (opt == "log_lines")
   {
     ParameterCheck(opt, toks, 1);
-    defaultLogLines = boost::lexical_cast<int>(toks[0]);
-    if (defaultLogLines < 0) throw boost::bad_lexical_cast();
+    logLines = boost::lexical_cast<int>(toks[0]);
+    if (logLines < 0) throw boost::bad_lexical_cast();
   }
   else if (opt == "data_buffer_size")
   {
@@ -783,8 +787,8 @@ void Config::SanityCheck()
   if (loginPrompt.empty())
     loginPrompt = sitenameLong + ": ebftpd connected.";
     
-  if (allowFxp.empty()) allowFxp.emplace_back();
-  if (pathFilter.empty()) pathFilter.emplace_back();
+  if (allowFxp.empty()) allowFxp.emplace_back(defaultAllowFxp);
+  if (pathFilter.empty()) pathFilter.emplace_back(defaultPathFilter);
 }
 
 bool Config::IsBouncer(const std::string& ip) const
@@ -844,11 +848,13 @@ bool Config::IsEventLogged(const std::string& path) const
 
 bool Config::IsDupeLogged(const std::string& path) const
 {
+  if (path.empty()) return false;
   return util::WildcardMatch(dupepath, path + (path.back() != '/' ? "/" : ""));
 }
 
 bool Config::IsIndexed(const std::string& path) const
 {
+  if (path.empty()) return false;
   return util::WildcardMatch(indexpath, path + (path.back() != '/' ? "/" : ""));
 }
 

@@ -151,8 +151,7 @@ class Config
   bool dnsLookup;
   ::cfg::LogAddresses logAddresses;
   mode_t umask;
-  int defaultLogLines;
-
+  int logLines;
   ssize_t dataBufferSize;
   
   acl::ACL tlsControl;
@@ -302,7 +301,7 @@ public:
   bool DNSLookup() const { return dnsLookup; }
   ::cfg::LogAddresses LogAddresses() const { return logAddresses; }
   mode_t Umask() const { return umask; }
-  int DefaultLogLines() const { return defaultLogLines; }
+  int LogLines() const { return logLines; }
   size_t DataBufferSize() const { return dataBufferSize; }
   
   const acl::ACL& CommandACL(const std::string& keyword) const

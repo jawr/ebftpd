@@ -30,7 +30,7 @@ class Database
   std::string password;
   
 public:
-  Database();
+  Database(const char* name, const char* address, int port, const char* login, const char* password);
   Database(const std::vector<std::string>& toks);
   
   const std::string& Name() const { return name; }
@@ -140,7 +140,7 @@ class SimXfers
   int maxUploads;
   
 public:
-  SimXfers() : maxDownloads(-1), maxUploads(-1) { }
+  SimXfers(int maxDownloads, int maxUploads);
   SimXfers(std::vector<std::string> toks);
   int MaxDownloads() const { return maxDownloads; }
   int MaxUploads() const { return maxUploads; }
@@ -184,11 +184,7 @@ class AllowFxp
   acl::ACL acl;
   
 public:
-  AllowFxp() :
-    downloads(true), uploads(true), 
-    logging(false), acl("*")
-  { }
-  
+  AllowFxp(bool downloads, bool uploads, bool logging, const char* acl);
   AllowFxp(std::vector<std::string> toks);
   bool Downloads() const { return downloads; }
   bool Uploads() const { return uploads; }
@@ -219,7 +215,7 @@ public:
   PathFilter(PathFilter&& other);
   ~PathFilter();
   
-  PathFilter();
+  PathFilter(const char* regex, const char* acl);
   PathFilter(std::vector<std::string> toks);
   const boost::regex& Regex() const;
   const acl::ACL& ACL() const { return acl; }
@@ -232,7 +228,7 @@ class MaxUsers
   int exemptUsers;
   
 public:
-  MaxUsers() : users(50), exemptUsers(5) { }
+  MaxUsers(int users, int exemptUsers);
   MaxUsers(const std::vector<std::string>& toks);
   int Users() const { return users; }
   int ExemptUsers() const { return exemptUsers; }
@@ -245,7 +241,7 @@ class Lslong
   int maxRecursion;
   
 public:
-  Lslong() : options("l"), maxRecursion(2) { }
+  Lslong(const char* options, int maxRecursion);
   Lslong(std::vector<std::string> toks);
   const std::string& Options() const { return options; }
   int MaxRecursion() const { return maxRecursion; }
@@ -260,18 +256,6 @@ public:
   HiddenFiles(std::vector<std::string> toks);
   const std::string& Path() const { return path; }
   const std::vector<std::string>& Masks() const { return masks; }
-};
-
-class Requests
-{
-  std::string path;
-  int max;
-  
-public:
-  Requests() : max(10) { }
-  Requests(const std::vector<std::string>& toks);
-  const std::string& Path() const { return path; }                              
-  int Max() const { return max; }
 };
 
 class Creditcheck
@@ -311,7 +295,7 @@ private:
   long long emptyKBytes;
 
 public:
-  NukedirStyle();
+  NukedirStyle(const std::string& format, Action action, long long emptyKBytes);
   NukedirStyle(const std::vector<std::string>& toks);
   const std::string& Format() const { return format; }
   long long EmptyKBytes() const { return emptyKBytes; }
@@ -392,7 +376,7 @@ public:
   IdleTimeout(const IdleTimeout& other);
   IdleTimeout(IdleTimeout&& other);
 
-  IdleTimeout();
+  IdleTimeout(long maximum, long minimum, long timeout);
   IdleTimeout(const std::vector<std::string>& toks);
   ~IdleTimeout();
     

@@ -249,7 +249,7 @@ void STORCommand::Execute()
       }
   });
   
-  const size_t bufferSize = BUFSIZ;//cfg::DataBufferSize();
+  const size_t bufferSize = cfg::Get().DataBufferSize();
   bool calcCrc = CalcCRC(path);
   std::unique_ptr<util::CRC32> crc32(cfg::Get().AsyncCRC() ? 
                                      new util::AsyncCRC32(bufferSize, 10) :

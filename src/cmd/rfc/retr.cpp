@@ -201,7 +201,7 @@ void RETRCommand::Execute()
   bool aborted = false;
   try
   {
-    const size_t bufferSize = BUFSIZ; //cfg::Get().DataBufferSize();
+    const size_t bufferSize = cfg::Get().DataBufferSize();
     ftp::DownloadSpeedControl speedControl(client, path);
     ftp::OnlineTransferUpdater onlineUpdater(boost::this_thread::get_id(), stats::Direction::Download,
                                              data.State().StartTime());
