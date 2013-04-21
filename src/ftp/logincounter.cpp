@@ -25,6 +25,12 @@ CounterResult LoginCounter::Start(acl::UserID uid, int limit, bool kickLogin, bo
   return CounterResult::Okay;
 }
 
+bool LoginCounter::LoginsUsed(acl::UserID uid, int limit)
+{
+  std::lock_guard<std::mutex> lock(mutex);
+  return limit != -1 && personal[uid] >= limit;
+}
+
 void LoginCounter::Stop(acl::UserID uid)
 {
   std::lock_guard<std::mutex> lock(mutex);

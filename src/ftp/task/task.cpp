@@ -37,19 +37,34 @@ void KickUser::Execute(Server& server)
 void LoginKickUser::Execute(Server& server)
 {
   Result result;
-  for (auto& client: server.clients)
+  Client* toKick;  
+  
+  do
   {
-    if (client.State() == ftp::ClientState::LoggedIn && client.User().ID() == uid)
+    toKick = nullptr;
+    result.logins = 0;
+    result.idleTime = boost::posix_time::time_duration(0, 0, 0, 0);
+    
+    for (auto& client : server.clients)
     {
-      if (!result.kicked)
+      if (client.State() == ftp::ClientState::LoggedIn && client.User().ID() == uid)
       {
-        client.Interrupt();
-        result.kicked = true;
-        result.idleTime = client.IdleTime();
+        if (client.IdleTime() >= result.idleTime)
+        {
+          result.idleTime = client.IdleTime();
+          toKick = &client;
+        }
+        
+        ++result.logins;
       }
-      
-      ++result.logins;
     }
+  }
+  while (toKick && toKick->State() != ftp::ClientState::LoggedIn);
+  
+  if (toKick)
+  {
+    toKick->Interrupt();
+    result.kicked = true;
   }
   
   promise.set_value(result);

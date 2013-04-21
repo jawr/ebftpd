@@ -9,6 +9,7 @@
 #include "acl/misc.hpp"
 #include "acl/flags.hpp"
 #include "fs/path.hpp"
+#include "ftp/counter.hpp"
 
 namespace cmd { namespace rfc
 {
@@ -87,10 +88,13 @@ void PASSCommand::Execute()
   if (client.KickLogin())
   {
     logs::Debug("%1% requested a login kick.", client.User().Name());
-    std::future<ftp::task::LoginKickUser::Result> future;
-    std::make_shared<ftp::task::LoginKickUser>(client.User().ID(), future)->Push();    
-    future.wait();
-    kickResult = future.get();
+    if (ftp::Counter::Login().LoginsUsed(client.User().ID(), client.User().NumLogins()))
+    {
+      std::future<ftp::task::LoginKickUser::Result> future;
+      std::make_shared<ftp::task::LoginKickUser>(client.User().ID(), future)->Push();    
+      future.wait();
+      kickResult = future.get();
+    }
   }
   
   try
