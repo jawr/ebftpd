@@ -70,7 +70,7 @@ class AsyncCRC32 : public CRC32
     }
   }
   
-   void WaitPending() const
+  void WaitPending() const
   {
     std::unique_lock<std::mutex> lock(mutex);
     while (pending > 0) writeCond.wait(lock);
@@ -100,6 +100,28 @@ public:
     readCond.notify_one();
     thread.join();
     for (auto buf : queue) delete buf;
+  }
+
+  void Update(unsigned len)
+  {
+    assert(len <= (*writeIt)->data.size());
+
+    mutex.lock();
+    (*writeIt)->len = len;
+    (*writeIt)->empty = false;    
+    ++pending;
+    mutex.unlock();
+    
+    readCond.notify_one();
+    
+    if (++writeIt == queue.end()) writeIt = queue.begin();
+    std::unique_lock<std::mutex> lock(mutex);
+    while (!(*writeIt)->empty) writeCond.wait(lock);
+  }
+
+  uint8_t* GetBuffer()
+  {
+    return (*writeIt)->data.data();
   }
   
   void Update(const uint8_t* bytes, unsigned len)
