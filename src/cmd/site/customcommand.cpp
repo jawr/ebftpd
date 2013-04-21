@@ -88,7 +88,7 @@ void CustomALIASCommand::Execute()
       }
       catch (const cmd::SyntaxError&)
       {
-        control.Reply(ftp::SyntaxError, def->Syntax());
+        control.Format(ftp::SyntaxError, "Syntax: %1% [<arguments> ..]", args[0]);
       }
       catch (const cmd::PermissionError&)
       {

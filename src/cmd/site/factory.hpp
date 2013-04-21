@@ -88,8 +88,11 @@ public:
   
   CommandDef(const std::string& aclKeyword,
              const std::shared_ptr<CreatorBase<cmd::Command>>& creator) :
-    minimumArgs(0), maximumArgs(-1), aclKeyword(aclKeyword), 
-    creator(creator) { }
+    minimumArgs(0), 
+    maximumArgs(-1), 
+    aclKeyword(aclKeyword), 
+    creator(creator)
+  { }
   
   bool CheckArgs(const std::vector<std::string>& args) const
   {
