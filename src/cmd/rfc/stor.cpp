@@ -140,8 +140,7 @@ void STORCommand::Execute()
   
   auto countGuard = util::MakeScopeExit([&]{ ftp::Counter::Upload().Stop(client.User().ID()); });  
 
-  if (data.DataType() == ftp::DataType::ASCII &&
-     !cfg::Get().AsciiUploads().Allowed(path.ToString()))
+  if (data.DataType() == ftp::DataType::ASCII && !cfg::Get().AsciiUploads().Allowed(path.ToString()))
   {
     control.Reply(ftp::ActionNotOkay, "File can't be uploaded in ASCII, change to BINARY.");
     throw cmd::NoPostScriptError();
@@ -250,7 +249,7 @@ void STORCommand::Execute()
       }
   });
   
-  static const size_t bufferSize = 16384;
+  const size_t bufferSize = BUFSIZ;//cfg::DataBufferSize();
   bool calcCrc = CalcCRC(path);
   std::unique_ptr<util::CRC32> crc32(cfg::Get().AsyncCRC() ? 
                                      new util::AsyncCRC32(bufferSize, 10) :
@@ -263,26 +262,27 @@ void STORCommand::Execute()
     ftp::UploadSpeedControl speedControl(client, path);
     ftp::OnlineTransferUpdater onlineUpdater(boost::this_thread::get_id(), stats::Direction::Upload,
                                              data.State().StartTime());
-    std::vector<char> asciiBuf;
-    char buffer[bufferSize];
+    std::vector<char> asciiBuffer;
+    std::vector<char> buffer;
+    buffer.resize(bufferSize);
     
     while (true)
     {
-      size_t len = data.Read(buffer, sizeof(buffer));
+      size_t len = data.Read(&buffer[0], buffer.size());
       
-      char *bufp  = buffer;
+      const char *bufp  = buffer.data();
       if (data.DataType() == ftp::DataType::ASCII)
       {
-        ftp::ASCIITranscodeSTOR(buffer, len, asciiBuf);
-        len = asciiBuf.size();
-        bufp = asciiBuf.data();
+        ftp::ASCIITranscodeSTOR(bufp, len, asciiBuffer);
+        len = asciiBuffer.size();
+        bufp = asciiBuffer.data();
       }
       
       data.State().Update(len);
       
       fout->write(bufp, len);
       
-      if (calcCrc) crc32->Update(reinterpret_cast<uint8_t*>(bufp), len);
+      if (calcCrc) crc32->Update(reinterpret_cast<const uint8_t*>(bufp), len);
       onlineUpdater.Update(data.State().Bytes());
       speedControl.Apply();
     }

@@ -82,6 +82,7 @@ Config::Config(const std::string& configPath, bool tool) :
   logAddresses(cfg::LogAddresses::Always),
   umask(fs::CurrentUmask()),
   defaultLogLines(100),
+  dataBufferSize(16384),
   tlsControl("*"),
   tlsListing("*"),
   tlsData("!*"),
@@ -678,6 +679,12 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1);
     defaultLogLines = boost::lexical_cast<int>(toks[0]);
     if (defaultLogLines < 0) throw boost::bad_lexical_cast();
+  }
+  else if (opt == "data_buffer_size")
+  {
+    ParameterCheck(opt, toks, 1);
+    dataBufferSize = boost::lexical_cast<size_t>(toks[0]);
+    if (dataBufferSize < 0) throw boost::bad_lexical_cast();
   }
   else if (opt == "tls_control")
   {

@@ -152,6 +152,8 @@ class Config
   ::cfg::LogAddresses logAddresses;
   mode_t umask;
   int defaultLogLines;
+
+  ssize_t dataBufferSize;
   
   acl::ACL tlsControl;
   acl::ACL tlsListing;
@@ -301,7 +303,8 @@ public:
   ::cfg::LogAddresses LogAddresses() const { return logAddresses; }
   mode_t Umask() const { return umask; }
   int DefaultLogLines() const { return defaultLogLines; }
-
+  size_t DataBufferSize() const { return dataBufferSize; }
+  
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }
   

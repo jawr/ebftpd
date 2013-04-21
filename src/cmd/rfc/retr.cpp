@@ -201,17 +201,19 @@ void RETRCommand::Execute()
   bool aborted = false;
   try
   {
+    const size_t bufferSize = BUFSIZ; //cfg::Get().DataBufferSize();
     ftp::DownloadSpeedControl speedControl(client, path);
     ftp::OnlineTransferUpdater onlineUpdater(boost::this_thread::get_id(), stats::Direction::Download,
                                              data.State().StartTime());
     
     bool dlIncomplete = cfg::Get().DlIncomplete();
-    std::vector<char> asciiBuf;
-    char buffer[16384];
+    std::vector<char> asciiBuffer;
+    std::vector<char> buffer;
+    buffer.resize(bufferSize);
     
     while (true)
     {
-      std::streamsize len = fin->read(buffer, sizeof(buffer));
+      std::streamsize len = fin->read(&buffer[0], buffer.size());
       if (len < 0) 
       {
         if (!dlIncomplete || !fs::IsIncomplete(MakeReal(path))) break;
@@ -221,12 +223,12 @@ void RETRCommand::Execute()
       
       data.State().Update(len);
       
-      char *bufp = buffer;
+      const char *bufp = buffer.data();
       if (data.DataType() == ftp::DataType::ASCII)
       {
-        ftp::ASCIITranscodeRETR(buffer, len, asciiBuf);
-        len = asciiBuf.size();
-        bufp = asciiBuf.data();
+        ftp::ASCIITranscodeRETR(bufp, len, asciiBuffer);
+        len = asciiBuffer.size();
+        bufp = asciiBuffer.data();
       }
       
       data.Write(bufp, len);
