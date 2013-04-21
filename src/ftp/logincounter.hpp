@@ -28,6 +28,7 @@ class LoginCounter
   
 public:
   CounterResult Start(acl::UserID uid, int limit, bool kickLogin, bool exempt);
+  bool LoginsUsed(acl::UserID uid, int limit);
   void Stop(acl::UserID uid);
   int GlobalCount() const;
   

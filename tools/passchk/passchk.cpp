@@ -23,13 +23,15 @@ void DisplayVersion()
 }
 
 bool ParseOptions(int argc, char** argv, std::string& configPath, 
-                  std::string& username, std::string& password)
+                  std::string& username, std::string& password,
+                  bool& quiet)
 {
   namespace po = boost::program_options;
   po::options_description visible("supported options");
   visible.add_options()
     ("help,h", "display this help message")
     ("version,v", "display version")
+    ("quiet,q", "suppress output")
     ("config-path,c", po::value<std::string>(), "specify location of config file")
   ;
   
@@ -71,6 +73,7 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     return false;
   }
 
+  quiet = vm.count("quiet") > 0;
   if (vm.count("config-path")) configPath = vm["config-path"].as<std::string>();
   
   return true;
@@ -118,8 +121,9 @@ int main(int argc, char** argv)
   std::string username;
   std::string password;
   std::string configPath;
+  bool quiet;
 
-  if (!ParseOptions(argc, argv, configPath, username, password)) return 1;
+  if (!ParseOptions(argc, argv, configPath, username, password, quiet)) return 1;
 
   try
   {
@@ -138,10 +142,10 @@ int main(int argc, char** argv)
   using namespace util::passwd;
   if (HexEncode(HashPassword(password, HexDecode(salt))) != hash)
   {
-    std::cout << "Password incorrect" << std::endl;
+    if (!quiet) std::cout << "Password incorrect" << std::endl;
     return 1;
   }
   
-  std::cout << "Password okay" << std::endl;
+  if (!quiet) std::cout << "Password okay" << std::endl;
   return 0;
 }

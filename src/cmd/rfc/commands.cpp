@@ -949,8 +949,7 @@ void STATCommand::Execute()
   dirList.Execute();
   boost::posix_time::ptime end = boost::posix_time::microsec_clock::local_time();
   
-  control.Reply(ftp::DirectoryStatus, "End of status (" + 
-      stats::HighResSecondsString(start, end) + ")"); 
+  control.Reply(ftp::DirectoryStatus, "End of status (" + stats::HighResSecondsString(start, end) + ")"); 
   return;
   
   (void) singleLineReplies;

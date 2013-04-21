@@ -52,9 +52,13 @@ class AsyncCRC32 : public CRC32
         std::unique_lock<std::mutex> lock(mutex);
         if ((*readIt)->empty)
         {
-          if (finished) break;
-          readCond.wait(lock);
-          if (finished) break;
+          if (finished) goto exitloop;
+          while (true)
+          {
+            readCond.wait(lock);
+            if (!(*readIt)->empty) break;
+            if (finished) goto exitloop;
+          }
         }
       }
       
@@ -63,14 +67,18 @@ class AsyncCRC32 : public CRC32
       mutex.lock();
       (*readIt)->empty = true;
       --pending;
+      assert(pending <= queue.size());
       mutex.unlock();
 
       writeCond.notify_one();
       if (++readIt == queue.end()) readIt = queue.begin();
     }
+    
+  exitloop:
+    return;
   }
   
-   void WaitPending() const
+  void WaitPending() const
   {
     std::unique_lock<std::mutex> lock(mutex);
     while (pending > 0) writeCond.wait(lock);
@@ -100,6 +108,29 @@ public:
     readCond.notify_one();
     thread.join();
     for (auto buf : queue) delete buf;
+  }
+
+  void Update(unsigned len)
+  {
+    assert(len <= (*writeIt)->data.size());
+
+    mutex.lock();
+    (*writeIt)->len = len;
+    (*writeIt)->empty = false;    
+    ++pending;
+    assert(pending <= queue.size());
+    mutex.unlock();
+    
+    readCond.notify_one();
+    
+    if (++writeIt == queue.end()) writeIt = queue.begin();
+    std::unique_lock<std::mutex> lock(mutex);
+    while (!(*writeIt)->empty) writeCond.wait(lock);
+  }
+
+  uint8_t* GetBuffer()
+  {
+    return (*writeIt)->data.data();
   }
   
   void Update(const uint8_t* bytes, unsigned len)

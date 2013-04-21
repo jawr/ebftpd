@@ -48,14 +48,13 @@ public:
     std::string cArgStr(custSiteCmd.Arguments());
     if (!argStr.empty())
     {
-      cArgStr += ' ';
+      if (!cArgStr.empty()) cArgStr += ' ';
       cArgStr += argStr;
     }
-    
+
     // rebuild args
     std::vector<std::string> cArgs;
-    if (!cArgStr.empty())
-      util::Split(cArgs, cArgStr, " ", true);
+    if (!cArgStr.empty()) util::Split(cArgs, cArgStr, " ", true);
     cArgs.insert(cArgs.begin(), custSiteCmd.Command());
     
     return new CommandT(custSiteCmd, client, cArgStr, cArgs);

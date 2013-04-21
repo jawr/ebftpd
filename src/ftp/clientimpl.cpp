@@ -40,6 +40,7 @@ std::atomic_bool ClientImpl::siteopOnly(false);
 ClientImpl::ClientImpl(Client& parent) :
   parent(parent),
   data(parent), 
+  loginGuard(parent),
   userUpdated(false),
   state(ClientState::LoggedOut),
   passwordAttemps(0),
@@ -70,22 +71,20 @@ void ClientImpl::SetState(ClientState state)
 
   if (logout)
   {
-    Counter::Login().Stop(user->ID());
+    loginGuard.Logout();
     logs::Event("LOGOUT", logs::QuoteOff(), 
                 "ident_address", Ident(LogAddresses::Normal) + "@" + Hostname(LogAddresses::Normal), 
                 "ip", logs::Brackets('(', ')'), IP(LogAddresses::Normal), 
                  logs::QuoteOn(), "user", user->Name(), 
                 "group", user->PrimaryGroup(), 
                 "tagline", user->Tagline());
-    OnlineWriter::Get().LoggedOut(boost::this_thread::get_id());
     plugins.TriggerEvent(plugin::Event::LoggedOut, parent);
   }
 }
 
 void ClientImpl::SetLoggedIn(bool kicked)
 {
-  auto result = Counter::Login().Start(user->ID(), user->NumLogins(), kicked, 
-                                       user->HasFlag(acl::Flag::Exempt));
+  auto result = loginGuard.Login(kicked, boost::this_thread::get_id());
   switch (result)
   {
     case CounterResult::PersonalFail  :
@@ -118,9 +117,7 @@ void ClientImpl::SetLoggedIn(bool kicked)
               "ip", logs::Brackets('(', ')'), IP(LogAddresses::Normal), 
               logs::QuoteOn(), "user", user->Name(), 
               "group", user->PrimaryGroup(), 
-              "tagline", user->Tagline());
-              
-  OnlineWriter::Get().LoggedIn(boost::this_thread::get_id(), parent, fs::WorkDirectory().ToString());
+              "tagline", user->Tagline());  
   plugins.TriggerEvent(plugin::Event::LoggedIn, parent);
 }
 
@@ -599,6 +596,27 @@ void ClientImpl::Run()
   }
   
   (void) finishedGuard; /* silence unused variable warning */
+}
+
+CounterResult LoginGuard::Login(bool kicked, const boost::thread::id& tid)
+{
+  auto result = Counter::Login().Start(client.User().ID(), client.User().NumLogins(), 
+                                       kicked, client.User().HasFlag(acl::Flag::Exempt));
+  if (result != CounterResult::Okay) return result;
+
+  OnlineWriter::Get().LoggedIn(tid, client, fs::WorkDirectory().ToString());
+  
+  this->tid = tid;
+  loggedIn = true;
+  return CounterResult::Okay;
+}
+
+void LoginGuard::Logout()
+{
+  assert(loggedIn);
+  Counter::Login().Stop(client.User().ID());
+  OnlineWriter::Get().LoggedOut(tid);  
+  loggedIn = false;
 }
 
 } /* ftp namespace */

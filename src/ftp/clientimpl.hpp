@@ -31,6 +31,34 @@ namespace ftp
 {
 
 class Client;
+enum class CounterResult;
+
+class LoginGuard
+{
+  Client& client;
+  bool loggedIn;
+  boost::thread::id tid;
+  
+public:
+  LoginGuard(Client& client) : 
+    client(client), loggedIn(false)
+  {
+  }
+  
+  ~LoginGuard()
+  {
+    if (loggedIn) 
+    {
+      Logout();
+    }
+  }
+  
+  CounterResult Login(bool kicked, const boost::thread::id& tid);
+  void Logout();
+};
+
+
+class Client;
 
 class ClientImpl : public util::Thread
 {
@@ -41,6 +69,7 @@ class ClientImpl : public util::Thread
   ::ftp::Data data;
   util::ProcessReader child;
   
+  LoginGuard loginGuard;
   std::atomic<bool> userUpdated;
   boost::optional<acl::User> user;
   ::ftp::ClientState state;
