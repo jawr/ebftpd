@@ -34,7 +34,7 @@ const char*             defaultTlsControl         = "*";    // enforced
 const char*             defaultTlsListing         = "*";    // enforced
 const char*             defaultTlsData            = "!*";   // not enforced
 const char*             defaultTlsFxp             = "!*";   // not enforced
-const Database          defaultDatabase           ("ebftpd", "localhost", 17017, "", "");
+const Database          defaultDatabase           ("ebftpd", "localhost", 27017, "", "");
 const PathFilter        defaultPathFilter         ("^[[\\]A-Za-z0-9_'()[:space:]][[\\]A-Za-z0-9_.'()[:space:]-]+$", "*");
 const NukedirStyle      defaultNukedirStyle       ("NUKED-%N", NukedirStyle::Keep, 1024);
 const IdleTimeout       defaultIdleTimeout        (7200 /* max */, 1 /* min */, 900 /* default */);

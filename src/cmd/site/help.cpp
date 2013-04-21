@@ -33,23 +33,39 @@ void HELPCommand::ListNoTemplate()
   std::ostringstream os;
   os << " " << programFullname << " SITE command listing - \n\n";
   
-  std::vector<std::string> sorted;
+  std::vector<std::pair<std::string, std::string>> sorted;
   size_t maxLen = 0;
   for (auto& kv : commands)
   {
     if (acl::AllowSiteCmd(client.User(), kv.second.ACLKeyword()))
     {
-      sorted.emplace_back(kv.first);
+      sorted.emplace_back(kv.first, kv.second.Description());
       maxLen = std::max(kv.first.length(), maxLen);
     }
   }
   
   std::sort(sorted.begin(), sorted.end());
     
-  for (auto& command : sorted)
+  for (const auto& sc : cfg::Get().SiteCmd())
   {
-    os << " " << std::setw(maxLen) << command << " : " 
-       << commands.at(command).Description() << "\n";
+    auto def = Factory::LookupCustom(sc.Command());
+    if (def && acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
+    {
+      sorted.emplace_back(sc.Command(), sc.Description());
+      maxLen = std::max(sc.Command().length(), maxLen);
+    }
+  }
+
+  std::sort(sorted.begin(), sorted.end(),
+        [](const std::pair<std::string, std::string>& c1,
+           const std::pair<std::string, std::string>& c2)
+        {
+          return c1.first < c2.first;
+        });
+
+  for (const auto& kv : sorted)
+  {
+    os << " " << std::setw(maxLen) << kv.first << " : " << kv.second << "\n";
   }
     
   os << "\n End of list";
