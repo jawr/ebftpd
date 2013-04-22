@@ -70,42 +70,17 @@ class CommandDef
   std::string description;
 
 public:
-  CommandDef() :
-    minimumArgs(-1), maximumArgs(-1), creator(nullptr) { }
-  
   CommandDef(int minimumArgs, int maximumArgs,
              const std::string& aclKeyword,
              const std::shared_ptr<CreatorBase<cmd::Command>>& creator,
              const std::string& syntax,
-             const std::string& description) :
-    minimumArgs(minimumArgs),
-    maximumArgs(maximumArgs),
-    aclKeyword(aclKeyword),
-    creator(creator),
-    syntax(syntax),
-    description(description)
-  { }
-  
-  CommandDef(const std::string& aclKeyword,
-             const std::shared_ptr<CreatorBase<cmd::Command>>& creator) :
-    minimumArgs(0), 
-    maximumArgs(-1), 
-    aclKeyword(aclKeyword), 
-    creator(creator)
-  { }
-  
-  bool CheckArgs(const std::vector<std::string>& args) const
-  {
-    int argsSize = static_cast<int>(args.size()) - 1;
-    return (argsSize >= minimumArgs &&
-            (maximumArgs == -1 || argsSize <= maximumArgs));
-  }
-  
-  CommandPtr Create(ftp::Client& client, const std::string& argStr, const Args& args) const
-  {
-    if (!creator) return nullptr;
-    return CommandPtr(creator->Create(client, argStr, args));
-  }
+             const std::string& description);
+  CommandDef(const std::string& aclKeyword, 
+             const std::string& syntax,
+             const std::string& description,
+             const std::shared_ptr<CreatorBase<cmd::Command>>& creator);
+  bool CheckArgs(const std::vector<std::string>& args) const;
+  CommandPtr Create(ftp::Client& client, const std::string& argStr, const Args& args) const;
   
   const std::string& Syntax() const { return syntax; }
   const std::string& Description() const { return description; }

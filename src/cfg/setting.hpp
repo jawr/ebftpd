@@ -333,6 +333,7 @@ public:
   
 private:
   std::string command;
+  std::string syntax;
   Type type;
   std::string description;
   std::string target;
@@ -341,6 +342,7 @@ private:
 public:
   SiteCmd(const std::vector<std::string>& toks);
   const std::string& Command() const { return command; }
+  const std::string& Syntax() const { return syntax; }
   Type GetType() const { return type; }
   const std::string& Description() const { return description; }
   const std::string& Arguments() const { return arguments; }

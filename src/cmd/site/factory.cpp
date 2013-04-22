@@ -323,17 +323,20 @@ CommandDefOpt Factory::LookupCustom(const std::string& command)
   {
     case cfg::SiteCmd::Type::Exec  :
     {
-      def.reset(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomEXECCommand>>(*match)));
+      def.reset(CommandDef(aclKeyword, match->Syntax(), match->Description(),
+                           std::make_shared<CustomCreator<CustomEXECCommand>>(*match)));
       break;
     }
     case cfg::SiteCmd::Type::Text  :
     {
-      def.reset(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomTEXTCommand>>(*match)));
+      def.reset(CommandDef(aclKeyword, match->Syntax(), match->Description(),
+                           std::make_shared<CustomCreator<CustomTEXTCommand>>(*match)));
       break;
     }
     case cfg::SiteCmd::Type::Alias :
     {
-      def.reset(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomALIASCommand>>(*match)));
+      def.reset(CommandDef(aclKeyword, match->Syntax(), match->Description(),
+                           std::make_shared<CustomCreator<CustomALIASCommand>>(*match)));
       break;
     }
     default                                 :
@@ -367,6 +370,45 @@ std::unordered_set<std::string> Factory::ACLKeywords()
     keywords.insert(curKeywords.begin(), curKeywords.end());
   }
   return keywords;
+}
+
+CommandDef::CommandDef(int minimumArgs, int maximumArgs,
+                       const std::string& aclKeyword,
+                       const std::shared_ptr<CreatorBase<cmd::Command>>& creator,
+                       const std::string& syntax,
+                       const std::string& description) :
+  minimumArgs(minimumArgs),
+  maximumArgs(maximumArgs),
+  aclKeyword(aclKeyword),
+  creator(creator),
+  syntax(syntax),
+  description(description)
+{ }
+
+CommandDef::CommandDef(const std::string& aclKeyword,
+                       const std::string& syntax,
+                       const std::string& description,
+                       const std::shared_ptr<CreatorBase<cmd::Command>>& creator) :
+  minimumArgs(0), 
+  maximumArgs(-1), 
+  aclKeyword(aclKeyword), 
+  creator(creator),
+  syntax("Syntax: " + syntax),
+  description(description)
+{
+}
+
+bool CommandDef::CheckArgs(const std::vector<std::string>& args) const
+{
+  int argsSize = static_cast<int>(args.size()) - 1;
+  return (argsSize >= minimumArgs &&
+          (maximumArgs == -1 || argsSize <= maximumArgs));
+}
+
+CommandPtr CommandDef::Create(ftp::Client& client, const std::string& argStr, const Args& args) const
+{
+  if (!creator) return nullptr;
+  return CommandPtr(creator->Create(client, argStr, args));
 }
 
 } /* site namespace */

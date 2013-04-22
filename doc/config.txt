@@ -413,9 +413,9 @@ required:         no
 default:          none
 description:      define a private path only visible and accessible to those with specified acls
 ------------------------------------------------------------------------------------------------------------------------
-usage:            site_cmd <command> <descrption> <exec|text|alias> <target> [<arguments> ..]
+usage:            site_cmd <syntax> <descrption> <exec|text|alias> <target> [<arguments> ..]
 required:         no
-defauult:          none
+defauult:         none
 description:      define a custom site command
 ------------------------------------------------------------------------------------------------------------------------
 usage:            idle_timeout <default seconds> <min seconds> <max seconds>

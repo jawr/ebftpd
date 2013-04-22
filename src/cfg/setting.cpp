@@ -334,7 +334,13 @@ Privpath::Privpath(std::vector<std::string> toks)
 
 SiteCmd::SiteCmd(const std::vector<std::string>& toks)   
 {
-  command = util::ToUpperCopy(toks[0]);
+  std::vector<std::string> args;
+  util::Split(args, toks[0], " ", true);
+  util::ToUpper(args[0]);
+
+  command = args[0];
+  syntax = util::Join(args, " ");
+  
   description = toks[1];
   std::string typeStr(util::ToUpperCopy(toks[2]));
   if (typeStr == "EXEC") type = Type::Exec;
