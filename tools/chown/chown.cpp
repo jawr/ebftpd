@@ -33,7 +33,7 @@ std::shared_ptr<cfg::Config> config;
 
 void DisplayHelp(char* argv0, boost::program_options::options_description& desc)
 {
-  std::cout << "usage: " << argv0 << " [options] [user][:[group]] <path> [<path>..]" << std::endl;
+  std::cout << "usage: " << argv0 << " [options] [<user>][:[<group>]] <path> [<path>..]" << std::endl;
   std::cout << desc;
 }
 
