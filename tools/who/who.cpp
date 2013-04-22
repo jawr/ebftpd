@@ -33,8 +33,8 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     ("help,h", "display this help message")
     ("version,v", "display version")
     ("config-path,c", po::value<std::string>(&configPath), "specify location of config file")
-    ("siteop,s", po::value<bool>(&siteop)->default_value(false), "site who")
-    ("raw,r", po::value<bool>(&raw)->default_value(false), "raw formatting")
+    ("siteop,s", "site who")
+    ("raw,r", "raw formatting")
     ("template,y", po::value<std::string>(&templatePath), "template file path")
   ;
   
@@ -63,6 +63,9 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     DisplayHelp(argv[0], visible);
     return false;
   }
+  
+  siteop = vm.count("siteop") > 0;
+  raw = vm.count("raw") > 0;
   
   return true;
 }

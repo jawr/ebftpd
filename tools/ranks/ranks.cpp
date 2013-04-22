@@ -129,7 +129,7 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     ("sortfield,o", po::value<stats::SortField>(&sf)->default_value(stats::SortField::KBytes, "kbytes"), "kbytes, files, speed")
     ("who,w", po::value<Who>(&who)->required(), "users, groups")
     ("section,s", po::value<std::string>(&section), "stat section, defaults to all if omitted")
-    ("raw,r", po::value<bool>(&raw)->default_value(true), "raw formatting")
+    ("raw,r", "raw formatting")
     ("max,m", po::value<int>(&max)->default_value(10), "maximum entries in output, -1 for unlimited")
     ("template,y", po::value<std::string>(&templatePath), "template file path")
   ;
@@ -159,6 +159,8 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     DisplayHelp(argv[0], visible);
     return false;
   }
+  
+  raw = vm.count("raw") > 0;
   
   return true;
 }
