@@ -26,12 +26,47 @@
 #include "text/parser.hpp"
 #include "cmd/online.hpp"
 #include "ftp/online.hpp"
+#include "util/enumstrings.hpp"
 
 namespace po = boost::program_options;
 
+enum class Mode
+{
+  Normal,
+  Siteop,
+  Totals
+};
+
+namespace util
+{
+template <> const char* util::EnumStrings<Mode>::values[] = 
+{
+  "normal",
+  "siteop",
+  "totals",
+  ""
+};
+}
+
+std::istream& operator>>(std::istream& is, Mode& m)
+{
+  std::string token;
+  is >> token;
+  if (!util::EnumFromString(token, m))
+  {
+    throw po::validation_error(po::validation_error::invalid_option_value);
+  }
+  return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const Mode& m)
+{
+  return (os << util::EnumToString(m));
+}
+
 void DisplayHelp(char* argv0, po::options_description& desc)
 {
-  std::cout << "usage: " << argv0 << " [options]" << std::endl;
+  std::cout << "usage: " << argv0 << " [options] [<user>]" << std::endl;
   std::cout << desc;
 }
 
@@ -41,22 +76,33 @@ void DisplayVersion()
 }
 
 bool ParseOptions(int argc, char** argv, std::string& configPath, 
-                  bool& siteop, bool& raw, std::string& templatePath)
+                  Mode& mode, bool& raw, std::string& templatePath,
+                  std::string& user)
 {
   po::options_description visible("supported options");
   visible.add_options()
     ("help,h", "display this help message")
     ("version,v", "display version")
     ("config-path,c", po::value<std::string>(&configPath), "specify location of config file")
-    ("siteop,s", "site who")
     ("raw,r", "raw formatting")
+    ("mode,m", po::value<Mode>(&mode)->default_value(Mode::Normal, "normal"), "normal, siteop, totals")
     ("template,y", po::value<std::string>(&templatePath), "template file path")
   ;
   
+  std::string who;
+  po::options_description all("positional options");
+  all.add(visible);
+  all.add_options()
+    ("user", po::value<std::string>(&user), "username")
+  ;
+
+  po::positional_options_description pos;
+  pos.add("user", 1);
+
   po::variables_map vm;
   try
   {
-    po::store(po::command_line_parser(argc, argv).options(visible).run(), vm);
+    po::store(po::command_line_parser(argc, argv).options(all).positional(pos).run(), vm);
 
     if (vm.count("help"))
     {
@@ -79,21 +125,36 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     return false;
   }
   
-  siteop = vm.count("siteop") > 0;
   raw = vm.count("raw") > 0;
   
   return true;
 }
 
+std::string TemplateFilename(Mode mode, bool raw)
+{
+  std::string filename;
+  if (raw) filename += "raw";
+  
+  switch (mode)
+  {
+    case Mode::Normal : filename += "who"; break;
+    case Mode::Siteop : filename += "swho"; break;
+    case Mode::Totals : filename += "twho"; break;
+  }
+  
+  filename += ".tmpl";
+  return filename;
+}
 
 int main(int argc, char** argv)
 {
-  bool siteop;
+  Mode mode;
   bool raw;
   std::string configPath;
   std::string templatePath;
-
-  if (!ParseOptions(argc, argv, configPath, siteop, raw, templatePath))
+  std::string user;
+  
+  if (!ParseOptions(argc, argv, configPath, mode, raw, templatePath, user))
   {
     return 1;
   }
@@ -121,44 +182,24 @@ int main(int argc, char** argv)
     return 1;
   }
   
-  boost::optional<text::Template> templ;
-  if (!templatePath.empty())
+  if (templatePath.empty())
   {
-    try
-    {
-      text::TemplateParser parser(templatePath);
-      templ.reset(parser.Create());
-    }
-    catch (const text::TemplateError& e)
-    {
-      std::cerr << "Unable to load template file: " << e.Message() << std::endl;
-      return 1;
-    }
+    templatePath = cfg::Get().Datapath() + "/text/" + TemplateFilename(mode, raw);
   }
-  else
+  
+  boost::optional<text::Template> templ;
+  try
   {
-    std::string tmplPath(cfg::Get().Datapath());
-    tmplPath += "/text/";
-    if (raw) tmplPath += "raw";
-    
-    if (siteop) tmplPath += "swho";
-    else tmplPath += "who";
-    
-    tmplPath += ".tmpl";
-    
-    try
-    {
-      text::TemplateParser parser(tmplPath);
-      templ.reset(parser.Create());
-    }
-    catch (const text::TemplateError& e)
-    {
-      std::cerr << "Unable to load template file: " << e.Message() << std::endl;
-      return 1;
-    }
+    text::TemplateParser parser(templatePath);
+    templ.reset(parser.Create());
+  }
+  catch (const text::TemplateError& e)
+  {
+    std::cerr << "Unable to load template file: " << e.Message() << std::endl;
+    return 1;
   }
 
-  std::cout << cmd::CompileWhosOnline(id, *templ) << std::endl;
+  std::cout << cmd::CompileWhosOnline(id, *templ, user) << "\n";
   
   return 0;
 }
