@@ -27,7 +27,7 @@ namespace text
 Template TemplateParser::Create()
 {
   std::ifstream io(file.c_str()); 
-  if (!io) throw TemplateError("Unable to open template file: " + file);
+  if (!io) throw TemplateError("Unable to open file: " + file);
 
   while (io.good())
   {
@@ -44,7 +44,7 @@ Template TemplateParser::Create()
 void TemplateBuffer::ParseInclude(const std::string& file)
 {
   std::ifstream io(file.c_str());
-  if (!io) throw TemplateError("Unable to open include file (" + file + ")");
+  if (!io) throw TemplateError("Unable to open file: " + file);
 
   state = TemplateState::None;
 

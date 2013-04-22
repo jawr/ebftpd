@@ -25,7 +25,7 @@
 namespace cmd
 {
 
-std::string CompileWhosOnline(const std::string& id, text::Template& templ)
+std::string CompileWhosOnline(const std::string& id, text::Template& templ, const std::string& user)
 {
   std::vector<ftp::OnlineClient> clients;
   
@@ -69,8 +69,8 @@ std::string CompileWhosOnline(const std::string& id, text::Template& templ)
                     {
                       return user.ID() == client.uid;
                     });
-    if (it == users.end()) continue;
-    
+    if (it == users.end() || (!user.empty() && it->Name() != user)) continue;
+
     body.RegisterValue("count", ++count);
     body.RegisterValue("user", it->Name());
     body.RegisterValue("group", it->PrimaryGroup());
@@ -152,9 +152,9 @@ std::string CompileWhosOnline(const std::string& id, text::Template& templ)
   return os.str();
 }
 
-std::string CompileWhosOnline(text::Template& templ)
+std::string CompileWhosOnline(text::Template& templ, const std::string& user)
 {
-  return CompileWhosOnline(ftp::SharedMemoryID(), templ);
+  return CompileWhosOnline(ftp::SharedMemoryID(), templ, user);
 }
 
 } /* cmd namespace */
