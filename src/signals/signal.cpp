@@ -66,6 +66,7 @@ void Handler::StopThread()
 void Handler::Run()
 {
   util::SetProcessTitle("SIGNALS");
+  logs::SetThreadIDPrefix('S' /* signals */);
   
   sigset_t mask;
   sigemptyset(&mask);

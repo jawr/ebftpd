@@ -13,6 +13,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <cctype>
 #include <fstream>
 #include <boost/thread/thread.hpp>
 #include "logs/logs.hpp"
@@ -90,11 +91,22 @@ bool InitialisePostConfig()
   return true;
 }
 
+namespace
+{
+static __thread char threadIdPrefix;
+}
+
+void SetThreadIDPrefix(char ch)
+{
+  threadIdPrefix = std::toupper(ch);
+}
+
 std::string ThreadID()
 {
   using namespace boost;
   std::ostringstream os;
-  os << std::left << std::setw(14) << this_thread::get_id();
+  if (threadIdPrefix == '\0') threadIdPrefix = 'A'; // Asynchronous
+  os << threadIdPrefix << std::left << std::setw(14) << this_thread::get_id();
   return os.str();
 }
 

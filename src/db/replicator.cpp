@@ -155,7 +155,9 @@ void Replicator::Populate()
 
 void Replicator::Run()
 {
-  util::SetProcessTitle("DB REPLICATOR");
+  util::SetProcessTitle("REPLICATOR");
+  logs::SetThreadIDPrefix('R' /* replicator */);
+
   mongo::DBClientConnection conn;
   while (true)
   {

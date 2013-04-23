@@ -566,6 +566,7 @@ void ClientImpl::InnerRun()
 void ClientImpl::Run()
 {
   util::SetProcessTitle("CLIENT");
+  logs::SetThreadIDPrefix('C' /* client */);
   
   auto finishedGuard = util::MakeScopeExit([&]
   {

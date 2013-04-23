@@ -184,6 +184,7 @@ void Server::AcceptClients()
 void Server::Run()
 {
   util::SetProcessTitle("SERVER");
+  logs::SetThreadIDPrefix('L' /* listener/server */);
   while (!shutdown)
   {
     AcceptClients();

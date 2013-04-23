@@ -40,6 +40,19 @@ void Initialise(const std::string& logsPath);
  * debug    - miscellaneous debugging output
  */
 
+/*
+ * debug, error and database logs have a thread id before the message
+ * this id is prefixed with an uppercase character identifying the thread type:
+ *
+ * P - parent thread
+ * L - listener / server
+ * S - signals
+ * R - database replicator
+ * C - client
+ * A - asynchronous task
+ *
+ */
+ 
 struct Format : public util::Format
 {
   Format& operator=(Format&&) = delete;
@@ -113,6 +126,7 @@ inline void Transfer(const std::string& path, const std::string& direction,
 
 void InitialisePreConfig();
 bool InitialisePostConfig();
+void SetThreadIDPrefix(char ch);
 
 }
 

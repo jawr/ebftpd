@@ -150,7 +150,8 @@ bool Daemonise(bool foreground)
 int main(int argc, char** argv)
 {
   int exitStatus = 0;
-
+  logs::SetThreadIDPrefix('P' /* parent */);
+  
   {
     std::string configPath;
     bool foreground; 
