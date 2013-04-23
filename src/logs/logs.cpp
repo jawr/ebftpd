@@ -93,9 +93,9 @@ bool InitialisePostConfig()
 std::string ThreadID()
 {
   using namespace boost;
-  std::string tid = lexical_cast<std::string>(this_thread::get_id());
-  if (tid.empty()) tid = ":PARENT:";
-  return tid;
+  std::ostringstream os;
+  os << std::left << std::setw(14) << this_thread::get_id();
+  return os.str();
 }
 
 } /* logger namespace */
