@@ -217,7 +217,7 @@ void Data::Open(TransferType transferType)
       role = util::net::TLSSocket::Client;  
     }
     
-    socket.HandshakeTLS(role, client.Control().socket);
+    socket.HandshakeTLS(role);
   }
   
   state.Start(transferType);

@@ -119,13 +119,11 @@ void PropogateSignal(int signo)
   memset(&sa, 0, sizeof(sa));
   sa.sa_flags = 0;
   sa.sa_handler = SIG_DFL;
-  if (sigaction(SIGSEGV, &sa, nullptr) < 0 ||
-      kill(getpid(), signo) < 0)
+  if (sigaction(SIGSEGV, &sa, nullptr) < 0 || kill(getpid(), signo) < 0)
   {
     _exit(1);
   }
 }
-
 
 void CrashHandler(int signo)
 {

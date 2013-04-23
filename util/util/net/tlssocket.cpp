@@ -94,7 +94,7 @@ void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role, TLSSocket* reus
     assert(reuse->session);
     SSL_copy_session_id(session, reuse->session);
   }
-  
+
   if (role == Client) SSL_set_connect_state(session);
   else SSL_set_accept_state(session);
 
