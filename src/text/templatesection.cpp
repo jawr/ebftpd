@@ -82,13 +82,17 @@ void TemplateSection::RegisterSpeed(const std::string& tagName, long long kBytes
   else RegisterSpeed(tagName, kBytes / xfertime / 1.0);
 }
 
-std::string TemplateSection::Compile()
+std::string TemplateSection::Compile(boost::tribool stripNewline)
 {
+  if (boost::indeterminate(stripNewline)) stripNewline = isFoot;
   std::string compiled = buffer;
+
   for (auto& tag : tags)
   {
     boost::replace_first(compiled, "{{" + tag.Name() + "}}", tag.Compile());
   }
+
+  if (stripNewline) util::TrimRightIf(compiled, "\n");
   return compiled;
 }
 

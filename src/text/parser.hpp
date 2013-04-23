@@ -53,6 +53,7 @@ class TemplateBuffer
 
   int charPos;
   int linePos;
+  
 public:
   TemplateBuffer() : 
     ss(),

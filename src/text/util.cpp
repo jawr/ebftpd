@@ -39,7 +39,11 @@ namespace text
 void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
 {
   const cfg::Config& config = cfg::Get();
-
+  
+  std::string sectionName;
+  auto section = config.SectionMatch(fs::WorkDirectory().ToString());
+  if (section) sectionName = section->Name();
+  
   ts.RegisterSpeed("last_speed", 0);
   ts.RegisterValue("max_online_users", config.MaxUsers().Users());
 
@@ -66,22 +70,18 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   (void) util::path::FreeDiskSpace(fs::MakeReal(workDir).ToString(), freeSpace);
   ts.RegisterSize("free_space", freeSpace);
 
-  if (ts.HasTag("section"))
-  {
-    auto section = config.SectionMatch(workDir.ToString());
-    ts.RegisterValue("section", section ? section->Name() : "");
-  }
+  ts.RegisterValue("section", sectionName);
+  ts.RegisterSize("credits_section", client.User().SectionCredits(sectionName));
   
   ts.RegisterValue("username", client.User().Name());
-  if (ts.HasTag("groupname")) 
-  {
-    ts.RegisterValue("groupname", client.User().PrimaryGroup());
-  }
+  ts.RegisterValue("groupname", client.User().PrimaryGroup());
+  
   ts.RegisterValue("flags", client.User().Flags());
   ts.RegisterValue("ratio", acl::RatioString(client.User()));
   
   ts.RegisterValue("tagline", client.User().Tagline());
-  ts.RegisterValue("credits", acl::CreditString(client.User()));
+  ts.RegisterValue("credits_all", acl::CreditString(client.User()));
+  ts.RegisterValue("credits_current", acl::CreditString(client.User()));
   ts.RegisterValue("time_online", "");
 
   int onlineCount = ftp::Counter::Login().GlobalCount();
@@ -94,14 +94,37 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
     {
       std::string prefix = util::EnumToString(tf) + "_" +
                            util::EnumToString(dir) + "_";
-      if (ts.HasTag(prefix + "files") ||
-          ts.HasTag(prefix + "size") ||
-          ts.HasTag(prefix + "speed"))
+      bool doGlobal = ts.HasTag(prefix + "files") ||
+                      ts.HasTag(prefix + "size") ||
+                      ts.HasTag(prefix + "speed");
+      bool doSection = ts.HasTag(prefix + "files_section") ||
+                       ts.HasTag(prefix + "size_section") ||
+                       ts.HasTag(prefix + "speed_section");
+      if (doGlobal || (doSection && !section))
       {
         auto stat = db::stats::CalculateSingleUser(client.User().ID(), "", tf, dir);
-        ts.RegisterValue(prefix + "files", stat.Files());
-        ts.RegisterSize(prefix + "size", stat.KBytes());
-        ts.RegisterSpeed(prefix + "speed", stat.Speed());
+        
+        if (doGlobal)
+        {
+          ts.RegisterValue(prefix + "files", stat.Files());
+          ts.RegisterSize(prefix + "size", stat.KBytes());
+          ts.RegisterSpeed(prefix + "speed", stat.Speed());
+        }
+        
+        if (doSection && !section)
+        {
+          ts.RegisterValue(prefix + "files_section", stat.Files());
+          ts.RegisterSize(prefix + "size_section", stat.KBytes());
+          ts.RegisterSpeed(prefix + "speed_section", stat.Speed());
+        }
+      }
+      
+      if (doSection && section)
+      {
+        auto stat = db::stats::CalculateSingleUser(client.User().ID(), section->Name(), tf, dir);
+        ts.RegisterValue(prefix + "files_section", stat.Files());
+        ts.RegisterSize(prefix + "size_section", stat.KBytes());
+        ts.RegisterSpeed(prefix + "speed_section", stat.Speed());
       }
     }
   }

@@ -29,8 +29,6 @@ Template TemplateParser::Create()
   std::ifstream io(file.c_str()); 
   if (!io) throw TemplateError("Unable to open template file: " + file);
 
-  std::stringstream ss;
-
   while (io.good())
   {
     char c;
@@ -63,9 +61,9 @@ void TemplateBuffer::ParseInclude(const std::string& file)
 
 void TemplateBuffer::Parse()
 { 
-  while (ss.good())
+  char c;
+  while (ss.get(c))
   {
-    char c = ss.get();
     ParseState(c);
   }
 }
@@ -207,7 +205,6 @@ void TemplateBuffer::ParseLogic()
   util::Split(args, logic, " ");
   logic = args[0];
   
-
   if (logic == "endblock")
     ParseBlock();
 

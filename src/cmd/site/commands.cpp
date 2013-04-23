@@ -945,8 +945,6 @@ void IDLECommand::Execute()
       throw cmd::SyntaxError();
     }
   }
-  
-  return;
 }
 
 void KICKCommand::Execute()
@@ -1547,6 +1545,23 @@ void SREPLYCommand::Execute()
   }
 }
 
+void STATCommand::Execute()
+{
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("stat"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
+  }
+  
+  text::RegisterGlobals(client, templ->Body());  
+  control.Reply(ftp::CommandOkay, templ->Body().Compile(true));
+}
+
 void STATSCommand::Execute()
 {
   if (args.size() == 2 && args[1] != client.User().Name() && 
@@ -1757,7 +1772,6 @@ void TIMECommand::Execute()
      << "Time online  : " << FormatDuration(now - client.LoggedInAt());
   
   control.Reply(ftp::CommandOkay, os.str());
-  return;
 }
 
 void TRAFFICCommand::Execute()
@@ -2107,7 +2121,6 @@ void UTIMECommand::Execute()
 void VERSCommand::Execute()
 {
   control.Reply(ftp::CommandOkay, "This server is running: " + programFullname);
-  return;
 }
 
 void WELCOMECommand::Execute()
@@ -2179,7 +2192,6 @@ void XDUPECommand::Execute()
   std::ostringstream os;
   os << "Activated extended dupe mode " << mode << ".";
   control.Reply(ftp::CommandOkay, os.str());
-  return;
 }
 
 } /* site namespace */

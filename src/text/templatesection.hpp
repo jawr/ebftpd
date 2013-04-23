@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <functional>
 #include <algorithm>
+#include <boost/logic/tribool.hpp>
 #include "text/tag.hpp"
 #include "util/error.hpp"
 
@@ -30,11 +31,15 @@ class TemplateSection
 {
   std::string buffer;
   std::vector<Tag> tags;
+  bool isFoot;
 
   void DoRegisterValue(std::string tagName, const std::function<void(Tag&)>& doRegister);
   
 public:
+  TemplateSection(bool isFoot) : isFoot(isFoot) { }
+
   void RegisterBuffer(const std::string& buffer) { this->buffer = buffer; }
+  
   std::string RegisterTag(std::string tagStr);
 
   void RegisterValue(const std::string& tagName, const std::string& value);
@@ -44,7 +49,7 @@ public:
   void RegisterSpeed(const std::string& tagName, long long bytes, long long xfertime);
   void RegisterSpeed(const std::string& tagName, double speed);
 
-  std::string Compile();
+  std::string Compile(boost::tribool stripNewline = boost::indeterminate);
   
   bool HasTag(const std::string& tagName) const
   {

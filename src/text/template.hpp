@@ -27,6 +27,11 @@ class Template
   TemplateSection body;
   TemplateSection foot;
 public:
+  Template() :
+    head(false),
+    body(false),
+    foot(true)
+  { }
 
   TemplateSection& Head() { return head; }
   TemplateSection& Body() { return body; }

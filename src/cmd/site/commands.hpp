@@ -309,6 +309,15 @@ public:
   void Execute();
 };
 
+class STATCommand : public Command
+{
+public:
+  STATCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, client.Control(), client.Data(), argStr, args) { }
+
+  void Execute();
+};
+
 class STATSCommand : public Command
 {
 public:
