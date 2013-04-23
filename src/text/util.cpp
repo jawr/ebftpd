@@ -70,8 +70,16 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   (void) util::path::FreeDiskSpace(fs::MakeReal(workDir).ToString(), freeSpace);
   ts.RegisterSize("free_space", freeSpace);
 
-  ts.RegisterValue("section", sectionName);
-  ts.RegisterSize("credits_section", client.User().SectionCredits(sectionName));
+  ts.RegisterValue("section", !section ? "NoSection" : sectionName);
+  
+  if (!section || !section->SeparateCredits())
+  {
+    ts.RegisterSize("credits_section", client.User().SectionCredits(""));
+  }
+  else
+  {
+    ts.RegisterSize("credits_section", client.User().SectionCredits(sectionName));
+  }
   
   ts.RegisterValue("username", client.User().Name());
   ts.RegisterValue("groupname", client.User().PrimaryGroup());
