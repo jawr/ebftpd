@@ -158,7 +158,7 @@ int main(int argc, char** argv)
     }
   }
 
-  std::cout << cmd::CompileWhosOnline(id, *templ);
+  std::cout << cmd::CompileWhosOnline(id, *templ) << std::endl;
   
   return 0;
 }

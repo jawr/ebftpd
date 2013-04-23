@@ -234,16 +234,6 @@ int main(int argc, char** argv)
       return 1;
     }
 
-    try
-    {
-      ftp::OnlineWriter::Initialise(ftp::SharedMemoryID(), cfg::Config::MaxOnline().Total());
-    }
-    catch (const util::SystemError& e)
-    {
-      logs::Error("Shared memory segment failed to initialise: %1%", e.Message());
-      return 1;
-    }
-    
     if (!AlreadyRunning())
     {
       if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
@@ -253,6 +243,16 @@ int main(int argc, char** argv)
       }
       else if (Daemonise(foreground))
       {
+        try
+        {
+          ftp::OnlineWriter::Initialise(ftp::SharedMemoryID(), cfg::Config::MaxOnline().Total());
+        }
+        catch (const util::SystemError& e)
+        {
+          logs::Error("Shared memory segment failed to initialise: %1%", e.Message());
+          return 1;
+        }
+    
         signals::Handler::StartThread();
         db::Replicator::Get().Start();
         ftp::Server::Get().StartThread();
@@ -260,10 +260,10 @@ int main(int argc, char** argv)
         db::Replicator::Get().Stop();
         ftp::Server::Cleanup();
         signals::Handler::StopThread();
+        ftp::OnlineWriter::Cleanup();
       }
     }
 
-    ftp::OnlineWriter::Cleanup();
   }
 
   return exitStatus;

@@ -260,11 +260,11 @@ int main(int argc, char** argv)
   
   if (who == Who::Users)
   {
-    std::cout << stats::CompileUserRanks(section, tf, dir, sf, max, *templ);
+    std::cout << stats::CompileUserRanks(section, tf, dir, sf, max, *templ) << std::endl;
   }
   else
   {
-    std::cout << stats::CompileGroupRanks(section, tf, dir, sf, max, *templ);
+    std::cout << stats::CompileGroupRanks(section, tf, dir, sf, max, *templ) << std::endl;
   }
   
   return 0;
