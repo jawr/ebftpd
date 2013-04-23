@@ -14,6 +14,7 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <fstream>
+#include <boost/thread/thread.hpp>
 #include "logs/logs.hpp"
 #include "util/path/path.hpp"
 #include "cfg/get.hpp"
@@ -87,6 +88,14 @@ bool InitialisePostConfig()
   }
   
   return true;
+}
+
+std::string ThreadID()
+{
+  using namespace boost;
+  std::ostringstream os;
+  os << std::left << std::setw(14) << this_thread::get_id();
+  return os.str();
 }
 
 } /* logger namespace */
