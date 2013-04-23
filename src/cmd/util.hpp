@@ -18,11 +18,13 @@
 
 #include <string>
 #include <vector>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace cmd
 {
 
 bool SplitArgs(const std::string& command, std::vector<std::string>& args);
+std::string Age(boost::posix_time::time_duration age);
 
 } /* cmd namespace */
 

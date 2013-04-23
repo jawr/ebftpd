@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <set>
+#include <ctime>
 #include <mongo/client/dbclient.h>
 #include "util/typetraits.hpp"
 #include "util/verify.hpp"
@@ -138,6 +139,9 @@ template <> inline int32_t Unserialize<int32_t>(const mongo::BSONObj& obj)
 mongo::Date_t ToDateT(const boost::posix_time::ptime& t);
 inline mongo::Date_t ToDateT(const boost::gregorian::date& d)
 { return ToDateT(boost::posix_time::ptime(d)); }
+
+inline mongo::Date_t ToDateT(time_t t)
+{ return mongo::Date_t(t * 1000); }
 
 boost::posix_time::ptime ToPosixTime(const mongo::Date_t& dt);
 inline boost::gregorian::date ToGregDate(const mongo::Date_t& dt)

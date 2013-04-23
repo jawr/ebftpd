@@ -14,45 +14,16 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <cstring>
-
-#if defined(__FreeBSD__)
-# include <sys/extattr.h>
-#else
-# include <sys/xattr.h>
-#endif
-
 #include "fs/owner.hpp"
 #include "util/error.hpp"
 #include "logs/logs.hpp"
-
-#ifndef ENOATTR
-# define ENOATTR ENODATA
-#endif
-
-#ifndef ENODATA
-# define ENODATA ENOATTR
-#endif
+#include "util/path/extattr.hpp"
 
 namespace fs
 {
 
 namespace
 {
-
-#if defined(__FreeBSD__)
-
-int setxattr(const char *path, const char *name, const void *value, size_t size, int /* flags */)
-{
-  int ret = extattr_set_file(path, EXTATTR_NAMESPACE_USER, name, value, size);
-  return ret >= 0 ? 0 : ret;
-}
-
-ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
-{
-  return extattr_get_file(path, EXTATTR_NAMESPACE_USER, name, value, size);
-}
-
-#endif
 
 const char* uidAttributeName = "user.ebftpd.uid";
 const char* gidAttributeName = "user.ebftpd.gid";

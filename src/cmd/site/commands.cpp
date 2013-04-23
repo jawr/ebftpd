@@ -299,7 +299,7 @@ void DELIPCommand::Execute()
     
     try
     {
-      int index = util::StrToInt(*it);
+      int index = boost::lexical_cast<int>(*it);
       if (index < 0 || index > static_cast<ssize_t>(masks.size()) - 1)
       {
         control.Reply(ftp::ActionNotOkay, "IP mask index out of range.");
@@ -982,7 +982,7 @@ std::string Age(boost::posix_time::time_duration age)
   age -= pt::hours(days * 24);
   
   int fields = 0;
-  if (days > 99) return std::to_string(days) + "d";
+  if (days > 99) return boost::lexical_cast<std::string>(days) + "d";
   
   std::ostringstream os;
   if (days > 0)
