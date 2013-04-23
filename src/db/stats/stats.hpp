@@ -46,6 +46,12 @@ void Download(const acl::User& user, long long kBytes,
 void UploadDecr(const acl::User& user, long long kBytes, 
       time_t modTime, const std::string& section = "");
 
+void Nuke(acl::UserID uid, long long kBytes, int files, time_t modTime, 
+          const std::string& section = "");
+          
+void Unnuke(acl::UserID uid, long long kBytes, int files, time_t modTime,
+            const std::string& section = "");
+      
 std::vector< ::stats::Stat> CalculateUserRanks(
       const std::string& section, 
       ::stats::Timeframe timeframe, 

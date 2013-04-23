@@ -65,10 +65,5 @@ std::vector<DupeResult> Search(const std::vector<std::string>& terms, int limit)
   return conn.QueryMulti<DupeResult>("dupe", query, limit);
 }
 
-std::vector<DupeResult> Newest(int limit)
-{
-  return Search(std::vector<std::string>(), limit);
-}
-
 } /* dupe namespace */
 } /* db namespace */

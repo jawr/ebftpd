@@ -28,6 +28,7 @@
 #include "cmd/site/msg.hpp"
 #include "cmd/site/customcommand.hpp"
 #include "cmd/site/grpchange.hpp"
+#include "cmd/site/nuking.hpp"
 
 namespace cmd { namespace site
 {
@@ -161,19 +162,19 @@ Factory::Factory()
                       "Syntax: SITE GPRANKS DAY|WEEK|MONTH|YEAR|ALLTIME UP|DOWN SPEED|KBYTES|FILES [<number>] [<section>]",
                       "Display group upload/download rankings" }, },
     { "NUKE",       { 3,  -1, "nuke",
-                      nullptr,
+                      std::make_shared<Creator<NUKECommand>>(),
                       "Syntax: SITE NUKE <path> <multiplier> <message>",
                       "Nuke a directory" }, },
     { "UNNUKE",     { 2, -1, "unnuke",
-                      nullptr,
+                      std::make_shared<Creator<UNNUKECommand>>(),
                       "Syntax: SITE UNNUKE <path> <message>",
                       "Unnuke a directory" }, },
     { "NUKES",      { 0,  2,  "nukes",
-                      nullptr,
+                      std::make_shared<Creator<NUKESCommand>>(),
                       "Syntax: SITE NUKES [<number>] [<section>]",
                       "Display nuke history" }, },
     { "UNNUKES",    { 0,  2,  "unnukes",
-                      nullptr,
+                      std::make_shared<Creator<NUKESCommand>>(),
                       "Syntax: SITE UNNUKES [<number>] [<section>]",
                       "Display unnuke history" }, },
     { "UPDATE",     { 1,  1,  "update",

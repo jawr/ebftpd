@@ -59,5 +59,6 @@ list(APPEND ALL_LIBRARIES
   rt
 )
 
-set(Defaults_DONE TRUE)
+set(Defaults_DONE TRUE CACHE BOOL "Defaults processed")
+mark_as_advanced(Defaults_DONE)
 

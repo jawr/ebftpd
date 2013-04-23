@@ -78,6 +78,7 @@
 #include "util/string.hpp"
 #include "util/timepair.hpp"
 #include "cmd/site/adduser.hpp"
+#include "cmd/util.hpp"
 
 namespace cmd { namespace site
 {
@@ -974,39 +975,6 @@ void KICKCommand::Execute()
   if (kicked == 0) throw cmd::NoPostScriptError();
 
   logs::Siteop(client.User().Name(), "kicked '%1%', '%2%' logins", user->Name(), kicked);
-}
-
-std::string Age(boost::posix_time::time_duration age)
-{
-  namespace pt = boost::posix_time;
-  
-  int days = age.hours() / 24;
-  age -= pt::hours(days * 24);
-  
-  int fields = 0;
-  if (days > 99) return boost::lexical_cast<std::string>(days) + "d";
-  
-  std::ostringstream os;
-  if (days > 0)
-  {
-    os << std::setw(2) << days << "d ";
-    ++fields;
-  }
-  
-  if (age.hours() > 0)
-  {
-    os << std::setw(2) << age.hours() << "h ";
-    if (++fields >= 2) return os.str();
-  }
-  
-  if (age.minutes() > 0)
-  {
-    os << std::setw(2) << age.minutes() << "m ";
-    if (++fields >= 2) return os.str();
-  }
-  
-  os << std::setw(2) << age.seconds() << "s ";
-  return util::TrimCopy(os.str());
 }
 
 void NEWCommand::Execute()
