@@ -26,6 +26,7 @@
 #include "cfg/util.hpp"
 #include "fs/mode.hpp"
 #include "cfg/defaults.hpp"
+#include "fs/path.hpp"
 
 namespace util
 {
@@ -814,8 +815,10 @@ bool Config::IsBouncer(const std::string& ip) const
 
 }
 
-boost::optional<const Section&> Config::SectionMatch(const std::string& path) const
+boost::optional<const Section&> Config::SectionMatch(std::string path, bool isDir) const
 {
+  if (path.empty()) return boost::none;
+  if (isDir && path.back() != '/') path += '/';
   for (const auto& kv : sections)
   {
     if (kv.second.IsMatch(path)) 

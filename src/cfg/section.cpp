@@ -21,7 +21,7 @@ namespace cfg
 
 bool Section::IsMatch(const std::string& path) const
 {
-  for (const auto& p : paths)
+  for (const std::string& p : paths)
   {
     if (util::WildcardMatch(p, path)) return true;
   }

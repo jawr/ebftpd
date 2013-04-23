@@ -303,7 +303,7 @@ public:
   const std::vector<CheckScript>& PreDirCheck() const { return preDirCheck; }
   const std::vector<CheckScript>& PostCheck() const { return postCheck; }  
   const std::map<std::string, Section>& Sections() const { return sections; }
-  boost::optional<const Section&> SectionMatch(const std::string& path) const;
+  boost::optional<const Section&> SectionMatch(std::string path, bool isDir = false) const;
   ::cfg::EPSVFxp EPSVFxp() const { return epsvFxp; }
   int MaximumRatio() const { return maximumRatio; }
   const acl::ACL& TLSControl() const { return tlsControl; }

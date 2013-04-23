@@ -41,7 +41,7 @@ void RegisterGlobals(const ftp::Client& client, TemplateSection& ts)
   const cfg::Config& config = cfg::Get();
   
   std::string sectionName;
-  auto section = config.SectionMatch(fs::WorkDirectory().ToString());
+  auto section = config.SectionMatch(fs::WorkDirectory().ToString(), true);
   if (section) sectionName = section->Name();
   
   ts.RegisterSpeed("last_speed", 0);
