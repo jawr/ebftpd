@@ -211,12 +211,13 @@ void Data::Open(TransferType transferType)
   if (protection)
   {
     util::net::TLSSocket::HandshakeRole role = util::net::TLSSocket::Server;
-    if ((sscnMode == ftp::SSCNMode::Client || 
-         pasvType == PassiveType::CPSV) && 
-        (transferType == TransferType::Upload ||
-         transferType == TransferType::Download))
+    if ((sscnMode == ftp::SSCNMode::Client || pasvType == PassiveType::CPSV) && 
+        (transferType == TransferType::Upload || transferType == TransferType::Download))
+    {
       role = util::net::TLSSocket::Client;  
-    socket.HandshakeTLS(role);
+    }
+    
+    socket.HandshakeTLS(role, client.Control().socket);
   }
   
   state.Start(transferType);

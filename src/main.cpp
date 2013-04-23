@@ -199,11 +199,10 @@ int main(int argc, char** argv)
     {
       try
       {
+        const cfg::Config& config = cfg::Get();
         logs::Debug("Initialising TLS context..");
-        util::net::TLSServerContext::Initialise(
-            cfg::Get().TlsCertificate(), cfg::Get().TlsCiphers());
-        util::net::TLSClientContext::Initialise(
-            cfg::Get().TlsCertificate(), cfg::Get().TlsCiphers());
+        util::net::TLSServerContext::Initialise(programName, config.TlsCertificate(), config.TlsCiphers());
+        util::net::TLSClientContext::Initialise(config.TlsCertificate(), config.TlsCiphers());
       }
       catch (const util::net::NetworkError& e)
       {

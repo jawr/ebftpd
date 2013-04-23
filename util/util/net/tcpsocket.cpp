@@ -170,17 +170,9 @@ void TCPSocket::Accept(TCPListener& listener)
   this->socket = socket;
 }
 
-void TCPSocket::HandshakeTLS(TLSSocket::HandshakeRole role)
+void TCPSocket::HandshakeTLS(TLSSocket::HandshakeRole role, TCPSocket* reuse)
 {
-  try
-  {
-    tls.reset(new TLSSocket(*this, role));
-  }
-  catch (const NetworkError&)
-  {
-    delete tls.release();
-    throw;
-  }
+  tls.reset(new TLSSocket(*this, role, reuse && reuse->tls ? reuse->tls.get() : nullptr));
 }
 
 size_t TCPSocket::Read(char* buffer, size_t bufferSize)

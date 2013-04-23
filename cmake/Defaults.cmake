@@ -1,3 +1,7 @@
+if (Defaults_DONE)
+return()
+endif()
+
 # Variable definitions
 set (CMAKE_EXE_LINKER_FLAGS "-Wl,-z,origin")
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -54,3 +58,6 @@ list(APPEND ALL_LIBRARIES
   ${Pthread_LIBRARIES}
   rt
 )
+
+set(Defaults_DONE TRUE)
+

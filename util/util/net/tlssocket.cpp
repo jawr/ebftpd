@@ -34,10 +34,10 @@ TLSSocket::TLSSocket() :
 {
 }
 
-TLSSocket::TLSSocket(TCPSocket& socket, HandshakeRole role, TLSSocket* id) :
+TLSSocket::TLSSocket(TCPSocket& socket, HandshakeRole role, TLSSocket* reuse) :
   session(nullptr)
 {
-  Handshake(socket, role, id);
+  Handshake(socket, role, reuse);
 }
 
 void TLSSocket::EvaluateResult(int result)
@@ -77,12 +77,10 @@ void TLSSocket::EvaluateResult(int result)
   }
 }
 
-void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role, TLSSocket* id)
+void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role, TLSSocket* reuse)
 {
 
-  SSL_CTX* ctx = role == Client ?
-                 TLSClientContext::Get() :
-                 TLSServerContext::Get();
+  SSL_CTX* ctx = role == Client ? TLSClientContext::Get() : TLSServerContext::Get();
                  
   if (!ctx) throw TLSError("TLS context not initialised.");
 
@@ -91,7 +89,11 @@ void TLSSocket::Handshake(TCPSocket& socket, HandshakeRole role, TLSSocket* id)
   
   if (SSL_set_fd(session, socket.Socket()) != 1) throw TLSProtocolError();
   
-  if (id) SSL_copy_session_id(session, id->session);
+  if (reuse)
+  {
+    assert(reuse->session);
+    SSL_copy_session_id(session, reuse->session);
+  }
   
   if (role == Client) SSL_set_connect_state(session);
   else SSL_set_accept_state(session);
@@ -124,7 +126,7 @@ void TLSSocket::Write(const char* buffer, size_t bufferLen)
   while (bufferLen - written > 0)
   {
     int result = SSL_write(session, buffer + written, bufferLen - written);
-      boost::this_thread::interruption_point();
+     boost::this_thread::interruption_point();
     if (result > 0) written += result;
     else EvaluateResult(result);
   }

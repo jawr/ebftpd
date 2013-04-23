@@ -111,7 +111,7 @@ Factory::Factory()
                   nullptr, "NOT IMPLEMENTED" }, },
     { "REST",   { 1,  1,  ftp::ClientState::AnyState,         ftp::ActionNotOkay,
                   std::make_shared<Creator<RESTCommand>>(), "REST <offset>" }, },
-    { "RETR",   { 1,  1,  ftp::ClientState::LoggedIn,         ftp::ActionNotOkay,
+    { "RETR",   { 1,  -1, ftp::ClientState::LoggedIn,         ftp::ActionNotOkay,
                   std::make_shared<Creator<RETRCommand>>(), "RETR <path>" }, },
     { "RMD",    { 1,  -1,  ftp::ClientState::LoggedIn,        ftp::ActionNotOkay,
                   std::make_shared<Creator<RMDCommand>>(), "RMD <path>" }, },

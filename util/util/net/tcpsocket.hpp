@@ -75,7 +75,7 @@ public:
   void Accept(TCPListener& listener);
   /* Throws NetworkSystemError, InvalidIPAddressError */
   
-  void HandshakeTLS(TLSSocket::HandshakeRole role);
+  void HandshakeTLS(TLSSocket::HandshakeRole role, TCPSocket* reuse = nullptr);
   /* Same as TLSSocket::Handshake() */
   
   size_t Read(char* buffer, size_t bufferSize);

@@ -85,11 +85,14 @@ public:
 
 class TLSServerContext : public TLSContext
 {
-  TLSServerContext(const std::string& certificate,
+  std::string contextId;
+
+  TLSServerContext(const std::string& contextId,
+                   const std::string& certificate,
                    const std::string& ciphers);
 
   void CreateContext();
-  void InitialiseSessionCaching() { }
+  void InitialiseSessionCaching();
   void InitialiseDHKeyExchange();
   void DerivedInitialise()
   {
@@ -98,7 +101,8 @@ class TLSServerContext : public TLSContext
   }
   
 public:
-  static void Initialise(const std::string& certificate,
+  static void Initialise(const std::string& contextId,
+                         const std::string& certificate,
                          const std::string& ciphers = "");
   /* Throws TLSError, TLSProtocolError */
 
