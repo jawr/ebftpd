@@ -1870,7 +1870,7 @@ void UPDATECommand::Execute()
       {
         if (util::path::Status(fs::MakeReal(entryPath).ToString()).IsDirectory())
         {
-          auto section = cfg::Get().SectionMatch(entryPath.ToString());
+          auto section = cfg::Get().SectionMatch(entryPath.ToString(), true);
           db::index::Add(entryPath.ToString(), section ? section->Name() : "");
           ++addedCount;
         }

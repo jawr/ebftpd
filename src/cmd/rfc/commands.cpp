@@ -517,16 +517,13 @@ void MKDCommand::Execute()
   
   const cfg::Config& config = cfg::Get();
   
-  if (config.IsIndexed(path.ToString()))
+  bool indexed = config.IsIndexed(path.ToString());
+  bool dupeLogged = config.IsDupeLogged(path.ToString());
+  if (indexed | dupeLogged)
   {
-    auto section = config.SectionMatch(path.ToString());
-    db::index::Add(path.ToString(), section ? section->Name() : "");
-  }
-  
-  if (config.IsDupeLogged(path.ToString()))
-  {
-    auto section = config.SectionMatch(path.ToString());
-    db::dupe::Add(path.Basename().ToString(), section ? section->Name() : "");    
+    auto section = config.SectionMatch(path.ToString(), true);
+    if (indexed) db::index::Add(path.ToString(), section ? section->Name() : "");
+    if (dupeLogged) db::dupe::Add(path.Basename().ToString(), section ? section->Name() : "");    
   }
   
   if (config.IsEventLogged(path.ToString()))
@@ -798,11 +795,13 @@ void RNTOCommand::Execute()
     // this should be changed to a single move action so as to retain the
     // creation date in the database
     if (cfg::Get().IsIndexed(client.RenameFrom().ToString()))
+    {
       db::index::Delete(client.RenameFrom().ToString());
+    }
 
     if (cfg::Get().IsIndexed(path.ToString()))
     {
-      auto section = cfg::Get().SectionMatch(path.ToString());
+      auto section = cfg::Get().SectionMatch(path.ToString(), true);
       db::index::Add(path.ToString(), section ? section->Name() : "");
     }
   }

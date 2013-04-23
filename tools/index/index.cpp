@@ -141,7 +141,7 @@ void AddPath(const std::string& path)
     auto vpath = VirtualPath(*globIter);
     if (!vpath.empty())
     {
-      auto section = config->SectionMatch(vpath);
+      auto section = config->SectionMatch(vpath, true);
       auto obj = BSON("path" << vpath << "section" << (section ? section->Name() : ""));
       conn.insert(collection, obj);
     }
