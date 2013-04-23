@@ -15,5 +15,4 @@ do
 	fi
 done
 
-cat /tmp/LICENSE.$$
 rm -f /tmp/LICENSE.$$
