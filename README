@@ -34,8 +34,10 @@ Compiling
 
 Dependencies are:
 
+* cmake
 * Boost 1.49 (may work on newer, untested)
-* gcc > 4.6
+* gcc > 4.6 or clang++ 3.3
 * MongoDB 2.2+
+* OpenSSL 1.0.0+
 
 
