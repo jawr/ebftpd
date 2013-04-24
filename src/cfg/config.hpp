@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #ifndef __CFG_CONFIG_CPP
 #define __CFG_CONFIG_CPP
 
@@ -151,7 +166,8 @@ class Config
   bool dnsLookup;
   ::cfg::LogAddresses logAddresses;
   mode_t umask;
-  int defaultLogLines;
+  int logLines;
+  ssize_t dataBufferSize;
   std::vector<Plugin> plugins;
   std::string pluginpath;
   std::string scriptpath;
@@ -290,7 +306,7 @@ public:
   const std::vector<CheckScript>& PreDirCheck() const { return preDirCheck; }
   const std::vector<CheckScript>& PostCheck() const { return postCheck; }  
   const std::map<std::string, Section>& Sections() const { return sections; }
-  boost::optional<const Section&> SectionMatch(const std::string& path) const;
+  boost::optional<const Section&> SectionMatch(std::string path, bool isDir = false) const;
   ::cfg::EPSVFxp EPSVFxp() const { return epsvFxp; }
   int MaximumRatio() const { return maximumRatio; }
   const acl::ACL& TLSControl() const { return tlsControl; }
@@ -303,7 +319,8 @@ public:
   bool DNSLookup() const { return dnsLookup; }
   ::cfg::LogAddresses LogAddresses() const { return logAddresses; }
   mode_t Umask() const { return umask; }
-  int DefaultLogLines() const { return defaultLogLines; }
+  int LogLines() const { return logLines; }
+  size_t DataBufferSize() const { return dataBufferSize; }
 
   const std::vector<Plugin>& Plugins() const { return plugins; }
   const std::string& Pluginpath() const { return pluginpath; }

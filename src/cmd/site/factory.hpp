@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #ifndef __CMD_SITE_FACTORY_HPP
 #define __CMD_SITE_FACTORY_HPP
 
@@ -92,34 +107,13 @@ public:
              const std::string& aclKeyword,
              const std::shared_ptr<CreatorBase<cmd::Command>>& creator,
              const std::string& syntax,
-             const std::string& description) :
-    minimumArgs(minimumArgs),
-    maximumArgs(maximumArgs),
-    aclKeyword(aclKeyword),
-    creator(creator),
-    syntax(syntax),
-    description(description)
-  { }
-  
-  CommandDef(const std::string& aclKeyword,
-             const std::shared_ptr<CreatorBase<cmd::Command>>& creator) :
-    minimumArgs(0), 
-    maximumArgs(-1), 
-    aclKeyword(aclKeyword), 
-    creator(creator)
-  { }
-  
-  bool CheckArgs(const std::vector<std::string>& args) const
-  {
-    int argsSize = static_cast<int>(args.size()) - 1;
-    return (argsSize >= minimumArgs && (maximumArgs == -1 || argsSize <= maximumArgs));
-  }
-  
-  CommandPtr Create(ftp::Client& client, const std::string& argStr, const Args& args) const
-  {
-    if (!creator) return nullptr;
-    return CommandPtr(creator->Create(client, argStr, args));
-  }
+             const std::string& description);
+  CommandDef(const std::string& aclKeyword, 
+             const std::string& syntax,
+             const std::string& description,
+             const std::shared_ptr<CreatorBase<cmd::Command>>& creator);
+  bool CheckArgs(const std::vector<std::string>& args) const;
+  CommandPtr Create(ftp::Client& client, const std::string& argStr, const Args& args) const;
   
   const std::string& Syntax() const { return syntax; }
   const std::string& Description() const { return description; }

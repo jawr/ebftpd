@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
@@ -184,7 +199,7 @@ void TLSClientContext::CreateContext()
 {
   context = SSL_CTX_new(SSLv23_client_method());
   if (!context) throw TLSProtocolError();
-  SSL_CTX_set_options(context, SSL_OP_NO_SSLv2 | SSL_OP_ALL);
+  SSL_CTX_set_options(context, /*SSL_OP_NO_SSLv2 | */SSL_OP_ALL);
 }
 
 void TLSClientContext::Initialise(const std::string& certificate,
@@ -198,7 +213,7 @@ void TLSClientContext::Initialise(const std::string& certificate,
   }
   catch (...)
   {
-    delete client.release();
+    client = nullptr;
     throw;
   }
 }
@@ -210,9 +225,11 @@ SSL_CTX* TLSClientContext::Get()
   return client->context;
 }
 
-TLSServerContext::TLSServerContext(const std::string& certificate,
+TLSServerContext::TLSServerContext(const std::string& contextId, 
+                                   const std::string& certificate,
                                    const std::string& ciphers) :
-  TLSContext(certificate, ciphers)
+  TLSContext(certificate, ciphers),
+  contextId(contextId)
 {
 }
 
@@ -221,7 +238,7 @@ void TLSServerContext::CreateContext()
   context = SSL_CTX_new(SSLv23_server_method());
   if (!context) throw TLSProtocolError();
 
-  unsigned long options = SSL_OP_NO_SSLv2 | SSL_OP_ALL;
+  unsigned long options = /*SSL_OP_NO_SSLv2 | */SSL_OP_ALL;
 #if (OPENSSL_VERSION_NUMBER >= 0x10000000)
   options |= SSL_OP_NO_COMPRESSION;
 #endif  
@@ -229,18 +246,26 @@ void TLSServerContext::CreateContext()
   SSL_CTX_set_options(context, options);
 }
 
-void TLSServerContext::Initialise(const std::string& certificate,
+void TLSServerContext::InitialiseSessionCaching()
+{
+  const unsigned char* id = reinterpret_cast<const unsigned char*>(contextId.c_str());
+  SSL_CTX_set_session_id_context(context, id, contextId.length());
+  SSL_CTX_set_session_cache_mode(context, SSL_SESS_CACHE_SERVER);
+}
+
+void TLSServerContext::Initialise(const std::string& contextId,
+                                  const std::string& certificate,
                                   const std::string& ciphers)
 {
   assert(!server.get());
-  server.reset(new TLSServerContext(certificate, ciphers));
+  server.reset(new TLSServerContext(contextId, certificate, ciphers));
   try
   {
     server->TLSContext::Initialise();
   }
   catch (...)
   {
-    delete server.release();
+    server = nullptr;
     throw;
   }
 }

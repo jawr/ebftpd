@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <utility>
 #include <iomanip>
 #include <boost/optional.hpp>
@@ -33,23 +48,39 @@ void HELPCommand::ListNoTemplate()
   std::ostringstream os;
   os << " " << programFullname << " SITE command listing - \n\n";
   
-  std::vector<std::string> sorted;
+  std::vector<std::pair<std::string, std::string>> sorted;
   size_t maxLen = 0;
   for (auto& kv : commands)
   {
     if (acl::AllowSiteCmd(client.User(), kv.second.ACLKeyword()))
     {
-      sorted.emplace_back(kv.first);
+      sorted.emplace_back(kv.first, kv.second.Description());
       maxLen = std::max(kv.first.length(), maxLen);
     }
   }
   
   std::sort(sorted.begin(), sorted.end());
     
-  for (auto& command : sorted)
+  for (const auto& sc : cfg::Get().SiteCmd())
   {
-    os << " " << std::setw(maxLen) << command << " : " 
-       << commands.at(command).Description() << "\n";
+    auto def = Factory::LookupCustom(sc.Command());
+    if (def && acl::AllowSiteCmd(client.User(), def->ACLKeyword()))
+    {
+      sorted.emplace_back(sc.Command(), sc.Description());
+      maxLen = std::max(sc.Command().length(), maxLen);
+    }
+  }
+
+  std::sort(sorted.begin(), sorted.end(),
+        [](const std::pair<std::string, std::string>& c1,
+           const std::pair<std::string, std::string>& c2)
+        {
+          return c1.first < c2.first;
+        });
+
+  for (const auto& kv : sorted)
+  {
+    os << " " << std::setw(maxLen) << kv.first << " : " << kv.second << "\n";
   }
     
   os << "\n End of list";

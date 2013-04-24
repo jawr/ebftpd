@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <algorithm>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -930,8 +945,6 @@ void IDLECommand::Execute()
       throw cmd::SyntaxError();
     }
   }
-  
-  return;
 }
 
 void KICKCommand::Execute()
@@ -1532,6 +1545,23 @@ void SREPLYCommand::Execute()
   }
 }
 
+void STATCommand::Execute()
+{
+  boost::optional<text::Template> templ;
+  try
+  {
+    templ.reset(text::Factory::GetTemplate("stat"));
+  }
+  catch (const text::TemplateError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, e.Message());
+    return;
+  }
+  
+  text::RegisterGlobals(client, templ->Body());  
+  control.Reply(ftp::CommandOkay, templ->Body().Compile(true));
+}
+
 void STATSCommand::Execute()
 {
   if (args.size() == 2 && args[1] != client.User().Name() && 
@@ -1742,7 +1772,6 @@ void TIMECommand::Execute()
      << "Time online  : " << FormatDuration(now - client.LoggedInAt());
   
   control.Reply(ftp::CommandOkay, os.str());
-  return;
 }
 
 void TRAFFICCommand::Execute()
@@ -1841,7 +1870,7 @@ void UPDATECommand::Execute()
       {
         if (util::path::Status(fs::MakeReal(entryPath).ToString()).IsDirectory())
         {
-          auto section = cfg::Get().SectionMatch(entryPath.ToString());
+          auto section = cfg::Get().SectionMatch(entryPath.ToString(), true);
           db::index::Add(entryPath.ToString(), section ? section->Name() : "");
           ++addedCount;
         }
@@ -2092,7 +2121,6 @@ void UTIMECommand::Execute()
 void VERSCommand::Execute()
 {
   control.Reply(ftp::CommandOkay, "This server is running: " + programFullname);
-  return;
 }
 
 void WELCOMECommand::Execute()
@@ -2164,7 +2192,6 @@ void XDUPECommand::Execute()
   std::ostringstream os;
   os << "Activated extended dupe mode " << mode << ".";
   control.Reply(ftp::CommandOkay, os.str());
-  return;
 }
 
 } /* site namespace */

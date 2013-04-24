@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <iomanip>
 #include <sstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -502,16 +517,13 @@ void MKDCommand::Execute()
   
   const cfg::Config& config = cfg::Get();
   
-  if (config.IsIndexed(path.ToString()))
+  bool indexed = config.IsIndexed(path.ToString());
+  bool dupeLogged = config.IsDupeLogged(path.ToString());
+  if (indexed | dupeLogged)
   {
-    auto section = config.SectionMatch(path.ToString());
-    db::index::Add(path.ToString(), section ? section->Name() : "");
-  }
-  
-  if (config.IsDupeLogged(path.ToString()))
-  {
-    auto section = config.SectionMatch(path.ToString());
-    db::dupe::Add(path.Basename().ToString(), section ? section->Name() : "");    
+    auto section = config.SectionMatch(path.ToString(), true);
+    if (indexed) db::index::Add(path.ToString(), section ? section->Name() : "");
+    if (dupeLogged) db::dupe::Add(path.Basename().ToString(), section ? section->Name() : "");    
   }
   
   if (config.IsEventLogged(path.ToString()))
@@ -783,11 +795,13 @@ void RNTOCommand::Execute()
     // this should be changed to a single move action so as to retain the
     // creation date in the database
     if (cfg::Get().IsIndexed(client.RenameFrom().ToString()))
+    {
       db::index::Delete(client.RenameFrom().ToString());
+    }
 
     if (cfg::Get().IsIndexed(path.ToString()))
     {
-      auto section = cfg::Get().SectionMatch(path.ToString());
+      auto section = cfg::Get().SectionMatch(path.ToString(), true);
       db::index::Add(path.ToString(), section ? section->Name() : "");
     }
   }

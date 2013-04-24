@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <sstream>
 #include <cstdlib>
 #include <boost/lexical_cast.hpp>
@@ -7,14 +22,17 @@
 #include "cfg/error.hpp"
 #include "util/string.hpp"
 #include "cfg/util.hpp"
+#include "cfg/defaults.hpp"
 
 namespace cfg
 {
 
-Database::Database() :
-  name("ebftpd"), 
-  address("localhost"), 
-  port(27017)
+Database::Database(const char* name, const char* address, int port, const char* login, const char* password) :
+  name(name), 
+  address(address), 
+  port(port),
+  login(login),
+  password(password)
 {
   std::ostringstream os;
   os << address << ":" << port;
@@ -114,6 +132,12 @@ SpeedLimit::SpeedLimit(std::vector<std::string> toks) :
   acl = acl::ACL(util::Join(toks, " "));
 }
 
+SimXfers::SimXfers(int maxDownloads, int maxUploads) : 
+  maxDownloads(maxDownloads),
+  maxUploads(maxUploads) 
+{
+}
+
 SimXfers::SimXfers(std::vector<std::string> toks)
 {
   maxDownloads = boost::lexical_cast<int>(toks[0]);
@@ -145,6 +169,14 @@ Ports::Ports(const std::vector<std::string>& toks)
   }
 }
 
+AllowFxp::AllowFxp(bool downloads, bool uploads, bool logging, const char* acl) :
+  downloads(downloads), 
+  uploads(uploads), 
+  logging(logging),
+  acl(acl)
+{
+}
+
 AllowFxp::AllowFxp(std::vector<std::string> toks)   
 {
   downloads = YesNoToBoolean(toks[0]);
@@ -169,9 +201,9 @@ Right::Right(std::vector<std::string> toks)
                path.find("[:groupname:]") != std::string::npos;
 }
 
-PathFilter::PathFilter() :
-  regex(new boost::regex("^[[\\]A-Za-z0-9_'()[:space:]][[\\]A-Za-z0-9_.'()[:space:]-]+$")),
-  acl("*")
+PathFilter::PathFilter(const char* regex, const char* acl) :
+  regex(new boost::regex(regex)),
+  acl(acl)
 {
 }
 
@@ -221,6 +253,12 @@ PathFilter::PathFilter(std::vector<std::string> toks)
 
 const boost::regex& PathFilter::Regex() const { return *regex; }
 
+MaxUsers::MaxUsers(int users, int exemptUsers) : 
+  users(users), 
+  exemptUsers(exemptUsers)
+{
+}
+
 MaxUsers::MaxUsers(const std::vector<std::string>& toks)   
 {
   users = boost::lexical_cast<int>(toks[0]);
@@ -234,6 +272,12 @@ ACLInt::ACLInt(std::vector<std::string> toks)
   arg = boost::lexical_cast<int>(toks[0]);
   toks.erase(toks.begin());
   acl = acl::ACL(util::Join(toks, " ")); 
+}
+
+Lslong::Lslong(const char* options, int maxRecursion) : 
+  options(options),
+  maxRecursion(maxRecursion)
+{
 }
 
 Lslong::Lslong(std::vector<std::string> toks)   
@@ -251,12 +295,6 @@ HiddenFiles::HiddenFiles(std::vector<std::string> toks)
   path = toks[0];
   toks.erase(toks.begin());
   masks = toks;
-}
-
-Requests::Requests(const std::vector<std::string>& toks)   
-{
-  path = toks[0];
-  max = boost::lexical_cast<int>(toks[1]);
 }
 
 Creditcheck::Creditcheck(std::vector<std::string> toks)   
@@ -277,9 +315,10 @@ Creditloss::Creditloss(std::vector<std::string> toks)
   acl = acl::ACL(util::Join(toks, " "));
 }
 
-NukedirStyle::NukedirStyle() :
-  action(Keep), 
-  emptyKBytes(ParseSize("1M"))
+NukedirStyle::NukedirStyle(const std::string& format, Action action, long long emptyKBytes) :
+  format(format),
+  action(action), 
+  emptyKBytes(emptyKBytes)
 {
 }
 
@@ -310,7 +349,13 @@ Privpath::Privpath(std::vector<std::string> toks)
 
 SiteCmd::SiteCmd(const std::vector<std::string>& toks)   
 {
-  command = util::ToUpperCopy(toks[0]);
+  std::vector<std::string> args;
+  util::Split(args, toks[0], " ", true);
+  util::ToUpper(args[0]);
+
+  command = args[0];
+  syntax = util::Join(args, " ");
+  
   description = toks[1];
   std::string typeStr(util::ToUpperCopy(toks[2]));
   if (typeStr == "EXEC") type = Type::Exec;
@@ -342,30 +387,17 @@ struct IdleTimeoutImpl
   boost::posix_time::seconds minimum;
   boost::posix_time::seconds timeout;
 
-  static const std::unique_ptr<IdleTimeoutImpl> defaults;
-
-  IdleTimeoutImpl() :
-    maximum(defaults->maximum), minimum(defaults->minimum),
-    timeout(defaults->timeout)
-  { }
-
-  IdleTimeoutImpl(const boost::posix_time::seconds& maximum,
-                  const boost::posix_time::seconds& minimum,
-                  const boost::posix_time::seconds& timeout) :
-    maximum(maximum), minimum(minimum),
+  IdleTimeoutImpl(long maximum, long minimum, long timeout) :
+    maximum(maximum), 
+    minimum(minimum),
     timeout(timeout)
   { }
 
   IdleTimeoutImpl(const std::vector<std::string>& toks) :
-    maximum(defaults->maximum),
-    minimum(defaults->minimum),
-    timeout(defaults->timeout)
+    maximum(boost::posix_time::seconds(boost::lexical_cast<long>(toks[0]))),
+    minimum(boost::posix_time::seconds(boost::lexical_cast<long>(toks[1]))),
+    timeout(boost::posix_time::seconds(boost::lexical_cast<long>(toks[2])))
   {
-    namespace pt = boost::posix_time;
-    timeout = pt::seconds(boost::lexical_cast<long>(toks[0]));
-    minimum = pt::seconds(boost::lexical_cast<long>(toks[1]));
-    maximum = pt::seconds(boost::lexical_cast<long>(toks[2]));
-    
     if (timeout.total_seconds() < 1 || minimum.total_seconds() < 1 || maximum.total_seconds() < 1)
       throw boost::bad_lexical_cast();
     if (minimum >= maximum)
@@ -376,14 +408,8 @@ struct IdleTimeoutImpl
   }
 };
 
-const std::unique_ptr<IdleTimeoutImpl> IdleTimeoutImpl::defaults(new IdleTimeoutImpl(
-  boost::posix_time::seconds(7200),
-  boost::posix_time::seconds(1),
-  boost::posix_time::seconds(900)
-));
-
-IdleTimeout::IdleTimeout() :
-  pimpl(new IdleTimeoutImpl())
+IdleTimeout::IdleTimeout(long maximum, long minimum, long timeout) :
+  pimpl(new IdleTimeoutImpl(maximum, minimum, timeout))
 {
 }
 

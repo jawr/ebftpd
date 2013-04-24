@@ -1,3 +1,7 @@
+if (Defaults_DONE)
+return()
+endif()
+
 # Variable definitions
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,-z,origin")
@@ -55,3 +59,6 @@ list(APPEND ALL_LIBRARIES
   ${Pthread_LIBRARIES}
   rt
 )
+
+set(Defaults_DONE TRUE)
+

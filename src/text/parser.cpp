@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include "util/string.hpp"
 #include <fstream>
 #include <memory>
@@ -13,8 +28,6 @@ Template TemplateParser::Create()
 {
   std::ifstream io(file.c_str()); 
   if (!io) throw TemplateError("Unable to open template file: " + file);
-
-  std::stringstream ss;
 
   while (io.good())
   {
@@ -48,9 +61,9 @@ void TemplateBuffer::ParseInclude(const std::string& file)
 
 void TemplateBuffer::Parse()
 { 
-  while (ss.good())
+  char c;
+  while (ss.get(c))
   {
-    char c = ss.get();
     ParseState(c);
   }
 }
@@ -192,7 +205,6 @@ void TemplateBuffer::ParseLogic()
   util::Split(args, logic, " ");
   logic = args[0];
   
-
   if (logic == "endblock")
     ParseBlock();
 

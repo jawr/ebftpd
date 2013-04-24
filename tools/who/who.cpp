@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <iostream>
 #include <sstream>
 #include <boost/program_options/options_description.hpp>
@@ -33,8 +48,8 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     ("help,h", "display this help message")
     ("version,v", "display version")
     ("config-path,c", po::value<std::string>(&configPath), "specify location of config file")
-    ("siteop,s", po::value<bool>(&siteop)->default_value(false), "site who")
-    ("raw,r", po::value<bool>(&raw)->default_value(false), "raw formatting")
+    ("siteop,s", "site who")
+    ("raw,r", "raw formatting")
     ("template,y", po::value<std::string>(&templatePath), "template file path")
   ;
   
@@ -63,6 +78,9 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     DisplayHelp(argv[0], visible);
     return false;
   }
+  
+  siteop = vm.count("siteop") > 0;
+  raw = vm.count("raw") > 0;
   
   return true;
 }
@@ -140,7 +158,7 @@ int main(int argc, char** argv)
     }
   }
 
-  std::cout << cmd::CompileWhosOnline(id, *templ);
+  std::cout << cmd::CompileWhosOnline(id, *templ) << std::endl;
   
   return 0;
 }

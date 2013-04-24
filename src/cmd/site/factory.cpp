@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include "cmd/site/factory.hpp"
 #include "cfg/get.hpp"
 #include "util/verify.hpp"
@@ -113,6 +128,10 @@ Factory::Factory()
                       std::make_shared<Creator<TAKECommand>>(),
                       "Syntax: SITE TAKE [-S <section>] <user> <credits>G|M [<message>]",
                       "Take credits from user" }, },
+    { "STAT",       { 0,  1,  "stat",
+                      std::make_shared<Creator<STATCommand>>(),
+                      "Syntax: SITE STAT",
+                      "Display brief stats" }, },
     { "STATS",      { 0,  1,  "stats|statsown",
                       std::make_shared<Creator<STATSCommand>>(),
                       "Syntax: SITE STATS [<user>]",
@@ -157,10 +176,6 @@ Factory::Factory()
                       nullptr,
                       "Syntax: SITE UNNUKES [<number>] [<section>]",
                       "Display unnuke history" }, },
-    { "PREDUPE",    { 1,  1,  "predupe",
-                      nullptr,
-                      "Syntax: SITE PREDUPE <filemask>",
-                      "Forcefully dupe all future uploads matching a file mask" }, },
     { "UPDATE",     { 1,  1,  "update",
                       std::make_shared<Creator<UPDATECommand>>(),
                       "Syntax: SITE UPDATE <pathmask>",
@@ -245,10 +260,6 @@ Factory::Factory()
                       std::make_shared<Creator<HELPCommand>>(),
                       "Syntax: SITE HELP [<command>]",
                       "Display site command help" }, },
-    { "STAT",       { 0,  0,  "stat",
-                      nullptr,
-                      "Syntax: SITE STAT",
-                      "Display statline" }, },
     { "TIME",       { 0,  0,  "time",
                       std::make_shared<Creator<TIMECommand>>(),
                       "Syntax: SITE TIME",
@@ -276,18 +287,6 @@ Factory::Factory()
                       "          SAVE [<index>]                     - Mark message(s) as saved\n"
                       "          PURGE [<index>]                    - Purge a message(s)",
                       "Messaging system" }, },
-    { "REQUEST",    { 1,  1,  "request",
-                      nullptr,
-                      "Syntax: SITE REQUEST <string>",
-                      "Add a request" }, },
-    { "REQFILLED",  { 1,  1,  "reqfilled",
-                      nullptr,
-                      "Syntax: SITE REQFILLED <number>",
-                      "Mark a request as filled" }, },
-    { "REQUESTS",   { 0,  2,  "requests",
-                      nullptr,
-                      "Syntax: SITE REQUESTS [<number>] [<string> ..]",
-                      "Display list of requests" }, },
     { "RELOAD",     { 0,  0,  "reload",
                       std::make_shared<Creator<RELOADCommand>>(),
                       "Syntax: SITE RELOAD",
@@ -322,18 +321,20 @@ CommandDefOpt Factory::LookupCustom(const std::string& command)
   {
     case cfg::SiteCmd::Type::Exec  :
     {
-      return boost::make_optional(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomEXECCommand>>(*match)));
+      return boost::make_optional(CommandDef(aclKeyword, match->Syntax(), match->Description(),
+                           std::make_shared<CustomCreator<CustomEXECCommand>>(*match)));
     }
     case cfg::SiteCmd::Type::Text  :
     {
-      return boost::make_optional(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomTEXTCommand>>(*match)));
+      return boost::make_optional(CommandDef(aclKeyword, match->Syntax(), match->Description(),
+                           std::make_shared<CustomCreator<CustomTEXTCommand>>(*match)));
     }
     case cfg::SiteCmd::Type::Alias :
     {
-      return boost::make_optional(CommandDef(aclKeyword, std::make_shared<CustomCreator<CustomALIASCommand>>(*match)));
+      return boost::make_optional(CommandDef(aclKeyword, match->Syntax(), match->Description(),
+                           std::make_shared<CustomCreator<CustomALIASCommand>>(*match)));
     }
   }
-  
   verify(false);
 }
 
@@ -345,7 +346,7 @@ CommandDefOpt Factory::LookupPlugin(ftp::Client& client, const std::string& comm
   std::string aclKeyword("custom-" + util::ToLowerCopy(command));
   plugin::CommandHook& hook = result->first;
   auto creator = std::make_shared<PluginCreator>(*result->second, hook.function);
-  return boost::make_optional(CommandDef(aclKeyword, creator));
+  return boost::make_optional(CommandDef(aclKeyword, "syntax", "description", creator));
 }
 
 CommandDefOpt Factory::Lookup(ftp::Client& client, const std::string& command, bool noCustom)
@@ -356,7 +357,7 @@ CommandDefOpt Factory::Lookup(ftp::Client& client, const std::string& command, b
     def = LookupCustom(command);
     if (!def) def = LookupPlugin(client, command);
   }
-  
+
   if (!def)
   {
     CommandDefsMap::const_iterator it = factory->defs.find(command);
@@ -377,11 +378,49 @@ std::unordered_set<std::string> Factory::ACLKeywords()
   return keywords;
 }
 
+CommandDef::CommandDef(int minimumArgs, int maximumArgs,
+                       const std::string& aclKeyword,
+                       const std::shared_ptr<CreatorBase<cmd::Command>>& creator,
+                       const std::string& syntax,
+                       const std::string& description) :
+  minimumArgs(minimumArgs),
+  maximumArgs(maximumArgs),
+  aclKeyword(aclKeyword),
+  creator(creator),
+  syntax(syntax),
+  description(description)
+{ }
+
+CommandDef::CommandDef(const std::string& aclKeyword,
+                       const std::string& syntax,
+                       const std::string& description,
+                       const std::shared_ptr<CreatorBase<cmd::Command>>& creator) :
+  minimumArgs(0), 
+  maximumArgs(-1), 
+  aclKeyword(aclKeyword), 
+  creator(creator),
+  syntax("Syntax: " + syntax),
+  description(description)
+{
+}
+
+bool CommandDef::CheckArgs(const std::vector<std::string>& args) const
+{
+  int argsSize = static_cast<int>(args.size()) - 1;
+  return (argsSize >= minimumArgs &&
+          (maximumArgs == -1 || argsSize <= maximumArgs));
+}
+
+CommandPtr CommandDef::Create(ftp::Client& client, const std::string& argStr, const Args& args) const
+{
+  if (!creator) return nullptr;
+  return CommandPtr(creator->Create(client, argStr, args));
+}
+
 cmd::Command* PluginCreator::Create(ftp::Client& client, const std::string& argStr, const cmd::Args& args)
 {
   return new PluginCommand(client, argStr, args, plugin, function);
 }
-
 
 } /* site namespace */
 } /* cmd namespace */

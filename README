@@ -34,13 +34,10 @@ Compiling
 
 Dependencies are:
 
-* Boost
-* Crypto++
-* gcc > 4.4
-* MongoDB
+* cmake
+* Boost 1.49 (may work on newer, untested)
+* gcc > 4.6 or clang++ 3.3
+* MongoDB 2.2+
+* OpenSSL 1.0.0+
 
-Debian Wheezy instructions:
-
-`apt-get install libboost-all-dev libcrypto++ mongodb-dev
-make`
 

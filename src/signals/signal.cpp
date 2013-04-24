@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <csignal>
 #include <cerrno>
 #include <stdexcept>
@@ -51,6 +66,7 @@ void Handler::StopThread()
 void Handler::Run()
 {
   util::SetProcessTitle("SIGNALS");
+  logs::SetThreadIDPrefix('S' /* signals */);
   
   sigset_t mask;
   sigemptyset(&mask);
@@ -103,13 +119,11 @@ void PropogateSignal(int signo)
   memset(&sa, 0, sizeof(sa));
   sa.sa_flags = 0;
   sa.sa_handler = SIG_DFL;
-  if (sigaction(SIGSEGV, &sa, nullptr) < 0 ||
-      kill(getpid(), signo) < 0)
+  if (sigaction(SIGSEGV, &sa, nullptr) < 0 || kill(getpid(), signo) < 0)
   {
     _exit(1);
   }
 }
-
 
 void CrashHandler(int signo)
 {

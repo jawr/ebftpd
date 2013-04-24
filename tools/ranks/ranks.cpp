@@ -1,3 +1,18 @@
+//    Copyright (C) 2012, 2013 ebftpd team
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <iostream>
 #include <sstream>
 #include <boost/program_options/options_description.hpp>
@@ -129,7 +144,7 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     ("sortfield,o", po::value<stats::SortField>(&sf)->default_value(stats::SortField::KBytes, "kbytes"), "kbytes, files, speed")
     ("who,w", po::value<Who>(&who)->required(), "users, groups")
     ("section,s", po::value<std::string>(&section), "stat section, defaults to all if omitted")
-    ("raw,r", po::value<bool>(&raw)->default_value(true), "raw formatting")
+    ("raw,r", "raw formatting")
     ("max,m", po::value<int>(&max)->default_value(10), "maximum entries in output, -1 for unlimited")
     ("template,y", po::value<std::string>(&templatePath), "template file path")
   ;
@@ -159,6 +174,8 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     DisplayHelp(argv[0], visible);
     return false;
   }
+  
+  raw = vm.count("raw") > 0;
   
   return true;
 }
@@ -243,11 +260,11 @@ int main(int argc, char** argv)
   
   if (who == Who::Users)
   {
-    std::cout << stats::CompileUserRanks(section, tf, dir, sf, max, *templ);
+    std::cout << stats::CompileUserRanks(section, tf, dir, sf, max, *templ) << std::endl;
   }
   else
   {
-    std::cout << stats::CompileGroupRanks(section, tf, dir, sf, max, *templ);
+    std::cout << stats::CompileGroupRanks(section, tf, dir, sf, max, *templ) << std::endl;
   }
   
   return 0;
