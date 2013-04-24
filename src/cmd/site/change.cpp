@@ -135,7 +135,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckRatio()
     }
     
     if (ratio == 0) display = "Unlimited";
-    else display = "1:" + boost::lexical_cast<std::string>(ratio);
+    else display = "1:" + std::to_string(ratio);
 
     return [ratio, this](acl::User& user) -> bool 
             {
@@ -193,7 +193,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
 
     display = section + "(";
     if (ratio == 0) display += "Unlimited";
-    else display += "1:" + boost::lexical_cast<std::string>(ratio);
+    else display += "1:" + std::to_string(ratio);
     
     display += ")";
     
@@ -235,7 +235,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
   
   if (!section.empty()) display = section + "(";
   if (allotment == 0) display += "Disabled";
-  else display += boost::lexical_cast<std::string>(allotment) + "KB";
+  else display += std::to_string(allotment) + "KB";
   
   if (!section.empty()) display += ")";
   
@@ -350,7 +350,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckIdleTime()
     if (idleTime < -1) throw boost::bad_lexical_cast();
     if (idleTime == -1) display = "Unset";
     else if (idleTime == 0) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(idleTime) + " seconds";
+    else display = std::to_string(idleTime) + " seconds";
 
     return [idleTime](acl::User& user) -> bool { user.SetIdleTime(idleTime); return true; };
   }
@@ -397,7 +397,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckNumLogins()
     if (logins < -1) throw boost::bad_lexical_cast();
     
     if (logins == -1) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(logins);
+    else display = std::to_string(logins);
     
     return [logins](acl::User& user) -> bool { user.SetNumLogins(logins); return true; };
   }
@@ -433,7 +433,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxUpSpeed()
   {
     long long speed = cfg::ParseSize(args[3]);
     if (speed == 0) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(speed) + "KB/s";
+    else display = std::to_string(speed) + "KB/s";
     
     return [speed](acl::User& user) -> bool { user.SetMaxUpSpeed(speed); return true; };
   }
@@ -449,7 +449,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxDownSpeed()
   {
     long long speed = cfg::ParseSize(args[3]);
     if (speed == 0) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(speed) + "KB/s";
+    else display = std::to_string(speed) + "KB/s";
 
     return [speed](acl::User& user) -> bool { user.SetMaxDownSpeed(speed); return true; };
   }
@@ -467,7 +467,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxSimUp()
     if (logins < -1) throw boost::bad_lexical_cast();
     if (logins == 0) display = "Disabled";
     else if (logins == -1) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(logins);
+    else display = std::to_string(logins);
     
     return [logins](acl::User& user) -> bool { user.SetMaxSimUp(logins); return true; };
   }
@@ -485,7 +485,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxSimDown()
     if (logins < -1) throw boost::bad_lexical_cast();
     if (logins == 0) display = "Disabled";
     else if (logins == -1) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(logins);
+    else display = std::to_string(logins);
     
     return [logins](acl::User& user) -> bool { user.SetMaxSimDown(logins); return true; };
   }

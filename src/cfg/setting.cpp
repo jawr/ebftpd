@@ -15,7 +15,6 @@
 
 #include <sstream>
 #include <cstdlib>
-#include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/regex.hpp>
 #include "cfg/setting.hpp"
@@ -44,8 +43,8 @@ Database::Database(const std::vector<std::string>& toks) : port(-1)
   name = toks[0];
   address = toks[1];
 
-  port = boost::lexical_cast<int>(toks[2]);
-  if (port < 0 || port >= 65535) throw boost::bad_lexical_cast();
+  port = util::StrToInt(toks[2]);
+  if (port < 0 || port >= 65535) throw std::bad_cast();
 
   std::ostringstream os;
   os << address << ":" << port;
@@ -107,8 +106,8 @@ bool AsciiUploads::Allowed(const std::string& path) const
 
 SecureIp::SecureIp(std::vector<std::string> toks)
 {
-  int numOctets = boost::lexical_cast<int>(toks[0]);
-  if (numOctets < 0) throw boost::bad_lexical_cast();
+  int numOctets = util::StrToInt(toks[0]);
+  if (numOctets < 0) throw std::bad_cast();
   bool isHostname = YesNoToBoolean(toks[1]);
   bool hasIdent = YesNoToBoolean(toks[2]);
   strength = acl::IPStrength(numOctets, isHostname, hasIdent);
@@ -140,9 +139,9 @@ SimXfers::SimXfers(int maxDownloads, int maxUploads) :
 
 SimXfers::SimXfers(std::vector<std::string> toks)
 {
-  maxDownloads = boost::lexical_cast<int>(toks[0]);
-  maxUploads = boost::lexical_cast<int>(toks[1]);
-  if (maxDownloads < -1 || maxUploads < -1) throw boost::bad_lexical_cast();
+  maxDownloads = util::StrToInt(toks[0]);
+  maxUploads = util::StrToInt(toks[1]);
+  if (maxDownloads < -1 || maxUploads < -1) throw std::bad_cast();
 }
 
 PasvAddr::PasvAddr(const std::vector<std::string>& toks) :
@@ -158,13 +157,13 @@ Ports::Ports(const std::vector<std::string>& toks)
     temp.clear();
     util::Split(temp, token, "-");
     if (temp.size() > 2) throw cfg::ConfigError("Invalid port range.");
-    int from = boost::lexical_cast<int>(temp[0]);
+    int from = util::StrToInt(temp[0]);
     int to = from;
-    if (temp.size() > 1) to = boost::lexical_cast<int>(temp[1]);
+    if (temp.size() > 1) to = util::StrToInt(temp[1]);
     if (to < from)
       throw cfg::ConfigError("To port lower than from port in port range.");
     if (to < 1024 || from < 1024 || to > 65535 || from > 65535)
-      throw boost::bad_lexical_cast();
+      throw std::bad_cast();
     ranges.emplace_back(from, to);
   }
 }
@@ -261,15 +260,15 @@ MaxUsers::MaxUsers(int users, int exemptUsers) :
 
 MaxUsers::MaxUsers(const std::vector<std::string>& toks)   
 {
-  users = boost::lexical_cast<int>(toks[0]);
-  if (users < 0) throw boost::bad_lexical_cast();
-  exemptUsers = boost::lexical_cast<int>(toks[1]);
-  if (exemptUsers < 0) throw boost::bad_lexical_cast();
+  users = util::StrToInt(toks[0]);
+  if (users < 0) throw std::bad_cast();
+  exemptUsers = util::StrToInt(toks[1]);
+  if (exemptUsers < 0) throw std::bad_cast();
 }
 
 ACLInt::ACLInt(std::vector<std::string> toks)   
 {
-  arg = boost::lexical_cast<int>(toks[0]);
+  arg = util::StrToInt(toks[0]);
   toks.erase(toks.begin());
   acl = acl::ACL(util::Join(toks, " ")); 
 }
@@ -286,8 +285,8 @@ Lslong::Lslong(std::vector<std::string> toks)
   if (options[0] == '-') options.erase(0, 1);
   if (toks.size() == 1) return;
   
-  maxRecursion = boost::lexical_cast<int>(toks[1]);
-  if (maxRecursion < 0) throw boost::bad_lexical_cast();
+  maxRecursion = util::StrToInt(toks[1]);
+  if (maxRecursion < 0) throw std::bad_cast();
 }
 
 HiddenFiles::HiddenFiles(std::vector<std::string> toks)   
@@ -300,8 +299,8 @@ HiddenFiles::HiddenFiles(std::vector<std::string> toks)
 Creditcheck::Creditcheck(std::vector<std::string> toks)   
 {
   path = toks[0];
-  ratio = boost::lexical_cast<int>(toks[1]);
-  if (ratio < 0) throw boost::bad_lexical_cast();
+  ratio = util::StrToInt(toks[1]);
+  if (ratio < 0) throw std::bad_cast();
   toks.erase(toks.begin(), toks.begin()+2);
   acl = acl::ACL(util::Join(toks, " "));
 }
@@ -309,8 +308,8 @@ Creditcheck::Creditcheck(std::vector<std::string> toks)
 Creditloss::Creditloss(std::vector<std::string> toks)   
 {
   path = toks[0];
-  ratio = boost::lexical_cast<int>(toks[1]);
-  if (ratio < 0) throw boost::bad_lexical_cast();
+  ratio = util::StrToInt(toks[1]);
+  if (ratio < 0) throw std::bad_cast();
   toks.erase(toks.begin(), toks.begin()+2);
   acl = acl::ACL(util::Join(toks, " "));
 }
@@ -329,7 +328,7 @@ NukedirStyle::NukedirStyle(const std::vector<std::string>& toks)
   if (action == "deleteall") action = DeleteAll;
   else if (action == "deletefiles") action = DeleteFiles;
   else if (action == "keep") action = Keep;
-  else throw boost::bad_lexical_cast();
+  else throw std::bad_cast();
   emptyKBytes = ParseSize(toks[2]);
 }
 
@@ -366,7 +365,7 @@ SiteCmd::SiteCmd(const std::vector<std::string>& toks)
     util::ToUpper(target);
   }
   else
-    throw boost::bad_lexical_cast();
+    throw std::bad_cast();
   target = toks[3];
   if (toks.size() == 5) arguments = toks[4];
 }
@@ -377,7 +376,7 @@ Cscript::Cscript(const std::vector<std::string>& toks)
   std::string when = util::ToLowerCopy(toks[1]);
   if (when == "pre") type = Type::Pre;
   else if (when == "post") type = Type::Post;
-  else throw boost::bad_lexical_cast();
+  else throw std::bad_cast();
   path = toks[2];
 }
 
@@ -394,12 +393,12 @@ struct IdleTimeoutImpl
   { }
 
   IdleTimeoutImpl(const std::vector<std::string>& toks) :
-    maximum(boost::posix_time::seconds(boost::lexical_cast<long>(toks[0]))),
-    minimum(boost::posix_time::seconds(boost::lexical_cast<long>(toks[1]))),
-    timeout(boost::posix_time::seconds(boost::lexical_cast<long>(toks[2])))
+    maximum(boost::posix_time::seconds(util::StrToLong(toks[0]))),
+    minimum(boost::posix_time::seconds(util::StrToLong(toks[1]))),
+    timeout(boost::posix_time::seconds(util::StrToLong(toks[2])))
   {
     if (timeout.total_seconds() < 1 || minimum.total_seconds() < 1 || maximum.total_seconds() < 1)
-      throw boost::bad_lexical_cast();
+      throw std::bad_cast();
     if (minimum >= maximum)
       throw ConfigError("Mnimum must be smaller than maximum in idle_timeout");
     if (timeout < minimum || timeout > maximum)
@@ -459,9 +458,9 @@ Log::Log(const std::string& name, const std::vector<std::string>& toks) :
   name(name),
   console(YesNoToBoolean(toks[0])),
   file(YesNoToBoolean(toks[1])),
-  database(toks.size() >= 3 && boost::lexical_cast<long>(toks[2]))
+  database(toks.size() >= 3 && util::StrToLong(toks[2]))
 {
-  if (database < 0) throw boost::bad_lexical_cast();
+  if (database < 0) throw std::bad_cast();
 }
 
 TransferLog::TransferLog(const std::string& name, const std::vector<std::string>& toks) :

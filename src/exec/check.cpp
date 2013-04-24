@@ -147,10 +147,10 @@ bool PostCheck(ftp::Client& client, const fs::VirtualPath& path,
     client.User().Name(),
     client.User().PrimaryGroup(),
     client.User().Tagline(),
-    boost::lexical_cast<std::string>(static_cast<unsigned>(speed / 1024)),
+    std::to_string(static_cast<unsigned>(speed / 1024)),
     section,
-    boost::lexical_cast<std::string>(client.User().ID()),
-    boost::lexical_cast<std::string>(client.User().PrimaryGID())
+    std::to_string(client.User().ID()),
+    std::to_string(client.User().PrimaryGID())
   };
   
   try

@@ -30,7 +30,7 @@ bool BoolLexicalCast(std::string arg)
   boost::to_lower(arg);
   if (arg == "yes") return true;
   else if (arg == "no") return false;
-  return boost::lexical_cast<bool>(arg);
+  throw std::bad_cast();
 }
 
 bool WildcardMatch(const char* pattern, const std::string& str, bool iCase)
@@ -240,6 +240,102 @@ bool StartsWith(const std::string& s, const std::string& test)
 bool EndsWith(const std::string&s, const std::string& test)
 {
   return boost::ends_with(s, test);
+}
+
+double StrToDouble(const std::string& s)
+{
+  try
+  {
+    return std::stod(s);
+  }
+  catch (...)
+  {
+    throw std::bad_cast();
+  }
+}
+
+float StrToFloat(const std::string& s)
+{
+  try
+  {
+    return std::stof(s);
+  }
+  catch (...)
+  {
+    throw std::bad_cast();
+  }
+}
+
+int StrToInt(const std::string& s)
+{
+  try
+  {
+    return std::stoi(s);
+  }
+  catch (...)
+  {
+    throw std::bad_cast();
+  }
+}
+
+long StrToLong(const std::string& s)
+{
+  try
+  {
+    return std::stol(s);
+  }
+  catch (...)
+  {
+    throw std::bad_cast();
+  }
+}
+
+long double StrToLDouble(const std::string& s)
+{
+  try
+  {
+    return std::stold(s);
+  }
+  catch (...)
+  {
+    throw std::bad_cast();
+  }
+}
+
+long long StrToLLong(const std::string& s)
+{
+  try
+  {
+    return std::stoll(s);
+  }
+  catch (...)
+  {
+    throw std::bad_cast();
+  }
+}
+
+unsigned long StrToULong(const std::string& s)
+{
+  try
+  {
+    return std::stoul(s);
+  }
+  catch (...)
+  {
+    throw std::bad_cast();
+  }
+}
+
+unsigned long long StrToULLong(const std::string& s)
+{
+  try
+  {
+    return std::stoull(s);
+  }
+  catch (...)
+  {
+    throw std::bad_cast();
+  }
 }
 
 } /* util namespace */

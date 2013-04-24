@@ -15,7 +15,6 @@
 
 #include <sstream>
 #include <vector>
-#include "util/string.hpp"
 #include <boost/ptr_container/ptr_vector.hpp>
 #include "cmd/site/grpchange.hpp"
 #include "acl/group.hpp"
@@ -26,6 +25,7 @@
 #include "db/group/group.hpp"
 #include "logs/logs.hpp"
 #include "acl/user.hpp"
+#include "util/string.hpp"
 
 namespace cmd { namespace site
 {
@@ -78,14 +78,14 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckSlots()
 {
   try
   {
-    int slots = boost::lexical_cast<int>(args[3]);
-    if (slots < -1) throw boost::bad_lexical_cast();
+    int slots = util::StrToInt(args[3]);
+    if (slots < -1) throw std::bad_cast();
     if (slots == -1) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(slots);
+    else display = std::to_string(slots);
     
     return [slots](acl::Group& group) { group.SetSlots(slots); };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -95,15 +95,15 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckLeechSlots()
 {
   try
   {
-    int slots = boost::lexical_cast<int>(args[3]);
-    if (slots < -2) throw boost::bad_lexical_cast();
+    int slots = util::StrToInt(args[3]);
+    if (slots < -2) throw std::bad_cast();
     if (slots == -1) display = "Unlimited";
     else if (slots == -2) display = "Disabled";
-    else display = boost::lexical_cast<std::string>(slots);
+    else display = std::to_string(slots);
     
     return [slots](acl::Group& group) { group.SetLeechSlots(slots); };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -113,15 +113,15 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckAllotSlots()
 {
   try
   {
-    int slots = boost::lexical_cast<int>(args[3]);
-    if (slots < -2) throw boost::bad_lexical_cast();
+    int slots = util::StrToInt(args[3]);
+    if (slots < -2) throw std::bad_cast();
     if (slots == -1) display = "Unlimited";
     else if (slots == -2) display = "Disabled";
-    else display = boost::lexical_cast<std::string>(slots);
+    else display = std::to_string(slots);
     
     return [slots](acl::Group& group) { group.SetAllotmentSlots(slots); };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -131,14 +131,14 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckMaxAllotSize()
 {
   try
   {
-    long long allotment = boost::lexical_cast<long long>(args[3]);
-    if (allotment < 0) throw boost::bad_lexical_cast();
+    long long allotment = util::StrToLLong(args[3]);
+    if (allotment < 0) throw std::bad_cast();
     if (allotment == -1) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(allotment);
+    else display = std::to_string(allotment);
     
     return [allotment](acl::Group& group) { group.SetMaxAllotmentSize(allotment); };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -148,14 +148,14 @@ GRPCHANGECommand::SetFunction GRPCHANGECommand::CheckMaxLogins()
 {
   try
   {
-    int logins = boost::lexical_cast<int>(args[3]);
-    if (logins < -1) throw boost::bad_lexical_cast();
+    int logins = util::StrToInt(args[3]);
+    if (logins < -1) throw std::bad_cast();
     if (logins == -1) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(logins);
+    else display = std::to_string(logins);
     
     return [logins](acl::Group& group) { group.SetMaxLogins(logins); };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }

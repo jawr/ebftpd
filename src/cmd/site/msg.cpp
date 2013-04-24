@@ -17,7 +17,6 @@
 #include <algorithm>
 #include <map>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/lexical_cast.hpp>
 #include "cmd/site/msg.hpp"
 #include "logs/logs.hpp"
 #include "db/mail/mail.hpp"
@@ -74,14 +73,14 @@ void MSGCommand::Read()
   {
     try
     {
-      index = boost::lexical_cast<int>(args[2]);
+      index = util::StrToInt(args[2]);
       if (index < 1)
       {
         control.Reply(ftp::ActionNotOkay, "Index must be 1 or larger.");
         return;
       }
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     { throw cmd::SyntaxError(); }
   }
   
@@ -204,9 +203,9 @@ void MSGCommand::Save()
   int index;
   try
   {
-    index = boost::lexical_cast<int>(args[2]);
+    index = util::StrToInt(args[2]);
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -232,9 +231,9 @@ void MSGCommand::Purge()
   int index;
   try
   {
-    index = boost::lexical_cast<int>(args[2]);
+    index = util::StrToInt(args[2]);
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -281,7 +280,7 @@ void MSGCommand::List()
     body.RegisterValue("index", ++index);
     body.RegisterValue("sender", message.Sender());
     body.RegisterValue("status", util::ToUpperCopy(util::EnumToString(message.Status())));
-    body.RegisterValue("when", boost::lexical_cast<std::string>(message.TimeSent()));
+    body.RegisterValue("when", boost::posix_time::to_simple_string(message.TimeSent()));
     body.RegisterValue("body", message.Body());
     
     os << body.Compile();

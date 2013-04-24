@@ -15,7 +15,6 @@
 
 #include <ctime>
 #include <fstream>
-#include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "logs/filesink.hpp"
 #include "logs/util.hpp"
@@ -25,27 +24,27 @@ namespace logs
 
 void FileSink::Write(const char* field, int value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, std::to_string(value));
 }
 
 void FileSink::Write(const char* field, long long value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, std::to_string(value));
 }
 
 void FileSink::Write(const char* field, double value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, std::to_string(value));
 }
 
 void FileSink::Write(const char* field, bool value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, static_cast<int>(value));
 }
 
 void FileSink::Write(const char* field, const boost::posix_time::ptime& value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, boost::posix_time::to_simple_string(value));
 }
 
 void FileSink::Write(const char* /* field */, const char* value)

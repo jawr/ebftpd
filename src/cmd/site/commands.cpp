@@ -300,7 +300,7 @@ void DELIPCommand::Execute()
     
     try
     {
-      int index = boost::lexical_cast<int>(*it);
+      int index = util::StrToInt(*it);
       if (index < 0 || index > static_cast<ssize_t>(masks.size()) - 1)
       {
         control.Reply(ftp::ActionNotOkay, "IP mask index out of range.");
@@ -309,7 +309,7 @@ void DELIPCommand::Execute()
       
       indexes.emplace_back(index);
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     {
       auto it2 = std::find(masks.begin(), masks.end(), *it);
       if (it2 == user->IPMasks().end())
@@ -431,10 +431,10 @@ void DUPECommand::Execute()
     
     try
     {
-      number = boost::lexical_cast<int>(args[2]);
-      if (number <= 0) throw boost::bad_lexical_cast();
+      number = util::StrToInt(args[2]);
+      if (number <= 0) throw std::bad_cast();
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     {
       throw cmd::SyntaxError();
     }
@@ -701,10 +701,10 @@ void GPRANKSCommand::Execute()
   {
     try
     {
-      number = boost::lexical_cast<int>(args[4]);
-      if (number < 0) throw boost::bad_lexical_cast();
+      number = util::StrToInt(args[4]);
+      if (number < 0) throw std::bad_cast();
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     {
       throw cmd::SyntaxError();
     }
@@ -915,7 +915,7 @@ void IDLECommand::Execute()
   {
     try
     {
-      pt::seconds idleTimeout(boost::lexical_cast<long>(args[1]));
+      pt::seconds idleTimeout(util::StrToLong(args[1]));
     
       const cfg::Config& config = cfg::Get();
       
@@ -940,7 +940,7 @@ void IDLECommand::Execute()
          << " seconds.";
       control.Reply(ftp::CommandOkay, os.str());
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     {
       throw cmd::SyntaxError();
     }
@@ -984,7 +984,7 @@ std::string Age(boost::posix_time::time_duration age)
   age -= pt::hours(days * 24);
   
   int fields = 0;
-  if (days > 99) return boost::lexical_cast<std::string>(days) + "d";
+  if (days > 99) return std::to_string(days) + "d";
   
   std::ostringstream os;
   if (days > 0)
@@ -1016,10 +1016,10 @@ void NEWCommand::Execute()
   {
     try
     {
-      number = boost::lexical_cast<int>(args[1]);
-      if (number <= 0) throw boost::bad_lexical_cast();
+      number = util::StrToInt(args[1]);
+      if (number <= 0) throw std::bad_cast();
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     {
       throw cmd::SyntaxError();
     }
@@ -1059,7 +1059,7 @@ void NEWCommand::Execute()
     auto owner = fs::GetOwner(real);
     
     body.RegisterValue("index", ++index);
-    body.RegisterValue("datetime", boost::lexical_cast<std::string>(result.dateTime));
+    body.RegisterValue("datetime", boost::posix_time::to_simple_string(result.dateTime));
     body.RegisterValue("age", Age(now - result.dateTime));
     body.RegisterValue("path", fs::Path(result.path).Basename().ToString());
     body.RegisterValue("section", result.section);
@@ -1163,10 +1163,10 @@ void RANKSCommand::Execute()
   {
     try
     {
-      number = boost::lexical_cast<int>(args[4]);
-      if (number < 0) throw boost::bad_lexical_cast();
+      number = util::StrToInt(args[4]);
+      if (number < 0) throw std::bad_cast();
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     {
       throw cmd::SyntaxError();
     }
@@ -1365,10 +1365,10 @@ void SEARCHCommand::Execute()
     
     try
     {
-      number = boost::lexical_cast<int>(args[2]);
-      if (number <= 0) throw boost::bad_lexical_cast();
+      number = util::StrToInt(args[2]);
+      if (number <= 0) throw std::bad_cast();
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     {
       throw cmd::SyntaxError();
     }
@@ -1410,7 +1410,7 @@ void SEARCHCommand::Execute()
       }
 
       body.RegisterValue("index", ++index);
-      body.RegisterValue("datetime", boost::lexical_cast<std::string>(result.dateTime));
+      body.RegisterValue("datetime", boost::posix_time::to_simple_string(result.dateTime));
       body.RegisterValue("path", result.path);
       body.RegisterValue("section", result.section);
       body.RegisterSize("size", e ? kBytes : -1);
@@ -2176,9 +2176,9 @@ void XDUPECommand::Execute()
   int mode;
   try
   {
-    mode = boost::lexical_cast<int>(args[1]);
+    mode = util::StrToInt(args[1]);
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
