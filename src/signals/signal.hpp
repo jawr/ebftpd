@@ -16,6 +16,7 @@
 #ifndef __SIGNAL__SIGNAL_HPP
 #define __SIGNAL__SIGNAL_HPP
 
+#include <string>
 #include <memory>
 #include "util/thread.hpp"
 #include "util/error.hpp"
@@ -35,7 +36,7 @@ public:
 };
 
 
-util::Error Initialise();
+util::Error Initialise(const std::string& logPath);
 
 } /* signals namespace */
 
