@@ -13,7 +13,6 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <boost/lexical_cast.hpp>
 #include "cfg/util.hpp"
 #include "util/string.hpp"
 
@@ -41,16 +40,8 @@ long long ParseSize(std::string s)
     util::ToUpper(unit);
   }
   
-  long long kBytes;
-  try
-  {
-    kBytes = boost::lexical_cast<long long>(s);
-    if (kBytes < 0) throw std::bad_cast();
-  }
-  catch (const boost::bad_lexical_cast&)
-  {
-    throw std::bad_cast();
-  }
+  long long kBytes = util::StrToLLong(s);
+  if (kBytes < 0) throw std::bad_cast();
   
   if (unit == "M") kBytes *= 1024;
   else if (unit == "G") kBytes *= 1024 * 1024;

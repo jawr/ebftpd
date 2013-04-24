@@ -13,14 +13,18 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <limits>
+#include <cstring>
+#include <ctime>
 #include <csignal>
 #include <cerrno>
 #include <stdexcept>
 #include <exception>
+#include <fcntl.h>
+#include <execinfo.h>
 #include "ftp/task/task.hpp"
 #include "signals/signal.hpp"
 #include "logs/logs.hpp"
-#include "util/debug.hpp"
 #include "text/error.hpp"
 #include "text/factory.hpp"
 #include "cfg/error.hpp"
@@ -31,6 +35,54 @@ namespace signals
 {
 
 std::unique_ptr<Handler> Handler::instance;
+
+namespace
+{
+std::string logPath;
+const int maxBacktraceFrames = 100;
+}
+
+inline char* IntegerToASCII(int i, char* buf, size_t size)
+{
+  buf[--size] = '\0';
+  char* p1 = buf + size;
+
+  bool negative = false;
+  if (i < 0)
+  {
+    negative = true;
+    i = -i;
+    --size;
+  }
+  
+  if (size > 0)
+  {
+    size_t len = 0;
+    do
+    {
+      *--p1 = '0' + (i % 10);
+      i /= 10;
+      if ( ++len >= size) break;
+    }
+    while (i != 0);
+  }
+  
+  if (i != 0) return NULL;
+  
+  if (negative) *--p1 = '-';
+  
+  char *p2 = buf;
+  if (p2 != p1)
+  {
+    do
+    {
+      *p2++ = *p1;
+    }
+    while (*p1++ != '\0');
+  }
+  
+  return p2;
+}
 
 const char* SignalName(int signo)
 {
@@ -125,30 +177,75 @@ void PropogateSignal(int signo)
   }
 }
 
-void CrashHandler(int signo)
+void CrashPrint(int efd, int dfd, const char* s)
 {
-  const char* signame = SignalName(signo);
-  
-  std::stringstream ss;
-  ss << "Critical error signal " << signo;
-  if (signame) ss << " (" << signame << ")";
-  ss << " received, dumping backtrace: " << std::endl;
+  size_t len = strlen(s);
+  if (efd != -1) write(efd, s, len);
+  if (dfd != -1) write(dfd, s, len);
+}
 
-  util::debug::DumpBacktrace(ss, 2);
+inline void DumpBacktrace(const char* type, const char* message)
+{  
+  char pid[std::numeric_limits<pid_t>::digits10 + 2];
+  IntegerToASCII(getpid(), pid, sizeof(pid));
   
-  std::string line; 
-  while (std::getline(ss, line))
+  char time[std::numeric_limits<time_t>::digits10 + 2];
+  IntegerToASCII(std::time(NULL), time, sizeof(time));
+  
+  char dumpPath[PATH_MAX];
+  strncpy(dumpPath, logPath.c_str(), sizeof(dumpPath));
+  strncat(dumpPath, "/crash.", sizeof(dumpPath));
+  strncat(dumpPath, pid, sizeof(dumpPath));
+  strncat(dumpPath, ".", sizeof(dumpPath));
+  strncat(dumpPath, time, sizeof(dumpPath));
+  
+  int dfd = open(dumpPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  int efd = STDERR_FILENO;
+
+  CrashPrint(efd, dfd, "Critical error ");
+  CrashPrint(efd, dfd, type);
+  
+  CrashPrint(efd, dfd, " (");
+  CrashPrint(efd, dfd, message);
+  CrashPrint(efd, dfd, ") received.");
+  
+  if (dfd >= 0)
   {
-    logs::Error(line);
+    CrashPrint(efd, -1, " Dumping backtrace in file: ");
+  }
+  else
+  {
+    CrashPrint(efd, -1, " Unable to create backtrace dump file: ");
+  
   }
   
+  CrashPrint(efd, -1, dumpPath);
+  CrashPrint(efd, dfd, "\n");
+  
+  if (dfd >= 0)
+  {
+    void* frames[maxBacktraceFrames];
+    
+    int numFrames = backtrace(frames, maxBacktraceFrames);
+    backtrace_symbols_fd(frames, numFrames, dfd);
+    
+    close(dfd);
+  }
+}  
+
+void CrashHandler(int signo)
+{
+  const char* sigName = SignalName(signo);
+  char signoStr[std::numeric_limits<int>::digits10 + 2];
+  IntegerToASCII(signo, signoStr, sizeof(signoStr));
+  DumpBacktrace(signoStr, sigName);
   PropogateSignal(signo);
 }
 
 void TerminateHandler()
 {
   static bool rethrown = false;
-  std::stringstream ss;
+
   try
   {
     if (!rethrown)
@@ -159,31 +256,17 @@ void TerminateHandler()
   }
   catch (const std::exception& e)
   {
-    ss << "Unhandled ";
-    char exceptionType[1024];
-    if (util::debug::Demangle(typeid(e).name(), exceptionType, sizeof(exceptionType)))
-      ss << exceptionType;
-    else
-      ss << typeid(e).name();
-    ss << " (" << e.what() << ") exception, dumping backtrace: " << std::endl;
+    DumpBacktrace(typeid(e).name(), e.what());
   }
   catch (...)
   {
-    ss << "Unhandled exception, dumping backtrace: " << std::endl;
+    DumpBacktrace("unknown exception", "unknown");
   }
-  
-  util::debug::DumpBacktrace(ss, 2);
-  
-  std::string line; 
-  while (std::getline(ss, line))
-  {
-    logs::Error(line);
-  }
-  
+
   PropogateSignal(SIGABRT);
 }
 
-util::Error Initialise()
+util::Error Initialise(const std::string& logPath_)
 {
   sigset_t set;
   sigfillset(&set);
@@ -207,10 +290,12 @@ util::Error Initialise()
   if (sigaction(SIGFPE, &sa, nullptr) < 0)
     return util::Error::Failure(errno);
 
- std::set_terminate(TerminateHandler);
+  std::set_terminate(TerminateHandler);
 
   if (pthread_sigmask(SIG_BLOCK, &set, nullptr) < 0)
-    return util::Error::Failure(errno);  
+    return util::Error::Failure(errno); 
+
+  logPath = logPath_;  
 
   return util::Error::Success();
 }

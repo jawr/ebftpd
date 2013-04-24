@@ -15,7 +15,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include "cfg/config.hpp"
 #include "cfg/error.hpp"
@@ -185,8 +184,8 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "port")
   {
     ParameterCheck(opt, toks, 1);
-    port = boost::lexical_cast<int>(toks[0]);
-    if (port < 0 || port > 65535) throw boost::bad_lexical_cast();
+    port = util::StrToInt(toks[0]);
+    if (port < 0 || port > 65535) throw std::bad_cast();
   }
   else if (opt == "tls_certificate")
   {
@@ -224,14 +223,14 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "total_users")
   {
     ParameterCheck(opt, toks, 1);
-    totalUsers = boost::lexical_cast<int>(toks[0]);
-    if (totalUsers < -1) throw boost::bad_lexical_cast();
+    totalUsers = util::StrToInt(toks[0]);
+    if (totalUsers < -1) throw std::bad_cast();
   }
   else if (opt == "multiplier_max")
   {
     ParameterCheck(opt, toks, 1);
-    multiplierMax = boost::lexical_cast<int>(toks[0]);
-    if (multiplierMax < 1) throw boost::bad_lexical_cast();
+    multiplierMax = util::StrToInt(toks[0]);
+    if (multiplierMax < 1) throw std::bad_cast();
   }
   else if (opt == "empty_nuke")
   {
@@ -241,8 +240,8 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "max_sitecmd_lines")
   {
     ParameterCheck(opt, toks, 1);
-    maxSitecmdLines = boost::lexical_cast<int>(toks[0]);
-    if (maxSitecmdLines < -1) throw boost::bad_lexical_cast();
+    maxSitecmdLines = util::StrToInt(toks[0]);
+    if (maxSitecmdLines < -1) throw std::bad_cast();
   }
   else if (opt == "dl_incomplete")
   {
@@ -652,14 +651,14 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "maximum_ratio")
   {
     ParameterCheck(opt, toks, 1);
-    maximumRatio = boost::lexical_cast<int>(toks[0]);
-    if (maximumRatio < 0) throw boost::bad_lexical_cast();
+    maximumRatio = util::StrToInt(toks[0]);
+    if (maximumRatio < 0) throw std::bad_cast();
   }
   else if (opt == "dir_size_depth")
   {
     ParameterCheck(opt, toks, 1);
-    dirSizeDepth = boost::lexical_cast<int>(toks[0]);
-    if (dirSizeDepth < 0) throw boost::bad_lexical_cast();
+    dirSizeDepth = util::StrToInt(toks[0]);
+    if (dirSizeDepth < 0) throw std::bad_cast();
   }
   else if (opt == "async_crc")
   {
@@ -680,7 +679,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 1);
     if (!util::EnumFromString(toks[0], logAddresses))
-      throw boost::bad_lexical_cast();
+      throw std::bad_cast();
   }
   else if (opt == "umask")
   {
@@ -691,20 +690,20 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     }
     catch (const fs::InvalidModeString&)
     {
-      throw boost::bad_lexical_cast();
+      throw std::bad_cast();
     }
   }
   else if (opt == "log_lines")
   {
     ParameterCheck(opt, toks, 1);
-    logLines = boost::lexical_cast<int>(toks[0]);
-    if (logLines < 0) throw boost::bad_lexical_cast();
+    logLines = util::StrToInt(toks[0]);
+    if (logLines < 0) throw std::bad_cast();
   }
   else if (opt == "data_buffer_size")
   {
     ParameterCheck(opt, toks, 1);
-    dataBufferSize = boost::lexical_cast<size_t>(toks[0]);
-    if (dataBufferSize < 0) throw boost::bad_lexical_cast();
+    dataBufferSize = util::StrToInt(toks[0]);
+    if (dataBufferSize < 0) throw std::bad_cast();
   }
   else if (opt == "tls_control")
   {
@@ -793,8 +792,8 @@ void Config::ParseSection(const std::string& opt, std::vector<std::string>& toks
   else if (opt == "ratio")
   {
     ParameterCheck(opt, toks, 1);
-    currentSection->ratio = boost::lexical_cast<int>(toks[0]);
-    if (currentSection->ratio < 0) throw boost::bad_lexical_cast();
+    currentSection->ratio = util::StrToInt(toks[0]);
+    if (currentSection->ratio < 0) throw std::bad_cast();
   }
   else if (opt == "endsection")
   {

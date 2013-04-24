@@ -15,7 +15,6 @@
 
 #include <cctype>
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include "text/tag.hpp"
 #include "text/error.hpp"

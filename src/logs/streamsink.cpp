@@ -14,7 +14,6 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <ctime>
-#include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "logs/streamsink.hpp"
 #include "logs/util.hpp"
@@ -24,27 +23,27 @@ namespace logs
 
 void StreamSink::Write(const char* field, int value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, std::to_string(value));
 }
 
 void StreamSink::Write(const char* field, long long value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, std::to_string(value));
 }
 
 void StreamSink::Write(const char* field, double value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, std::to_string(value));
 }
 
 void StreamSink::Write(const char* field, bool value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, static_cast<int>(value));
 }
 
 void StreamSink::Write(const char* field, const boost::posix_time::ptime& value)
 {
-  Write(field, boost::lexical_cast<std::string>(value));
+  Write(field, boost::posix_time::to_simple_string(value));
 }
 
 void StreamSink::Write(const char* /* field */, const char* value)

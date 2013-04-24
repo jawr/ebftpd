@@ -108,8 +108,8 @@ CHANGECommand::SetFunction CHANGECommand::CheckRatio()
             acl::AllowSiteCmd(client.User(), "changegadmin");
   try
   {
-    int ratio = boost::lexical_cast<int>(args[3]);
-    if (ratio < -1) throw boost::bad_lexical_cast();
+    int ratio = util::StrToInt(args[3]);
+    if (ratio < -1) throw std::bad_cast();
     
     if (ratio > cfg::Get().MaximumRatio())
     {
@@ -135,7 +135,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckRatio()
     }
     
     if (ratio == 0) display = "Unlimited";
-    else display = "1:" + boost::lexical_cast<std::string>(ratio);
+    else display = "1:" + std::to_string(ratio);
 
     return [ratio, this](acl::User& user) -> bool 
             {
@@ -160,7 +160,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckRatio()
               return true; 
             };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -182,8 +182,8 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
   try
   {
     
-    int ratio = boost::lexical_cast<int>(args[4]);
-    if (ratio < 0) throw boost::bad_lexical_cast();
+    int ratio = util::StrToInt(args[4]);
+    if (ratio < 0) throw std::bad_cast();
     
     if (ratio > cfg::Get().MaximumRatio())
     {
@@ -193,13 +193,13 @@ CHANGECommand::SetFunction CHANGECommand::CheckSectionRatio()
 
     display = section + "(";
     if (ratio == 0) display += "Unlimited";
-    else display += "1:" + boost::lexical_cast<std::string>(ratio);
+    else display += "1:" + std::to_string(ratio);
     
     display += ")";
     
     return [ratio, section](acl::User& user) -> bool { user.SetSectionRatio(section, ratio); return true; };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -235,7 +235,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckWeeklyAllotment()
   
   if (!section.empty()) display = section + "(";
   if (allotment == 0) display += "Disabled";
-  else display += boost::lexical_cast<std::string>(allotment) + "KB";
+  else display += std::to_string(allotment) + "KB";
   
   if (!section.empty()) display += ")";
   
@@ -346,15 +346,15 @@ CHANGECommand::SetFunction CHANGECommand::CheckIdleTime()
 {
   try
   {
-    int idleTime = boost::lexical_cast<int>(args[3]);
-    if (idleTime < -1) throw boost::bad_lexical_cast();
+    int idleTime = util::StrToInt(args[3]);
+    if (idleTime < -1) throw std::bad_cast();
     if (idleTime == -1) display = "Unset";
     else if (idleTime == 0) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(idleTime) + " seconds";
+    else display = std::to_string(idleTime) + " seconds";
 
     return [idleTime](acl::User& user) -> bool { user.SetIdleTime(idleTime); return true; };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -375,10 +375,10 @@ CHANGECommand::SetFunction CHANGECommand::CheckExpires()
       }
       catch (const std::out_of_range&)
       {
-        throw boost::bad_lexical_cast();
+        throw std::bad_cast();
       }
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     {
       control.Format(ftp::ActionNotOkay, "Date must be in format YYYY/MM/DD or YYYY-MM-DD.");
       throw cmd::NoPostScriptError();
@@ -393,15 +393,15 @@ CHANGECommand::SetFunction CHANGECommand::CheckNumLogins()
 {
   try
   {
-    int logins = boost::lexical_cast<int>(args[3]);
-    if (logins < -1) throw boost::bad_lexical_cast();
+    int logins = util::StrToInt(args[3]);
+    if (logins < -1) throw std::bad_cast();
     
     if (logins == -1) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(logins);
+    else display = std::to_string(logins);
     
     return [logins](acl::User& user) -> bool { user.SetNumLogins(logins); return true; };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -433,7 +433,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxUpSpeed()
   {
     long long speed = cfg::ParseSize(args[3]);
     if (speed == 0) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(speed) + "KB/s";
+    else display = std::to_string(speed) + "KB/s";
     
     return [speed](acl::User& user) -> bool { user.SetMaxUpSpeed(speed); return true; };
   }
@@ -449,7 +449,7 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxDownSpeed()
   {
     long long speed = cfg::ParseSize(args[3]);
     if (speed == 0) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(speed) + "KB/s";
+    else display = std::to_string(speed) + "KB/s";
 
     return [speed](acl::User& user) -> bool { user.SetMaxDownSpeed(speed); return true; };
   }
@@ -463,15 +463,15 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxSimUp()
 {
   try
   {
-    int logins = boost::lexical_cast<int>(args[3]);
-    if (logins < -1) throw boost::bad_lexical_cast();
+    int logins = util::StrToInt(args[3]);
+    if (logins < -1) throw std::bad_cast();
     if (logins == 0) display = "Disabled";
     else if (logins == -1) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(logins);
+    else display = std::to_string(logins);
     
     return [logins](acl::User& user) -> bool { user.SetMaxSimUp(logins); return true; };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }
@@ -481,15 +481,15 @@ CHANGECommand::SetFunction CHANGECommand::CheckMaxSimDown()
 {
   try
   {
-    int logins = boost::lexical_cast<int>(args[3]);
-    if (logins < -1) throw boost::bad_lexical_cast();
+    int logins = util::StrToInt(args[3]);
+    if (logins < -1) throw std::bad_cast();
     if (logins == 0) display = "Disabled";
     else if (logins == -1) display = "Unlimited";
-    else display = boost::lexical_cast<std::string>(logins);
+    else display = std::to_string(logins);
     
     return [logins](acl::User& user) -> bool { user.SetMaxSimDown(logins); return true; };
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     throw cmd::SyntaxError();
   }

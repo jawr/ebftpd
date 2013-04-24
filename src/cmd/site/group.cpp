@@ -40,17 +40,17 @@ void GROUPCommand::PopulateHeadOrFoot(const acl::Group& group, text::TemplateSec
   tmpl.RegisterValue("group", group.Name());
   tmpl.RegisterValue("descr", group.Description());
   tmpl.RegisterValue("slots", group.Slots() != -1 ? 
-                              boost::lexical_cast<std::string>(group.Slots()) : 
+                              std::to_string(group.Slots()) : 
                               "Unlimited");
   tmpl.RegisterValue("leechslots", group.LeechSlots() != -1 ? 
-                                   boost::lexical_cast<std::string>(group.LeechSlots()) : 
+                                   std::to_string(group.LeechSlots()) : 
                                    "Unlimited");
   tmpl.RegisterValue("allotslots", group.AllotmentSlots() != -1 ? 
-                                   boost::lexical_cast<std::string>(group.AllotmentSlots()) : 
+                                   std::to_string(group.AllotmentSlots()) : 
                                    "Unlimited");
   tmpl.RegisterValue("maxallotsize", group.MaxAllotmentSize());
   tmpl.RegisterValue("maxlogins", group.MaxLogins() != -1 ?
-                                   boost::lexical_cast<std::string>(group.MaxLogins()) : 
+                                   std::to_string(group.MaxLogins()) : 
                                    "Unlimited");
 }
 

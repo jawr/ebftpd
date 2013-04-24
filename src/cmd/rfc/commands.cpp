@@ -16,7 +16,6 @@
 #include <iomanip>
 #include <sstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/lexical_cast.hpp>
 #include <utime.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -691,10 +690,10 @@ void RESTCommand::Execute()
   
   try
   {
-    restart = boost::lexical_cast<int>(args[1]);
-    if (restart < 0) throw boost::bad_lexical_cast();
+    restart = util::StrToInt(args[1]);
+    if (restart < 0) throw std::bad_cast();
   }
-  catch (const boost::bad_lexical_cast&)
+  catch (const std::bad_cast&)
   {
     control.Reply(ftp::InvalidRESTParameter, "Invalid parameter, restart offset set to 0.");
     data.SetRestartOffset(0);
@@ -888,8 +887,7 @@ void SIZECommand::Execute()
       
     util::path::Status status(fs::MakeReal(path).ToString());
     if (status.IsRegularFile())
-      control.Reply(ftp::FileStatus, 
-        boost::lexical_cast<std::string>(status.Size())); 
+      control.Reply(ftp::FileStatus, std::to_string(status.Size())); 
     else
       control.Reply(ftp::ActionNotOkay, argStr + ": Not a plain file.");
   }

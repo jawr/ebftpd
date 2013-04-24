@@ -164,15 +164,6 @@ int main(int argc, char** argv)
     logs::Debug("Starting %1%..", programFullname);
     auto byeExit = util::MakeScopeExit([]() { logs::Debug("Bye!"); });
     
-    {
-      util::Error e = signals::Initialise();
-      if (!e)
-      {
-        logs::Error("Failed to setup signal handlers: %1%", e.Message());
-        return 1;
-      }
-    }
-
     cmd::rfc::Factory::Initialise();
     cmd::site::Factory::Initialise();
     cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
@@ -192,6 +183,15 @@ int main(int argc, char** argv)
       return 1;
     }
     
+    {
+      util::Error e = signals::Initialise(util::path::Join(cfg::Get().Datapath(), "logs"));
+      if (!e)
+      {
+        logs::Error("Failed to setup signal handlers: %1%", e.Message());
+        return 1;
+      }
+    }
+
     if (!logs::InitialisePostConfig()) return 1;
 
 /*std::cout << factory.get() << std::endl;    

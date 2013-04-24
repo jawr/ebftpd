@@ -14,7 +14,6 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stack>
-#include <boost/lexical_cast.hpp>
 #include "cmd/site/logs.hpp"
 #include "logs/logs.hpp"
 #include "util/reverselogreader.hpp"
@@ -40,9 +39,9 @@ bool LOGSCommand::ParseArgs()
     if (args.size() < 4) return false;
     try
     {
-      number = boost::lexical_cast<int>(args[n + 1]);
+      number = util::StrToInt(args[n + 1]);
     }
-    catch (const boost::bad_lexical_cast&)
+    catch (const std::bad_cast&)
     { return false; }
     if (number <= 0) return false;
     n += 2;

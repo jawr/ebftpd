@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include <boost/lexical_cast.hpp>
 #include "util/error.hpp"
 
 namespace util
@@ -108,6 +107,15 @@ std::string ToUpperCopy(const std::string& s);
 
 bool StartsWith(const std::string& s, const std::string& test);
 bool EndsWith(const std::string& s, const std::string& test);
+
+double StrToDouble(const std::string& s);
+float StrToFloat(const std::string& s);
+int StrToInt(const std::string& s);
+long StrToLong(const std::string& s);
+long double StrToLDouble(const std::string& s);
+long long StrToLLong(const std::string& s);
+unsigned long StrToULong(const std::string& s);
+unsigned long long StrToULLong(const std::string& s);
 
 } /* util namespace */
 
