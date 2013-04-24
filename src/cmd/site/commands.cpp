@@ -416,7 +416,7 @@ void DISKFREECommand::Execute()
   }
   
   std::ostringstream os;
-  os << "Disk free: " << std::fixed << std::setprecision(2) << (bytes / 1024 / 1024.0) << "MB";
+  os << "Disk free: " << util::ToString(bytes / 1024 / 1024.0, 2) << "MB";
   control.Reply(ftp::CommandOkay, os.str());
 }
 
@@ -641,8 +641,7 @@ void GIVECommand::Execute()
   
   // give user the credits
   user->IncrSectionCredits(section, credits);
-  os << "Given " << std::setprecision(2) << std::fixed << credits
-     << "KB credits to " << user->Name();
+  os << "Given " << util::ToString(credits / 1024.0, 2) << "MB credits to " << user->Name();
   if (!section.empty()) os << " on section " << section;
   os << ".";
   control.Reply(ftp::CommandOkay, os.str());
@@ -1739,8 +1738,7 @@ void TAKECommand::Execute()
   user->DecrSectionCreditsForce(section, credits);
   
   std::ostringstream os;
-  os << "Taken " << std::fixed << std::setprecision(2) << credits
-     << "KB credits from " << user->Name();
+  os << "Taken " << util::ToString(credits / 1024.0, 2) << "MB credits from " << user->Name();
   if (!section.empty()) os << " on section " << section;
   os << ".";
   control.Reply(ftp::CommandOkay, os.str());

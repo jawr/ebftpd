@@ -13,7 +13,10 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <iomanip>
+
 #include <cctype>
+#include <sstream>
 #include <fnmatch.h>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -336,6 +339,15 @@ unsigned long long StrToULLong(const std::string& s)
   {
     throw std::bad_cast();
   }
+}
+
+std::string ToString(long double v, int precision, bool fixed)
+{
+  std::ostringstream os;
+  if (precision >= 0) os << std::setprecision(precision);
+  if (fixed) os << std::fixed;
+  os << v;
+  return os.str();
 }
 
 } /* util namespace */

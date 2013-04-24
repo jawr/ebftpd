@@ -146,8 +146,7 @@ void DELECommand::Execute()
     {
       client.User().DecrSectionCredits(section && section->SeparateCredits() ? section->Name() : "", creditLoss);
       std::ostringstream os;
-      os << "DELE command successful. (" << std::fixed << std::setprecision(2) 
-         << creditLoss / 1024.0 << "MB credits lost)";
+      os << "DELE command successful. (" << util::ToString(creditLoss / 1024.0, 2) << "MB credits lost)";
       control.Reply(ftp::FileActionOkay, os.str()); 
       return;
     }

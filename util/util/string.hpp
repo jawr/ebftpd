@@ -117,6 +117,18 @@ long long StrToLLong(const std::string& s);
 unsigned long StrToULong(const std::string& s);
 unsigned long long StrToULLong(const std::string& s);
 
+std::string ToString(long double v, int precision = -1, bool fixed = true);
+inline std::string ToString(double v, int precision = -1, bool fixed = true)
+{
+  return ToString(static_cast<long double>(v), precision, fixed);
+}
+
+inline std::string ToString(float v, int precision, bool fixed = true)
+{
+  return ToString(static_cast<float>(v), precision, fixed);
+}
+
+
 } /* util namespace */
 
 #endif

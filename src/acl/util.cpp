@@ -163,22 +163,16 @@ std::string RatioString(const User& user)
   return os.str();
 }
 
-std::string FormatCredits(long long credits)
-{
-  std::ostringstream os;
-  os << std::setprecision(2) << std::fixed << (credits / 1024.0) << "MB";
-  return os.str();
-}
-
 std::string CreditString(const User& user)
 {
   std::ostringstream os;
-  os << FormatCredits(user.DefaultCredits());
+  os << util::ToString(user.DefaultCredits() / 1024.0, 2) << "MB";
   for (const auto& kv : cfg::Get().Sections())
   {
     if (kv.second.SeparateCredits())
     {
-      os << " " << kv.first << "(" << FormatCredits(user.SectionCredits(kv.first)) << ")";
+      os << " " << kv.first << "(" 
+         << util::ToString(user.SectionCredits(kv.first) / 1024.0, 2) << "MB)";
     }
   }
   return os.str();
@@ -204,12 +198,13 @@ std::string WeeklyAllotmentString(const User& user)
   if (user.DefaultWeeklyAllotment() <= 0)
     os << "Disabled";
   else
-    os << FormatCredits(user.DefaultWeeklyAllotment());
+    os << util::ToString(user.DefaultWeeklyAllotment() / 1024.0, 2) << "MB";
   for (const auto& kv : cfg::Get().Sections())
   {
     if (user.SectionWeeklyAllotment(kv.first) > 0)
     {
-      os << " " << kv.first << "(" <<  FormatCredits(user.SectionWeeklyAllotment(kv.first)) <<  ")";
+      os << " " << kv.first << "(" 
+         << util::ToString(user.SectionWeeklyAllotment(kv.first) / 1024.0, 2) <<  "MB)";
     }
   }
   return os.str();  
