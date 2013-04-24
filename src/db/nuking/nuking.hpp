@@ -59,6 +59,7 @@ class Nuke
   std::string id;
   std::string path;
   std::string section;
+  std::string reason;
   int multiplier;
   bool isPercent;
   time_t modTime;
@@ -67,10 +68,11 @@ class Nuke
 
 public:
   Nuke(const std::string& path, const std::string& section, 
-       int multiplier, bool isPercent, time_t modTime,
+       const std::string& reason, int multiplier, bool isPercent, time_t modTime,
        const std::vector<Nukee>& nukees) :
     path(path), 
     section(section),
+    reason(reason),
     multiplier(multiplier),
     isPercent(isPercent),
     modTime(modTime),
@@ -78,13 +80,14 @@ public:
   { }
 
   Nuke(const std::string& id, const std::string& path, 
-       const std::string& section, int multiplier, 
-       bool isPercent, time_t modTime,
+       const std::string& section, const std::string& reason, 
+       int multiplier, bool isPercent, time_t modTime,
        const boost::posix_time::ptime& dateTime, 
        const std::vector<Nukee>& nukees) :
     id(id),
     path(path), 
     section(section),
+    reason(reason),
     multiplier(multiplier), 
     isPercent(isPercent),
     modTime(modTime),
@@ -95,9 +98,12 @@ public:
   const std::string& ID() const { return id; }
   const std::string& Path() const { return path; }
   const std::string& Section() const { return section; }
+  const std::string& Reason() const { return reason; }
   int Multiplier() const { return multiplier; }
   bool IsPercent() const { return isPercent; }
   time_t ModTime() const { return modTime; }
+  long long KBytes() const;
+  int Files() const;
   const boost::posix_time::ptime& DateTime() const { return dateTime; }
   const std::vector<Nukee>& Nukees() const { return nukees; }
 };

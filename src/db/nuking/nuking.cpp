@@ -44,6 +44,7 @@ template <> mongo::BSONObj Serialize<nuking::Nuke>(const nuking::Nuke& nuke)
   mongo::BSONObjBuilder bob;
   bob.append("path", nuke.Path());
   bob.append("section", nuke.Section());
+  bob.append("reason", nuke.Reason());
   bob.append("multiplier", nuke.Multiplier());
   bob.append("percent", nuke.IsPercent());
   bob.append("modtime", ToDateT(nuke.ModTime() * 1000));
@@ -68,6 +69,7 @@ template <> nuking::Nuke Unserialize<nuking::Nuke>(const mongo::BSONObj& obj)
   return nuking::Nuke(oid.OID().toString(),
                       obj["path"].String(),
                       obj["section"].String(),
+                      obj["reason"].String(),
                       obj["multiplier"].Int(),
                       obj["percent"].Bool(),
                       obj["modtime"].Date().toTimeT(),
@@ -77,6 +79,26 @@ template <> nuking::Nuke Unserialize<nuking::Nuke>(const mongo::BSONObj& obj)
 
 namespace nuking
 {
+
+long long Nuke::KBytes() const
+{
+  long long kBytes;
+  for (const auto& nukee : nukees)
+  {
+    kBytes += nukee.KBytes();
+  }
+  return kBytes;
+}
+
+int Nuke::Files() const
+{
+  int files;
+  for (const auto& nukee : nukees)
+  {
+    files += nukee.Files();
+  }
+  return files;
+}
 
 void AddNuke(const Nuke& nuke)
 {

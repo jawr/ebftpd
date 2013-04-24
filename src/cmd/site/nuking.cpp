@@ -48,11 +48,8 @@ std::string GetNukeID(const fs::RealPath& path)
   int len = getxattr(path.CString(), nukeIdAttributeName, buf, sizeof(buf));
   if (len < 0)
   {
-    if (errno != ENOATTR && errno != ENODATA && errno != ENOENT)
-    {
-      logs::Error("Error while reading filesystem attribute %1%: %2%: %3%", 
-                  nukeIdAttributeName, path, util::Error::Failure(errno).Message());
-    }
+    logs::Error("Error while reading filesystem attribute %1%: %2%: %3%", 
+                nukeIdAttributeName, path, util::Error::Failure(errno).Message());
     return "";
   }
   
@@ -92,8 +89,8 @@ void UNNUKECommand::Execute()
     auto user = acl::User::Load(nukee.UID());
     if (user)
     {
-      db::stats::Unnuke(nukee.UID(), nukee.KBytes(), nukee.Files(), 
-                        nuke->ModTime(), section ? section->Name() : "");
+//      db::stats::Unnuke(nukee.UID(), nukee.KBytes(), nukee.Files(), 
+  //                      nuke->ModTime(), section ? section->Name() : "");
       user->IncrSectionCredits(section && section->SeparateCredits() ? section->Name() : "", 
                                nukee.Credits());
     }
@@ -158,10 +155,19 @@ void NUKESCommand::Execute()
   {
     body.RegisterValue("index", ++index);
     body.RegisterValue("datetime", boost::lexical_cast<std::string>(nuke.DateTime()));
+    body.RegisterValue("modtime", boost::lexical_cast<std::string>(nuke.ModTime()));
     body.RegisterValue("age", Age(now - nuke.DateTime()));
-    body.RegisterValue("path", fs::Path(nuke.Path()).Basename().ToString());
+    body.RegisterValue("files", nuke.Files());
+    body.RegisterSize("size", nuke.KBytes());
+    body.RegisterValue("directory", fs::Path(nuke.Path()).Basename().ToString());
+    body.RegisterValue("path", nuke.Path());
     body.RegisterValue("section", nuke.Section());
     body.RegisterValue("nukees", FormatNukees(nuke.Nukees()));
+
+    std::string multiplier(std::to_string(nuke.Multiplier()));
+    if (nuke.IsPercent()) multiplier += '%';    
+    body.RegisterValue("multi", multiplier);
+
     os << body.Compile();
   }
 
