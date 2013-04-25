@@ -41,11 +41,28 @@ public:
 
 class NUKESCommand : public Command
 {
+  bool isUnnukes;
+  
 public:
   NUKESCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
-    Command(client, client.Control(), client.Data(), argStr, args) { }
+    Command(client, client.Control(), client.Data(), argStr, args),
+    isUnnukes(false)
+  { }
+
+  NUKESCommand(ftp::Client& client, const std::string& argStr, const Args& args, bool isUnnukes) :
+    Command(client, client.Control(), client.Data(), argStr, args),
+    isUnnukes(isUnnukes)
+  { }
 
   void Execute();
+};
+
+class UNNUKESCommand : public NUKESCommand
+{
+public:
+  UNNUKESCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    NUKESCommand(client, argStr, args, true)
+  { }
 };
 
 } /* site namespace */

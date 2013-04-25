@@ -23,6 +23,7 @@
 #include "fs/path.hpp"
 #include "acl/types.hpp"
 #include "ftp/writeable.hpp"
+#include "cmd/command.hpp"
 
 namespace ftp
 {
@@ -41,7 +42,7 @@ class Status;
 }
 }
 
-namespace cmd
+namespace cmd { namespace rfc
 {
 
 class ListOptions
@@ -112,6 +113,37 @@ public:
   void Execute();
 };
 
+class LISTCommand : public Command
+{
+  bool nlst;
+
+public:
+  LISTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, client.Control(), client.Data(), argStr, args), nlst(false) { }
+
+  void ExecuteNLST();
+  void Execute();
+};
+
+class NLSTCommand : public Command
+{
+public:
+  NLSTCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, client.Control(), client.Data(), argStr, args) { }
+
+  void Execute();
+};
+
+class STATCommand : public Command
+{
+public:
+  STATCommand(ftp::Client& client, const std::string& argStr, const Args& args) :
+    Command(client, client.Control(), client.Data(), argStr, args) { }
+
+  void Execute();
+};
+
+} /* rfc namespace */
 } /* cmd namespace */
 
 #endif

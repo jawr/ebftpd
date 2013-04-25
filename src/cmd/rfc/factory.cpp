@@ -19,6 +19,7 @@
 #include "cmd/rfc/pass.hpp"
 #include "cmd/rfc/retr.hpp"
 #include "cmd/rfc/stor.hpp"
+#include "cmd/rfc/dirlist.hpp"
 
 namespace cmd { namespace rfc
 {

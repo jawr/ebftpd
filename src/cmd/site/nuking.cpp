@@ -31,12 +31,43 @@
 #include "logs/logs.hpp"
 #include "db/stats/stats.hpp"
 #include "cfg/get.hpp"
+#include "acl/path.hpp"
+#include "cmd/arguments.hpp"
 
 namespace cmd { namespace site
 {
 
 void NUKECommand::Execute()
 {
+  auto args = cmd::ArgumentParser("path:s multi:s reason:m")(argStr);
+  fs::VirtualPath path(fs::PathFromUser(args["path"]));
+  
+  const std::string& multi = args["multi"];
+  const std::string& reason = args["reason"];
+  
+  bool isPercent = multi.back() == '%';
+  int multiplier;
+  try
+  {
+    multiplier = util::StrToInt(multi.substr(0, multi.length() - isPercent));
+  }
+  catch (const std::bad_cast&)
+  {
+    throw cmd::SyntaxError();
+  }
+  
+  const auto& config = cfg::Get();
+  if ((config.MultiplierMax() != -1 && multiplier > cfg::Get().MultiplierMax()) ||
+      multiplier <= 0)
+  {
+    control.Reply(ftp::ActionNotOkay, "Invalid nuke multiplier / percent.");
+    return;
+  }
+  
+  if (!acl::path::DirAllowed<acl::path::Nuke>(client.User(), path)) throw cmd::PermissionError();
+  
+  
+  
   control.Reply(ftp::NotImplemented, "Not implemented");
 }
 
@@ -59,6 +90,7 @@ std::string GetNukeID(const fs::RealPath& path)
 
 void UNNUKECommand::Execute()
 {
+  auto args = cmd::ArgumentParser("release:s multi:s reason:m")(argStr);
   fs::VirtualPath path(fs::PathFromUser(args[1]));
   
   fs::RealPath real(fs::MakeReal(path));
@@ -129,14 +161,13 @@ void NUKESCommand::Execute()
     }
   }
 
-  auto nukes = args[0] == "NUKES" ? 
-               db::nuking::NewestNukes(number) :
-               db::nuking::NewestUnnukes(number);
+  auto nukes = isUnnukes ? db::nuking::NewestNukes(number) :
+                           db::nuking::NewestUnnukes(number);
 
   boost::optional<text::Template> templ;
   try
   {
-    templ.reset(text::Factory::GetTemplate(util::ToLowerCopy(args[0])));
+    templ.reset(text::Factory::GetTemplate(isUnnukes ? "unnukes" : "nukes"));
   }
   catch (const text::TemplateError& e)
   {

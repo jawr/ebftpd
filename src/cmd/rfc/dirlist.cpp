@@ -21,7 +21,7 @@
 #include <dirent.h>
 #include <fnmatch.h>
 #include <boost/tokenizer.hpp>
-#include "cmd/dirlist.hpp"
+#include "cmd/rfc/dirlist.hpp"
 #include "ftp/client.hpp"
 #include "fs/direnumerator.hpp"
 #include "util/path/status.hpp"
@@ -29,8 +29,11 @@
 #include "acl/user.hpp"
 #include "acl/group.hpp"
 #include "ftp/data.hpp"
+#include "cfg/get.hpp"
+#include "stats/util.hpp"
+#include "util/scopeguard.hpp"
 
-namespace cmd
+namespace cmd { namespace rfc
 {
 namespace
 {
@@ -381,5 +384,125 @@ const std::string& DirectoryList::GIDToName(acl::GroupID gid) const
   if (it != groupNameCache.end()) return it->second;
   return groupNameCache[gid] = acl::GIDToName(gid).substr(0, 10);
 }
+
+void LISTCommand::ExecuteNLST()
+{
+  nlst = true;
+  Execute();
+}
+
+void LISTCommand::Execute()
+{
+  std::ostringstream os;
+  os << "Opening connection for directory listing";
+  if (data.Protection()) os << " using TLS/SSL";
+  os << ".";
+  control.Reply(ftp::TransferStatusOkay, os.str());
+
+  try
+  {
+    data.Open(ftp::TransferType::List);
+  }
+  catch (const util::net::NetworkError&e )
+  {
+    control.Reply(ftp::CantOpenDataConnection,
+                 "Unable to open data connection: " + e.Message());
+    return;
+  }
+  if (!data.ProtectionOkay())
+  {
+    data.Close();
+    control.Reply(ftp::ProtocolNotSupported, 
+                  "TLS is enforced on directory listings.");
+    return;
+  }
+
+  std::string options;
+  fs::Path path;
+  if (args.size() >= 2)
+  {
+    std::string::size_type optOffset = 0;
+    if (args[1][0] == '-')
+    {
+      options = args[1].substr(1);
+      optOffset += args[1].length();
+    }
+    
+    path = fs::Path(util::TrimCopy(std::string(argStr, optOffset)));
+  }
   
+  const cfg::Config& config = cfg::Get();
+  std::string forcedOptions(nlst ? "" : "l" + config.Lslong().Options());
+  
+  DirectoryList dirList(client, data, path, ListOptions(options, forcedOptions),
+                        config.Lslong().MaxRecursion());
+
+  try
+  {
+    dirList.Execute();    
+  }
+  catch (const util::net::NetworkError& e)
+  {
+    data.Close();
+    control.Reply(ftp::DataCloseAborted,
+                "Error whiling writing to data connection: " + e.Message());
+    return;
+  }
+  
+  data.Close();
+  control.Reply(ftp::DataClosedOkay, "End of directory listing (" + 
+      stats::HighResSecondsString(data.State().StartTime(), data.State().EndTime()) + ")"); 
+}
+
+void NLSTCommand::Execute()
+{
+  LISTCommand(client, argStr, args).ExecuteNLST();
+}
+
+void STATCommand::Execute()
+{
+  if (args.size() == 1)
+  {
+    std::ostringstream os;
+    os << programFullname << " status\n";
+    os << "< Insert status info here >\n";
+    os << "End of status.";
+    control.Reply(ftp::SystemStatus, os.str());
+    return;
+  }
+  
+  bool singleLineReplies = control.SingleLineReplies();
+  control.SetSingleLineReplies(false);
+  
+  auto singleLineGuard = util::MakeScopeExit([&]{ control.SetSingleLineReplies(singleLineReplies); });  
+
+  std::string options;
+  std::string::size_type optOffset = 0;
+  if (args[1][0] == '-')
+  {
+    options = args[1].substr(1);
+    optOffset += args[1].length();
+  }
+  
+  fs::Path path(util::TrimCopy(std::string(argStr, optOffset)));
+  
+  const cfg::Config& config = cfg::Get();
+  std::string forcedOptions = "l" + config.Lslong().Options();
+    
+  control.PartReply(ftp::DirectoryStatus, "Status of " + fs::MakePretty(MakeVirtual(path)).ToString() + ":");
+  DirectoryList dirList(client, control, path, ListOptions(options, forcedOptions),
+                        config.Lslong().MaxRecursion());
+  
+  boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
+  dirList.Execute();
+  boost::posix_time::ptime end = boost::posix_time::microsec_clock::local_time();
+  
+  control.Reply(ftp::DirectoryStatus, "End of status (" + stats::HighResSecondsString(start, end) + ")"); 
+  return;
+  
+  (void) singleLineReplies;
+  (void) singleLineGuard;
+}
+
+} /* rfc namespace */  
 } /* cmd namespace */

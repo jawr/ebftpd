@@ -174,7 +174,7 @@ Factory::Factory()
                       "Syntax: SITE NUKES [<number>] [<section>]",
                       "Display nuke history" }, },
     { "UNNUKES",    { 0,  2,  "unnukes",
-                      std::make_shared<Creator<NUKESCommand>>(),
+                      std::make_shared<Creator<UNNUKESCommand>>(),
                       "Syntax: SITE UNNUKES [<number>] [<section>]",
                       "Display unnuke history" }, },
     { "UPDATE",     { 1,  1,  "update",
