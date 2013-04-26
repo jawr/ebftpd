@@ -78,8 +78,8 @@ long long XfertimeCorrection(acl::UserID          uid,
     BSON_ARRAY(
         BSON("$match" << 
           BSON("year" << t.Year() << "month" << t.Month()  <<
-               "week" << t.Week() << "day" << t.Day())) <<
-               "direction" << util::EnumToString(direction) <<
+               "week" << t.Week() << "day" << t.Day() <<
+               "direction" << util::EnumToString(direction))) <<
         BSON("$group" << 
           BSON("_id" << uid << 
             "total kbytes" << BSON("$sum" << "$kbytes") <<

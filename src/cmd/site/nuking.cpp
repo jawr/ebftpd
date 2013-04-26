@@ -54,7 +54,7 @@ std::string GetNukeID(const fs::RealPath& path)
   int len = getxattr(path.CString(), nukeIdAttributeName, buf, sizeof(buf));
   if (len < 0)
   {
-    if (errno != ENODATA && errno != ENOATTR)
+    if (errno != ENODATA && errno != ENOATTR && errno != ENOENT)
     {
       logs::Error("Error while reading filesystem attribute %1%: %2%: %3%", 
                   nukeIdAttributeName, path, util::Error::Failure(errno).Message());
