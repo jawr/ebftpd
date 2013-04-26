@@ -149,6 +149,13 @@ std::string Tag::CompileDouble() const
   {
     case UnitConversion::Auto   :
     {
+      bool negative = false;
+      if (value < 0)
+      {
+        negative = true;
+        value = -value;
+      }
+      
       if (value < 1024.0)
       {
         unitStr = "KB";
@@ -162,6 +169,11 @@ std::string Tag::CompileDouble() const
       {
         value /= 1024 * 1024;
         unitStr = "GB";
+      }
+      
+      if (negative)
+      {
+        value = -value;
       }
       break;
     }

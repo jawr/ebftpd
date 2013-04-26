@@ -35,13 +35,15 @@ class RecursiveDirIterator : public DirIterator
   
 public:
   RecursiveDirIterator() = default;
-  explicit RecursiveDirIterator(const std::string& path, bool ignoreErrors = false) : 
-    DirIterator(path, false), ignoreErrors(ignoreErrors)
+  RecursiveDirIterator(const std::string& path, bool ignoreErrors = false) : 
+    DirIterator(path, false), 
+    ignoreErrors(ignoreErrors)
   { }
 
-  explicit RecursiveDirIterator(const std::string& path, 
-        const std::function<bool(const std::string&)>& filter, bool ignoreErrors = false) : 
-    DirIterator(path, filter, false), ignoreErrors(ignoreErrors)
+  RecursiveDirIterator(const std::string& path, const std::function<bool(const 
+                       std::string&)>& filter, bool ignoreErrors = false) : 
+    DirIterator(path, filter, false), 
+    ignoreErrors(ignoreErrors)
   { }
   
 

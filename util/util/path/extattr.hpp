@@ -41,5 +41,10 @@ inline ssize_t getxattr(const char *path, const char *name, void *value, size_t 
   return extattr_get_file(path, EXTATTR_NAMESPACE_USER, name, value, size);
 }
 
+inline int removexattr(const char *path, const char *name)
+{
+  return extattr_delete_file(path, EXTATTR_NAMESPACE_USER, name);
+}
+
 #endif
 #endif

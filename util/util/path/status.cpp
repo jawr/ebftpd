@@ -106,6 +106,21 @@ off_t Status::Size() const
   return native.st_size;
 }
 
+time_t Status::AccessTime() const
+{
+  return native.st_atime;
+}
+
+time_t Status::ModTime() const
+{
+  return native.st_mtime;
+}
+
+time_t Status::ChangeTime() const
+{
+  return native.st_ctime;
+}
+
 const struct stat& Status::Native() const
 {
   return native;
@@ -141,10 +156,15 @@ off_t Size(const std::string& path)
   return -1;
 }
 
+time_t ModTime(const std::string& path)
+{
+  try { return Status(path).ModTime(); } catch (const util::SystemError&) { }
+  return -1;  
+}
+
 util::Error FreeDiskSpace(const std::string& real, unsigned long long& freeBytes)
 {
   struct statvfs sfs;
-
   if (statvfs(real.c_str(), &sfs) <0)
     return util::Error::Failure(errno);
 

@@ -1,0 +1,19 @@
+{% head %}
+.-----------------------------------------------------.
+| Unnuke summary                                        |
+|-----------------------------------------------------'
+| Directory : {{ directory|left }}
+| Multiplier: {{ multiplier|left }}
+| Reason    : {{ reason|left  }}
+|----.-----------------.-------.----------.-----------.
+| ## | Username        | Files |     Size |   Credits |
+|----+-----------------+-------+----------+-----------|
+{% endblock %}
+{% body %}
+| {{ index|02 }} | {{ username|15.15|left }} | {{ files|5 }} | {{ size|6.2|auto }} | {{ credits|7.2|auto }} |
+{% endblock %}
+{% foot %}
+|----+-----------------+-------+----------+-----------|
+| XX | Total           | {{ total_files|5 }} | {{ total_size|6.2|auto }} | {{ total_credits|7.2|auto }} |
+`----`-----------------`-------`----------`-----------`
+{% endblock %}

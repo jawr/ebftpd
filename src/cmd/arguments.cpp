@@ -12,12 +12,12 @@ void ArgumentParser::Compile(const std::string& grammar)
   {
     if (haveMultiple) // multiple must be last argument
     {
-      throw std::logic_error("Invalid argument grammar");
+      throw std::logic_error("Invalid argument grammar 1");
     }
 
     std::vector<std::string> toks;
-    util::Split(toks, arg, " ");
-    if (toks.size() != 2) throw std::logic_error("Invalid argument grammar");
+    util::Split(toks, arg, ":");
+    if (toks.size() != 2) throw std::logic_error("Invalid argument grammar 2");
 
     if (toks[1] == "single" || toks[1] == "s")
     {
@@ -32,7 +32,7 @@ void ArgumentParser::Compile(const std::string& grammar)
       haveMultiple = true;
       types.emplace_back(toks[0], Type::Multiple);
     }
-    else throw std::logic_error("Invalid argument grammar");
+    else throw std::logic_error("Invalid argument grammar 3");
   }
 }
 
@@ -47,7 +47,7 @@ Arguments ArgumentParser::Parse(const std::string& line)
       throw cmd::SyntaxError();
     }
 
-    while (std::isspace(line[pos1]))
+    while (line[pos1] == ' ')
     {
       if (++pos1 == line.length())
       {
@@ -90,7 +90,9 @@ Arguments ArgumentParser::Parse(const std::string& line)
       }
       case Type::Multiple :
       {
-        args.Push(type.first, line.substr(pos1));
+        auto pos2 = line.length() - 1;
+        while (line[pos2] == ' ') --pos2;
+        args.Push(type.first, line.substr(pos1, pos2 - pos1 + 1));
         pos1 = std::string::npos;
         break;
       }
@@ -105,5 +107,11 @@ Arguments ArgumentParser::Parse(const std::string& line)
   return args;
 }
 
+std::string ExtractCommand(const std::string& line)
+{
+  auto pos = line.find(' ');
+  if (pos == 0) throw cmd::SyntaxError();
+  return line.substr(0, pos);
+}
 
 } /* cmd namespace */

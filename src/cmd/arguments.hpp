@@ -140,6 +140,8 @@ public:
   }
 };
 
+std::string ExtractCommand(const std::string& line);
+
 } /* cmd namespace */
 
 #endif

@@ -292,7 +292,7 @@ public:
   long long EmptyNuke() const { return emptyNuke; }
   const std::vector< ::cfg::Creditcheck>& Creditcheck() const { return creditcheck; }
   const std::vector< ::cfg::Creditloss>& Creditloss() const { return creditloss; }
-  const ::cfg::NukedirStyle& Nukedirtyle() const { return nukedirStyle; }
+  const ::cfg::NukedirStyle& NukedirStyle() const { return nukedirStyle; }
   const std::vector< ::cfg::Msgpath>& Msgpath() const { return msgpath; }
   const std::vector< ::cfg::Privpath>& Privpath() const { return privpath; }
   const std::vector< ::cfg::SiteCmd>& SiteCmd() const { return siteCmd; }

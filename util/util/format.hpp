@@ -82,8 +82,8 @@ public:
   
   Format& operator()(const char* s)
   {
-    format = CustomFormat(s);
-    NextArg();
+    format = CustomFormat("%1%");
+    NextArg(s);
     return *this;
   }
 

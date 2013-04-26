@@ -69,31 +69,13 @@ class Nuke
 public:
   Nuke(const std::string& path, const std::string& section, 
        const std::string& reason, int multiplier, bool isPercent, time_t modTime,
-       const std::vector<Nukee>& nukees) :
-    path(path), 
-    section(section),
-    reason(reason),
-    multiplier(multiplier),
-    isPercent(isPercent),
-    modTime(modTime),
-    nukees(nukees)
-  { }
+       const std::vector<Nukee>& nukees);
 
   Nuke(const std::string& id, const std::string& path, 
        const std::string& section, const std::string& reason, 
        int multiplier, bool isPercent, time_t modTime,
        const boost::posix_time::ptime& dateTime, 
-       const std::vector<Nukee>& nukees) :
-    id(id),
-    path(path), 
-    section(section),
-    reason(reason),
-    multiplier(multiplier), 
-    isPercent(isPercent),
-    modTime(modTime),
-    dateTime(dateTime),
-    nukees(nukees)
-  { }
+       const std::vector<Nukee>& nukees);
   
   const std::string& ID() const { return id; }
   const std::string& Path() const { return path; }
@@ -106,11 +88,14 @@ public:
   int Files() const;
   const boost::posix_time::ptime& DateTime() const { return dateTime; }
   const std::vector<Nukee>& Nukees() const { return nukees; }
+  
+  void Unnuke(const std::string& reason);
 };
 
 void AddNuke(const Nuke& nuke);
 bool DelNuke(const Nuke& nuke);
-boost::optional<Nuke> LookupNuke(const std::string& id);
+boost::optional<Nuke> LookupNukeByID(const std::string& id);
+boost::optional<Nuke> LookupNukeByPath(const std::string& path);
 void AddUnnuke(const Nuke& nuke);
 bool DelUnnuke(const Nuke& nuke);
 std::vector<Nuke> NewestNukes(int limit);

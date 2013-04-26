@@ -264,7 +264,6 @@ int main(int argc, char** argv)
         ftp::OnlineWriter::Cleanup();
       }
     }
-
   }
 
   return exitStatus;

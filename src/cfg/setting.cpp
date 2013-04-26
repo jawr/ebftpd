@@ -326,7 +326,7 @@ NukedirStyle::NukedirStyle(const std::vector<std::string>& toks)
   format = toks[0];
   std::string action = util::ToLowerCopy(toks[1]);
   if (action == "deleteall") action = DeleteAll;
-  else if (action == "deletefiles") action = DeleteFiles;
+  else if (action == "keepdir") action = KeepDir;
   else if (action == "keep") action = Keep;
   else throw std::bad_cast();
   emptyKBytes = ParseSize(toks[2]);

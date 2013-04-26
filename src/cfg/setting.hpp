@@ -302,7 +302,7 @@ public:
 class NukedirStyle
 {
 public:
-  enum Action { DeleteAll, DeleteFiles, Keep };
+  enum Action { DeleteAll, KeepDir, Keep };
 
 private:
   std::string format;

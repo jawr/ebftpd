@@ -32,10 +32,14 @@
 namespace db { namespace stats
 {
 
-void Update(const acl::User& user, long long kBytes, long long xfertime, 
-    const std::string& section, ::stats::Direction direction, bool decrement)
+void Update(acl::UserID         uid, 
+            long long           kBytes, 
+            long long           xfertime, 
+            int                 files,
+            const std::string&  section, 
+            ::stats::Direction  direction, 
+            bool                decrement)
 {
-  int files = 1;
   if (decrement)
   {
     files *= -1;
@@ -45,7 +49,7 @@ void Update(const acl::User& user, long long kBytes, long long xfertime,
 
   ::stats::Date date(cfg::Get().WeekStart() == cfg::WeekStart::Monday);
   mongo::BSONObjBuilder query;
-  query.append("uid", user.ID());
+  query.append("uid", uid);
   query.append("day", date.Day());
   query.append("week", date.Week());
   query.append("month", date.Month());
@@ -62,9 +66,12 @@ void Update(const acl::User& user, long long kBytes, long long xfertime,
   conn.Update("transfers", query.obj(), update, true);
 }
 
-void UploadDecr(const acl::User& user, long long kBytes, time_t modTime, const std::string& section)
+long long XfertimeCorrection(acl::UserID          uid, 
+                             long long            kBytes,
+                             time_t               modTime, 
+                             ::stats::Direction   direction)
 {
-  long long xfertime = -1;
+  long long xfertime = -1; 
   util::Time t(modTime);
 
   auto cmd = BSON("aggregate" << "transfers" << "pipeline" << 
@@ -72,8 +79,9 @@ void UploadDecr(const acl::User& user, long long kBytes, time_t modTime, const s
         BSON("$match" << 
           BSON("year" << t.Year() << "month" << t.Month()  <<
                "week" << t.Week() << "day" << t.Day())) <<
+               "direction" << util::EnumToString(direction) <<
         BSON("$group" << 
-          BSON("_id" << user.ID() << 
+          BSON("_id" << uid << 
             "total kbytes" << BSON("$sum" << "$kbytes") <<
             "total xfertime" << BSON("$sum" << "$xfertime")
       ))));
@@ -98,39 +106,84 @@ void UploadDecr(const acl::User& user, long long kBytes, time_t modTime, const s
         LogException("Unserialize upload decr avg speed", e, result);
       }
     }
-
   }
+  
+  return xfertime;
+}
 
+void UploadIncr(acl::UserID         uid, 
+                long long           kBytes, 
+                time_t              modTime, 
+                const std::string&  section, 
+                int                 files)
+{
+  if (section.empty()) return; // non stat section not affected by nukes / deleting
+  
+  long long xfertime = XfertimeCorrection(uid, kBytes, modTime, ::stats::Direction::Upload);
   if (xfertime < 0)
   {
     namespace pt = boost::posix_time;
-    logs::Database("Failed to adjust xfertime on file deletion, "
-                   "no data available for that date: %1%",
+    logs::Database("Failed to adjust xfertime when incrementing upload stats for date: %1%",
                    pt::to_simple_string(pt::from_time_t(modTime)));
     xfertime = 0;
   }
 
-  assert(!section.empty());
-  Update(user, kBytes, xfertime, section, ::stats::Direction::Upload, true);
-  Update(user, kBytes, xfertime, "", ::stats::Direction::Upload, false);
+  Update(uid, kBytes, xfertime, files, "", ::stats::Direction::Upload, true);
+  Update(uid, kBytes, xfertime, files, section, ::stats::Direction::Upload, false);
 }
 
-void Upload(const acl::User& user, long long kBytes, long long xfertime, const std::string& section)
+void UploadDecr(acl::UserID         uid, 
+                long long           kBytes, 
+                time_t              modTime, 
+                const std::string&  section, 
+                int                 files)
 {
-  Update(user, kBytes, xfertime, section, ::stats::Direction::Upload, false);
+  if (section.empty()) return; // non stat section not affected by nukes / deleting
+  
+  long long xfertime = XfertimeCorrection(uid, kBytes, modTime, ::stats::Direction::Upload);
+  if (xfertime < 0)
+  {
+    namespace pt = boost::posix_time;
+    logs::Database("Failed to adjust xfertime when decrementing upload stats for date: %1%",
+                   pt::to_simple_string(pt::from_time_t(modTime)));
+    xfertime = 0;
+  }
+
+  Update(uid, kBytes, xfertime, files, section, ::stats::Direction::Upload, true);
+  Update(uid, kBytes, xfertime, files, "", ::stats::Direction::Upload, false);
 }
 
-void Download(const acl::User& user, long long kBytes, long long xfertime, const std::string& section)
+void UploadDecr(const acl::User&    user, 
+                long long           kBytes, 
+                time_t              modTime, 
+                const std::string&  section, 
+                int                 files)
 {
-  Update(user, kBytes, xfertime, section, ::stats::Direction::Download, false);
+  UploadDecr(user.ID(), kBytes, modTime, section, files);
 }
 
-std::vector< ::stats::Stat> RetrieveUsers(
-      const std::string& section, 
-      ::stats::Timeframe timeframe, 
-      ::stats::Direction direction, 
-      boost::optional< ::stats::SortField> sortField = boost::none, 
-      boost::optional<acl::UserID> uid = boost::none)
+void Upload(const acl::User&    user, 
+            long long           kBytes, 
+            long long           xfertime, 
+            const std::string&  section)
+{
+  Update(user.ID(), kBytes, xfertime, 1, section, ::stats::Direction::Upload, false);
+}
+
+void Download(const acl::User&    user, 
+              long long           kBytes, 
+              long long           xfertime, 
+              const std::string&  section)
+{
+  Update(user.ID(), kBytes, xfertime, 1, section, ::stats::Direction::Download, false);
+}
+
+std::vector< ::stats::Stat> 
+RetrieveUsers(const std::string&                    section, 
+              ::stats::Timeframe                    timeframe, 
+              ::stats::Direction                    direction, 
+              boost::optional< ::stats::SortField>  sortField = boost::none, 
+              boost::optional<acl::UserID>          uid = boost::none)
 {
   static const char* sortFields[] =
   {
@@ -189,12 +242,12 @@ std::vector< ::stats::Stat> RetrieveUsers(
   return users;
 }
 
-std::vector< ::stats::Stat> RetrieveGroups(
-      const std::string& section, 
-      ::stats::Timeframe timeframe, 
-      ::stats::Direction direction, 
-      boost::optional< ::stats::SortField> sortField = boost::none, 
-      boost::optional<acl::GroupID> gid = boost::none)
+std::vector< ::stats::Stat> 
+RetrieveGroups(const std::string&                     section, 
+               ::stats::Timeframe                     timeframe, 
+               ::stats::Direction                     direction, 
+               boost::optional< ::stats::SortField>   sortField = boost::none, 
+               boost::optional<acl::GroupID>          gid = boost::none)
 {
   auto users = RetrieveUsers(section, timeframe, direction, boost::none);
   std::unordered_map<acl::GroupID, ::stats::Stat> stats;
@@ -254,41 +307,39 @@ std::vector< ::stats::Stat> RetrieveGroups(
   return groups;
 }
 
-std::vector< ::stats::Stat> CalculateUserRanks(
-      const std::string& section, 
-      ::stats::Timeframe timeframe, 
-      ::stats::Direction direction, 
-      ::stats::SortField sortField)
+std::vector< ::stats::Stat> 
+CalculateUserRanks(const std::string&   section, 
+                   ::stats::Timeframe   timeframe, 
+                   ::stats::Direction   direction, 
+                   ::stats::SortField   sortField)
 {
   return RetrieveUsers(section, timeframe, direction, sortField);
 }
 
 
-std::vector< ::stats::Stat> CalculateGroupRanks(
-      const std::string& section, 
-      ::stats::Timeframe timeframe, 
-      ::stats::Direction direction, 
-      ::stats::SortField sortField)
+std::vector< ::stats::Stat>
+CalculateGroupRanks(const std::string&  section, 
+                    ::stats::Timeframe  timeframe, 
+                    ::stats::Direction  direction, 
+                    ::stats::SortField  sortField)
 {
   return RetrieveGroups(section, timeframe, direction, sortField);
 }
 
-::stats::Stat CalculateSingleUser(
-      acl::UserID uid, 
-      const std::string& section, 
-      ::stats::Timeframe timeframe, 
-      ::stats::Direction direction)
+::stats::Stat CalculateSingleUser(acl::UserID         uid, 
+                                  const std::string&  section, 
+                                  ::stats::Timeframe  timeframe, 
+                                  ::stats::Direction  direction)
 {
   auto users = RetrieveUsers(section, timeframe, direction, boost::none, uid);
   if (users.empty()) return ::stats::Stat(uid);
   return users.front();
 }
 
-::stats::Stat CalculateSingleGroup(
-      acl::GroupID gid, 
-      const std::string& section, 
-      ::stats::Timeframe timeframe, 
-      ::stats::Direction direction)
+::stats::Stat CalculateSingleGroup(acl::GroupID         gid, 
+                                   const std::string&   section, 
+                                   ::stats::Timeframe   timeframe, 
+                                   ::stats::Direction   direction)
 {
   auto groups = RetrieveGroups(section, timeframe, direction, boost::none, gid);
   if (groups.empty()) return ::stats::Stat(gid);

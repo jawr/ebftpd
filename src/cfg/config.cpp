@@ -586,7 +586,7 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   else if (opt == "nukedir_style")
   {
     ParameterCheck(opt, toks, 3);
-    nukedirStyle = NukedirStyle(toks);
+    nukedirStyle = ::cfg::NukedirStyle(toks);
   }
   else if (opt == "msg_path")
   {

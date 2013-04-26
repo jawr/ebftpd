@@ -41,7 +41,9 @@ template <> nuking::Nukee Unserialize<nuking::Nukee>(const mongo::BSONObj& obj)
 
 template <> mongo::BSONObj Serialize<nuking::Nuke>(const nuking::Nuke& nuke)
 {
+  mongo::OID oid(nuke.ID());
   mongo::BSONObjBuilder bob;
+  bob.appendOID("_id", &oid);
   bob.append("path", nuke.Path());
   bob.append("section", nuke.Section());
   bob.append("reason", nuke.Reason());
@@ -80,6 +82,37 @@ template <> nuking::Nuke Unserialize<nuking::Nuke>(const mongo::BSONObj& obj)
 namespace nuking
 {
 
+Nuke::Nuke(const std::string& path, const std::string& section, 
+     const std::string& reason, int multiplier, bool isPercent, time_t modTime,
+     const std::vector<Nukee>& nukees) :
+  id(mongo::OID::gen().toString()),
+  path(path),
+  section(section),
+  reason(reason),
+  multiplier(multiplier),
+  isPercent(isPercent),
+  modTime(modTime),
+  nukees(nukees)
+{
+}
+
+Nuke::Nuke(const std::string& id, const std::string& path, 
+     const std::string& section, const std::string& reason, 
+     int multiplier, bool isPercent, time_t modTime,
+     const boost::posix_time::ptime& dateTime, 
+     const std::vector<Nukee>& nukees) :
+  id(id),
+  path(path), 
+  section(section),
+  reason(reason),
+  multiplier(multiplier), 
+  isPercent(isPercent),
+  modTime(modTime),
+  dateTime(dateTime),
+  nukees(nukees)
+{
+}
+
 long long Nuke::KBytes() const
 {
   long long kBytes;
@@ -100,6 +133,12 @@ int Nuke::Files() const
   return files;
 }
 
+void Nuke::Unnuke(const std::string& reason)
+{
+  this->id = mongo::OID::gen().toString();
+  this->reason = reason;
+}
+
 void AddNuke(const Nuke& nuke)
 {
   NoErrorConnection conn;
@@ -112,10 +151,16 @@ bool DelNuke(const Nuke& nuke)
   return conn.Remove("nukes", QUERY("path" << nuke.Path())) > 0;
 }
 
-boost::optional<Nuke> LookupNuke(const std::string& id)
+boost::optional<Nuke> LookupNukeByID(const std::string& id)
 {
   NoErrorConnection conn;
   return conn.QueryOne<Nuke>("nukes", QUERY("_id" << mongo::OID(id)));
+}
+
+boost::optional<Nuke> LookupNukeByPath(const std::string& path)
+{
+  NoErrorConnection conn;
+  return conn.QueryOne<Nuke>("nukes", QUERY("path" << path));
 }
 
 void AddUnnuke(const Nuke& nuke)
