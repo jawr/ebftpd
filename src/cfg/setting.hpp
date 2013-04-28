@@ -299,7 +299,7 @@ public:
   const std::string& Path() const { return path; }
 };
 
-class NukedirStyle
+class NukeStyle
 {
 public:
   enum Action { DeleteAll, KeepDir, Keep };
@@ -308,12 +308,15 @@ private:
   std::string format;
   Action action;
   long long emptyKBytes;
+  long long emptyPenalty;
 
 public:
-  NukedirStyle(const std::string& format, Action action, long long emptyKBytes);
-  NukedirStyle(const std::vector<std::string>& toks);
+  NukeStyle(const std::string& format, Action action, 
+            long long emptyKBytes, long long emptyPenalty);
+  NukeStyle(const std::vector<std::string>& toks);
   const std::string& Format() const { return format; }
   long long EmptyKBytes() const { return emptyKBytes; }
+  long long EmptyPenalty() const { return emptyPenalty; }
   Action GetAction() const { return action; }
 };
 

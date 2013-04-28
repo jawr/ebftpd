@@ -79,6 +79,12 @@ void Event(const std::string& what, const Args&... args)
   events.PushEntry("event", Tag(), util::ToUpperCopy(what), QuoteOn(), args...);
 }
 
+inline void Event(const std::string& what, const std::vector<std::pair<std::string, std::string>>& pairs)
+{
+  extern Logger events;
+  events.PushEvent(util::ToUpperCopy(what), pairs);
+}
+
 template <typename... Args>
 void Security(const std::string& what, const std::string& format, const Args&... args)
 {

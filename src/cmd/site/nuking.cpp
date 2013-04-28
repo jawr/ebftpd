@@ -87,7 +87,7 @@ void RemoveNukeID(const fs::RealPath& path)
 fs::RealPath NukedPath(const fs::RealPath& path)
 {
   const auto& config = cfg::Get();
-  std::string nukedName(boost::replace_all_copy(config.NukedirStyle().Format(), "%N", 
+  std::string nukedName(boost::replace_all_copy(config.NukeStyle().Format(), "%N", 
                                                 path.Basename().ToString()));
   return path.Dirname() / nukedName;
 }
@@ -106,8 +106,28 @@ void RegisterHeadFoot(text::TemplateSection& ts, const db::nuking::Nuke& nuke,
                    "NoSection" : nuke.Section());
 }
 
+void Log(const std::string& command, const fs::RealPath& path, const db::nuking::Nuke& nuke)
+{
+  std::vector<std::pair<std::string, std::string>> pairs =
+  {
+    { "path",       path.ToString()                       },
+    { "nuker",      acl::UIDToName(nuke.NukerUID())       },
+    { "multiplier", std::to_string(nuke.Multiplier()) + 
+                    (nuke.IsPercent() ? '%' : 'x')        },
+    { "reason",     nuke.Reason()                         }
+  };
+  
+  int count = 0;
+  for (const auto& nukee : nuke.Nukees())
+  {
+    pairs.emplace_back("nukee" + std::to_string(++count), 
+                       acl::UIDToName(nukee.UID()) + " " + std::to_string(nukee.Credits()));
+  }
+  logs::Event(command, pairs);
+}
+
 db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercent, 
-                      const std::string& reason)
+                      const std::string& reason, acl::UserID nukerUID)
 {
   class DoNuke
   {
@@ -127,6 +147,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
     int multiplier;
     bool isPercent;
     std::string reason;
+    acl::UserID nukerUID;
     time_t modTime;
     long long totalKBytes;
     std::map<acl::UserID, Nukee> nukees;
@@ -159,6 +180,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       {
         for (auto& kv : nukees)
         {
+          kv.second.credits = config.NukeStyle().EmptyPenalty();
           auto user = acl::User::Load(kv.first);
           if (!user)
           {
@@ -175,7 +197,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       {
         auto owner = fs::GetOwner(real);
         auto& nukee = nukees[owner.UID()];
-        nukee.credits = config.EmptyNuke();
+        nukee.credits = config.NukeStyle().EmptyPenalty();
         auto user = acl::User::Load(owner.UID());
         if (!user)
         {
@@ -220,7 +242,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
     void TakeCredits()
     {
       std::string sectionName(section && section->SeparateCredits() ? section->Name() : "");
-      if (totalKBytes < config.NukedirStyle().EmptyKBytes())
+      if (totalKBytes < config.NukeStyle().EmptyKBytes())
       {
         TakeCreditsEmpty(sectionName);
       }
@@ -266,7 +288,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       if (unnuke) db::nuking::DelUnnuke(*unnuke);
       
       nuke = db::nuking::Nuke(path.ToString(), section ? section->Name() : "", 
-                              reason, multiplier, isPercent, modTime, nukees2);
+                              reason, nukerUID, multiplier, isPercent, modTime, nukees2);
       db::nuking::AddNuke(*nuke);
     }
 
@@ -336,13 +358,13 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
     void ActionTheDirectory()
     {
       assert(nuke);
-      auto action = config.NukedirStyle().GetAction();
-      if (action != cfg::NukedirStyle::Keep)
+      auto action = config.NukeStyle().GetAction();
+      if (action != cfg::NukeStyle::Keep)
       {
         DeleteContents();
       }
 
-      if (action == cfg::NukedirStyle::DeleteAll)
+      if (action == cfg::NukeStyle::DeleteAll)
       {
         Delete();
       }
@@ -354,13 +376,14 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
 
   public:
     DoNuke(const fs::VirtualPath& path, int multiplier, bool isPercent, 
-           const std::string& reason) :
+           const std::string& reason, acl::UserID nukerUID) :
       config(cfg::Get()),
       path(path),
       real(fs::MakeReal(path)),
       multiplier(multiplier),
       isPercent(isPercent),
       reason(reason),
+      nukerUID(nukerUID),
       modTime(0),
       totalKBytes(0),
       section(config.SectionMatch(path.ToString(), true))
@@ -373,10 +396,11 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       TakeStats();
       UpdateDatabase();
       ActionTheDirectory();
+      Log("NUKE", real, *nuke);
       return *nuke;
     }
     
-  } doNuke(path, multiplier, isPercent, reason);
+  } doNuke(path, multiplier, isPercent, reason, nukerUID);
   
   return doNuke();
 }
@@ -412,7 +436,7 @@ void NUKECommand::Execute()
 
   try
   {
-    auto nuke = Nuke(path, multiplier, isPercent, reason);
+    auto nuke = Nuke(path, multiplier, isPercent, reason, client.User().ID());
     try
     {
       auto templ = text::Factory::GetTemplate("nuke");
@@ -463,7 +487,8 @@ void NUKECommand::Execute()
   }
 }
 
-db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
+db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason, 
+                        acl::UserID nukerUID)
 {
   class DoUnnuke
   {
@@ -472,6 +497,7 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
     fs::RealPath real;
     fs::RealPath nukedPath;
     std::string reason;
+    acl::UserID nukerUID;
     db::nuking::Nuke nuke;
     boost::optional<const cfg::Section&> section;
 
@@ -539,18 +565,19 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
     void UpdateDatabase()
     {
       db::nuking::DelNuke(nuke);
-      nuke.Unnuke(reason);
+      nuke.Unnuke(reason, nukerUID);
       db::nuking::AddUnnuke(nuke);
       SetNukeID(real, nuke.ID());
     }
     
   public:
-    DoUnnuke(const fs::VirtualPath& path, const std::string& reason) :
+    DoUnnuke(const fs::VirtualPath& path, const std::string& reason, acl::UserID nukerUID) :
       config(cfg::Get()),
       path(path),
       real(fs::MakeReal(path)),
       nukedPath(NukedPath(real)),
       reason(reason),
+      nukerUID(nukerUID),
       nuke(LookupNuke())
     { }
 
@@ -560,10 +587,11 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
       RestoreStats();
       Rename();
       UpdateDatabase();
+      Log("UNNUKE", real, nuke);
       return nuke;
     }
     
-  } doUnnuke(path, reason);
+  } doUnnuke(path, reason, nukerUID);
   
   return doUnnuke();
 }
@@ -582,7 +610,7 @@ void UNNUKECommand::Execute()
 
   try
   {
-    auto nuke = Unnuke(path, reason);
+    auto nuke = Unnuke(path, reason, client.User().ID());
     try
     {
       auto templ = text::Factory::GetTemplate("unnuke");
@@ -677,9 +705,10 @@ void NUKESCommand::Execute()
     
     for (const auto& nuke : nukes)
     {
+      using namespace boost::posix_time;
       body.RegisterValue("index", ++index);
-      body.RegisterValue("datetime", boost::lexical_cast<std::string>(nuke.DateTime()));
-      body.RegisterValue("modtime", boost::lexical_cast<std::string>(nuke.ModTime()));
+      body.RegisterValue("datetime", to_simple_string(nuke.DateTime()));
+      body.RegisterValue("modtime", to_simple_string(from_time_t(nuke.ModTime())));
       body.RegisterValue("age", Age(now - nuke.DateTime()));
       body.RegisterValue("files", nuke.Files());
       body.RegisterSize("size", nuke.KBytes());
@@ -688,6 +717,7 @@ void NUKESCommand::Execute()
       body.RegisterValue("section", nuke.Section());
       body.RegisterValue("nukees", FormatNukees(nuke.Nukees()));
       body.RegisterValue("reason", nuke.Reason());
+      body.RegisterValue("nuker", acl::UIDToName(nuke.NukerUID()));
       
       std::string multiplier(std::to_string(nuke.Multiplier()));
       if (nuke.IsPercent()) multiplier += '%';    

@@ -13,23 +13,28 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifdef LOGGER_TEST
-#include <fstream>
 #include "logs/logger.hpp"
-#include "logs/streamsink.hpp"
-//#include "db/logsink.hpp"
 
-int main()
+namespace logs
 {
-  using namespace logs;
-  
-  Logger logger;
-  logger.PushSink(std::make_shared<StreamSink>(Stream(&std::clog, false)));
-  
-  std::ofstream* log = new std::ofstream("/tmp/log.log");
-  logger.PushSink(std::make_shared<StreamSink>(Stream(log, true)));
-//  logger.PushSink(std::make_shared<db::LogSink>("somecol"));
-  
-  logger.Write("message", QuoteOn('\''), "this is a message", "kbytes", 1243432, QuoteOff(), "size", 100.20);
+
+void Logger::PushEvent(const std::string& what, 
+                       const std::vector<std::pair<std::string, std::string>>& pairs)
+{
+  if (pairs.empty()) return;
+  Entry entry;
+  entry.tagMode = TagMode::Next;
+  entry.field = "event";
+  Write(entry, what.c_str());
+
+  entry.quoteMode = QuoteMode::On;
+  entry.quoteChar = '"';
+  for (const auto& kv : pairs)
+  {
+    entry.field = kv.first.c_str();
+    Write(entry, kv.second.c_str());
+  }
+  Flush();
 }
-#endif
+
+} /* logs namespace */

@@ -314,14 +314,16 @@ Creditloss::Creditloss(std::vector<std::string> toks)
   acl = acl::ACL(util::Join(toks, " "));
 }
 
-NukedirStyle::NukedirStyle(const std::string& format, Action action, long long emptyKBytes) :
+NukeStyle::NukeStyle(const std::string& format, Action action, 
+                     long long emptyKBytes, long long emptyPenalty) :
   format(format),
   action(action), 
-  emptyKBytes(emptyKBytes)
+  emptyKBytes(emptyKBytes),
+  emptyPenalty(emptyPenalty)
 {
 }
 
-NukedirStyle::NukedirStyle(const std::vector<std::string>& toks)   
+NukeStyle::NukeStyle(const std::vector<std::string>& toks)   
 {
   format = toks[0];
   std::string action = util::ToLowerCopy(toks[1]);
@@ -330,6 +332,7 @@ NukedirStyle::NukedirStyle(const std::vector<std::string>& toks)
   else if (action == "keep") action = Keep;
   else throw std::bad_cast();
   emptyKBytes = ParseSize(toks[2]);
+  emptyPenalty = ParseSize(toks[3]);
 }
 
 Msgpath::Msgpath(const std::vector<std::string>& toks)   

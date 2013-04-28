@@ -60,6 +60,7 @@ class Nuke
   std::string path;
   std::string section;
   std::string reason;
+  acl::UserID nukerUID;
   int multiplier;
   bool isPercent;
   time_t modTime;
@@ -68,12 +69,14 @@ class Nuke
 
 public:
   Nuke(const std::string& path, const std::string& section, 
-       const std::string& reason, int multiplier, bool isPercent, time_t modTime,
+       const std::string& reason, acl::UserID nukerUID,
+       int multiplier, bool isPercent, time_t modTime,
        const std::vector<Nukee>& nukees);
 
   Nuke(const std::string& id, const std::string& path, 
        const std::string& section, const std::string& reason, 
-       int multiplier, bool isPercent, time_t modTime,
+       acl::UserID nukerUID, int multiplier, 
+       bool isPercent, time_t modTime,
        const boost::posix_time::ptime& dateTime, 
        const std::vector<Nukee>& nukees);
   
@@ -81,6 +84,7 @@ public:
   const std::string& Path() const { return path; }
   const std::string& Section() const { return section; }
   const std::string& Reason() const { return reason; }
+  acl::UserID NukerUID() const { return nukerUID; }
   int Multiplier() const { return multiplier; }
   bool IsPercent() const { return isPercent; }
   time_t ModTime() const { return modTime; }
@@ -89,7 +93,7 @@ public:
   const boost::posix_time::ptime& DateTime() const { return dateTime; }
   const std::vector<Nukee>& Nukees() const { return nukees; }
   
-  void Unnuke(const std::string& reason);
+  void Unnuke(const std::string& reason, acl::UserID nukerUID);
 };
 
 void AddNuke(const Nuke& nuke);

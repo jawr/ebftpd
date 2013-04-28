@@ -142,10 +142,9 @@ class Config
   std::vector< ::cfg::HiddenFiles> hiddenFiles;
   std::vector<std::string> noretrieve;
   ::cfg::NukeMax nukeMax;
-  long long emptyNuke;
   std::vector< ::cfg::Creditcheck> creditcheck;
   std::vector< ::cfg::Creditloss> creditloss;
-  ::cfg::NukedirStyle nukedirStyle;
+  ::cfg::NukeStyle nukedirStyle;
   std::vector< ::cfg::Msgpath> msgpath;
   std::vector< ::cfg::Privpath> privpath;
   std::vector< ::cfg::SiteCmd> siteCmd;
@@ -289,10 +288,9 @@ public:
   const std::vector< ::cfg::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
   const std::vector<std::string>& Noretrieve() const { return noretrieve; }
   const ::cfg::NukeMax& NukeMax() const { return nukeMax; }
-  long long EmptyNuke() const { return emptyNuke; }
   const std::vector< ::cfg::Creditcheck>& Creditcheck() const { return creditcheck; }
   const std::vector< ::cfg::Creditloss>& Creditloss() const { return creditloss; }
-  const ::cfg::NukedirStyle& NukedirStyle() const { return nukedirStyle; }
+  const ::cfg::NukeStyle& NukeStyle() const { return nukedirStyle; }
   const std::vector< ::cfg::Msgpath>& Msgpath() const { return msgpath; }
   const std::vector< ::cfg::Privpath>& Privpath() const { return privpath; }
   const std::vector< ::cfg::SiteCmd>& SiteCmd() const { return siteCmd; }

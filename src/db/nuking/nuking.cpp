@@ -47,6 +47,7 @@ template <> mongo::BSONObj Serialize<nuking::Nuke>(const nuking::Nuke& nuke)
   bob.append("path", nuke.Path());
   bob.append("section", nuke.Section());
   bob.append("reason", nuke.Reason());
+  bob.append("nukerUID", nuke.NukerUID());
   bob.append("multiplier", nuke.Multiplier());
   bob.append("percent", nuke.IsPercent());
   bob.append("modtime", ToDateT(nuke.ModTime() * 1000));
@@ -72,6 +73,7 @@ template <> nuking::Nuke Unserialize<nuking::Nuke>(const mongo::BSONObj& obj)
                       obj["path"].String(),
                       obj["section"].String(),
                       obj["reason"].String(),
+                      obj["nukerUID"].Int(),
                       obj["multiplier"].Int(),
                       obj["percent"].Bool(),
                       obj["modtime"].Date().toTimeT(),
@@ -83,12 +85,14 @@ namespace nuking
 {
 
 Nuke::Nuke(const std::string& path, const std::string& section, 
-     const std::string& reason, int multiplier, bool isPercent, time_t modTime,
+     const std::string& reason, acl::UserID nukerUID,
+     int multiplier, bool isPercent, time_t modTime,
      const std::vector<Nukee>& nukees) :
   id(mongo::OID::gen().toString()),
   path(path),
   section(section),
   reason(reason),
+  nukerUID(nukerUID),
   multiplier(multiplier),
   isPercent(isPercent),
   modTime(modTime),
@@ -98,13 +102,15 @@ Nuke::Nuke(const std::string& path, const std::string& section,
 
 Nuke::Nuke(const std::string& id, const std::string& path, 
      const std::string& section, const std::string& reason, 
-     int multiplier, bool isPercent, time_t modTime,
+     acl::UserID nukerUID, int multiplier, 
+     bool isPercent, time_t modTime,
      const boost::posix_time::ptime& dateTime, 
      const std::vector<Nukee>& nukees) :
   id(id),
   path(path), 
   section(section),
   reason(reason),
+  nukerUID(nukerUID),
   multiplier(multiplier), 
   isPercent(isPercent),
   modTime(modTime),
@@ -133,10 +139,11 @@ int Nuke::Files() const
   return files;
 }
 
-void Nuke::Unnuke(const std::string& reason)
+void Nuke::Unnuke(const std::string& reason, acl::UserID nukerUID)
 {
   this->id = mongo::OID::gen().toString();
   this->reason = reason;
+  this->nukerUID = nukerUID;
 }
 
 void AddNuke(const Nuke& nuke)

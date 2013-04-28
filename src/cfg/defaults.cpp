@@ -32,7 +32,6 @@ const TransferLog       defaultTransferLog        ("transfer",  false,  false,  
 const bool              defaultDlIncomplete       = true;
 const int               defaultTotalUsers         = -1;       // unlimited
 const int               defaultMultiplierMax      = 10;
-const long long         defaultEmptyNuke          = 102400;   // 100MB
 const int               defaultMaxSitecmdLines    = 100;
 const WeekStart         defaultWeekStart          = WeekStart::Sunday;
 const EPSVFxp           defaultEpsvFxp            = EPSVFxp::Allow;
@@ -49,14 +48,16 @@ const char*             defaultTlsControl         = "*";    // enforced
 const char*             defaultTlsListing         = "*";    // enforced
 const char*             defaultTlsData            = "!*";   // not enforced
 const char*             defaultTlsFxp             = "!*";   // not enforced
-const Database          defaultDatabase           ("ebftpd", "localhost", 27017, "", "");
+const Database          defaultDatabase           ("ebftpd", /*name*/ "localhost" /*addr*/, 
+                                                   27017 /*port*/, "" /*login*/, "" /*pass*/);
 const PathFilter        defaultPathFilter         ("^[[\\]A-Za-z0-9_'()[:space:]][[\\]A-Za-z0-9_.'()[:space:]-]+$", "*");
-const NukedirStyle      defaultNukedirStyle       ("NUKED-%N", NukedirStyle::Keep, 1024);
-const IdleTimeout       defaultIdleTimeout        (7200 /* max */, 1 /* min */, 900 /* default */);
-const AllowFxp          defaultAllowFxp           (true /* dn */, true /* up */, false /* log */ , "*" /* acl */);
-const MaxUsers          defaultMaxUsers           (50 /* users */, 5 /* exempt */);
+const NukeStyle         defaultNukeStyle          ("NUKED-%N" /*frmat*/, NukeStyle::Keep /*action*/, 
+                                                   1024 /*emptysize*/, 1048576 /*emptypenalty*/);
+const IdleTimeout       defaultIdleTimeout        (7200 /*max*/, 1 /*min*/, 900 /*default*/);
+const AllowFxp          defaultAllowFxp           (true /*dn*/, true /*up*/, false /*log*/ , "*" /*acl*/);
+const MaxUsers          defaultMaxUsers           (50 /*users*/, 5 /*exempt*/);
 const Lslong            defaultLslong             ("l", 2);
-const SimXfers          defaultSimXfers           (-1 /* down */, -1 /* down */); // unlimited
-const NukeMax           defaultNukeMax            (10 /* mutiplier */, 50 /* percent */);
+const SimXfers          defaultSimXfers           (-1 /*down*/, -1 /*down*/); // unlimited
+const NukeMax           defaultNukeMax            (10 /*mutiplier*/, 50 /*percent*/);
 
-} /* cfg namespace */
+} /*cfg namespace*/

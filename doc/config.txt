@@ -67,11 +67,6 @@ required:         no
 default:          10 50
 description:      maximum multiplier and percent allowed to be passed to site nuke command
 ------------------------------------------------------------------------------------------------------------------------
-usage:            empty_nuke <kbytes>[M|G]
-required:         no
-default:          102400 (100MB)
-description:      penalty for being nuked for empty directory
-------------------------------------------------------------------------------------------------------------------------
 usage:            max_sitecmd_lines <number>
 required:         no
 default:          1000
@@ -394,9 +389,9 @@ required:         no
 default:          none
 description:      download ratio based on path mask for those with specified acls
 ------------------------------------------------------------------------------------------------------------------------
-usage:            nukedir_style <format> <0|1|2> <empty kbytes>[M|G]
+usage:            nuke_style <format> <0|1|2> <empty kbytes>[M|G] <empty penalty kbytes>[M|G] 
 required:         no
-default:          NUKED-%N 2 1048576
+default:          NUKED-%N 2 1024 1048576
 description:      specify how nuked directories are handled
                   %N in format replaced with directory
                   0 == delete completely

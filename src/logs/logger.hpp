@@ -201,6 +201,10 @@ public:
     Entry entry;
     Parse(entry, args...);
   }
+  
+  // utility function only for dynamic event logging
+  void PushEvent(const std::string& what, 
+                 const std::vector<std::pair<std::string, std::string>>& pairs);
 };
 
 } /* logs namespace */

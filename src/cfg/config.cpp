@@ -88,8 +88,7 @@ Config::Config(const std::string& configPath, bool tool) :
   totalUsers(defaultTotalUsers),
   lslong(defaultLslong),
   nukeMax(defaultNukeMax),
-  emptyNuke(defaultEmptyNuke),
-  nukedirStyle(defaultNukedirStyle),
+  nukedirStyle(defaultNukeStyle),
   maxSitecmdLines(defaultMaxSitecmdLines),
   idleTimeout(defaultIdleTimeout),
   database(defaultDatabase),
@@ -230,11 +229,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 2);
     nukeMax = ::cfg::NukeMax(toks);
-  }
-  else if (opt == "empty_nuke")
-  {
-    ParameterCheck(opt, toks, 1);
-    emptyNuke = ParseSize(toks[0]);
   }
   else if (opt == "max_sitecmd_lines")
   {
@@ -582,10 +576,10 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 3, -1);
     creditloss.emplace_back(toks);
   }
-  else if (opt == "nukedir_style")
+  else if (opt == "nuke_style")
   {
-    ParameterCheck(opt, toks, 3);
-    nukedirStyle = ::cfg::NukedirStyle(toks);
+    ParameterCheck(opt, toks, 4);
+    nukedirStyle = ::cfg::NukeStyle(toks);
   }
   else if (opt == "msg_path")
   {
