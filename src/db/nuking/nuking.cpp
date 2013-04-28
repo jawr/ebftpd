@@ -151,16 +151,36 @@ bool DelNuke(const Nuke& nuke)
   return conn.Remove("nukes", QUERY("path" << nuke.Path())) > 0;
 }
 
-boost::optional<Nuke> LookupNukeByID(const std::string& id)
+boost::optional<Nuke> LookupByID(const std::string& collection, const std::string& id)
 {
   NoErrorConnection conn;
-  return conn.QueryOne<Nuke>("nukes", QUERY("_id" << mongo::OID(id)));
+  return conn.QueryOne<Nuke>(collection, QUERY("_id" << mongo::OID(id)));
+}
+
+boost::optional<Nuke> LookupByPath(const std::string& collection, const std::string& path)
+{
+  NoErrorConnection conn;
+  return conn.QueryOne<Nuke>(collection, QUERY("path" << path));
+}
+
+boost::optional<Nuke> LookupNukeByID(const std::string& id)
+{
+  return LookupByID("nukes", id);
 }
 
 boost::optional<Nuke> LookupNukeByPath(const std::string& path)
 {
-  NoErrorConnection conn;
-  return conn.QueryOne<Nuke>("nukes", QUERY("path" << path));
+  return LookupByPath("nukes", path);
+}
+
+boost::optional<Nuke> LookupUnnukeByID(const std::string& id)
+{
+  return LookupByID("unnukes", id);
+}
+
+boost::optional<Nuke> LookupUnnukeByPath(const std::string& path)
+{
+  return LookupByPath("unnukes", path);
 }
 
 void AddUnnuke(const Nuke& nuke)
