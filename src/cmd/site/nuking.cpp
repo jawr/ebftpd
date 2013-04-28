@@ -459,7 +459,7 @@ void NUKECommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    control.Format(ftp::ActionNotOkay, "Error while nuking: %1%", e.what());
+    control.Format(ftp::ActionNotOkay, "Error while nuking: %1%: %2%", args["path"], e.what());
   }
 }
 
@@ -483,7 +483,7 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
       if (!nuke)
       {
         nuke = db::nuking::LookupNukeByPath(path.ToString());
-        if (!nuke) throw util::RuntimeError("Unable to locate nuke data.");
+        if (!nuke) throw util::RuntimeError("Unable to locate nuke data");
       }
       return *nuke;      
     }
@@ -628,7 +628,7 @@ void UNNUKECommand::Execute()
   }
   catch (const util::RuntimeError& e)
   {
-    control.Format(ftp::ActionNotOkay, "Error while unnuking: %1%", e.what());
+    control.Format(ftp::ActionNotOkay, "Error while unnuking: %1%: %2%", args["path"], e.what());
   }
 }
 
