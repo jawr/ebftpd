@@ -18,7 +18,7 @@
 namespace cfg
 {
 
-const long long         defaultFreeSpace          = 1048576;  // 1024MB
+const long long         defaultFreeSpace          = 1048576;        // 1GB
 const char*             defaultSitenameLong       = "EBFTPD";
 const char*             defaultSitenameShort      = "EB";
 const bool              defaultBouncerOnly        = false;
@@ -30,7 +30,7 @@ const Log               defaultDebugLog           ("debug",     false,  false,  
 const Log               defaultSiteopLog          ("siteop",    true,   true,   0);
 const TransferLog       defaultTransferLog        ("transfer",  false,  false,  0,  false,  false);
 const bool              defaultDlIncomplete       = true;
-const int               defaultTotalUsers         = -1;       // unlimited
+const int               defaultTotalUsers         = -1;             // unlimited
 const int               defaultMultiplierMax      = 10;
 const int               defaultMaxSitecmdLines    = 100;
 const WeekStart         defaultWeekStart          = WeekStart::Sunday;
@@ -43,21 +43,35 @@ const bool              defaultDnsLookup          = true;
 const LogAddresses      defaultLogAddresses       = LogAddresses::Always;
 const mode_t            defaultUmask              = fs::CurrentUmask();
 const int               defaultLogLines           = 100;
-const size_t            defaultDataBufferSize     = 16384;
-const char*             defaultTlsControl         = "*";    // enforced
-const char*             defaultTlsListing         = "*";    // enforced
-const char*             defaultTlsData            = "!*";   // not enforced
-const char*             defaultTlsFxp             = "!*";   // not enforced
-const Database          defaultDatabase           ("ebftpd", /*name*/ "localhost" /*addr*/, 
-                                                   27017 /*port*/, "" /*login*/, "" /*pass*/);
+const size_t            defaultDataBufferSize     = 16384;          // 16KB
+const char*             defaultTlsControl         = "*";            // enforced
+const char*             defaultTlsListing         = "*";            // enforced
+const char*             defaultTlsData            = "!*";           // not enforced
+const char*             defaultTlsFxp             = "!*";           // not enforced
+const Database          defaultDatabase           ("ebftpd",        // name 
+                                                   "localhost",     // address
+                                                   27017,           // port
+                                                   "",              // login
+                                                   "");             // password
 const PathFilter        defaultPathFilter         ("^[[\\]A-Za-z0-9_'()[:space:]][[\\]A-Za-z0-9_.'()[:space:]-]+$", "*");
-const NukeStyle         defaultNukeStyle          ("NUKED-%N" /*frmat*/, NukeStyle::Keep /*action*/, 
-                                                   1024 /*emptysize*/, 1048576 /*emptypenalty*/);
-const IdleTimeout       defaultIdleTimeout        (7200 /*max*/, 1 /*min*/, 900 /*default*/);
-const AllowFxp          defaultAllowFxp           (true /*dn*/, true /*up*/, false /*log*/ , "*" /*acl*/);
-const MaxUsers          defaultMaxUsers           (50 /*users*/, 5 /*exempt*/);
-const Lslong            defaultLslong             ("l", 2);
-const SimXfers          defaultSimXfers           (-1 /*down*/, -1 /*down*/); // unlimited
-const NukeMax           defaultNukeMax            (10 /*mutiplier*/, 50 /*percent*/);
+const NukeStyle         defaultNukeStyle          ("NUKED-%N",      // format
+                                                   NukeStyle::Keep, // action
+                                                   1024,            // empty size 
+                                                   1048576 );       // empty penalty
+const IdleTimeout       defaultIdleTimeout        (7200,            // maximum
+                                                   1,               // minimum 
+                                                   900);            // default
+const AllowFxp          defaultAllowFxp           (true,            // download
+                                                   true,            // upload
+                                                   false,           // logging
+                                                   "*");            // acl (all)
+const MaxUsers          defaultMaxUsers           (50,              // users
+                                                   5);              // exempt
+const Lslong            defaultLslong             ("l",             // options
+                                                   2);              // max recursive
+const SimXfers          defaultSimXfers           (-1,              // download (unlimited)
+                                                   -1);             // upload (unlimited)
+const NukeMax           defaultNukeMax            (10,              // multiplier
+                                                   50);             // percent
 
 } /*cfg namespace*/

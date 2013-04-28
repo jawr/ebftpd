@@ -168,7 +168,7 @@ util::Error FreeDiskSpace(const std::string& real, unsigned long long& freeBytes
   if (statvfs(real.c_str(), &sfs) <0)
     return util::Error::Failure(errno);
 
-  freeBytes = sfs.f_bsize * sfs.f_bfree;
+  freeBytes = sfs.f_bsize * sfs.f_bavail;
   return util::Error::Success();
 }
 
