@@ -87,7 +87,7 @@ Config::Config(const std::string& configPath, bool tool) :
   dlIncomplete(defaultDlIncomplete),
   totalUsers(defaultTotalUsers),
   lslong(defaultLslong),
-  multiplierMax(defaultMultiplierMax),
+  nukeMax(defaultNukeMax),
   emptyNuke(defaultEmptyNuke),
   nukedirStyle(defaultNukedirStyle),
   maxSitecmdLines(defaultMaxSitecmdLines),
@@ -226,11 +226,10 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     totalUsers = util::StrToInt(toks[0]);
     if (totalUsers < -1) throw std::bad_cast();
   }
-  else if (opt == "multiplier_max")
+  else if (opt == "nuke_max")
   {
-    ParameterCheck(opt, toks, 1);
-    multiplierMax = util::StrToInt(toks[0]);
-    if (multiplierMax < 1) throw std::bad_cast();
+    ParameterCheck(opt, toks, 2);
+    nukeMax = ::cfg::NukeMax(toks);
   }
   else if (opt == "empty_nuke")
   {

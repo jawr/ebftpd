@@ -455,6 +455,25 @@ public:
   bool Downloads() const { return downloads; }
 };
 
+class NukeMax
+{
+  int multiplier;
+  int percent;
+  
+public:
+  NukeMax(int multiplier, int percent) :
+    multiplier(multiplier),
+    percent(percent)
+  { }
+  
+  NukeMax(const std::vector<std::string>& toks);
+  
+  int Multiplier() const { return multiplier; }
+  int Percent() const { return percent; }
+  
+  bool IsOkay(int value, bool isPercent) const;
+};
+
 }
 
 #endif

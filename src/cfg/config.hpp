@@ -141,7 +141,7 @@ class Config
   ::cfg::Lslong lslong;
   std::vector< ::cfg::HiddenFiles> hiddenFiles;
   std::vector<std::string> noretrieve;
-  int multiplierMax;
+  ::cfg::NukeMax nukeMax;
   long long emptyNuke;
   std::vector< ::cfg::Creditcheck> creditcheck;
   std::vector< ::cfg::Creditloss> creditloss;
@@ -288,7 +288,7 @@ public:
   const ::cfg::Lslong& Lslong() const { return lslong; }
   const std::vector< ::cfg::HiddenFiles>& HiddenFiles() const { return hiddenFiles; }
   const std::vector<std::string>& Noretrieve() const { return noretrieve; }
-  int MultiplierMax() const { return multiplierMax; }
+  const ::cfg::NukeMax& NukeMax() const { return nukeMax; }
   long long EmptyNuke() const { return emptyNuke; }
   const std::vector< ::cfg::Creditcheck>& Creditcheck() const { return creditcheck; }
   const std::vector< ::cfg::Creditloss>& Creditloss() const { return creditloss; }

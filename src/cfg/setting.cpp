@@ -470,4 +470,17 @@ TransferLog::TransferLog(const std::string& name, const std::vector<std::string>
 {
 }
 
+NukeMax::NukeMax(const std::vector<std::string>& toks) :
+  multiplier(util::StrToInt(toks[0])),
+  percent(util::StrToInt(toks[1]))
+{
+  if (multiplier < 0 || percent < 0 || percent > 100) throw std::bad_cast();
+}
+
+
+bool NukeMax::IsOkay(int value, bool isPercent) const
+{
+  if (isPercent) return value >= 0 && value <= percent;
+  else return value >= 0 && value <= multiplier;
+}
 }

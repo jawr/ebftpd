@@ -57,5 +57,6 @@ const AllowFxp          defaultAllowFxp           (true /* dn */, true /* up */,
 const MaxUsers          defaultMaxUsers           (50 /* users */, 5 /* exempt */);
 const Lslong            defaultLslong             ("l", 2);
 const SimXfers          defaultSimXfers           (-1 /* down */, -1 /* down */); // unlimited
+const NukeMax           defaultNukeMax            (10 /* mutiplier */, 50 /* percent */);
 
 } /* cfg namespace */

@@ -62,10 +62,10 @@ required:         no
 default:          -1
 description:      maximum users allowed to be added to the userbase (-1 unlimited)
 ------------------------------------------------------------------------------------------------------------------------
-usage:            multiplier_max <number>
+usage:            nuke_max <multiplier number> <percent number
 required:         no
-default:          10
-description:      maximum multiplier allowed to be passed to site nuke command
+default:          10 50
+description:      maximum multiplier and percent allowed to be passed to site nuke command
 ------------------------------------------------------------------------------------------------------------------------
 usage:            empty_nuke <kbytes>[M|G]
 required:         no

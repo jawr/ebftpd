@@ -407,10 +407,8 @@ void NUKECommand::Execute()
   int multiplier;
   try
   {
-    const auto& config = cfg::Get();
     multiplier = util::StrToInt(multi.substr(0, multi.length() - isPercent));
-    if ((config.MultiplierMax() != -1 && multiplier > config.MultiplierMax()) ||
-        multiplier <= 0)
+    if (!cfg::Get().NukeMax().IsOkay(multiplier, isPercent))
     {
       control.Reply(ftp::ActionNotOkay, "Invalid nuke multiplier / percent.");
       return;

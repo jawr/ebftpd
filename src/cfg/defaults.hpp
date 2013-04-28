@@ -61,6 +61,7 @@ extern const AllowFxp          defaultAllowFxp;
 extern const MaxUsers          defaultMaxUsers;
 extern const Lslong            defaultLslong;
 extern const SimXfers          defaultSimXfers;
+extern const NukeMax           defaultNukeMax;
 
 } /* cfg namespace */
 
