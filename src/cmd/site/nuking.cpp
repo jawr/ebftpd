@@ -39,6 +39,7 @@
 #include "fs/owner.hpp"
 #include "fs/file.hpp"
 #include "fs/directory.hpp"
+#include "stats/util.hpp"
 
 namespace cmd { namespace site
 {
@@ -224,7 +225,12 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
         }
         else
         {
-          kv.second.credits = kv.second.kBytes * multiplier;
+          int ratio = stats::UploadRatio(*user, path / "dummy-file", section);
+          if (ratio == 0)
+            kv.second.credits = 0;
+          else
+            kv.second.credits = kv.second.kBytes * ratio +
+                                kv.second.kBytes * (multiplier - 1);
         }
 
         if (!user)

@@ -141,7 +141,7 @@ void DELECommand::Execute()
 
   if (loseCredits)
   {
-    long long creditLoss = bytes / 1024 * stats::UploadRatio(client, path, section);
+    long long creditLoss = bytes / 1024 * stats::UploadRatio(client.User(), path, section);
     if (creditLoss)
     {
       client.User().DecrSectionCredits(section && section->SeparateCredits() ? section->Name() : "", creditLoss);

@@ -31,9 +31,9 @@ namespace cfg
 class  Section;
 }
 
-namespace ftp
+namespace acl
 {
-class Client;
+class User;
 }
 
 namespace fs
@@ -62,9 +62,9 @@ std::string AutoUnitString(double kBytes);
 std::string HighResSecondsString(const boost::posix_time::time_duration& duration);
 std::string HighResSecondsString(const boost::posix_time::ptime& start, 
         const boost::posix_time::ptime& end);
-int UploadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
+int UploadRatio(const acl::User& user, const fs::VirtualPath& path, 
     const boost::optional<const cfg::Section&>& section);
-int DownloadRatio(const ftp::Client& client, const fs::VirtualPath& path, 
+int DownloadRatio(const acl::User& user, const fs::VirtualPath& path, 
     const boost::optional<const cfg::Section&>& section);
     
 } /* stats namespace */

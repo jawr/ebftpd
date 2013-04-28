@@ -137,7 +137,7 @@ void RETRCommand::Execute()
   
   if (boost::indeterminate(allotment))
   {
-    ratio = stats::DownloadRatio(client, path, section);
+    ratio = stats::DownloadRatio(client.User(), path, section);
     if (!client.User().DecrSectionCredits(section && section->SeparateCredits() ? 
             section->Name() : "", size / 1024 * ratio))
     {

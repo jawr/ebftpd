@@ -355,7 +355,7 @@ void STORCommand::Execute()
                       nostats ? "" : section->Name());    
 
     client.User().IncrSectionCredits(section && section->SeparateCredits() ? section->Name() : "", 
-            data.State().Bytes() / 1024 * stats::UploadRatio(client, path, section));
+            data.State().Bytes() / 1024 * stats::UploadRatio(client.User(), path, section));
   }
 
   control.Reply(ftp::DataClosedOkay, "Transfer finished @ " + stats::AutoUnitSpeedString(speed / 1024)); 
