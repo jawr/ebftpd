@@ -19,6 +19,7 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+#include <algorithm>
 #include "util/string.hpp"
 #include "cmd/error.hpp"
 
@@ -31,7 +32,7 @@ class Arguments
 {
   std::vector<std::string> args;
   std::vector<std::string> names;
-
+  
   void Push(const std::string& name, std::string&& arg)
   {
     args.emplace_back(arg);
@@ -53,6 +54,10 @@ public:
   typedef std::vector<std::string>::const_reverse_iterator const_reverse_iterator;
 
   const std::vector<std::string>& Names() const { return names; }
+  bool Has(const std::string& name)
+  {
+    return std::find(names.begin(), names.end(), name) != names.end();
+  }
   
   const std::string& operator[](size_t i) const { return args[i]; }
   std::string& operator[](size_t i) { return args[i]; }
@@ -118,9 +123,25 @@ class ArgumentParser
 {
   enum class Type
   {
-    Single,
-    Grouped,
-    Multiple
+    Initialise      = 0,
+    Single          = 1 << 1,
+    Grouped         = 1 << 2,
+    Multiple        = 1 << 3,
+    NotRequired     = 1 << 4,
+    Option          = 1 << 5,
+    OptionArgument  = 1 << 6
+  };
+
+  struct Definition
+  {
+    std::string name;
+    Type type;
+    
+    Definition() :
+      type(Type::Initialise)
+    { }
+    
+    void PushType(Type type);
   };
 
   std::vector<std::pair<std::string, Type>> types;
