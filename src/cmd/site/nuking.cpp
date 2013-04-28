@@ -84,12 +84,12 @@ void RemoveNukeID(const fs::RealPath& path)
   }
 }
 
-fs::RealPath NukedPath(const fs::Path& path)
+fs::RealPath NukedPath(const fs::RealPath& path)
 {
   const auto& config = cfg::Get();
   std::string nukedName(boost::replace_all_copy(config.NukedirStyle().Format(), "%D", 
                                                 path.Basename().ToString()));
-  return fs::MakeReal(path) / nukedName;
+  return path / nukedName;
 }
 
 }
@@ -104,24 +104,6 @@ void RegisterHeadFoot(text::TemplateSection& ts, const db::nuking::Nuke& nuke,
   ts.RegisterValue("reason", nuke.Reason());
   ts.RegisterValue("section", nuke.Section().empty() ? 
                    "NoSection" : nuke.Section());
-}
-
-boost::optional<db::nuking::Nuke> LookupNuke(const fs::VirtualPath& path, const fs::RealPath& nukedPath)
-{
-  boost::optional<db::nuking::Nuke> nuke;
-  std::string id = GetNukeID(nukedPath);
-  if (!id.empty()) nuke = db::nuking::LookupNukeByID(id);   
-  if (!nuke) nuke = db::nuking::LookupNukeByPath(path.ToString());
-  return nuke;
-}
-
-boost::optional<db::nuking::Nuke> LookupUnnuke(const fs::VirtualPath& path)
-{
-  boost::optional<db::nuking::Nuke> nuke;
-  std::string id = GetNukeID(fs::MakeReal(path));
-  if (!id.empty()) nuke = db::nuking::LookupUnnukeByID(id);   
-  if (!nuke) nuke = db::nuking::LookupUnnukeByPath(path.ToString());
-  return nuke;
 }
 
 db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercent, 
@@ -269,6 +251,15 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       }
     }
     
+    boost::optional<db::nuking::Nuke> LookupUnnuke()
+    {
+      boost::optional<db::nuking::Nuke> nuke;
+      std::string id = GetNukeID(real);
+      if (!id.empty()) nuke = db::nuking::LookupUnnukeByID(id);   
+      if (!nuke) nuke = db::nuking::LookupUnnukeByPath(path.ToString());
+      return nuke;
+    }
+    
     void UpdateDatabase()
     {
       std::vector<db::nuking::Nukee> nukees2;
@@ -279,7 +270,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       }
       
       // remove old unnuke data if dir was unnuked in past
-      auto unnuke = LookupUnnuke(path);
+      auto unnuke = LookupUnnuke();
       if (unnuke) db::nuking::DelUnnuke(*unnuke);
       
       nuke = db::nuking::Nuke(path.ToString(), section ? section->Name() : "", 
@@ -564,7 +555,7 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
       config(cfg::Get()),
       path(path),
       real(fs::MakeReal(path)),
-      nukedPath(real),
+      nukedPath(NukedPath(real)),
       reason(reason),
       nuke(LookupNuke())
     { }
