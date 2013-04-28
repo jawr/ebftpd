@@ -87,9 +87,9 @@ void RemoveNukeID(const fs::RealPath& path)
 fs::RealPath NukedPath(const fs::RealPath& path)
 {
   const auto& config = cfg::Get();
-  std::string nukedName(boost::replace_all_copy(config.NukedirStyle().Format(), "%D", 
+  std::string nukedName(boost::replace_all_copy(config.NukedirStyle().Format(), "%N", 
                                                 path.Basename().ToString()));
-  return path / nukedName;
+  return path.Dirname() / nukedName;
 }
 
 }
@@ -138,7 +138,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       using namespace util::path;
       try
       {
-         modTime = Status(path.ToString()).ModTime();
+         modTime = Status(real.ToString()).ModTime();
         
         for (const std::string& entry : RecursiveDirContainer(real.ToString(), true))
         {
@@ -510,7 +510,7 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
       return it != config.Sections().end() && it->second.SeparateCredits();
     }
 
-    void RestoreStatsAndCredits()
+    void RestoreCredits()
     {
       std::string sectionName(SeparateCredits() ? nuke.Section() : "");
       for (const auto& nukee : nuke.Nukees())
@@ -524,6 +524,16 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
         else
         {
           user->IncrSectionCredits(sectionName, nukee.Credits());
+        }
+      }
+    }
+    
+    void RestoreStats()
+    {
+      for (const auto& nukee : nuke.Nukees())
+      {
+        if (nukee.KBytes() > 0 || nukee.Files() > 0)
+        {
           db::stats::UploadIncr(nukee.UID(), nukee.KBytes(), nuke.ModTime(), 
                                 nuke.Section(), nuke.Files());
         }
@@ -562,7 +572,8 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
 
     db::nuking::Nuke operator()()
     {
-      RestoreStatsAndCredits();
+      RestoreCredits();
+      RestoreStats();
       Rename();
       UpdateDatabase();
       return nuke;

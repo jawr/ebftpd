@@ -186,7 +186,7 @@ boost::optional<Nuke> LookupUnnukeByPath(const std::string& path)
 void AddUnnuke(const Nuke& nuke)
 {
   NoErrorConnection conn;
-  conn.InsertOne("nukees", nuke);
+  conn.InsertOne("unnukes", nuke);
 }
 
 bool DelUnnuke(const Nuke& nuke)
