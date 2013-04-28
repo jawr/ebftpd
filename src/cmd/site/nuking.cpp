@@ -136,28 +136,20 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
     void CalculateNukees()
     {
       using namespace util::path;
-      try
+      modTime = Status(real.ToString()).ModTime();
+      
+      for (const std::string& entry : RecursiveDirContainer(real.ToString(), true))
       {
-         modTime = Status(real.ToString()).ModTime();
+        if (Basename(entry).front() == '.') continue;
         
-        for (const std::string& entry : RecursiveDirContainer(real.ToString(), true))
-        {
-          if (Basename(entry).front() == '.') continue;
-          
-          Status status(entry);
-          if (!status.IsRegularFile()) continue;
-          
-          auto& nukee = nukees[fs::GetOwner(entry).UID()];
-          long long kBytes = status.Size() / 1024;
-          nukee.kBytes += kBytes;
-          nukee.files++;
-          totalKBytes += kBytes;
-        }
-      }
-      catch (const util::SystemError& e)
-      {
-        logs::Error("Error while nuking %1%: %2%", path, e.what());
-        throw e;
+        Status status(entry);
+        if (!status.IsRegularFile()) continue;
+        
+        auto& nukee = nukees[fs::GetOwner(entry).UID()];
+        long long kBytes = status.Size() / 1024;
+        nukee.kBytes += kBytes;
+        nukee.files++;
+        totalKBytes += kBytes;
       }
     }
     
@@ -171,7 +163,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
           if (!user)
           {
             logs::Error("Unable to update user with uid %1% after nuke of: %2%", 
-                        kv.first, path);
+                        kv.first, real);
           }
           else
           {
@@ -188,7 +180,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
         if (!user)
         {
           logs::Error("Unable to update user with uid %1% after nuke of: %2%", 
-                      owner.UID(), path);
+                      owner.UID(), real);
         }
         else
         {
@@ -216,7 +208,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
         if (!user)
         {
           logs::Error("Unable to update user with uid %1% after nuke of: %2%", 
-                      kv.first, path);
+                      kv.first, real);
         }
         else
         {
@@ -285,10 +277,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
         if (util::path::IsRegularFile(entry))
         {
           auto e = fs::DeleteFile(fs::RealPath(entry));
-          if (!e)
-          {
-            logs::Error("Unable to delete nuked file: %1%", entry);
-          }
+          if (!e) logs::Error("Unable to delete nuked file: %1%: %2%", entry, e.Message());
         }
       }
     }
@@ -300,10 +289,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
         if (util::path::IsDirectory(entry))
         {
           auto e = fs::RemoveDirectory(fs::RealPath(entry));
-          if (!e)
-          {
-            logs::Error("Unable to delete nuked file: %1%", entry);
-          }
+          if (!e) logs::Error("Unable to remove nuked directory: %1%: %2%", entry, e.Message());
         }
       }
     }
@@ -317,7 +303,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       }
       catch (const util::SystemError& e)
       {
-        logs::Error("Unable to read nuked directory contents: %1%", path);
+        logs::Error("Unable to delete nuked directory contents: %1%: %2%", real, e.Message());
       }
     }
     
@@ -326,7 +312,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       auto e = fs::RemoveDirectory(real);
       if (!e)
       {
-        logs::Error("Unable to remove nuked directory: %1%", path);
+        logs::Error("Unable to remove nuked directory: %1%: %2%", real, e.Message());
       }
     }
     
@@ -410,7 +396,7 @@ void NUKECommand::Execute()
     multiplier = util::StrToInt(multi.substr(0, multi.length() - isPercent));
     if (!cfg::Get().NukeMax().IsOkay(multiplier, isPercent))
     {
-      control.Reply(ftp::ActionNotOkay, "Invalid nuke multiplier / percent.");
+      control.Format(ftp::ActionNotOkay, "Invalid nuke multiplier / percent.");
       return;
     }    
   }
@@ -464,11 +450,11 @@ void NUKECommand::Execute()
       foot.RegisterValue("total_files", totalFiles);
       os << foot.Compile();
       
-      control.Reply(ftp::CommandOkay, os.str());
+      control.Format(ftp::CommandOkay, os.str());
     }
     catch (const text::TemplateError& e)
     {
-      control.Reply(ftp::ActionNotOkay, e.Message());
+      control.Format(ftp::ActionNotOkay, e.Message());
     }
   }
   catch (const util::RuntimeError& e)
@@ -517,7 +503,7 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason)
         if (!user)
         {
           logs::Error("Unable to update user with uid %1% after unnuke of: %2%", 
-                      nukee.UID(), path);
+                      nukee.UID(), real);
         }
         else
         {
@@ -633,11 +619,11 @@ void UNNUKECommand::Execute()
       foot.RegisterValue("total_files", totalFiles);
       os << foot.Compile();
       
-      control.Reply(ftp::CommandOkay, os.str());
+      control.Format(ftp::CommandOkay, os.str());
     }
     catch (const text::TemplateError& e)
     {
-      control.Reply(ftp::ActionNotOkay, e.Message());
+      control.Format(ftp::ActionNotOkay, e.Message());
     }
   }
   catch (const util::RuntimeError& e)
@@ -716,11 +702,11 @@ void NUKESCommand::Execute()
     foot.RegisterValue("count", nukes.size());
     os << foot.Compile();
     
-    control.Reply(ftp::CommandOkay, os.str());
+    control.Format(ftp::CommandOkay, os.str());
   }
   catch (const text::TemplateError& e)
   {
-    control.Reply(ftp::ActionNotOkay, e.Message());
+    control.Format(ftp::ActionNotOkay, e.Message());
   }
 }
 
