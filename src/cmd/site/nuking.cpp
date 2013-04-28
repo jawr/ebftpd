@@ -113,7 +113,7 @@ void Log(const std::string& command, const fs::RealPath& path, const db::nuking:
     { "path",       path.ToString()                       },
     { "nuker",      acl::UIDToName(nuke.NukerUID())       },
     { "multiplier", std::to_string(nuke.Multiplier()) + 
-                    (nuke.IsPercent() ? '%' : 'x')        },
+                    (nuke.IsPercent() ? "%" : "")         },
     { "reason",     nuke.Reason()                         }
   };
   
