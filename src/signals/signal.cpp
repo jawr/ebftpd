@@ -1,4 +1,5 @@
 //    Copyright (C) 2012, 2013 ebftpd team
+//    Copyright (C) 2012, 2013 ebftpd team
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -192,8 +193,8 @@ inline void DumpBacktrace(const char* type, const char* message)
   char time[std::numeric_limits<time_t>::digits10 + 2];
   IntegerToASCII(std::time(NULL), time, sizeof(time));
   
-  char dumpPath[PATH_MAX];
-  strncpy(dumpPath, logPath.c_str(), sizeof(dumpPath));
+  char dumpPath[PATH_MAX] = { 0 };
+  strncat(dumpPath, logPath.c_str(), sizeof(dumpPath));
   strncat(dumpPath, "/crash.", sizeof(dumpPath));
   strncat(dumpPath, pid, sizeof(dumpPath));
   strncat(dumpPath, ".", sizeof(dumpPath));
@@ -295,7 +296,7 @@ util::Error Initialise(const std::string& logPath_)
   if (pthread_sigmask(SIG_BLOCK, &set, nullptr) < 0)
     return util::Error::Failure(errno); 
 
-  logPath = logPath_;  
+  logPath = logPath_;
 
   return util::Error::Success();
 }

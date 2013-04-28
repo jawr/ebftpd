@@ -115,7 +115,7 @@ Nuke::Nuke(const std::string& id, const std::string& path,
 
 long long Nuke::KBytes() const
 {
-  long long kBytes;
+  long long kBytes = 0;
   for (const auto& nukee : nukees)
   {
     kBytes += nukee.KBytes();
@@ -125,7 +125,7 @@ long long Nuke::KBytes() const
 
 int Nuke::Files() const
 {
-  int files;
+  int files = 0;
   for (const auto& nukee : nukees)
   {
     files += nukee.Files();

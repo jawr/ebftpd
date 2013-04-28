@@ -45,7 +45,19 @@ namespace cmd { namespace site
 
 namespace
 {
+
+struct Nukee
+{
+  
+  long long kBytes;
+  int files;
+  long long credits;
+  
+  Nukee() : kBytes(0), files(0), credits(0) { }
+};
+
 const char* nukeIdAttributeName = "user.ebftpd.nukeid";
+
 }
 
 std::string GetNukeID(const fs::RealPath& path)
@@ -66,8 +78,7 @@ std::string GetNukeID(const fs::RealPath& path)
   return buf;
 }
 
-void SetNukeID(const fs::RealPath&  path, 
-               const std::string&   id)
+void SetNukeID(const fs::RealPath& path, const std::string& id)
 {
   if (setxattr(path.CString(), nukeIdAttributeName, id.c_str(), id.length(), 0) < 0)
   {
@@ -76,35 +87,71 @@ void SetNukeID(const fs::RealPath&  path,
   }
 }
 
-db::nuking::Nuke Nuke(const fs::VirtualPath&  path, 
-                      int                     multiplier, 
-                      bool                    isPercent, 
-                      const std::string&      reason)
+void RemoveNukeID(const fs::RealPath& path)
+{
+  if (removexattr(path.CString(), nukeIdAttributeName) > 0 &&
+      errno != ENOENT && errno != ENODATA && errno != ENOATTR)
+  {
+    logs::Error("Error while removing filesystem attribute %1%: %2%: %3%", 
+                nukeIdAttributeName, path, util::Error::Failure(errno).Message());
+  }
+}
+
+fs::RealPath NukedPath(const fs::Path& path)
+{
+  const auto& config = cfg::Get();
+  std::string nukedName(boost::replace_all_copy(config.NukedirStyle().Format(), "%D", 
+                                                path.Basename().ToString()));
+  return fs::MakeReal(path) / nukedName;
+}
+
+void RegisterHeadFoot(text::TemplateSection& ts, const db::nuking::Nuke& nuke, 
+                      const fs::VirtualPath& path)
+{
+  ts.RegisterValue("path", path.ToString());
+  ts.RegisterValue("directory", path.Basename().ToString());
+  ts.RegisterValue("multiplier", std::to_string(nuke.Multiplier()) + 
+                   (nuke.IsPercent() ? "%" : ""));
+  ts.RegisterValue("reason", nuke.Reason());
+  ts.RegisterValue("section", nuke.Section().empty() ? 
+                   "NoSection" : nuke.Section());
+}
+
+boost::optional<db::nuking::Nuke> LookupNuke(const fs::VirtualPath& path, const fs::RealPath& nukedPath)
+{
+  boost::optional<db::nuking::Nuke> nuke;
+  std::string id = GetNukeID(nukedPath);
+  if (!id.empty()) nuke = db::nuking::LookupNukeByID(id);   
+  if (!nuke)
+  {
+    nuke = db::nuking::LookupNukeByPath(path.ToString());
+  }
+  return nuke;
+}
+
+boost::optional<db::nuking::Nuke> LookupUnnuke(const fs::VirtualPath& path)
+{
+  boost::optional<db::nuking::Nuke> nuke;
+  std::string id = GetNukeID(fs::MakeReal(path));
+  if (!id.empty()) nuke = db::nuking::LookupUnnukeByID(id);   
+  if (!nuke)
+  {
+    nuke = db::nuking::LookupUnnukeByPath(path.ToString());
+  }
+  return nuke;
+}
+
+std::map<acl::UserID, Nukee> CalculateNuke(const fs::RealPath& path, 
+                                          long long& totalKBytes, time_t& modTime)
 {
   using namespace util::path;
-
-  struct Nukee
-  {
-    
-    long long kBytes;
-    int files;
-    long long credits;
-    
-    Nukee() : kBytes(0), files(0), credits(0) { }
-  };
+  std::map<acl::UserID, Nukee> nukees;
   
-  std::map<acl::UserID, Nukee> nukees;  
-  auto real = fs::MakeReal(path);
-
-  long long totalKBytes = 0;
-  
-  // loop over directory recursively, tallying up file count and size for each user
-  time_t modTime;
   try
   {
-     modTime = Status(real.ToString()).ModTime();
+     modTime = Status(path.ToString()).ModTime();
     
-    for (const std::string& entry : RecursiveDirContainer(real.ToString(), true))
+    for (const std::string& entry : RecursiveDirContainer(path.ToString(), true))
     {
       if (Basename(entry).front() == '.') continue;
       
@@ -124,10 +171,88 @@ db::nuking::Nuke Nuke(const fs::VirtualPath&  path,
     throw e;
   }
   
+  return nukees;
+}
+
+void DeleteNukeContents(const fs::RealPath& path)
+{
+  using namespace util::path;
+
+  try
+  {
+    // delete all files in directory recursively
+    for (const std::string& entry : RecursiveDirContainer(path.ToString(), true))
+    {
+      if (IsRegularFile(entry))
+      {
+        auto e = fs::DeleteFile(fs::RealPath(entry));
+        if (!e)
+        {
+          logs::Error("Unable to delete nuked file: %1%", entry);
+        }
+      }
+    }
+
+    // delete all sub directories recursively
+    for (const std::string& entry : RecursiveDirContainer(path.ToString(), true))
+    {
+      if (IsDirectory(entry))
+      {
+        auto e = fs::RemoveDirectory(fs::RealPath(entry));
+        if (!e)
+        {
+          logs::Error("Unable to delete nuked file: %1%", entry);
+        }
+      }
+    }
+  }
+  catch (const util::SystemError& e)
+  {
+    logs::Error("Unable to read nuked directory contents: %1%", path);
+  }
+}
+
+void DeleteNukeDir(const fs::RealPath& path)
+{
+  auto e = fs::RemoveDirectory(path);
+  if (!e)
+  {
+    logs::Error("Unable to remove nuked directory: %1%", path);
+  }
+}
+
+void RenameNukeDir(const fs::RealPath& path, const std::string& id)
+{
+  auto nukedPath = NukedPath(path);
+  auto e = fs::RenameFile(path, nukedPath);
+  if (!e)
+  {
+    logs::Error("Unable to rename nuked directory: %1% -> %2%: %3%", 
+                path, nukedPath, e.Message());
+    SetNukeID(path, id);
+  }
+  else
+  {
+    SetNukeID(nukedPath, id);
+  }
+}
+
+void TakeStats(const std::map<acl::UserID, Nukee>& nukees, const std::string& section, time_t modTime)
+{
+  for (const auto& kv : nukees)
+  {
+    if (kv.second.kBytes > 0)
+    {
+      db::stats::UploadDecr(kv.first, kv.second.kBytes, modTime, 
+                            section, kv.second.files);
+    }
+  }
+}
+
+void TakeCredits(const std::map<acl::UserID, Nukee>& nukees, 
+                 const std::string& section, long long totalKBytes)
+{
   const auto& config = cfg::Get();
-  auto section = config.SectionMatch(path.ToString(), true);
-  std::string creditSection(section && section->SeparateCredits() ? section->Name() : "");
-  
   if (totalKBytes < config.NukedirStyle().EmptyKBytes())
   {
     // if we have small files in the dir, we penalise them with empty nuke
@@ -192,18 +317,30 @@ db::nuking::Nuke Nuke(const fs::VirtualPath&  path,
       }
     }
   }
-  
-  // update each users stats
-  std::string statsSection(section ? section->Name() : "");
-  for (const auto& kv : nukees)
-  {
-    if (kv.second.kBytes > 0)
-    {
-      db::stats::UploadDecr(kv.first, kv.second.kBytes, modTime, 
-                            statsSection, kv.second.files);
-    }
-  }
+}
 
+db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercent, 
+                      const std::string& reason)
+{
+  using namespace util::path;
+  
+  long long totalKBytes;
+  time_t modTime;
+  auto real = fs::MakeReal(path);
+  std::map<acl::UserID, Nukee> nukees = CalculateNuke(real, totalKBytes, modTime);
+
+  // loop over directory recursively, tallying up file count and size for each user
+  
+  const auto& config = cfg::Get();
+  auto section = config.SectionMatch(path.ToString(), true);
+  std::string creditSection(section && section->SeparateCredits() ? section->Name() : "");
+  
+  TakeCredits(nukees, section && section->SeparateCredits() ? section->Name() : "", totalKBytes);
+  
+  std::string statsSection(section ? section->Name() : "");
+  TakeStats(nukees, statsSection, modTime);
+
+  // convert Nukee to db serializable db::nuking::Nukee
   std::vector<db::nuking::Nukee> nukees2;
   for (const auto& kv : nukees)
   {
@@ -212,68 +349,28 @@ db::nuking::Nuke Nuke(const fs::VirtualPath&  path,
   }
   
   auto action = config.NukedirStyle().GetAction();
-  
   if (action != cfg::NukedirStyle::Keep)
   {
-    try
-    {
-      for (const std::string& entry : RecursiveDirContainer(real.ToString(), true))
-      {
-        if (IsRegularFile(entry))
-        {
-          auto e = fs::DeleteFile(fs::RealPath(entry));
-          if (!e)
-          {
-            logs::Error("Unable to delete nuked file: %1%", entry);
-          }
-        }
-      }
-
-      for (const std::string& entry : RecursiveDirContainer(real.ToString(), true))
-      {
-        if (IsDirectory(entry))
-        {
-          auto e = fs::RemoveDirectory(fs::RealPath(entry));
-          if (!e)
-          {
-            logs::Error("Unable to delete nuked file: %1%", entry);
-          }
-        }
-      }
-    }
-    catch (const util::SystemError& e)
-    {
-      logs::Error("Unable to read nuked directory contents: %1%", real);
-    }
+    DeleteNukeContents(real);
   }
 
+  // remove old unnuke data if dir was unnuked in past
+  auto unnuke = LookupUnnuke(path);
+  if (unnuke) db::nuking::DelUnnuke(*unnuke);
+  
+  // prepare nuke data early so we can assign the nukd id to the directory
   auto nuke = db::nuking::Nuke(path.ToString(), statsSection, reason, 
                                multiplier, isPercent, modTime, nukees2);
   db::nuking::AddNuke(nuke);
 
+  // finalise nuked directory
   if (action == cfg::NukedirStyle::DeleteAll)
   {
-    auto e = fs::RemoveDirectory(real);
-    if (!e)
-    {
-      logs::Error("Unable to remove nuked directory: %1%", real);
-    }
+    DeleteNukeDir(real);
   }
   else
   {
-    std::string nukedName(boost::replace_all_copy(config.NukedirStyle().Format(), "%N", 
-                                                  real.Basename().ToString()));
-    auto newPath = real.Dirname() / nukedName;
-    auto e = fs::RenameFile(real, newPath);
-    if (!e)
-    {
-      logs::Error("Unable to rename nuked directory: %1%", real);
-      SetNukeID(real, nuke.ID());
-    }
-    else
-    {
-      SetNukeID(newPath, nuke.ID());
-    }
+    RenameNukeDir(real, nuke.ID());
   }
 
   return nuke;
@@ -333,21 +430,9 @@ void NUKECommand::Execute()
     return;
   }
   
-  auto registerHeadFoot = 
-    [&](text::TemplateSection& ts)
-    {
-      ts.RegisterValue("path", path.ToString());
-      ts.RegisterValue("directory", path.Basename().ToString());
-      ts.RegisterValue("multiplier", std::to_string(nuke->Multiplier()) + 
-                       (nuke->IsPercent() ? "%" : ""));
-      ts.RegisterValue("reason", nuke->Reason());
-      ts.RegisterValue("section", nuke->Section().empty() ? 
-                       "NoSection" : nuke->Section());
-    };
-  
   std::ostringstream os;
-  registerHeadFoot(templ->Head());
-  registerHeadFoot(templ->Foot());
+  RegisterHeadFoot(templ->Head(), *nuke, path);
+  RegisterHeadFoot(templ->Foot(), *nuke, path);
   
   os << templ->Head().Compile();
 
@@ -382,21 +467,12 @@ void NUKECommand::Execute()
 
 boost::optional<db::nuking::Nuke> Unnuke(const fs::VirtualPath& path, const std::string& reason)
 {
+  auto real = fs::MakeReal(path);
+  auto nukedPath = NukedPath(real);
+  auto nuke = LookupNuke(path, nukedPath);
+  if (!nuke) return boost::none;
+  
   const auto& config = cfg::Get();
-  boost::optional<db::nuking::Nuke> nuke;
-  std::string nukedName(boost::replace_all_copy(config.NukedirStyle().Format(), "%N", 
-                                                path.Basename().ToString()));
-  auto nukedPath = fs::MakeReal(path) / nukedName;
-  
-  // try find the stored nuke data
-  std::string id = GetNukeID(nukedPath);
-  if (!id.empty()) nuke = db::nuking::LookupNukeByID(id);   
-  if (!nuke)
-  {
-    nuke = db::nuking::LookupNukeByPath(path.ToString());
-    if (!nuke) return boost::none;
-  }
-  
   std::string creditSection;
   auto it = config.Sections().find(nuke->Section());
   if (it != config.Sections().end() && it->second.SeparateCredits())
@@ -420,24 +496,23 @@ boost::optional<db::nuking::Nuke> Unnuke(const fs::VirtualPath& path, const std:
                             nuke->Section(), nuke->Files());
     }
   }
+
+  // remove old nuke data
+  RemoveNukeID(nukedPath);
+  db::nuking::DelNuke(*nuke);
   
-  if (removexattr(nukedPath.CString(), nukeIdAttributeName) > 0 &&
-      errno != ENOENT && errno != ENODATA && errno != ENOATTR)
-  {
-    logs::Error("Error while removing filesystem attribute %1%: %2%: %3%", 
-                nukeIdAttributeName, nukedPath, util::Error::Failure(errno).Message());
-  }
-  
+  // restore directory to old name if it still exists
   auto e = fs::RenameFile(nukedPath, fs::MakeReal(path));
   if (!e && e.ValidErrno() && e.Errno() != ENOENT)
   {
-    logs::Error("Unable to rename nuked directory: %1%: %2%", nukedPath,
-                util::Error::Failure(errno).Message());
+    logs::Error("Unable to rename nuked directory: %1% -> %2%: %3%", 
+                nukedPath, real, util::Error::Failure(errno).Message());
   }
   
-  db::nuking::DelNuke(*nuke);
+  // insert new unnuke data
   nuke->Unnuke(reason);
   db::nuking::AddUnnuke(*nuke);
+  SetNukeID(real, nuke->ID());
   
   return nuke;
 }
@@ -473,22 +548,10 @@ void UNNUKECommand::Execute()
     control.Reply(ftp::ActionNotOkay, e.Message());
     return;
   }
-  
-  auto registerHeadFoot = 
-      [&](text::TemplateSection& ts)
-      {
-        ts.RegisterValue("path", path.ToString());
-        ts.RegisterValue("directory", path.Basename().ToString());
-        ts.RegisterValue("multiplier", std::to_string(nuke->Multiplier()) + 
-                         (nuke->IsPercent() ? "%" : ""));
-        ts.RegisterValue("reason", nuke->Reason());
-        ts.RegisterValue("section", nuke->Section().empty() ? 
-                         "NoSection" : nuke->Section());
-      };
-  
+    
   std::ostringstream os;
-  registerHeadFoot(templ->Head());
-  registerHeadFoot(templ->Foot());
+  RegisterHeadFoot(templ->Head(), *nuke, path);
+  RegisterHeadFoot(templ->Foot(), *nuke, path);
   
   os << templ->Head().Compile();
 
@@ -548,10 +611,9 @@ void NUKESCommand::Execute()
       throw cmd::SyntaxError();
     }
   }
-
-  auto nukes = isUnnukes ? db::nuking::NewestNukes(number) :
-                           db::nuking::NewestUnnukes(number);
-
+  auto nukes = isUnnukes ? db::nuking::NewestUnnukes(number) :
+                           db::nuking::NewestNukes(number);
+                           
   boost::optional<text::Template> templ;
   try
   {
@@ -566,10 +628,11 @@ void NUKESCommand::Execute()
   std::ostringstream os;
   os << templ->Head().Compile();
 
-  text::TemplateSection& body = templ->Body();
+  auto& body = templ->Body();
 
   auto now = boost::posix_time::second_clock::local_time();
   unsigned index = 0;
+  
   for (const auto& nuke : nukes)
   {
     body.RegisterValue("index", ++index);
@@ -582,15 +645,18 @@ void NUKESCommand::Execute()
     body.RegisterValue("path", nuke.Path());
     body.RegisterValue("section", nuke.Section());
     body.RegisterValue("nukees", FormatNukees(nuke.Nukees()));
-
+    body.RegisterValue("reason", nuke.Reason());
+    
     std::string multiplier(std::to_string(nuke.Multiplier()));
     if (nuke.IsPercent()) multiplier += '%';    
+    else multiplier += 'x';
+    
     body.RegisterValue("multi", multiplier);
 
     os << body.Compile();
   }
 
-  text::TemplateSection& foot = templ->Foot();
+  auto& foot = templ->Foot();
   foot.RegisterValue("count", nukes.size());
   os << foot.Compile();
   

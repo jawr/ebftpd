@@ -98,6 +98,8 @@ boost::optional<Nuke> LookupNukeByID(const std::string& id);
 boost::optional<Nuke> LookupNukeByPath(const std::string& path);
 void AddUnnuke(const Nuke& nuke);
 bool DelUnnuke(const Nuke& nuke);
+boost::optional<Nuke> LookupUnnukeByID(const std::string& id);
+boost::optional<Nuke> LookupUnnukeByPath(const std::string& path);
 std::vector<Nuke> NewestNukes(int limit);
 std::vector<Nuke> NewestUnnukes(int limit);
 
