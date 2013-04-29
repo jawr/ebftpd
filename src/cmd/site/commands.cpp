@@ -1019,7 +1019,7 @@ void NEWCommand::Execute()
   {
     auto real = fs::MakeReal(fs::VirtualPath(result.path));
     long long kBytes;
-    auto e = fs::DirectorySize(real, cfg::Get().DirSizeDepth(), kBytes);
+    auto e = fs::DirectorySize(real, cfg::Get().DirSizeDepth(), kBytes, true);
     if (e.Errno() == ENOENT)
     {
       db::index::Delete(result.path);
@@ -1372,7 +1372,7 @@ void SEARCHCommand::Execute()
     {
       long long kBytes;
       auto e = fs::DirectorySize(fs::MakeReal(fs::VirtualPath(result.path)),
-                                 cfg::Get().DirSizeDepth(), kBytes);
+                                 cfg::Get().DirSizeDepth(), kBytes, true);
       if (e.Errno() == ENOENT)
       {
         db::index::Delete(result.path);

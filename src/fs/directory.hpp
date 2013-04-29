@@ -48,7 +48,8 @@ util::Error ChangeMatch(const acl::User& user, const VirtualPath& path, VirtualP
 util::Error ChangeCdpath(const acl::User& user, const Path& path, VirtualPath& match);
 util::Error ChangeDirectory(const acl::User& user, const VirtualPath& path);
 
-util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes);
+util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes, 
+                          bool ignoreHidden);
 
 const VirtualPath& WorkDirectory();
 void SetWorkDirectory(const VirtualPath& path);

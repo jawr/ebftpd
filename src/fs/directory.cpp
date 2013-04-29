@@ -195,7 +195,7 @@ util::Error RenameDirectory(const RealPath& oldPath, const RealPath& newPath)
   return util::Error::Success();
 }
 
-util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes)
+util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes, bool ignoreHidden)
 {
   kBytes = 0;
   if (depth < 0) return util::Error::Failure(EINVAL);
@@ -205,6 +205,7 @@ util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes)
   {
     for (auto& entry : util::path::DirContainer(path.ToString()))
     {
+      if (ignoreHidden && entry[0] == '.') continue;
       try
       {
         auto entryPath = path / entry;
@@ -214,7 +215,7 @@ util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes)
           if (!status.IsSymLink())
           {
             long long subKBytes;
-            if (DirectorySize(entryPath, depth - 1, subKBytes))
+            if (DirectorySize(entryPath, depth - 1, subKBytes, ignoreHidden))
               kBytes += subKBytes;
           }
         }
