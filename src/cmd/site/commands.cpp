@@ -967,12 +967,10 @@ void KICKCommand::Execute()
 
   std::future<int> future;
   std::make_shared<ftp::task::KickUser>(user->ID(), future)->Push();
-
-  future.wait();
   int kicked = future.get();
   
   std::ostringstream os;
-  os << "Kicked " << future.get() << " of " << args[1] << "'s login(s).";
+  os << "Kicked " << kicked << " of " << args[1] << "'s login(s).";
   control.Reply(ftp::CommandOkay, os.str());
   if (kicked == 0) throw cmd::NoPostScriptError();
 

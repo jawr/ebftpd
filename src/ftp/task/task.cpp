@@ -85,18 +85,6 @@ void LoginKickUser::Execute(Server& server)
   promise.set_value(result);
 }
 
-void GetOnlineUsers::Execute(Server& server)
-{
-  for (auto& client: server.clients)
-  {
-    if (client.State() != ClientState::LoggedIn) continue;
-    users.emplace_back(client.User().ID(), client.Data().State(), client.IdleTime(), 
-                       client.CurrentCommand(), client.Ident(), client.Hostname());
-  }
-  
-  promise.set_value(true);
-}
-
 void ReloadConfig::Execute(Server&)
 {
   Result configResult = Result::Okay;

@@ -108,7 +108,6 @@ public:
   void Shutdown();
 
   friend class task::KickUser;
-  friend class task::GetOnlineUsers;
   friend class task::LoginKickUser;
   friend class task::UserUpdate;
   friend class task::Task;

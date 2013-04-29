@@ -37,7 +37,11 @@ namespace task
 
 class Task : public std::enable_shared_from_this<Task>
 {
+  Task& operator=(const Task&) = delete;
+  Task(const Task&) = delete;
+
 public:
+  Task() = default;
   virtual ~Task() { }
   virtual void Execute(Server& server) = 0;
   void Push();
@@ -51,7 +55,12 @@ class KickUser : public Task
   
 public:
   KickUser(acl::UserID uid, std::future<int>& future, bool oneOnly = false) : 
-    uid(uid), oneOnly(oneOnly) { future = promise.get_future(); }
+    uid(uid), 
+    oneOnly(oneOnly) 
+  {
+    future = promise.get_future(); 
+  }
+  
   void Execute(Server& server);
 };
 
@@ -73,18 +82,6 @@ private:
 public:
   LoginKickUser(acl::UserID uid, std::future<Result>& future) : uid(uid)
   { future = promise.get_future(); }
-  void Execute(Server& server);
-};
-
-class GetOnlineUsers : public Task
-{
-  std::vector<ftp::task::WhoUser>& users;
-  std::promise<bool> promise;
-  
-public:
-  GetOnlineUsers(std::vector<ftp::task::WhoUser>& users, std::future<bool>& future) : 
-    users(users) { future = promise.get_future(); }
-    
   void Execute(Server& server);
 };
 
