@@ -42,8 +42,6 @@ util::Error RemoveDirectory(const RealPath& path);
 util::Error RemoveDirectory(const acl::User& user, const VirtualPath& path);
 
 util::Error RenameDirectory(const RealPath& oldPath, const RealPath& newPath);
-util::Error RenameDirectory(const acl::User& user, const VirtualPath& oldPath, 
-      const VirtualPath& newPath);
 
 util::Error ChangeAlias(const acl::User& user, const Path& path, VirtualPath& match);
 util::Error ChangeMatch(const acl::User& user, const VirtualPath& path, VirtualPath& match);

@@ -88,7 +88,7 @@ class ClientImpl : public util::Thread
   boost::optional<acl::User> user;
   ::ftp::ClientState state;
   int passwordAttemps;
-  fs::VirtualPath renameFrom;
+  boost::optional<std::pair<fs::VirtualPath, std::string>> renameFrom;
   xdupe::Mode xdupeMode;
   std::string confirmCommand;
   std::string currentCommand;
@@ -136,8 +136,10 @@ public:
   void SetWaitingPassword(const acl::User& user, bool kickLogin);
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
-  void SetRenameFrom(const fs::VirtualPath& path) { this->renameFrom = path; }
-  const fs::VirtualPath& RenameFrom() const { return renameFrom; }
+  void SetRenameFrom(const boost::optional<std::pair<fs::VirtualPath, std::string>>& from)
+  { this->renameFrom = from; }
+  const boost::optional<std::pair<fs::VirtualPath, std::string>>& RenameFrom() const
+  { return renameFrom; }
   
   bool KickLogin() const { return kickLogin; }
   

@@ -46,9 +46,7 @@ util::Error DeleteFile(const RealPath& path);
 util::Error DeleteFile(const acl::User& user, const VirtualPath& path, 
                        off_t* size = nullptr, time_t* modTime = nullptr);
 
-util::Error RenameFile(const RealPath& oldPath, const RealPath& newPath);
-util::Error RenameFile(const acl::User& user, const VirtualPath& oldPath,
-                       const VirtualPath& newPath);
+util::Error Rename(const RealPath& oldPath, const RealPath& newPath);
 
 FileSinkPtr CreateFile(const acl::User& user, const VirtualPath& path);
 FileSinkPtr AppendFile(const acl::User& user, const VirtualPath& path, off_t offset);

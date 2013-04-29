@@ -109,8 +109,8 @@ class Config
   std::vector< ::cfg::Right> resumeown;
   std::vector< ::cfg::Right> rename;
   std::vector< ::cfg::Right> renameown;
-  std::vector< ::cfg::Right> filemove;
-  std::vector< ::cfg::Right> filemoveown;
+  std::vector< ::cfg::Right> move;
+  std::vector< ::cfg::Right> moveown;
   std::vector< ::cfg::Right> makedir;
   std::vector< ::cfg::Right> upload;
   std::vector< ::cfg::Right> download;
@@ -255,8 +255,8 @@ public:
   const std::vector< ::cfg::Right>& Resumeown() const { return resumeown; } 
   const std::vector< ::cfg::Right>& Rename() const { return rename; } 
   const std::vector< ::cfg::Right>& Renameown() const { return renameown; } 
-  const std::vector< ::cfg::Right>& Filemove() const { return filemove; } 
-  const std::vector< ::cfg::Right>& Filemoveown() const { return filemoveown; } 
+  const std::vector< ::cfg::Right>& Move() const { return move; } 
+  const std::vector< ::cfg::Right>& Moveown() const { return moveown; } 
   const std::vector< ::cfg::Right>& Makedir() const { return makedir; } 
   const std::vector< ::cfg::Right>& Upload() const { return upload; } 
   const std::vector< ::cfg::Right>& Download() const { return download; } 

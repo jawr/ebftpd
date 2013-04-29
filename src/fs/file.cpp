@@ -64,23 +64,11 @@ util::Error DeleteFile(const acl::User& user, const VirtualPath& path,
   return DeleteFile(MakeReal(path));
 }
 
-util::Error RenameFile(const RealPath& oldPath, const RealPath& newPath)
+util::Error Rename(const RealPath& oldPath, const RealPath& newPath)
 {
   if (rename(oldPath.CString(), newPath.CString()) < 0) 
     return util::Error::Failure(errno);
   return util::Error::Success();
-}
-
-util::Error RenameFile(const acl::User& user, const VirtualPath& oldPath,
-                 const VirtualPath& newPath)                 
-{
-  util::Error e = PP::FileAllowed<PP::Rename>(user, oldPath);
-  if (!e) return e;
-
-  e = PP::FileAllowed<PP::Upload>(user, newPath);
-  if (!e) return e;
-  
-  return RenameFile(MakeReal(oldPath), MakeReal(newPath));
 }
 
 FileSinkPtr CreateFile(const acl::User& user, const VirtualPath& path)

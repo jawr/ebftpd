@@ -41,7 +41,7 @@ enum Type
   Makedir,
   Download,
   Rename,
-  Filemove,
+  Move,
   Nuke,
   Delete,
   View,

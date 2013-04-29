@@ -68,12 +68,12 @@ bool Client::PasswordAttemptsExceeded() const
   return pimpl->PasswordAttemptsExceeded();
 }
 
-void Client::SetRenameFrom(const fs::VirtualPath& path)
+void Client::SetRenameFrom(const boost::optional<std::pair<fs::VirtualPath, std::string>>& from)
 {
-  pimpl->SetRenameFrom(path);
+  pimpl->SetRenameFrom(from);
 }
 
-const fs::VirtualPath& Client::RenameFrom() const
+const boost::optional<std::pair<fs::VirtualPath, std::string>>& Client::RenameFrom() const
 {
   return pimpl->RenameFrom();
 }

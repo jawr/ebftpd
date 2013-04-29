@@ -348,7 +348,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
     {
       assert(nuke);
       auto nukedPath = NukedPath(real);
-      auto e = fs::RenameFile(real, nukedPath);
+      auto e = fs::Rename(real, nukedPath);
       if (!e)
       {
         logs::Error("Unable to rename nuked directory: %1% -> %2%: %3%", 
@@ -560,7 +560,7 @@ db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason,
     {
       RemoveNukeID(nukedPath);
       
-      auto e = fs::RenameFile(nukedPath, real);
+      auto e = fs::Rename(nukedPath, real);
       if (!e && (!e.ValidErrno() || e.Errno() != ENOENT))
       {
         logs::Error("Unable to rename nuked directory: %1% -> %2%: %3%", 

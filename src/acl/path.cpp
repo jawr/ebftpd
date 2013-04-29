@@ -246,12 +246,12 @@ public:
 };
 
 template <>
-struct Traits<Filemove>
+struct Traits<Move>
 {
 private:
   static util::Error AllowedOwner(const User& user, const fs::VirtualPath& path)
   {
-    if (Evaluate(cfg::Get().Filemoveown(), user, path))
+    if (Evaluate(cfg::Get().Moveown(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -259,7 +259,7 @@ private:
 
   static util::Error AllowedOther(const User& user, const fs::VirtualPath& path)
   {
-    if (Evaluate(cfg::Get().Filemove(), user, path))
+    if (Evaluate(cfg::Get().Move(), user, path))
       return util::Error::Success();
     else
       return util::Error::Failure(EACCES);
@@ -447,7 +447,7 @@ template util::Error FileAllowed<Resume>(const User& user, const fs::VirtualPath
 template util::Error FileAllowed<Overwrite>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Download>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Rename>(const User& user, const fs::VirtualPath& path);
-template util::Error FileAllowed<Filemove>(const User& user, const fs::VirtualPath& path);
+template util::Error FileAllowed<Move>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Delete>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<View>(const User& user, const fs::VirtualPath& path);
 template util::Error FileAllowed<Hideinwho>(const User& user, const fs::VirtualPath& path);
@@ -467,6 +467,7 @@ util::Error DirAllowed(const User& user, const fs::VirtualPath& path)
 }
 
 template util::Error DirAllowed<Makedir>(const User& user, const fs::VirtualPath& path);
+template util::Error DirAllowed<Move>(const User& user, const fs::VirtualPath& path);
 template util::Error DirAllowed<Rename>(const User& user, const fs::VirtualPath& path);
 template util::Error DirAllowed<Nuke>(const User& user, const fs::VirtualPath& path);
 template util::Error DirAllowed<Delete>(const User& user, const fs::VirtualPath& path);
@@ -484,6 +485,8 @@ util::Error Allowed(const User& user, const fs::VirtualPath& path)
 }
 
 template util::Error Allowed<View>(const User& user, const fs::VirtualPath& path);
+template util::Error Allowed<Rename>(const User& user, const fs::VirtualPath& path);
+template util::Error Allowed<Move>(const User& user, const fs::VirtualPath& path);
 
 util::Error Filter(const User& user, const fs::Path& basename)
 {

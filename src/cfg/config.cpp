@@ -446,15 +446,15 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 2, -1);
     renameown.emplace_back(toks);
   }
-  else if (opt == "filemove")
+  else if (opt == "move")
   {
     ParameterCheck(opt, toks, 2, -1);
-    filemove.emplace_back(toks);
+    move.emplace_back(toks);
   }
-  else if (opt == "filemoveown")
+  else if (opt == "moveown")
   {
     ParameterCheck(opt, toks, 2, -1);
-    filemoveown.emplace_back(toks);
+    moveown.emplace_back(toks);
   }
   else if (opt == "makedir")
   {

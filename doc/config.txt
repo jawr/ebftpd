@@ -280,10 +280,10 @@ required:         no
 default:          deny all
 description:      rename access (when owned by user) for a path mask for the specified acls
 ------------------------------------------------------------------------------------------------------------------------
-usage:            filemove <path mask> <acls>
+usage:            move <path mask> <acls>
 required:         no
 default:          deny all
-description:      file move access for a path mask for the specified acls
+description:      move access for a path mask for the specified acls
 ------------------------------------------------------------------------------------------------------------------------
 usage:            makedir <path mask> <acls>
 required:         no

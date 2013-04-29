@@ -663,76 +663,112 @@ void RNFRCommand::Execute()
 {
   fs::VirtualPath path(fs::PathFromUser(argStr));
   
-  util::Error e(acl::path::FileAllowed<acl::path::View>(client.User(), path));
+  util::Error e(acl::path::Allowed<acl::path::Rename>(client.User(), path));
   if (!e)
   {
-    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    throw cmd::NoPostScriptError();
-  }
-
-  try
-  {
-    util::path::Status status(path.ToString());
-  }
-  catch (const util::SystemError& e)
-  {
-    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
-    throw cmd::NoPostScriptError();
-  }
-  
-  client.SetRenameFrom(path);
-  control.Reply(ftp::PendingMoreInfo, "File exists, ready for destination name."); 
-}
-
-void RNTOCommand::Execute()
-{
-  fs::VirtualPath path(fs::PathFromUser(argStr));
-
-  util::Error e(acl::path::Filter(client.User(), path.Basename()));
-  if (!e)
-  {
-    control.Reply(ftp::ActionNotOkay, "Path name contains one or more invalid characters.");
-    throw cmd::NoPostScriptError();
-  }
-
-  bool isDirectory;
-  try
-  {
-    isDirectory = util::path::Status(client.RenameFrom().ToString()).IsDirectory();
-    if (isDirectory)
-      e = fs::RenameDirectory(client.User(), client.RenameFrom(), path);
-    else
-      e = fs::RenameFile(client.User(), client.RenameFrom(), path);    
-      
-    if (!e)
+    if (e.Errno() != EACCES  ||
+        !acl::path::Allowed<acl::path::Move>(client.User(), path))
     {
       control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
       throw cmd::NoPostScriptError();
     }
   }
-  catch (const util::SystemError& e)
+  
+  client.SetRenameFrom(std::make_pair(path, argStr));
+  control.Reply(ftp::PendingMoreInfo, "File exists, ready for destination name."); 
+}
+
+void RNTOCommand::Execute()
+{
+  namespace PP = acl::path;
+
+  if (!client.RenameFrom())
   {
-    control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
+    control.Reply(ftp::BadCommandSequence, "Invalid command sequence.");
     throw cmd::NoPostScriptError();
   }
+  
+  auto fromArgStr = client.RenameFrom()->second;
+  auto oldPath = client.RenameFrom()->first;
+  client.SetRenameFrom(boost::none);
 
-  if (isDirectory)
+  fs::VirtualPath newPath(fs::PathFromUser(argStr));
+
+  util::Error e(acl::path::Filter(client.User(), newPath.Basename()));
+  if (!e)
   {
-    // this should be changed to a single move action so as to retain the
-    // creation date in the database
-    if (cfg::Get().IsIndexed(client.RenameFrom().ToString()))
+    control.Reply(ftp::ActionNotOkay, "Path name contains one or more invalid characters.");
+    throw cmd::NoPostScriptError();
+  }
+  
+  if (oldPath.Dirname() != newPath.Dirname()) // this is move
+  {
+    e = PP::Allowed<PP::Move>(client.User(), oldPath);
+    if (!e)
     {
-      db::index::Delete(client.RenameFrom().ToString());
-    }
-
-    if (cfg::Get().IsIndexed(path.ToString()))
-    {
-      auto section = cfg::Get().SectionMatch(path.ToString(), true);
-      db::index::Add(path.ToString(), section ? section->Name() : "");
+      control.Reply(ftp::ActionNotOkay, fromArgStr + ": " + e.Message());
+      throw cmd::NoPostScriptError();
     }
   }
   
-  control.Reply(ftp::FileActionOkay, "RNTO command successful.");
+  if (oldPath.Basename() != newPath.Basename()) // this is rename
+  {
+    e = PP::Allowed<PP::Rename>(client.User(), oldPath);
+    if (!e)
+    {
+      control.Reply(ftp::ActionNotOkay, fromArgStr + ": " + e.Message());
+      throw cmd::NoPostScriptError();
+    }
+  }
+  
+  try
+  {
+    bool isDirectory = util::path::Status(fs::MakeReal(oldPath).ToString()).IsDirectory();
+    if (isDirectory)
+    {
+      e = PP::DirAllowed<PP::Makedir>(client.User(), newPath);
+    }
+    else
+    {
+      e = PP::FileAllowed<PP::Upload>(client.User(), newPath);
+    }
+    
+    if (!e)
+    {
+      control.Reply(ftp::ActionNotOkay, argStr + ": " + e.Message());
+      throw cmd::NoPostScriptError();
+    }
+    
+    e = fs::Rename(fs::MakeReal(oldPath), fs::MakeReal(newPath));    
+    if (!e)
+    {
+      control.Reply(ftp::ActionNotOkay, fromArgStr + " -> " + argStr + ": " + e.Message());
+      throw cmd::NoPostScriptError();
+    }
+
+    if (isDirectory)
+    {
+      // this should be changed to a single move action so as to retain the
+      // creation date in the database
+      if (cfg::Get().IsIndexed(oldPath.ToString()))
+      {
+        db::index::Delete(oldPath.ToString());
+      }
+
+      if (cfg::Get().IsIndexed(newPath.ToString()))
+      {
+        auto section = cfg::Get().SectionMatch(newPath.ToString(), true);
+        db::index::Add(newPath.ToString(), section ? section->Name() : "");
+      }
+    }
+    
+    control.Reply(ftp::FileActionOkay, "RNTO command successful.");
+  }
+  catch (const util::SystemError& e)
+  {
+    control.Reply(ftp::ActionNotOkay, fromArgStr + ": " + e.Message());
+    throw cmd::NoPostScriptError();
+  }
 }
 
 

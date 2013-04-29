@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <string>
+#include <boost/optional/optional_fwd.hpp>
 #include "acl/types.hpp"
 #include "ftp/enums.hpp"
 
@@ -79,8 +80,8 @@ public:
   void SetWaitingPassword(const acl::User& user, bool kickLogin);
   bool VerifyPassword(const std::string& password);
   bool PasswordAttemptsExceeded() const;
-  void SetRenameFrom(const fs::VirtualPath& path);
-  const fs::VirtualPath& RenameFrom() const;
+  void SetRenameFrom(const boost::optional<std::pair<fs::VirtualPath,std::string>>& from);
+  const boost::optional<std::pair<fs::VirtualPath, std::string>>& RenameFrom() const;
   
   bool KickLogin() const;
   

@@ -195,18 +195,6 @@ util::Error RenameDirectory(const RealPath& oldPath, const RealPath& newPath)
   return util::Error::Success();
 }
 
-util::Error RenameDirectory(const acl::User& user, const VirtualPath& oldPath,
-                 const VirtualPath& newPath)                 
-{
-  util::Error e = PP::DirAllowed<PP::Rename>(user, oldPath);
-  if (!e) return e;
-
-  e = PP::DirAllowed<PP::Makedir>(user, newPath);
-  if (!e) return e;
-  
-  return RenameDirectory(MakeReal(oldPath), MakeReal(newPath));
-}
-
 util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes)
 {
   kBytes = 0;
