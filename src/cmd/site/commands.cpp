@@ -1735,11 +1735,12 @@ std::string FormatDuration(const boost::posix_time::time_duration& duration)
 void TIMECommand::Execute()
 {
   namespace gd = boost::gregorian;
+  namespace lt = boost::local_time;
   
   auto now = pt::second_clock::local_time();
   time_t t = (now - pt::ptime(gd::date(1970, 1, 1))).total_seconds();
   struct tm tm;
-  std::string timezone = boost::local_time::posix_time_zone(localtime_r(&t, &tm)->tm_zone).to_posix_string();
+  std::string timezone = lt::posix_time_zone(localtime_r(&t, &tm)->tm_zone).to_posix_string();
   
   std::ostringstream os;
   os << "Current time : " << now << " " << timezone << "\n"
