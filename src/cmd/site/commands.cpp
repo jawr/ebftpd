@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/local_time/posix_time_zone.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -1724,7 +1725,8 @@ namespace pt = boost::posix_time;
 std::string FormatDuration(const boost::posix_time::time_duration& duration)
 {
   std::ostringstream os;
-  if (duration.hours()) os << duration.hours() << "h ";
+  if (duration.hours() / 60 > 0) os << static_cast<unsigned>(duration.hours() / 24) << "d ";
+  if (duration.hours()) os << duration.hours() % 24 << "h ";
   if (duration.minutes()) os << duration.minutes() << "m ";
   if (duration.seconds()) os << duration.seconds() << "s";
   return os.str();
@@ -1732,12 +1734,21 @@ std::string FormatDuration(const boost::posix_time::time_duration& duration)
 
 void TIMECommand::Execute()
 {
-  pt::ptime now = pt::second_clock::local_time();
+  namespace gd = boost::gregorian;
+  
+  auto now = pt::second_clock::local_time();
+  time_t t = (now - pt::ptime(gd::date(1970, 1, 1))).total_seconds();
+  struct tm tm;
+  std::string timezone = boost::local_time::posix_time_zone(localtime_r(&t, &tm)->tm_zone).to_posix_string();
   
   std::ostringstream os;
-  os << "Current time : " << now << "\n"
-     << "Logged in at : " << client.LoggedInAt() << "\n"
-     << "Time online  : " << FormatDuration(now - client.LoggedInAt());
+  os << "Current time : " << now << " " << timezone << "\n"
+     << "Logged in at : " << client.LoggedInAt() << " " << timezone << "\n"
+     << "Time online  : " << FormatDuration(now - client.LoggedInAt()) << "\n"
+     << "End of day   : " << FormatDuration(pt::ptime(now.date() + gd::date_duration(1)) - now) << "\n"
+     << "End of week  : " << FormatDuration(pt::ptime(now.date() + gd::date_duration(7 - now.date().day_of_week())) - now) << "\n"   
+     << "End of month : " << FormatDuration(pt::ptime(now.date().end_of_month() + gd::date_duration(1)) - now) << "\n"
+     << "End of year  : " << FormatDuration(pt::ptime(gd::date(now.date().year() + 1, 1, 1)) - now);
   
   control.Reply(ftp::CommandOkay, os.str());
 }

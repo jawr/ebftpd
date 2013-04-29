@@ -33,7 +33,6 @@ const bool              defaultDlIncomplete       = true;
 const int               defaultTotalUsers         = -1;             // unlimited
 const int               defaultMultiplierMax      = 10;
 const int               defaultMaxSitecmdLines    = 100;
-const WeekStart         defaultWeekStart          = WeekStart::Sunday;
 const EPSVFxp           defaultEpsvFxp            = EPSVFxp::Allow;
 const int               defaultMaximumRatio       = 10;
 const int               defaultDirSizeDepth       = 2;

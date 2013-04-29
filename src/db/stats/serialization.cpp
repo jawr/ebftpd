@@ -27,7 +27,7 @@ namespace db { namespace stats
 
 mongo::BSONObj Serialize(::stats::Timeframe timeframe)
 {
-  ::stats::Date date(cfg::Get().WeekStart() == cfg::WeekStart::Monday);
+  ::stats::Date date;
   mongo::BSONObjBuilder bob;
   
   switch (timeframe)

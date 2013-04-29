@@ -92,7 +92,6 @@ Config::Config(const std::string& configPath, bool tool) :
   maxSitecmdLines(defaultMaxSitecmdLines),
   idleTimeout(defaultIdleTimeout),
   database(defaultDatabase),
-  weekStart(defaultWeekStart),
   epsvFxp(defaultEpsvFxp),
   maximumRatio(defaultMaximumRatio),
   dirSizeDepth(defaultDirSizeDepth),
@@ -600,14 +599,6 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
   {
     ParameterCheck(opt, toks, 3);
     idleTimeout = ::cfg::IdleTimeout(toks);
-  }
-  else if (opt == "week_start")
-  {
-    ParameterCheck(opt, toks, 1);
-    util::ToLower(toks[0]);
-    if (toks[0] == "sunday") weekStart = ::cfg::WeekStart::Sunday;
-    else if (toks[0] == "monday") weekStart = ::cfg::WeekStart::Monday;
-    else throw ConfigError("week_start must be either sunday or monday.");
   }
   else if (opt == "pre_check")
   {

@@ -32,7 +32,6 @@
 namespace cfg
 {
 
-enum class WeekStart { Sunday, Monday };
 enum class EPSVFxp { Allow, Deny, Force };
 enum class LogAddresses { Never, Errors, Always };
 
@@ -151,7 +150,6 @@ class Config
   int maxSitecmdLines;
   ::cfg::IdleTimeout idleTimeout;
   ::cfg::Database database;
-  ::cfg::WeekStart weekStart;
   std::vector<CheckScript> preCheck;
   std::vector<CheckScript> preDirCheck;
   std::vector<CheckScript> postCheck;
@@ -296,7 +294,6 @@ public:
   const std::vector< ::cfg::SiteCmd>& SiteCmd() const { return siteCmd; }
   int MaxSitecmdLines() const { return maxSitecmdLines; }
   const ::cfg::IdleTimeout& IdleTimeout() const { return idleTimeout; }
-  ::cfg::WeekStart WeekStart() const { return weekStart; }
   const std::vector<CheckScript>& PreCheck() const { return preCheck; }
   const std::vector<CheckScript>& PreDirCheck() const { return preDirCheck; }
   const std::vector<CheckScript>& PostCheck() const { return postCheck; }  

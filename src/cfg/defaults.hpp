@@ -37,7 +37,6 @@ extern const bool              defaultDlIncomplete;
 extern const int               defaultTotalUsers;
 extern const int               defaultMultiplierMax;
 extern const int               defaultMaxSitecmdLines;
-extern const WeekStart         defaultWeekStart;
 extern const EPSVFxp           defaultEpsvFxp;
 extern const int               defaultMaximumRatio;
 extern const int               defaultDirSizeDepth;

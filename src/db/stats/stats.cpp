@@ -47,7 +47,7 @@ void Update(acl::UserID         uid,
     xfertime *= -1;
   }
 
-  ::stats::Date date(cfg::Get().WeekStart() == cfg::WeekStart::Monday);
+  ::stats::Date date;
   mongo::BSONObjBuilder query;
   query.append("uid", uid);
   query.append("day", date.Day());

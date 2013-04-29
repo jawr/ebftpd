@@ -26,7 +26,7 @@ namespace db { namespace stats
 
 void ProtocolUpdate(acl::UserID uid, long long sendKBytes, long long receiveKBytes)
 {
-  ::stats::Date date(cfg::Get().WeekStart() == cfg::WeekStart::Monday);
+  ::stats::Date date;
   
   mongo::BSONObjBuilder qbob;
   qbob.append("uid", uid);

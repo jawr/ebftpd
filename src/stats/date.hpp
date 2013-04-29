@@ -26,12 +26,11 @@ class Date
   int day, week, month, year;
   
 public:
-  Date(bool mondayWeekStart)
+  Date()
   {
     boost::gregorian::date today = boost::gregorian::day_clock::local_day();
     day = today.day();
-    if (mondayWeekStart) week = today.week_number();
-    else week = (today + boost::gregorian::date_duration(1)).week_number();
+    week = (today + boost::gregorian::date_duration(1)).week_number();
     month = today.month();
     year = today.year();
   }
