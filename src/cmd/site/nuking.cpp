@@ -247,6 +247,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
     
     void TakeCredits()
     {
+      if (multiplier == 0) return;
       std::string sectionName(section && section->SeparateCredits() ? section->Name() : "");
       if (totalKBytes < config.NukeStyle().EmptyKBytes())
       {
