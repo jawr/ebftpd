@@ -93,24 +93,28 @@ void GROUPCommand::Execute()
   std::ostringstream os;
   os << head.Compile();
 
-  std::unordered_map<acl::UserID, ::stats::Stat> dnStats;// = db::stats::GetAllDown(users);
-  std::unordered_map<acl::UserID, ::stats::Stat> upStats;// = db::stats::GetAllUp(users);
-
-  for (auto& user: users)
+  for (auto& user : users)
   {
     std::string flag = " ";
     if (user.HasFlag(acl::Flag::Siteop)) flag = "*";
     else if (user.HasFlag(acl::Flag::Gadmin)) flag = "+";
     else if (user.HasFlag(acl::Flag::Useredit)) flag = "%";
 
+    auto upStats = db::stats::CalculateSingleUser(user.ID(), "", 
+                              ::stats::Timeframe::Alltime, ::stats::Direction::Upload);
+    auto dnStats = db::stats::CalculateSingleUser(user.ID(), "", 
+                              ::stats::Timeframe::Alltime, ::stats::Direction::Download);
+    
     body.RegisterValue("flag", flag);
     body.RegisterValue("user", user.Name());
-    body.RegisterValue("files_up", upStats[user.ID()].Files());
-    body.RegisterSize("size_up", upStats[user.ID()].KBytes());
-    body.RegisterValue("files_dn", dnStats[user.ID()].Files());
-    body.RegisterSize("size_dn", dnStats[user.ID()].KBytes());
-    body.RegisterValue("ratio", acl::RatioString(user));
-    body.RegisterValue("weekly_allot", acl::WeeklyAllotmentString(user));
+    body.RegisterValue("files_up", upStats.Files());
+    body.RegisterSize("size_up", upStats.KBytes());
+    body.RegisterSpeed("speed_up", upStats.Speed());
+    body.RegisterValue("files_dn", dnStats.Files());
+    body.RegisterSize("size_dn", dnStats.KBytes());
+    body.RegisterSpeed("speed_dn", dnStats.Speed());
+    body.RegisterValue("ratio", acl::FormatRatio(user.DefaultRatio()));
+    body.RegisterSize("weekly_allot", user.DefaultWeeklyAllotment());
     os << body.Compile();
   }
   

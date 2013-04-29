@@ -34,6 +34,7 @@ bool Validate(ValidationType type, const std::string& s);
 
 class User;
 
+std::string FormatRatio(int ratio);
 std::string RatioString(const User& user);
 std::string CreditString(const User& user);
 std::string GroupString(const User& user);
