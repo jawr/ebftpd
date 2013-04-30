@@ -72,7 +72,7 @@ const VirtualPath& MakeVirtual(const RealPath& path)
     else
     {
       // if the rest of this code is correct, we should never get here
-      throw std::logic_error("RealPath cannot be made VirtualPath");
+      throw std::logic_error("Path resides outside the site root");
     }
   }
   return *path.cache.virt;

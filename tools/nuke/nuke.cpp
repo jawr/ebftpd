@@ -18,10 +18,20 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
+#include <boost/optional.hpp>
 #include "cfg/config.hpp"
+#include "cfg/get.hpp"
 #include "cfg/error.hpp"
 #include "util/path/status.hpp"
 #include "util/string.hpp"
+#include "db/nuking/nuking.hpp"
+#include "cmd/site/nuking.hpp"
+#include "acl/user.hpp"
+#include "fs/path.hpp"
+#include "fs/directory.hpp"
+#include "text/error.hpp"
+#include "text/parser.hpp"
+#include "logs/logs.hpp"
 #include "version.hpp"
 
 std::shared_ptr<cfg::Config> config;
@@ -38,9 +48,9 @@ void DisplayVersion()
 }
 
 bool ParseOptions(int argc, char** argv, std::string& configPath,
-                  std::string& path, std::string& reason, 
-                  int& multiplier, bool& isPercent,
-                  std::string& nuker)
+                  std::string& templatePath, std::string& path, 
+                  std::string& reason, int& multiplier, bool& isPercent,
+                  std::string& nuker, bool& isUnnuke, bool& quiet)
 {
   namespace po = boost::program_options;
   
@@ -52,6 +62,8 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
     ("config-path,c", po::value<std::string>(&configPath), "specify location of config file")
     ("unnuke,u", "do unnuke")
     ("nuker,n", po::value<std::string>(&nuker), "specify nuker")
+    ("quiet,q", "suppress output")
+    ("template,y", po::value<std::string>(&templatePath), "template file path")
   ;
 
   po::options_description all("positional options");
@@ -144,7 +156,17 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
   }
 
   isPercent = vm.count("percent") > 0;
+  isUnnuke = vm.count("unnuke") > 0;
+  quiet = vm.count("quiet") > 0;
   return true;
+}
+
+fs::VirtualPath VirtualisePath(const std::string& path)
+{
+  assert(!path.empty());
+  char realWorkDir[PATH_MAX];
+  char * p = getcwd(realWorkDir, sizeof(realWorkDir)); (void) p;
+  return fs::MakeVirtual(fs::RealPath(util::path::Resolve(util::path::Join(realWorkDir, path))));
 }
 
 int main(int argc, char** argv)
@@ -154,7 +176,97 @@ int main(int argc, char** argv)
   int multiplier;
   bool isPercent;
   std::string configPath;
+  std::string templatePath;
   std::string nuker;
+  bool isUnnuke;
+  bool quiet;
   
-  if (!ParseOptions(argc, argv, configPath, path, reason, multiplier, isPercent, nuker)) return 1;
+  if (!ParseOptions(argc, argv, configPath, templatePath, path, reason, 
+                    multiplier, isPercent, nuker, isUnnuke, quiet)) return 1;
+  
+  if (quiet)
+  {
+    std::cout.setstate(std::ios::failbit);
+    std::cerr.setstate(std::ios::failbit);
+  }
+  
+  std::clog.setstate(std::ios::failbit);
+  
+  logs::InitialisePreConfig();
+  
+  try
+  {
+    config = cfg::Config::Load(configPath, true);
+  }
+  catch (const cfg::ConfigError& e)
+  {
+    std::cerr << "Failed to load config: " << e.Message() << std::endl;
+    return 1;
+  }
+  
+  cfg::UpdateShared(config);
+  logs::InitialisePostConfig();
+
+  acl::UserID nukerUID = 0;
+  if (!nuker.empty())
+  {
+    nukerUID = acl::NameToUID(nuker);
+    if (nukerUID < 0)
+    {
+      std::cerr << "Nuker " << nuker << " doesn't exist." << std::cerr;
+      return 1;
+    }
+  }
+  
+  boost::optional<text::Template> templ;
+  try
+  {
+    if (templatePath.empty())
+    {
+      templatePath = config->Datapath() + "/text/";
+      if (isUnnuke) templatePath += "unnuke";
+      else templatePath += "nuke";
+      templatePath += ".tmpl";
+    }
+    templ.reset(text::TemplateParser(templatePath).Create());
+  }
+  catch (const text::TemplateError& e)
+  {
+    std::cerr << "Unable to load template file: " << e.what() << std::endl;
+    return 1;
+  }
+  
+  try
+  {
+    auto vpath = VirtualisePath(path);
+    
+    try
+    {
+      using namespace cmd::site;
+      
+      if (!isUnnuke)
+      {
+        std::cout << NukeTemplateCompile(Nuke(vpath, multiplier, isPercent, reason, nukerUID),
+                                         *templ, vpath) << std::endl;
+      }
+      else
+      {
+        std::cout << NukeTemplateCompile(Unnuke(vpath, reason, nukerUID), *templ, vpath) << std::endl;
+      }
+    }
+    catch (const util::RuntimeError& e)
+    {
+      std::cerr << "Error while " << (isUnnuke ? "un" : "" ) 
+                << "nuking: " << path << ": " << e.what() << std::endl;
+      return 1;
+    }
+    
+  }
+  catch (const std::logic_error& e)
+  {
+    std::cerr << e.what() << std::endl;
+    return 1;
+  }
+  
+  return 0;
 }

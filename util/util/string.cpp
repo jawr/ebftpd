@@ -250,9 +250,11 @@ double StrToDouble(const std::string& s)
   try
   {
     size_t pos;
-    return std::stod(s, &pos) && pos == s.length();
+    double value = std::stod(s, &pos);
+    if (pos != s.length()) throw std::bad_cast();
+    return value;
   }
-  catch (...)
+  catch (const std::logic_error&)
   {
     throw std::bad_cast();
   }
@@ -263,9 +265,11 @@ float StrToFloat(const std::string& s)
   try
   {
     size_t pos;
-    return std::stof(s, &pos) && pos == s.length();
+    float value = std::stof(s, &pos);
+    if (pos != s.length()) throw std::bad_cast();
+    return value;
   }
-  catch (...)
+  catch (const std::logic_error&)
   {
     throw std::bad_cast();
   }
@@ -276,9 +280,11 @@ int StrToInt(const std::string& s)
   try
   {
     size_t pos;
-    return std::stoi(s, &pos) && pos == s.length();
+    int value = std::stoi(s, &pos);
+    if (pos != s.length()) throw std::bad_cast();
+    return value;
   }
-  catch (...)
+  catch (const std::logic_error&)
   {
     throw std::bad_cast();
   }
@@ -289,9 +295,11 @@ long StrToLong(const std::string& s)
   try
   {
     size_t pos;
-    return std::stol(s, &pos) && pos == s.length();
+    long value = std::stol(s, &pos);
+    if (pos != s.length()) throw std::bad_cast();
+    return value;
   }
-  catch (...)
+  catch (const std::logic_error&)
   {
     throw std::bad_cast();
   }
@@ -302,9 +310,11 @@ long double StrToLDouble(const std::string& s)
   try
   {
     size_t pos;
-    return std::stold(s, &pos) && pos == s.length();
+    long double value = std::stold(s, &pos);
+    if (pos != s.length()) throw std::bad_cast();
+    return value;
   }
-  catch (...)
+  catch (const std::logic_error&)
   {
     throw std::bad_cast();
   }
@@ -315,9 +325,11 @@ long long StrToLLong(const std::string& s)
   try
   {
     size_t pos;
-    return std::stoll(s, &pos) && pos == s.length();
+    long long value = std::stoll(s, &pos);
+    if (pos != s.length()) throw std::bad_cast();
+    return value;
   }
-  catch (...)
+  catch (const std::logic_error&)
   {
     throw std::bad_cast();
   }
@@ -328,9 +340,11 @@ unsigned long StrToULong(const std::string& s)
   try
   {
     size_t pos;
-    return std::stoul(s, &pos) && pos == s.length();
+    unsigned long value = std::stoul(s, &pos);
+    if (pos != s.length()) throw std::bad_cast();
+    return value;
   }
-  catch (...)
+  catch (const std::logic_error&)
   {
     throw std::bad_cast();
   }
@@ -341,9 +355,11 @@ unsigned long long StrToULLong(const std::string& s)
   try
   {
     size_t pos;
-    return std::stoull(s, &pos) && pos == s.length();
+    unsigned long long value = std::stoull(s, &pos);
+    if (pos != s.length()) throw std::bad_cast();
+    return value;
   }
-  catch (...)
+  catch (const std::logic_error&)
   {
     throw std::bad_cast();
   }

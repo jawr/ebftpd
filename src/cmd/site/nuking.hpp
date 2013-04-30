@@ -18,6 +18,22 @@
 
 #include "cmd/command.hpp"
 
+namespace text
+{
+class Template;
+}
+
+namespace fs
+{
+class VirtualPath;
+}
+
+namespace db { namespace nuking
+{
+class Nuke;
+}
+}
+
 namespace cmd { namespace site
 {
 
@@ -64,6 +80,13 @@ public:
     NUKESCommand(client, argStr, args, true)
   { }
 };
+
+db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercent, 
+                      const std::string& reason, acl::UserID nukerUID);
+db::nuking::Nuke Unnuke(const fs::VirtualPath& path, const std::string& reason, 
+                        acl::UserID nukerUID);
+                        
+std::string NukeTemplateCompile(const db::nuking::Nuke& nuke, text::Template& tmpl, const fs::VirtualPath& path);
 
 } /* site namespace */
 } /* cmd namespace */

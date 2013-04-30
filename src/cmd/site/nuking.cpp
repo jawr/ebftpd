@@ -107,6 +107,43 @@ void RegisterHeadFoot(text::TemplateSection& ts, const db::nuking::Nuke& nuke,
                    "NoSection" : nuke.Section());
 }
 
+std::string NukeTemplateCompile(const db::nuking::Nuke& nuke, text::Template& templ, const fs::VirtualPath& path)
+{
+  std::ostringstream os;
+  RegisterHeadFoot(templ.Head(), nuke, path);
+
+  os << templ.Head().Compile();
+  
+  unsigned index = 0;
+  long long totalKBytes = 0;
+  long long totalCredits = 0;
+  int totalFiles = 0;
+  auto& body = templ.Body();
+
+  for (const auto& nukee : nuke.Nukees())
+  {
+    body.RegisterValue("index", ++index);
+    body.RegisterValue("username", acl::UIDToName(nukee.UID()));
+    body.RegisterSize("size", nukee.KBytes());
+    body.RegisterSize("credits", nukee.Credits());
+    body.RegisterValue("files", nukee.Files());
+    os << body.Compile();
+    
+    totalKBytes += nukee.KBytes();
+    totalCredits += nukee.Credits();
+    totalFiles += nukee.Files();
+  }
+
+  auto& foot = templ.Foot();
+  RegisterHeadFoot(foot, nuke, path);
+  foot.RegisterValue("total_nukees", nuke.Nukees().size());
+  foot.RegisterSize("total_size", totalKBytes);
+  foot.RegisterSize("total_credits", totalCredits);
+  foot.RegisterValue("total_files", totalFiles);
+  os << foot.Compile();
+  return os.str();
+}
+
 void Log(const std::string& command, const fs::RealPath& path, const db::nuking::Nuke& nuke)
 {
   std::vector<std::pair<std::string, std::string>> pairs =
@@ -447,41 +484,7 @@ void NUKECommand::Execute()
     try
     {
       auto templ = text::Factory::GetTemplate("nuke");
-    
-      std::ostringstream os;
-      RegisterHeadFoot(templ.Head(), nuke, path);
-      RegisterHeadFoot(templ.Foot(), nuke, path);
-      
-      os << templ.Head().Compile();
-
-      auto& body = templ.Body();
-      unsigned index = 0;
-      long long totalKBytes = 0;
-      long long totalCredits = 0;
-      int totalFiles = 0;
-
-      for (const auto& nukee : nuke.Nukees())
-      {
-        body.RegisterValue("index", ++index);
-        body.RegisterValue("username", acl::UIDToName(nukee.UID()));
-        body.RegisterSize("size", nukee.KBytes());
-        body.RegisterSize("credits", nukee.Credits());
-        body.RegisterValue("files", nukee.Files());
-        os << body.Compile();
-        
-        totalKBytes += nukee.KBytes();
-        totalCredits += nukee.Credits();
-        totalFiles += nukee.Files();
-      }
-
-      auto& foot = templ.Foot();
-      foot.RegisterValue("total_nukees", nuke.Nukees().size());
-      foot.RegisterSize("total_size", totalKBytes);
-      foot.RegisterSize("total_credits", totalCredits);
-      foot.RegisterValue("total_files", totalFiles);
-      os << foot.Compile();
-      
-      control.Format(ftp::CommandOkay, os.str());
+      control.Format(ftp::CommandOkay, NukeTemplateCompile(nuke, templ, path));
     }
     catch (const text::TemplateError& e)
     {
