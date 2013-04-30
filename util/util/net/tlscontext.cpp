@@ -199,7 +199,7 @@ void TLSClientContext::CreateContext()
 {
   context = SSL_CTX_new(SSLv23_client_method());
   if (!context) throw TLSProtocolError();
-  SSL_CTX_set_options(context, /*SSL_OP_NO_SSLv2 | */SSL_OP_ALL);
+  SSL_CTX_set_options(context, SSL_OP_NO_SSLv2 | SSL_OP_ALL | SSL_OP_NO_TICKET);
 }
 
 void TLSClientContext::Initialise(const std::string& certificate,
@@ -238,7 +238,7 @@ void TLSServerContext::CreateContext()
   context = SSL_CTX_new(SSLv23_server_method());
   if (!context) throw TLSProtocolError();
 
-  unsigned long options = /*SSL_OP_NO_SSLv2 | */SSL_OP_ALL;
+  unsigned long options = SSL_OP_NO_SSLv2 | SSL_OP_ALL | SSL_OP_NO_TICKET;
 #if (OPENSSL_VERSION_NUMBER >= 0x10000000)
   options |= SSL_OP_NO_COMPRESSION;
 #endif  
