@@ -35,23 +35,25 @@ namespace fs
 
 class GlobIterator : public util::path::GlobIterator
 {
-//  const acl::User* user;
   mutable std::string current;
   
   std::string& Current() const
   {
-    if (current.empty()) current = MakeVirtual(fs::RealPath(**iter)).ToString();
+    if (current.empty())
+    {
+      current = MakeVirtual(fs::RealPath(util::path::GlobIterator::operator*())).ToString();
+    }
     return current;
   }
   
 public:
   GlobIterator() = default;
-  GlobIterator(const acl::User& user, const VirtualPath& path, Flags flags = NoFlags);
+  GlobIterator(const acl::User& user, const VirtualPath& path, bool recursive = false);
   
   GlobIterator& operator++()
   {
     current.clear();
-    ++(*iter);
+    util::path::GlobIterator::operator++();
     return *this;
   }
   

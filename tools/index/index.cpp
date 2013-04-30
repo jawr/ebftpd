@@ -129,12 +129,9 @@ std::string VirtualPath(std::string path)
 
 void AddPath(const std::string& path)
 {
-  static const auto globFlags = util::path::GlobIterator::IgnoreErrors |
-                                util::path::GlobIterator::Recursive;
-
   std::string collection = config->Database().Name() + ".index";
   util::path::GlobIterator globEnd;
-  auto globIter = util::path::GlobIterator(path, globFlags);
+  auto globIter = util::path::GlobIterator(path, true);
   for (; globIter != globEnd; ++globIter)
   {
     if (!util::path::IsDirectory(*globIter)) continue;

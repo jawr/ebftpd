@@ -13,38 +13,138 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <cstring>
+#include <cassert>
+#include <boost/filesystem.hpp>
 #include "util/path/recursivediriterator.hpp"
+#include "util/error.hpp"
 
 namespace util { namespace path
 {
 
-std::string RecursiveDirIterator::NextEntry()
+namespace fs = boost::filesystem;
+
+RecursiveDirIterator::RecursiveDirIterator() :
+  iter(new fs::recursive_directory_iterator())
 {
-  if (subIt)
-  {
-    if (++(*subIt) != *subEnd)
-    {
-      return **subIt;
-    }
-    subIt = nullptr;
-  }
-  
-  std::string entry = DirIterator::NextEntry();
-  if (!entry.empty() && IsDirectory(entry))
-  {
-    try
-    {
-      subIt.reset(new RecursiveDirIterator(entry, filter, ignoreErrors));
-      if (!subEnd) subEnd.reset(new RecursiveDirIterator());
-    }
-    catch (const util::SystemError&)
-    {
-      if (!ignoreErrors) throw;
-    }
-  }
-  
-  return entry;
 }
 
+RecursiveDirIterator::RecursiveDirIterator(const std::string& path) :
+  path(path),
+  iter(new fs::recursive_directory_iterator(path))
+{
+  OpenDirectory();
+}
+
+RecursiveDirIterator::RecursiveDirIterator(const std::string& path, 
+            const std::function<bool(const std::string&)>& filter) :
+  path(path),
+  filter(filter)
+{
+  OpenDirectory();
+  if (filter)
+  {
+    RecursiveDirIterator end;
+    while (*this != end && filter(**this))
+    {
+      ++(*this);
+    }
+  }
+}
+
+void RecursiveDirIterator::OpenDirectory()
+{
+  try
+  {
+    iter.reset(new fs::recursive_directory_iterator(path));
+  }
+  catch (const fs::filesystem_error& e)
+  {
+    throw util::SystemError(e.code().value());
+  }
+}
+
+RecursiveDirIterator::~RecursiveDirIterator()
+{
+}  
+
+RecursiveDirIterator& RecursiveDirIterator::Rewind()
+{
+  OpenDirectory();
+  return *this;
+}
+
+bool RecursiveDirIterator::operator==(const DirIteratorBase& rhs)
+{
+  assert(dynamic_cast<const RecursiveDirIterator*>(&rhs));
+  return *this->iter ==
+         *reinterpret_cast<const RecursiveDirIterator*>(&rhs)->iter;
+}
+
+bool RecursiveDirIterator::operator!=(const DirIteratorBase& rhs)
+{
+  return !operator==(rhs);
+}
+
+RecursiveDirIterator& RecursiveDirIterator::operator++()
+{
+  try
+  {
+    if (filter)
+    {
+      fs::recursive_directory_iterator end;
+      do
+      {
+        ++(*iter);
+      }
+      while (*iter != end && filter(**this));
+    }
+    else
+    {
+      ++(*iter);
+    }
+  }
+  catch (const fs::filesystem_error& e)
+  {
+    throw util::SystemError(e.code().value());
+  }
+  return *this;
+}
+
+const std::string& RecursiveDirIterator::operator*() const
+{
+  current = (*iter)->path().string();
+  return current;
+}
+
+const std::string* RecursiveDirIterator::operator->() const
+{
+  current = (*iter)->path().string();
+  return &current;
+}
+  
 } /* path namespace */
 } /* util namespace */
+
+
+#ifdef TEST
+
+using namespace util::path;
+
+int main()
+{
+  std::function<bool(const std::string&)> filter = 
+    [](const std::string& path)
+    {
+      return path != "my";
+    };
+  RecursiveDirIterator it("/home/bioboy/dev/bioftp4");
+  RecursiveDirIterator end;
+  
+  for (; it != end; ++it)
+  {
+    std::cout << *it << std::endl;
+  }
+}
+
+#endif

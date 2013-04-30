@@ -31,12 +31,9 @@ namespace cmd { namespace site
 
 void CHOWNCommand::Process(fs::VirtualPath pathmask)
 {
-  auto flags = fs::GlobIterator::NoFlags;
-  if (recursive) flags |= fs::GlobIterator::Recursive;
-  
   try
   {
-    for (auto& entry : fs::GlobContainer(client.User(), pathmask, flags))
+    for (auto& entry : fs::GlobContainer(client.User(), pathmask, recursive))
     {
       fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try

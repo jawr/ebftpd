@@ -197,7 +197,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
       using namespace util::path;
       modTime = Status(real.ToString()).ModTime();
       
-      for (const std::string& entry : RecursiveDirContainer(real.ToString(), true))
+      for (const std::string& entry : RecursiveDirContainer(real.ToString()))
       {
         if (Basename(entry).front() == '.') continue;
         
@@ -338,7 +338,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
 
     void DeleteFiles()
     {
-      for (const std::string& entry : util::path::RecursiveDirContainer(real.ToString(), true))
+      for (const std::string& entry : util::path::RecursiveDirContainer(real.ToString()))
       {
         if (util::path::IsRegularFile(entry))
         {
@@ -350,7 +350,7 @@ db::nuking::Nuke Nuke(const fs::VirtualPath& path, int multiplier, bool isPercen
     
     void DeleteDirectories()
     {
-      for (const std::string& entry : util::path::RecursiveDirContainer(real.ToString(), true))
+      for (const std::string& entry : util::path::RecursiveDirContainer(real.ToString()))
       {
         if (util::path::IsDirectory(entry))
         {

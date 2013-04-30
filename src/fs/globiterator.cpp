@@ -23,9 +23,11 @@
 namespace fs
 {
 
-GlobIterator::GlobIterator(const acl::User& user, const VirtualPath& path, Flags flags) : 
-  util::path::GlobIterator(PreFilter(user, path.ToString()), boost::bind(&Filter, boost::ref(user), _1), flags)
-  //, user(&user)
-{ }
+GlobIterator::GlobIterator(const acl::User& user, const VirtualPath& path, bool recursive) : 
+  util::path::GlobIterator(PreFilter(user, path.ToString()), 
+                           boost::bind(&Filter, boost::ref(user), _1), 
+                           recursive)
+{
+}
 
 } /* fs namespace */

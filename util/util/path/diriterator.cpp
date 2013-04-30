@@ -15,68 +15,152 @@
 
 #include <cstring>
 #include <cassert>
+#include <boost/filesystem.hpp>
 #include "util/path/diriterator.hpp"
-#include "util/path/path.hpp"
+#include "util/error.hpp"
 
 namespace util { namespace path
 {
 
-DirIterator::DirIterator(const std::string& path, bool basenameOnly) :
-  path(path), dep(nullptr), basenameOnly(basenameOnly)
+namespace fs = boost::filesystem;
+
+DirIterator::DirIterator() :
+  iter(new fs::directory_iterator())
 {
-  Opendir();
+}
+
+DirIterator::DirIterator(const std::string& path, ValueType valueType) :
+  path(path),
+  iter(new fs::directory_iterator(path)),
+  valueType(valueType)
+{
+  OpenDirectory();
 }
 
 DirIterator::DirIterator(const std::string& path, 
-    const std::function<bool(const std::string&)>& filter, bool basenameOnly) :
-  path(path), dep(nullptr), basenameOnly(basenameOnly), filter(filter)
+            const std::function<bool(const std::string&)>& filter,
+            ValueType valueType) :
+  path(path),
+  filter(filter),
+  valueType(valueType)
 {
-  Opendir();
-}
-
-void DirIterator::Opendir()
-{
-  DIR* dp = opendir(path.c_str());
-  if (!dp) throw util::SystemError(errno);
-  
-  this->dp.reset(dp, closedir);
-  current = NextEntry();
-}
-
-std::string DirIterator::NextEntry()
-{
-  std::string entry;
-  while (true)
+  OpenDirectory();
+  if (filter)
   {
-    if (readdir_r(dp.get(), &de, &dep) < 0)
-      throw util::SystemError(errno);
-    if (!dep) break;
-
-    if (!strcmp(de.d_name, ".") ||
-        !strcmp(de.d_name, "..") ||
-        (filter && !filter(util::path::Join(path, de.d_name))))
-        continue;
-    
-    if (!basenameOnly) entry = util::path::Join(path, de.d_name);
-    else entry = de.d_name;
-    break;
+    DirIterator end;
+    while (*this != end && filter(**this))
+    {
+      ++(*this);
+    }
   }
-  
-  return entry;
+}
+
+void DirIterator::OpenDirectory()
+{
+  try
+  {
+    iter.reset(new fs::directory_iterator(path));
+  }
+  catch (const fs::filesystem_error& e)
+  {
+    throw util::SystemError(e.code().value());
+  }
+}
+
+DirIterator::~DirIterator()
+{
+}  
+
+DirIterator& DirIterator::Rewind()
+{
+  OpenDirectory();
+  return *this;
+}
+
+bool DirIterator::operator==(const DirIteratorBase& rhs)
+{
+  assert(dynamic_cast<const DirIterator*>(&rhs));
+  return *this->iter == *reinterpret_cast<const DirIterator*>(&rhs)->iter;
+}
+
+bool DirIterator::operator!=(const DirIteratorBase& rhs)
+{
+  return !operator==(rhs);
 }
 
 DirIterator& DirIterator::operator++()
 {
-  current = NextEntry();
+  try
+  {
+    if (filter)
+    {
+      fs::directory_iterator end;
+      do
+      {
+        ++(*iter);
+      }
+      while (*iter != end && filter(**this));
+    }
+    else
+    {
+      ++(*iter);
+    }
+  }
+  catch (const fs::filesystem_error& e)
+  {
+    throw util::SystemError(e.code().value());
+  }
   return *this;
 }
 
-DirIterator& DirIterator::Rewind()
+std::string& DirIterator::Current() const
 {
-  rewinddir(dp.get());
-  NextEntry();
-  return *this;
+  switch (valueType)
+  {
+    case AbsolutePath :
+      current = (*iter)->path().string();
+      break;
+    case BasenameOnly :
+      current = (*iter)->path().filename().string();
+      break;
+    default           :
+      assert(false);
+  }
+  return current;
 }
 
+const std::string& DirIterator::operator*() const
+{
+  return Current();
+}
+
+const std::string* DirIterator::operator->() const
+{
+  return &Current();
+}
+  
 } /* path namespace */
 } /* util namespace */
+
+
+#ifdef TEST
+
+using namespace util::path;
+
+int main()
+{
+  auto filter = 
+    [](const std::string& path)
+    {
+      return path != "my";
+    };
+  DirIterator it("/home/bioboy/dev/bioftp4"/*, filter, DirIterator::BasenameOnly*/);
+  DirIterator end;
+  
+  for (; it != end; ++it)
+  {
+    std::cout << *it << std::endl;
+  }
+}
+
+#endif

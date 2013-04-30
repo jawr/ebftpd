@@ -35,11 +35,9 @@ namespace fs
 
 class DirIterator : public util::path::DirIterator
 {
-  //const acl::User* user;
-  
 public:
   DirIterator() = default;
-  DirIterator(const acl::User& user, const VirtualPath& path);
+  DirIterator(const acl::User& user, const VirtualPath& path, ValueType valueType = BasenameOnly);
 };
 
 typedef util::path::GenericDirContainer<DirIterator> DirContainer;

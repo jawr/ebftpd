@@ -33,14 +33,12 @@
 namespace cmd { namespace site
 {
 
-void WIPECommand::Process(fs::VirtualPath pathmask)
+
+void WIPECommand::Process(const fs::VirtualPath& pathmask)
 {
-  auto flags = fs::GlobIterator::NoFlags;
-  if (recursive) flags |= fs::GlobIterator::Recursive;
-  
   try
   {
-    for (auto& entry : fs::GlobContainer(client.User(), pathmask, flags))
+    for (auto& entry : fs::GlobContainer(client.User(), pathmask))
     {
       fs::VirtualPath entryPath(pathmask.Dirname() / entry);
       try
@@ -48,11 +46,11 @@ void WIPECommand::Process(fs::VirtualPath pathmask)
         util::path::Status status(fs::MakeReal(entryPath).ToString());
         if (status.IsDirectory())
         {
+          Process(entryPath / "*");
           util::Error e = fs::RemoveDirectory(client.User(), entryPath);
           if (!e)
           {
-            control.PartReply(ftp::CommandOkay, "WIPE " + 
-                entryPath.ToString() + ": " + e.Message());
+            control.PartReply(ftp::CommandOkay, "1WIPE " + entryPath.ToString() + ": " + e.Message());
             ++failed;
           }
           else
@@ -67,8 +65,7 @@ void WIPECommand::Process(fs::VirtualPath pathmask)
           util::Error e = fs::DeleteFile(client.User(), entryPath);
           if (!e)
           {
-            control.PartReply(ftp::CommandOkay, "WIPE " +
-                entryPath.ToString() + ": " + e.Message());
+            control.PartReply(ftp::CommandOkay, "2WIPE " + entryPath.ToString() + ": " + e.Message());
             ++failed;
           }
           else
@@ -78,16 +75,22 @@ void WIPECommand::Process(fs::VirtualPath pathmask)
       catch (const util::SystemError& e)
       {
         ++failed;
-        control.PartReply(ftp::CommandOkay, "CHOWN " + 
-            entryPath.ToString() + ": " + e.Message());        
+        control.PartReply(ftp::CommandOkay, "3WIPE " + entryPath.ToString() + ": " + e.Message());
       }
     }
   }
   catch (const util::SystemError& e)
   {
     ++failed;
-    control.PartReply(ftp::CommandOkay, 
-        "WIPE " + pathmask.ToString() + ": " + e.Message());
+    control.PartReply(ftp::CommandOkay, "4WIPE " + pathmask.ToString() + ": " + e.Message());
+  }
+  
+  if (failed == 0)
+  {
+    logs::Event(recursive ? "WIPE-r" : "WIPE", "path", fs::MakeReal(pathmask).ToString(), 
+                "user", client.User().Name(),
+                "group", client.User().PrimaryGroup(), 
+                "tagline", client.User().Tagline());
   }
 }
 
@@ -126,12 +129,7 @@ void WIPECommand::Execute()
   os << "WIPE finished (okay on: "
      << dirs << " directories, " << files 
      << " files / failures: " << failed << ").";
-  control.Reply(ftp::CommandOkay, os.str());
-  
-  logs::Event(recursive ? "WIPE-r" : "WIPE", "path", fs::MakeReal(path).ToString(), 
-              "user", client.User().Name(),
-              "group", client.User().PrimaryGroup(), 
-              "tagline", client.User().Tagline());
+  control.Reply(ftp::CommandOkay, os.str());  
 }
 
 } /* site namespace */

@@ -16,11 +16,14 @@
 #ifndef __FS_ITERATOR_UTIL_HPP
 #define __FS_ITERATOR_UTIL_HPP
 
+#include <iostream>
+
 namespace fs
 {
 
 inline bool Filter(const acl::User& user, const std::string& path)
 {
+  std::cout << path << std::endl;
   return acl::path::Allowed<acl::path::View>(user, MakeVirtual(fs::RealPath(path)));
 }
 

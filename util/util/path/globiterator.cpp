@@ -13,202 +13,183 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <algorithm>
-#include <fnmatch.h>
-#include <boost/bind.hpp>
+#include <cassert>
+#include <boost/filesystem.hpp>
 #include "util/path/globiterator.hpp"
-#include "util/path/diriterator.hpp"
-#include "util/path/recursivediriterator.hpp"
-#include "util/enumbitwise.hpp"
+#include "util/error.hpp"
 #include "util/string.hpp"
-#include "util/path/status.hpp"
 #include "util/path/path.hpp"
-#include "util/verify.hpp"
 
 namespace util { namespace path
 {
 
-namespace
-{
-
-bool Filter(const std::string& path, const std::string& mask, bool lastToken,
-            const std::function<bool(const std::string&)>& filter)
-{
-  if (filter && !filter(path)) return false;
-  if (!IsDirectory(path))
-  {
-    if (!lastToken) return false;
-    return !fnmatch(mask.c_str(), path.c_str(), 0);
-  }
-  else
-  if (mask.back() == '/')
-    return !fnmatch(mask.c_str(), (path + "/").c_str(), FNM_PATHNAME);
-  else
-    return !fnmatch(mask.c_str(), path.c_str(), 0);
-}
-
-bool IsWildcard(const std::string& pathToken)
-{
-  static const char* wildcards = "*?[]";
-  return pathToken.find_first_of(wildcards) != std::string::npos;
-}
-
-}
+namespace fs = boost::filesystem;
 
 GlobIterator::GlobIterator() :
-  iter(new SubIterator())
+  iter(new fs::recursive_directory_iterator())
 {
 }
 
-GlobIterator::GlobIterator(std::string pathMask, Flags flags) :
-  pathMask(pathMask),
-  flags(flags)
+GlobIterator::GlobIterator(const std::string& pathMask, bool recursive) :
+  recursive(recursive)
 {
-  Initialise();
+  TokenizePath(pathMask);
+  OpenDirectory();
 }
 
-GlobIterator::GlobIterator(std::string pathMask, 
-               const std::function<bool(const std::string&)>& filter, 
-               Flags flags) :
-  pathMask(pathMask),
-  flags(flags),
-  filter(filter)
-{
-  Initialise();
-}
-
-void GlobIterator::Initialise()
-{
-  verify(!pathMask.empty());
-  
-  try
-  {
-    Tokens toks = TokenizePathMask(pathMask);
-
-    auto next = std::find_if(toks.begin(), toks.end(), IsWildcard);
-    if (next == toks.end()) --next;
-
-    std::string nextPath = util::Join(toks.begin(), next, "/");
-    if (nextPath.empty()) nextPath = "/"; 
-
-    iter.reset(new SubIterator(nextPath, next, toks.end(), flags, filter));    
-  }
-  catch (const util::SystemError& e)
-  {
-    if ((flags & IgnoreErrors) == 0) throw;
-  }
-}
-
-GlobIterator::SubIterator::SubIterator() : 
-  lastToken(true), iter(new DirIterator())
-{
-}
-
-GlobIterator::SubIterator::SubIterator(const std::string& path, 
-    Tokens::const_iterator mask, Tokens::const_iterator endTokens, 
-    Flags flags, const std::function<bool(const std::string&)>& filter) :
-  lastToken(mask == endTokens - 1),
-  path(path),
-  mask(mask),
-  endTokens(endTokens),
-  flags(flags),
+GlobIterator::GlobIterator(const std::string& pathMask, 
+        const std::function<bool(const std::string&)>& filter, bool recursive) :
   filter(filter),
-  iter(BeginIterator(lastToken && flags & Recursive)),
-  end(EndIterator(lastToken && flags & Recursive))
+  recursive(recursive)
 {
-  First();
+  TokenizePath(pathMask);
+  OpenDirectory();
 }
 
-GlobIterator::Tokens GlobIterator::TokenizePathMask(const std::string& pathMask)
+void GlobIterator::TokenizePath(std::string pathMask)
 {
-  bool trailingSlash = pathMask.back() == '/';
-  Tokens pathTokens;
-  util::Split(pathTokens, pathMask, "/",  true);
-  if (trailingSlash)
-  {
-    pathTokens.pop_back();
-    pathTokens.back() += '/';  // preserve trailing slash
-  }
-  return pathTokens;
-}
-
-void GlobIterator::SubIterator::NextSub()
-{
-  assert(*iter != *end);
-  auto next = std::find_if(mask + 1, endTokens, IsWildcard);
-  if (next == endTokens) --next;
-  std::string nextPath(util::path::Join(path, **iter));
-  nextPath = util::path::Join(nextPath, util::Join(mask + 1, next, "/"));
-  
   try
   {
-    subIter.reset(new SubIterator(nextPath, next, endTokens, flags, filter));
-    if (!subEnd) subEnd.reset(new SubIterator());
-  }
-  catch (const util::SystemError& e)
-  {
-    if (e.Errno() != ENOENT && (flags & IgnoreErrors) == 0) throw;
-    else Next();
-  }
-}
-
-void GlobIterator::SubIterator::First()
-{
-  if (!lastToken && *iter != *end) NextSub();
-}
-
-void GlobIterator::SubIterator::Next()
-{
-  if (!lastToken)
-  {
-    if (subIter)
+    pathMask = Resolve(fs::absolute(pathMask).string());
+    util::Split(pathTokens, pathMask, "/", true);
+    if (!pathTokens.empty())
     {
-      if (++(*subIter) != *subEnd)
-        return;
-      subIter = nullptr;
+      pathTokens.erase(pathTokens.begin());
+      std::cout << pathTokens.back() << std::endl;
     }
-    
-    if (++(*iter) != *end) NextSub();
   }
-  else
+  catch (const fs::filesystem_error& e)
   {
-    ++(*iter);
+    throw util::SystemError(e.code().value());
   }
 }
 
-template <typename... Args>
-DirIterator* GlobIterator::SubIterator::BeginIterator(bool recursive, Args&&... args)
+void GlobIterator::OpenDirectory()
 {
-  return recursive
-          ? new RecursiveDirIterator(std::forward<Args>(args)...) 
-          : new DirIterator(std::forward<Args>(args)...);
+  try
+  {
+    iter.reset(new fs::recursive_directory_iterator("/"));
+    iter->no_push(true);
+    Next();
+  }
+  catch (const fs::filesystem_error& e)
+  {
+    throw util::SystemError(e.code().value());
+  }
 }
 
-DirIterator* GlobIterator::SubIterator::BeginIterator(bool recursive)
+GlobIterator::~GlobIterator()
 {
-  return BeginIterator(recursive, path, boost::bind(&Filter, _1, 
-                util::path::Join(path, *mask), lastToken, filter), false);
 }
 
-DirIterator* GlobIterator::SubIterator::EndIterator(bool recursive)
+GlobIterator& GlobIterator::Rewind()
 {
-  return recursive
-          ? new RecursiveDirIterator()
-          : new DirIterator();
+  OpenDirectory();
+  return *this;
 }
 
-bool GlobIterator::SubIterator::operator==(const SubIterator& rhs) const
-{ return **iter == **rhs.iter; }
+bool GlobIterator::operator==(const DirIteratorBase& rhs)
+{
+  assert(dynamic_cast<const GlobIterator*>(&rhs));
+  return *this->iter == *reinterpret_cast<const GlobIterator*>(&rhs)->iter;
+}
 
-bool GlobIterator::SubIterator::operator!=(const SubIterator& rhs) const
-{ return !operator==(rhs); }
+bool GlobIterator::operator!=(const DirIteratorBase& rhs)
+{
+  return !operator==(rhs);
+}
 
-const std::string& GlobIterator::SubIterator::operator*() const
-{ return lastToken ? **iter : **subIter; }
+GlobIterator& GlobIterator::operator++()
+{
+  Next();
+  return *this;
+}
 
-const std::string* GlobIterator::SubIterator::operator->() const
-{ return lastToken ? &**iter : &**subIter; }
+const std::string& GlobIterator::operator*() const
+{
+  current = (*iter)->path().string();
+  return current;
+}
 
+const std::string* GlobIterator::operator->() const
+{
+  return &operator*();
+}
 
+void GlobIterator::Next()
+{
+  try
+  {
+    fs::recursive_directory_iterator end;
+    while (++(*iter) != end)
+    {
+      try
+      {
+        iter->no_push(true);
+        auto& path = (*iter)->path();
+        if (iter->level() < static_cast<ssize_t>(pathTokens.size()) - 1)
+        {
+          if (fs::is_directory(path) && WildcardMatch(pathTokens[iter->level()], path.filename().string()))
+          {
+            iter->no_push(false);
+          }
+        }
+        else if (iter->level() == static_cast<ssize_t>(pathTokens.size()) - 1)
+        {
+          if (WildcardMatch(pathTokens[iter->level()], path.filename().string()))
+          {
+            if (recursive && fs::is_directory(path))
+            {
+              iter->no_push(false);
+            }
+            current = (*iter)->path().string();
+            break;
+          }
+        }
+        else if (iter->level() >= static_cast<ssize_t>(pathTokens.size()))
+        {
+          assert(recursive);
+          if (fs::is_directory(path))
+          {
+            iter->no_push(false);
+          }
+          current = (*iter)->path().string();
+          break;
+        }
+      }
+      catch (const fs::filesystem_error&)
+      {
+      }      
+    }
+  }
+  catch (const fs::filesystem_error& e)
+  {
+    throw util::SystemError(e.code().value());
+  }
+}
+  
 } /* path namespace */
 } /* util namespace */
+
+
+#ifdef TEST
+
+using namespace util::path;
+
+int main()
+{
+  std::function<bool(const std::string&)> filter = 
+    [](const std::string& path)
+    {
+      return path != "my";
+    };
+  GlobIterator it("/home/bioboy/dev/bioftp4/", true);
+  GlobIterator end;
+  
+  for (; it != end; ++it)
+  {
+    std::cout << *it << std::endl;
+  }
+}
+
+#endif

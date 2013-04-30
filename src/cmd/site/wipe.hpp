@@ -29,7 +29,7 @@ class WIPECommand : public Command
   int files;
   int failed;
   
-  void Process(fs::VirtualPath pathmask);
+  void Process(const fs::VirtualPath& pathmask);
   void ParseArgs();
   
 public:
