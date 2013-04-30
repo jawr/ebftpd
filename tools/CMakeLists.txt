@@ -5,3 +5,5 @@ add_subdirectory(index)
 add_subdirectory(passchk)
 add_subdirectory(ranks)
 add_subdirectory(who)
+add_subdirectory(nuke)
+

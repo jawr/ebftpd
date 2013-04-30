@@ -249,7 +249,8 @@ double StrToDouble(const std::string& s)
 {
   try
   {
-    return std::stod(s);
+    size_t pos;
+    return std::stod(s, &pos) && pos == s.length();
   }
   catch (...)
   {
@@ -261,7 +262,8 @@ float StrToFloat(const std::string& s)
 {
   try
   {
-    return std::stof(s);
+    size_t pos;
+    return std::stof(s, &pos) && pos == s.length();
   }
   catch (...)
   {
@@ -273,7 +275,8 @@ int StrToInt(const std::string& s)
 {
   try
   {
-    return std::stoi(s);
+    size_t pos;
+    return std::stoi(s, &pos) && pos == s.length();
   }
   catch (...)
   {
@@ -285,7 +288,8 @@ long StrToLong(const std::string& s)
 {
   try
   {
-    return std::stol(s);
+    size_t pos;
+    return std::stol(s, &pos) && pos == s.length();
   }
   catch (...)
   {
@@ -297,7 +301,8 @@ long double StrToLDouble(const std::string& s)
 {
   try
   {
-    return std::stold(s);
+    size_t pos;
+    return std::stold(s, &pos) && pos == s.length();
   }
   catch (...)
   {
@@ -309,7 +314,8 @@ long long StrToLLong(const std::string& s)
 {
   try
   {
-    return std::stoll(s);
+    size_t pos;
+    return std::stoll(s, &pos) && pos == s.length();
   }
   catch (...)
   {
@@ -321,7 +327,8 @@ unsigned long StrToULong(const std::string& s)
 {
   try
   {
-    return std::stoul(s);
+    size_t pos;
+    return std::stoul(s, &pos) && pos == s.length();
   }
   catch (...)
   {
@@ -333,7 +340,8 @@ unsigned long long StrToULLong(const std::string& s)
 {
   try
   {
-    return std::stoull(s);
+    size_t pos;
+    return std::stoull(s, &pos) && pos == s.length();
   }
   catch (...)
   {
