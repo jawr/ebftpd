@@ -968,12 +968,17 @@ void KICKCommand::Execute()
   std::future<int> future;
   std::make_shared<ftp::task::KickUser>(user->ID(), future)->Push();
   int kicked = future.get();
+  if (kicked == 0)
+  {
+    control.Format(ftp::CommandOkay, "User %1% is not online.", args[1]);
+  }
+  else
+  {
+    control.Format(ftp::CommandOkay, "Kicked %1% (%2% login%3%).", 
+                   args[1], kicked, kicked == 1 ? "" : "s");
+  }
   
-  std::ostringstream os;
-  os << "Kicked " << kicked << " of " << args[1] << "'s login(s).";
-  control.Reply(ftp::CommandOkay, os.str());
   if (kicked == 0) throw cmd::NoPostScriptError();
-
   logs::Siteop(client.User().Name(), "kicked '%1%', '%2%' logins", user->Name(), kicked);
 }
 
