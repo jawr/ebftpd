@@ -11,7 +11,7 @@ include_directories (${OpenSSL_INCLUDE_DIRS})
 add_executable(ebftpd main.cpp)
 add_dependencies(ebftpd version util eb)
 target_link_libraries(
-	ebftpd util eb
+  ebftpd util eb
   ${ALL_LIBRARIES}
 )
 
@@ -54,9 +54,9 @@ add_dependencies(eb version)
 install(TARGETS ebftpd eb RUNTIME DESTINATION bin LIBRARY DESTINATION lib)
 
 install(
-	CODE "message(STATUS \"Installing: ${CMAKE_INSTALL_PREFIX}/ebftpd -> ${CMAKE_INSTALL_PREFIX}/bin/ebftpd\")"
+  CODE "message(STATUS \"Installing: ${CMAKE_INSTALL_PREFIX}/ebftpd -> ${CMAKE_INSTALL_PREFIX}/bin/ebftpd\")"
   CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink \"${CMAKE_INSTALL_PREFIX}/bin/ebftpd\" \"${CMAKE_INSTALL_PREFIX}/ebftpd\")"
-	CODE "execute_process(COMMAND ${CMAKE_COMMAND} -DDEST=${CMAKE_INSTALL_PREFIX}/etc/ebftpd.pem -P ../cmake/GenerateCert.cmake)"
+  CODE "execute_process(COMMAND ${CMAKE_COMMAND} -DDEST=${CMAKE_INSTALL_PREFIX}/etc/ebftpd.pem -P ${MODULES_DIR}/GenerateCert.cmake)"
 )
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/dummy ${CMAKE_BINARY_DIR}/dummy/site)
