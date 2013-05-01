@@ -26,10 +26,12 @@ namespace fs
 DirIterator::DirIterator(const acl::User& user, const VirtualPath& path,
                          ValueType valueType) :
   util::path::DirIterator(PreFilter(user, path.ToString()), 
-                          boost::bind(&Filter, boost::ref(user), _1),
+                          [&](const std::string& p)
+                          {
+                            return Filter(user, (fs::MakeReal(path) / p).ToString());
+                          }, 
                           valueType)
 {
-  std::cout << "DIT " << path << std::endl;
 }
 
 } /* fs namespace */

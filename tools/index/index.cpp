@@ -129,9 +129,10 @@ std::string VirtualPath(std::string path)
 
 void AddPath(const std::string& path)
 {
+  std::cout << path << std::endl;
   std::string collection = config->Database().Name() + ".index";
   util::path::GlobIterator globEnd;
-  auto globIter = util::path::GlobIterator(path, true);
+  auto globIter = util::path::GlobIterator(path, path.back() != '/');
   for (; globIter != globEnd; ++globIter)
   {
     if (!util::path::IsDirectory(*globIter)) continue;
@@ -196,7 +197,9 @@ std::vector<std::string> ConfigPaths()
   std::vector<std::string> paths;
   for (const std::string& path : config->Indexed())
   {
+    bool trailingSlash = path.back() == '/';
     paths.emplace_back(util::path::Append(config->Sitepath(), path));
+    if (trailingSlash) paths.back() += '/';
   }
   return paths;
 }

@@ -176,7 +176,6 @@ int Group::NumAllotments() const
   auto query = BSON("primary gid" << group.id <<
                     "weekly allotment" << BSON("$elemMatch" << BSON("section" << "" << 
                                                                     "value" << BSON("$gt" << 0))));
-std::cout << query << std::endl;
   return conn.Count("users", query);
 }
 
@@ -194,7 +193,7 @@ long long Group::TotalAllotmentSize() const
         BSON("_id" << "" <<
              "total" << BSON("$sum" << "$weekly allotment.value"))
      )));
-     std::cout << cmd << std::endl;
+
   mongo::BSONObj result;
   if (conn.RunCommand(cmd, result))
   {

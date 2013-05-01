@@ -23,14 +23,13 @@ namespace fs
 
 inline bool Filter(const acl::User& user, const std::string& path)
 {
-  std::cout << path << std::endl;
-  return acl::path::Allowed<acl::path::View>(user, MakeVirtual(fs::RealPath(path)));
+  return !acl::path::Allowed<acl::path::View>(user, MakeVirtual(fs::RealPath(path)));
 }
 
 inline std::string PreFilter(const acl::User& user, const std::string& path)
 {
   RealPath real = MakeReal(fs::Path(path));
-  if (!Filter(user, real.ToString())) throw util::SystemError(ENOENT);
+  if (Filter(user, real.ToString())) throw util::SystemError(ENOENT);
   return real.ToString();
 }
 

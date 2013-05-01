@@ -125,26 +125,3 @@ const std::string* RecursiveDirIterator::operator->() const
   
 } /* path namespace */
 } /* util namespace */
-
-
-#ifdef TEST
-
-using namespace util::path;
-
-int main()
-{
-  std::function<bool(const std::string&)> filter = 
-    [](const std::string& path)
-    {
-      return path != "my";
-    };
-  RecursiveDirIterator it("/home/bioboy/dev/bioftp4");
-  RecursiveDirIterator end;
-  
-  for (; it != end; ++it)
-  {
-    std::cout << *it << std::endl;
-  }
-}
-
-#endif

@@ -112,6 +112,8 @@ bool ParseOptions(int argc, char** argv, bool& recursive, std::string& configPat
 template <typename Iterator>
 void SetOwner(Iterator begin, Iterator end, const fs::Owner& owner, bool recursive)
 {
+  using namespace util::path;
+
   for (auto it = begin; it != end; ++it)
   {
     const std::string& path = *it;
@@ -123,10 +125,10 @@ void SetOwner(Iterator begin, Iterator end, const fs::Owner& owner, bool recursi
     {
       try
       {
-        auto status = util::path::Status(path);
+        auto status = Status(path);
         if (status.IsDirectory() && !status.IsSymLink())
         {
-          SetOwner(util::path::DirIterator(path, false), util::path::DirIterator(), owner, recursive);
+          SetOwner(DirIterator(path, false), DirIterator(), owner, recursive);
         }
       }
       catch (const util::SystemError& e)

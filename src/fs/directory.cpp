@@ -166,8 +166,7 @@ util::Error RemoveDirectory(const acl::User& user, const VirtualPath& path)
       if (name[0] !=  '.') return util::Error::Failure(ENOTEMPTY);
         
       util::path::Status status((MakeReal(path) / name).ToString());
-      if (status.IsDirectory() ||
-          !status.IsWriteable())
+      if (status.IsDirectory() || !status.IsWriteable())
         return util::Error::Failure(ENOTEMPTY);
     }
     
@@ -226,7 +225,7 @@ util::Error DirectorySize(const RealPath& path, int depth, long long& kBytes, bo
         }
       }
       catch (const util::SystemError& e)
-      { std::cout << (path / entry) << " " << e.Message() << std::endl; }
+      { }
     }
   }
   catch (const util::SystemError& e)

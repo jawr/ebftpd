@@ -26,12 +26,15 @@ namespace util { namespace path
 namespace fs = boost::filesystem;
 
 GlobIterator::GlobIterator() :
-  iter(new fs::recursive_directory_iterator())
+  iter(new fs::recursive_directory_iterator()),
+  recursive(false),
+  trailingSlash(false)
 {
 }
 
 GlobIterator::GlobIterator(const std::string& pathMask, bool recursive) :
-  recursive(recursive)
+  recursive(recursive),
+  trailingSlash(false)
 {
   TokenizePath(pathMask);
   OpenDirectory();
@@ -40,7 +43,8 @@ GlobIterator::GlobIterator(const std::string& pathMask, bool recursive) :
 GlobIterator::GlobIterator(const std::string& pathMask, 
         const std::function<bool(const std::string&)>& filter, bool recursive) :
   filter(filter),
-  recursive(recursive)
+  recursive(recursive),
+  trailingSlash(false)
 {
   TokenizePath(pathMask);
   OpenDirectory();
@@ -50,12 +54,12 @@ void GlobIterator::TokenizePath(std::string pathMask)
 {
   try
   {
+    trailingSlash = pathMask.back() == '/';
     pathMask = Resolve(fs::absolute(pathMask).string());
     util::Split(pathTokens, pathMask, "/", true);
     if (!pathTokens.empty())
     {
       pathTokens.erase(pathTokens.begin());
-      std::cout << pathTokens.back() << std::endl;
     }
   }
   catch (const fs::filesystem_error& e)
@@ -138,9 +142,16 @@ void GlobIterator::Next()
         {
           if (WildcardMatch(pathTokens[iter->level()], path.filename().string()))
           {
-            if (recursive && fs::is_directory(path))
+            if (fs::is_directory(path))
             {
-              iter->no_push(false);
+              if (recursive)
+              {
+                iter->no_push(false);
+              }
+            }
+            else if (trailingSlash)
+            {
+              continue;
             }
             current = (*iter)->path().string();
             break;
@@ -171,25 +182,3 @@ void GlobIterator::Next()
 } /* path namespace */
 } /* util namespace */
 
-
-#ifdef TEST
-
-using namespace util::path;
-
-int main()
-{
-  std::function<bool(const std::string&)> filter = 
-    [](const std::string& path)
-    {
-      return path != "my";
-    };
-  GlobIterator it("/home/bioboy/dev/bioftp4/", true);
-  GlobIterator end;
-  
-  for (; it != end; ++it)
-  {
-    std::cout << *it << std::endl;
-  }
-}
-
-#endif

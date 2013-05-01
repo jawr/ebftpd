@@ -126,6 +126,7 @@ std::string& DirIterator::Current() const
     default           :
       assert(false);
   }
+  
   return current;
 }
 
@@ -141,26 +142,3 @@ const std::string* DirIterator::operator->() const
   
 } /* path namespace */
 } /* util namespace */
-
-
-#ifdef TEST
-
-using namespace util::path;
-
-int main()
-{
-  auto filter = 
-    [](const std::string& path)
-    {
-      return path != "my";
-    };
-  DirIterator it("/home/bioboy/dev/bioftp4"/*, filter, DirIterator::BasenameOnly*/);
-  DirIterator end;
-  
-  for (; it != end; ++it)
-  {
-    std::cout << *it << std::endl;
-  }
-}
-
-#endif

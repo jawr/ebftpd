@@ -50,7 +50,7 @@ void WIPECommand::Process(const fs::VirtualPath& pathmask)
           util::Error e = fs::RemoveDirectory(client.User(), entryPath);
           if (!e)
           {
-            control.PartReply(ftp::CommandOkay, "1WIPE " + entryPath.ToString() + ": " + e.Message());
+            control.PartReply(ftp::CommandOkay, "WIPE " + entryPath.ToString() + ": " + e.Message());
             ++failed;
           }
           else
@@ -65,7 +65,7 @@ void WIPECommand::Process(const fs::VirtualPath& pathmask)
           util::Error e = fs::DeleteFile(client.User(), entryPath);
           if (!e)
           {
-            control.PartReply(ftp::CommandOkay, "2WIPE " + entryPath.ToString() + ": " + e.Message());
+            control.PartReply(ftp::CommandOkay, "WIPE " + entryPath.ToString() + ": " + e.Message());
             ++failed;
           }
           else
@@ -75,14 +75,14 @@ void WIPECommand::Process(const fs::VirtualPath& pathmask)
       catch (const util::SystemError& e)
       {
         ++failed;
-        control.PartReply(ftp::CommandOkay, "3WIPE " + entryPath.ToString() + ": " + e.Message());
+        control.PartReply(ftp::CommandOkay, "WIPE " + entryPath.ToString() + ": " + e.Message());
       }
     }
   }
   catch (const util::SystemError& e)
   {
     ++failed;
-    control.PartReply(ftp::CommandOkay, "4WIPE " + pathmask.ToString() + ": " + e.Message());
+    control.PartReply(ftp::CommandOkay, "WIPE " + pathmask.ToString() + ": " + e.Message());
   }
   
   if (failed == 0)

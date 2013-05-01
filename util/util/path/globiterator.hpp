@@ -19,6 +19,7 @@ class GlobIterator : public DirIteratorBase
   std::function<bool(const std::string&)> filter;
   std::shared_ptr<boost::filesystem::recursive_directory_iterator> iter;
   bool recursive;
+  bool trailingSlash;
   
   void TokenizePath(std::string pathMask);
   void OpenDirectory();

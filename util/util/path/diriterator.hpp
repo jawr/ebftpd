@@ -32,9 +32,9 @@ private:
   
 public:
   DirIterator();
-  DirIterator(const std::string& path, ValueType valueType = AbsolutePath);
+  DirIterator(const std::string& path, ValueType valueType = BasenameOnly);
   DirIterator(const std::string& path, const std::function<bool(const std::string&)>& filter, 
-              ValueType valueType = AbsolutePath);
+              ValueType valueType = BasenameOnly);
   ~DirIterator();
   DirIterator& Rewind();
   bool operator==(const DirIteratorBase& rhs);
