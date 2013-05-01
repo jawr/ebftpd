@@ -46,11 +46,12 @@ void WIPECommand::Process(const fs::VirtualPath& pathmask)
         util::path::Status status(fs::MakeReal(entryPath).ToString());
         if (status.IsDirectory())
         {
-          Process(entryPath / "*");
+          if (recursive) Process(entryPath / "*");
           util::Error e = fs::RemoveDirectory(client.User(), entryPath);
           if (!e)
           {
-            control.PartReply(ftp::CommandOkay, "WIPE " + entryPath.ToString() + ": " + e.Message());
+            if (failed < maxErrorOutput)
+              control.PartReply(ftp::CommandOkay, "WIPE " + entryPath.ToString() + ": " + e.Message());
             ++failed;
           }
           else
@@ -65,7 +66,8 @@ void WIPECommand::Process(const fs::VirtualPath& pathmask)
           util::Error e = fs::DeleteFile(client.User(), entryPath);
           if (!e)
           {
-            control.PartReply(ftp::CommandOkay, "WIPE " + entryPath.ToString() + ": " + e.Message());
+            if (failed < maxErrorOutput)
+              control.PartReply(ftp::CommandOkay, "WIPE " + entryPath.ToString() + ": " + e.Message());
             ++failed;
           }
           else
@@ -83,15 +85,7 @@ void WIPECommand::Process(const fs::VirtualPath& pathmask)
   {
     ++failed;
     control.PartReply(ftp::CommandOkay, "WIPE " + pathmask.ToString() + ": " + e.Message());
-  }
-  
-  if (failed == 0)
-  {
-    logs::Event(recursive ? "WIPE-r" : "WIPE", "path", fs::MakeReal(pathmask).ToString(), 
-                "user", client.User().Name(),
-                "group", client.User().PrimaryGroup(), 
-                "tagline", client.User().Tagline());
-  }
+  }  
 }
 
 void WIPECommand::ParseArgs()
@@ -125,6 +119,20 @@ void WIPECommand::Execute()
   auto path = fs::PathFromUser(patharg);
   Process(path);
   
+  if (failed == 0)
+  {
+    logs::Event(recursive ? "WIPE-r" : "WIPE", "path", 
+                fs::MakeReal(path).ToString(), 
+                "user", client.User().Name(),
+                "group", client.User().PrimaryGroup(), 
+                "tagline", client.User().Tagline());
+  }
+
+  if (failed > maxErrorOutput)
+  {
+    control.PartReply(ftp::CommandOkay, "WIPE excessive error messages suppressed.");
+  }
+
   std::ostringstream os;
   os << "WIPE finished (okay on: "
      << dirs << " directories, " << files 

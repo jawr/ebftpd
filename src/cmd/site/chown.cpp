@@ -45,17 +45,18 @@ void CHOWNCommand::Process(fs::VirtualPath pathmask)
       }
       catch (const util::SystemError& e)
       {
+        if (failed < maxErrorOutput)
+          control.PartReply(ftp::CommandOkay, "CHOWN " + 
+                            entryPath.ToString() + ": " + e.Message());        
         ++failed;
-        control.PartReply(ftp::CommandOkay, "CHOWN " + 
-            entryPath.ToString() + ": " + e.Message());        
       }
     }
   }
   catch (const util::SystemError& e)
   {
+    control.PartReply(ftp::CommandOkay, "CHOWN " + 
+                      pathmask.ToString() + ": " + e.Message());
     ++failed;
-    control.PartReply(ftp::CommandOkay, 
-        "CHOWN " + pathmask.ToString() + ": " + e.Message());
   }
 }
 
@@ -120,6 +121,11 @@ void CHOWNCommand::Execute()
 
   Process(fs::PathFromUser(patharg));
   
+  if (failed > maxErrorOutput)
+  {
+    control.PartReply(ftp::CommandOkay, "CHMOD excessive error messages suppressed.");
+  }
+
   std::ostringstream os;
   os << "CHOWN finished (okay on: "
      << dirs << " directories, " << files 
