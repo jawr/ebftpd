@@ -6,7 +6,7 @@
 #include <functional>
 #include "util/path/diriteratorbase.hpp"
 
-namespace boost { namespace filesystem
+namespace boost { namespace filesystem3
 {
 class recursive_directory_iterator;
 }
@@ -20,7 +20,7 @@ class RecursiveDirIterator : public DirIteratorBase
   std::string path;
   mutable std::string current;
   std::function<bool(const std::string&)> filter;
-  std::shared_ptr<boost::filesystem::recursive_directory_iterator> iter;
+  std::shared_ptr<boost::filesystem3::recursive_directory_iterator> iter;
 
   void OpenDirectory();
   

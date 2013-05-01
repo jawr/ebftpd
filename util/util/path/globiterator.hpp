@@ -3,7 +3,7 @@
 
 #include "util/path/diriteratorbase.hpp"
 
-namespace boost { namespace filesystem
+namespace boost { namespace filesystem3
 {
 class recursive_directory_iterator;
 }
@@ -17,7 +17,7 @@ class GlobIterator : public DirIteratorBase
   std::vector<std::string> pathTokens;
   mutable std::string current;
   std::function<bool(const std::string&)> filter;
-  std::shared_ptr<boost::filesystem::recursive_directory_iterator> iter;
+  std::shared_ptr<boost::filesystem3::recursive_directory_iterator> iter;
   bool recursive;
   bool trailingSlash;
   

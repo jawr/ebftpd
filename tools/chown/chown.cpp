@@ -128,7 +128,8 @@ void SetOwner(Iterator begin, Iterator end, const fs::Owner& owner, bool recursi
         auto status = Status(path);
         if (status.IsDirectory() && !status.IsSymLink())
         {
-          SetOwner(DirIterator(path, false), DirIterator(), owner, recursive);
+          SetOwner(DirIterator(path, DirIterator::AbsolutePath), 
+                   DirIterator(), owner, recursive);
         }
       }
       catch (const util::SystemError& e)

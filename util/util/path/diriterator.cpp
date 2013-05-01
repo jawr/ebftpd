@@ -22,7 +22,7 @@
 namespace util { namespace path
 {
 
-namespace fs = boost::filesystem;
+namespace fs = boost::filesystem3;
 
 DirIterator::DirIterator() :
   iter(new fs::directory_iterator())
