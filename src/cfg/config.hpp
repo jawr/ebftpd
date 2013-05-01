@@ -165,6 +165,7 @@ class Config
   mode_t umask;
   int logLines;
   ssize_t dataBufferSize;
+  std::string natAddr;
   
   acl::ACL tlsControl;
   acl::ACL tlsListing;
@@ -313,6 +314,7 @@ public:
   mode_t Umask() const { return umask; }
   int LogLines() const { return logLines; }
   size_t DataBufferSize() const { return dataBufferSize; }
+  const std::string& NATAddr() const { return natAddr; }
   
   const acl::ACL& CommandACL(const std::string& keyword) const
   { return commandACLs.at(keyword); }

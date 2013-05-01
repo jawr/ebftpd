@@ -53,7 +53,7 @@ extern const char*             defaultTlsData;
 extern const char*             defaultTlsFxp;
 extern const Database          defaultDatabase;
 extern const PathFilter        defaultPathFilter;
-extern const NukeStyle      defaultNukeStyle;
+extern const NukeStyle         defaultNukeStyle;
 extern const IdleTimeout       defaultIdleTimeout;
 extern const AllowFxp          defaultAllowFxp;
 extern const MaxUsers          defaultMaxUsers;

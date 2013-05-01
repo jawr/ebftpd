@@ -371,6 +371,11 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     ParameterCheck(opt, toks, 1, -1);
     pasvAddr.insert(pasvAddr.end(), toks.begin(), toks.end());
   }
+  else if (opt == "nat_addr")
+  {
+    ParameterCheck(opt, toks, 1);
+    natAddr = toks[0];
+  }
   else if (opt == "active_ports")
   {
     ParameterCheck(opt, toks, 1, -1);

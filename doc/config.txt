@@ -521,3 +521,9 @@ required:         no
 default:          -1
 description:      separate ratio from other sections (-1 no separate ratio)
 ------------------------------------------------------------------------------------------------------------------------
+usage:            nat_addr <ip>
+required:         no
+default:          none
+description:      with nat_addr set, pasv_addr ips will by cycled as per normal 
+                  internally, but nat_addr will be reported to client
+------------------------------------------------------------------------------------------------------------------------

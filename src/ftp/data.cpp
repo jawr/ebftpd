@@ -66,6 +66,7 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
   listener.Close();
   
   boost::optional<util::net::IPAddress> ip;
+  
   // unable to use alternative pasv_addr if espv mode isn't Full
   // should we fail -- or substitute the ip 
   // from the client.Control.LocalEndpoint like now?
@@ -122,7 +123,16 @@ void Data::InitPassive(util::net::Endpoint& ep, PassiveType pasvType)
   }
 
   this->pasvType = pasvType;
-  ep = listener.Endpoint();
+  
+  const std::string& natAddr = cfg::Get().NATAddr();
+  if (!natAddr.empty())
+  {
+    ep = Endpoint(IPAddress(natAddr), listener.Endpoint().Port());
+  }
+  else
+  {
+    ep = listener.Endpoint();
+  }
 }
 
 void Data::InitActive(const util::net::Endpoint& ep)
