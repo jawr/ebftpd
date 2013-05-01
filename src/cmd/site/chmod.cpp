@@ -41,9 +41,10 @@ void CHMODCommand::Process(fs::VirtualPath pathmask)
         util::Error e = fs::Chmod(client.User(), entryPath, *mode);
         if (!e)
         {
+          if (failed < maxErrorOutput)
+            control.PartReply(ftp::CommandOkay, "CHOWN " + 
+                              entryPath.ToString() + ": " + e.Message());
           ++failed;
-          control.PartReply(ftp::CommandOkay, "CHOWN " +
-              entryPath.ToString() + ": " + e.Message());
         }
         else
         if (status.IsDirectory()) ++dirs;
@@ -51,17 +52,18 @@ void CHMODCommand::Process(fs::VirtualPath pathmask)
       }
       catch (const util::SystemError& e)
       {
+        if (failed < maxErrorOutput)
+          control.PartReply(ftp::CommandOkay, "CHOWN " + 
+                            entryPath.ToString() + ": " + e.Message());
         ++failed;
-        control.PartReply(ftp::CommandOkay, "CHOWN " +
-            entryPath.ToString() + ": " + e.Message());
       }
     }
   }
   catch (const util::SystemError& e)
   {
+    control.PartReply(ftp::CommandOkay, "CHMOD " + 
+                      pathmask.Dirname().ToString() + ": " + e.Message());
     ++failed;
-    control.PartReply(ftp::CommandOkay,
-        "CHMOD " + pathmask.Dirname().ToString() + ": " + e.Message());
   }
 }
 
@@ -109,6 +111,11 @@ void CHMODCommand::Execute()
   }
 
   Process(fs::PathFromUser(patharg));
+
+  if (failed > maxErrorOutput)
+  {
+    control.PartReply(ftp::CommandOkay, "CHMOD excessive error messages suppressed.");
+  }
 
   std::ostringstream os;
   os << "CHMOD finished (okay on: "

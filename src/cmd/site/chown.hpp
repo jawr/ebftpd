@@ -33,6 +33,8 @@ class CHOWNCommand : public Command
   int files;
   int failed;
   
+  static const int maxErrorOutput = 20;
+
   void Process(fs::VirtualPath pathmask);
   void ParseArgs();
   

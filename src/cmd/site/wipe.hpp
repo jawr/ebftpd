@@ -28,6 +28,8 @@ class WIPECommand : public Command
   int dirs;
   int files;
   int failed;
+
+  static const int maxErrorOutput = 20;
   
   void Process(const fs::VirtualPath& pathmask);
   void ParseArgs();
