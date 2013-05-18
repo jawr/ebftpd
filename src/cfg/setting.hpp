@@ -35,26 +35,30 @@ class seconds;
 namespace cfg
 {
 
+class Config;
+
 class Database
 {
   std::string name;
-  std::string address;
-  std::string host;
-  int port;
+  std::vector<std::pair<std::string, int>> hosts;
   std::string login;
   std::string password;
+  std::string replicaSet;
   
 public:
+  Database() = default;
   Database(const char* name, const char* address, int port, const char* login, const char* password);
-  Database(const std::vector<std::string>& toks);
   
   const std::string& Name() const { return name; }
-  const std::string& Address() const { return address; }
-  int Port() const { return port; }
-  const std::string& Host() const { return host; }
+  std::string URL() const;
   const std::string& Login() const { return login; }
   const std::string& Password() const { return password; }
   bool NeedAuth() const;
+  
+  bool operator==(const Database& rhs) const;
+  bool operator!=(const Database& rhs) const { return !operator==(rhs); }
+  
+  friend class Config;
 };
 
 class Right
@@ -248,6 +252,13 @@ public:
   int Users() const { return users; }
   int ExemptUsers() const { return exemptUsers; }
   int Total() const { return users + exemptUsers; }
+
+  bool operator==(const MaxUsers& rhs) const
+  {
+    return users == rhs.users && exemptUsers == rhs.exemptUsers;
+  }
+  
+  bool operator!=(const MaxUsers& rhs) const { return !operator==(rhs); }
 };
 
 class Lslong

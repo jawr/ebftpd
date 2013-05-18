@@ -17,12 +17,11 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <mongo/client/dbclient.h>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/regex.hpp>
-#include "cfg/config.hpp"
+#include "cfg/get.hpp"
 #include "cfg/error.hpp"
 #include "fs/owner.hpp"
 #include "util/path/status.hpp"
@@ -32,9 +31,10 @@
 #include "util/path/path.hpp"
 #include "util/misc.hpp"
 #include "util/enumbitwise.hpp"
+#include "db/connection.hpp"
 
 std::shared_ptr<cfg::Config> config;
-mongo::DBClientConnection conn;
+std::unique_ptr<db::FastConnection> conn;
 
 void DisplayHelp(char* argv0, boost::program_options::options_description& desc)
 {
@@ -141,7 +141,7 @@ void AddPath(const std::string& path)
     {
       auto section = config->SectionMatch(vpath, true);
       auto obj = BSON("path" << vpath << "section" << (section ? section->Name() : ""));
-      conn.insert(collection, obj);
+      conn->BaseConn().insert(collection, obj);
     }
   }
 }
@@ -162,7 +162,7 @@ void DeletePath(const std::string& path)
   mongo::BSONObjBuilder bob;
   bob.appendRegex("$regex", regex);
   auto query = QUERY("path" << bob.obj());
-  auto cursor = conn.query(collection, query);
+  auto cursor = conn->BaseConn().query(collection, query);
   while (cursor->more())
   {
     auto obj = cursor->next();
@@ -183,7 +183,7 @@ void DeletePath(const std::string& path)
   for (const std::string& path : toDelete)
   {
     auto query = QUERY("path" << path);
-    conn.remove(collection, query);
+    conn->BaseConn().remove(collection, query);
   }
 }
 
@@ -220,24 +220,16 @@ bool ValidatePaths(const std::vector<std::string>& paths)
 
 bool ConnectDatabase()
 {
-  const auto& dbConfig = config->Database();
   try
   {
-    conn.connect(dbConfig.Host());
-    if (!dbConfig.Login().empty())
-    {
-      std::string errmsg;
-      if (!conn.auth(dbConfig.Name(), dbConfig.Login(), dbConfig.Password(), errmsg))
-        throw mongo::DBException("Authentication failed", 0);
-    }
-    conn.setWriteConcern(mongo::W_NONE);
+    conn.reset(new db::FastConnection());
+    return true;
   }
-  catch (const mongo::DBException& e)
+  catch (const db::DBError& e)
   {
-    std::cerr << "Database connect failed: " << e.what() << std::endl;
+    std::cerr << e.what() << std::endl;
     return false;
   }
-  return true;
 }
 
 int main(int argc, char** argv)
@@ -251,12 +243,14 @@ int main(int argc, char** argv)
   try
   {
     config = cfg::Config::Load(configPath, true);
+    cfg::UpdateShared(config);
   }
   catch (const cfg::ConfigError& e)
   {
     std::cerr << "Failed to load config: " << e.Message() << std::endl;
     return 1;
   }
+  
   
   if (config->Indexed().empty())
   {
@@ -284,7 +278,7 @@ int main(int argc, char** argv)
   catch (const mongo::DBException& e)
   {
     std::cerr << "Error while communicating with database: " << e.what() << std::endl;
-    return 1;
+    _exit(1);
   }
-  return 0;
+  _exit(0); // used to work around a mongodb driver bug
 }

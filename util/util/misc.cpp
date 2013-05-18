@@ -13,6 +13,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <iomanip>
 #if defined(__linux__)
 #include <sys/prctl.h>
 #else
@@ -30,6 +31,23 @@ void SetProcessTitle(const std::string& title)
 #else
   setproctitle(title.c_str());
 #endif
+}
+
+std::string EscapeURI(const std::string& uri)
+{
+	std::ostringstream os;
+	for (char ch : uri)
+	{
+		if (std::isalnum(ch) || ch == '-' || ch == '.' || ch == '_' || ch == '~')
+		{
+			os << ch;
+		}
+		else
+		{
+			os << '%' << std::setw(2) << std::uppercase << std::hex << static_cast<unsigned int>(ch);
+		}
+	}
+	return os.str();
 }
 
 } /* util namespace */

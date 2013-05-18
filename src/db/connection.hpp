@@ -65,7 +65,7 @@ class Connection
   
   static boost::once_flag once;
   
-  static void CreateAuthenticateHook();
+  static void InitialiseMongo();
   
 public:
   Connection(ConnectionMode mode);
@@ -73,6 +73,8 @@ public:
   {
     if (scopedConn) scopedConn->done();
   }
+  
+  mongo::DBClientBase& BaseConn() { return scopedConn->conn(); }
   
   LastError GetLastError()
   {

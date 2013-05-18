@@ -94,6 +94,7 @@ inline std::string WildcardToRegex(const std::string& wc)
 }
 
 void SetProcessTitle(const std::string& title);
+std::string EscapeURI(const std::string& uri);
 
 } /* util namespace */
 

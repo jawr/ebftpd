@@ -15,14 +15,14 @@
 
 #include <iostream>
 #include <sstream>
-#include <mongo/client/dbclient.h>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 #include "util/passwd.hpp"
-#include "cfg/config.hpp"
+#include "cfg/get.hpp"
 #include "cfg/error.hpp"
 #include "version.hpp"
+#include "db/connection.hpp"
 
 std::shared_ptr<cfg::Config> config;
 
@@ -96,35 +96,35 @@ bool ParseOptions(int argc, char** argv, std::string& configPath,
 
 bool RetrieveHashAndSalt(const std::string& username, std::string& hash, std::string& salt)
 {
-  const auto& dbConfig = config->Database();
-  mongo::DBClientConnection conn;
   try
   {
-    conn.connect(dbConfig.Host());
-    if (!dbConfig.Login().empty())
+    db::SafeConnection conn;
+    try
     {
-      std::string errmsg;
-      if (!conn.auth(dbConfig.Name(), dbConfig.Login(), dbConfig.Password(), errmsg))
-        throw mongo::DBException("Authentication failed", 0);
+      const auto& dbConfig = config->Database();
+      auto fields = BSON("password" << 1 << "salt" << 1);
+      auto query = QUERY("name" << username);
+      auto cursor = conn.BaseConn().query(dbConfig.Name() + ".users", query, 1, 0, &fields);
+      if (!cursor.get()) throw mongo::DBException("Connection failure", 0);
+      if (!cursor->more())
+      {
+        std::cout << "User " << username << " doesn't exist." << std::endl;
+        return false;
+      }
+      
+      auto result = cursor->next();
+      hash = result["password"].String();
+      salt = result["salt"].String();
     }
-
-    auto fields = BSON("password" << 1 << "salt" << 1);
-    auto query = QUERY("name" << username);
-    auto cursor = conn.query(dbConfig.Name() + ".users", query, 1, 0, &fields);
-    if (!cursor.get()) throw mongo::DBException("Connection failure", 0);
-    if (!cursor->more())
+    catch (const mongo::DBException& e)
     {
-      std::cout << "User " << username << " doesn't exist." << std::endl;
+      std::cerr << "Unable to query database: " << e.what() << std::endl;
       return false;
     }
-    
-    auto result = cursor->next();
-    hash = result["password"].String();
-    salt = result["salt"].String();
   }
-  catch (const mongo::DBException& e)
+  catch (const db::DBError& e)
   {
-    std::cout << "Unable to query database: " << e.what() << std::endl;
+    std::cerr << e.what() << std::endl;
     return false;
   }
   
@@ -143,6 +143,7 @@ int main(int argc, char** argv)
   try
   {
     config = cfg::Config::Load(configPath, true);
+    cfg::UpdateShared(config);
   }
   catch (const cfg::ConfigError& e)
   {
@@ -153,14 +154,14 @@ int main(int argc, char** argv)
   std::string hash;
   std::string salt;
   if (!RetrieveHashAndSalt(username, hash, salt)) return 1;
-
+  
   using namespace util::passwd;
   if (HexEncode(HashPassword(password, HexDecode(salt))) != hash)
   {
     if (!quiet) std::cout << "Password incorrect" << std::endl;
-    return 1;
+    _exit(1);
   }
   
   if (!quiet) std::cout << "Password okay" << std::endl;
-  return 0;
+  _exit(0); // used to work around mongodb driver bug
 }

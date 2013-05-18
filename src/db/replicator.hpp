@@ -38,6 +38,7 @@ class Replicator
 
   static std::unique_ptr<Replicator> instance;
   static const int maximumRetries = 20;
+  static const long retryInterval = 10;
   
   Replicator() = default;
   

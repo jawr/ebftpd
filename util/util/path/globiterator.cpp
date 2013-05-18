@@ -170,7 +170,7 @@ void GlobIterator::Next()
       }
       catch (const fs::filesystem_error&)
       {
-      }      
+      }
     }
   }
   catch (const fs::filesystem_error& e)
@@ -178,7 +178,7 @@ void GlobIterator::Next()
     throw util::SystemError(e.code().value());
   }
 }
-  
+
 } /* path namespace */
 } /* util namespace */
 

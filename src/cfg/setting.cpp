@@ -13,6 +13,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <algorithm>
 #include <sstream>
 #include <cstdlib>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -22,39 +23,32 @@
 #include "util/string.hpp"
 #include "cfg/util.hpp"
 #include "cfg/defaults.hpp"
+#include "util/misc.hpp"
 
 namespace cfg
 {
 
 Database::Database(const char* name, const char* address, int port, const char* login, const char* password) :
   name(name), 
-  address(address), 
-  port(port),
   login(login),
   password(password)
 {
-  std::ostringstream os;
-  os << address << ":" << port;
-  host = os.str();
+  hosts.emplace_back(address, port);
 }
 
-Database::Database(const std::vector<std::string>& toks) : port(-1)
+std::string Database::URL() const
 {
-  name = toks[0];
-  address = toks[1];
-
-  port = util::StrToInt(toks[2]);
-  if (port < 0 || port >= 65535) throw std::bad_cast();
-
+  assert(!hosts.empty() && (hosts.size() < 2 || !replicaSet.empty()));
   std::ostringstream os;
-  os << address << ":" << port;
-  host = os.str();
-  
-  if (toks.size() == 3) return;
-  if (toks.size() != 5) throw ConfigError("Wrong numer of Parameters for database");
-  
-  login = toks[3];
-  password = toks[4];
+  if (!replicaSet.empty()) os << replicaSet << '/';
+  bool firstHost = true;
+  for (const auto& host : hosts)
+  {
+    if (!firstHost) os << ',';
+    os << host.first << ':' << host.second;
+    firstHost = false;
+  }
+  return os.str();
 }
 
 bool Database::NeedAuth() const
@@ -64,6 +58,14 @@ bool Database::NeedAuth() const
   return true;
 }
 
+bool Database::operator==(const Database& rhs) const
+{
+  return name == rhs.name &&
+         hosts == rhs.hosts &&
+         login == rhs.login &&
+         password == rhs.password &&
+         replicaSet == rhs.replicaSet;
+}
 
 AsciiDownloads::AsciiDownloads(const std::vector<std::string>& toks) :
   kBytes(-1)

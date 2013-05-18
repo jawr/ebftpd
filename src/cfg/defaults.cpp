@@ -47,11 +47,9 @@ const char*             defaultTlsControl         = "*";            // enforced
 const char*             defaultTlsListing         = "*";            // enforced
 const char*             defaultTlsData            = "!*";           // not enforced
 const char*             defaultTlsFxp             = "!*";           // not enforced
-const Database          defaultDatabase           ("ebftpd",        // name 
-                                                   "localhost",     // address
-                                                   27017,           // port
-                                                   "",              // login
-                                                   "");             // password
+const char*             defaultDatabaseName       = "ebftpd";
+const char*             defaultDatabaseAddress    = "localhost";
+const int               defaultDatabasePort       = 27017;
 const PathFilter        defaultPathFilter         ("^[[\\]A-Za-z0-9_'()[:space:]][[\\]A-Za-z0-9_.'()[:space:]-]+$", "*");
 const NukeStyle         defaultNukeStyle          ("NUKED-%N",      // format
                                                    NukeStyle::Keep, // action

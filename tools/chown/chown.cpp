@@ -166,7 +166,7 @@ util::Error LookupOwner(const std::string& user, const std::string& group, fs::O
   try
   {
     mongo::DBClientConnection conn;
-    conn.connect(dbConfig.Host());
+    conn.connect(dbConfig.URL());
     if (!dbConfig.Login().empty())
     {
       std::string errmsg;
@@ -214,8 +214,9 @@ int main(int argc, char** argv)
   if (!e)
   {
     std::cerr << "Unable to look up owner in database: " << e.Message() << std::endl;
-    return 1;
+    _exit(1);
   }
 
   SetOwner(paths.begin(), paths.end(), owner, recursive);
+  _exit(0); // used to work around a mongodb driver bug
 }

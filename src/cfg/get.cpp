@@ -76,17 +76,8 @@ void StopStartCheck()
   if (shared->TlsCertificate() != old.TlsCertificate()) settings.push_back("tls_certificate");
   if (shared->TlsCiphers() != old.TlsCiphers()) settings.push_back("tls_ciphers");
   
-  if (shared->Database().Address() != old.Database().Address() ||   
-      shared->Database().Port() != old.Database().Port())
-  {
-    settings.push_back("database");
-  }
-
-  if (shared->MaxUsers().Users() != old.MaxUsers().Users() ||
-      shared->MaxUsers().ExemptUsers() != old.MaxUsers().ExemptUsers())
-  {
-    settings.push_back("max_users");
-  }
+  if (shared->Database() != old.Database()) settings.push_back("db_*");
+  if (shared->MaxUsers() != old.MaxUsers()) settings.push_back("max_users");
   
   if (!settings.empty())
   {

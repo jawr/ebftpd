@@ -45,7 +45,7 @@ void InitialisePreConfig()
   debug.PushSink(consoleSink);
 }
 
-void InitialiseLog(Logger& logger, const cfg::Log& config)
+bool InitialiseLog(Logger& logger, const cfg::Log& config)
 {
   if (config.Console())
   {
@@ -60,9 +60,18 @@ void InitialiseLog(Logger& logger, const cfg::Log& config)
 
   if (config.Database())
   {
-    logger.PushSink(std::make_shared<db::LogSink>("log." + config.Name(), 
-              config.CollectionSize()));
+    try
+    {
+      logger.PushSink(std::make_shared<db::LogSink>("log." + config.Name(), 
+                      config.CollectionSize()));
+    }
+    catch (const db::LogCreationError&)
+    {
+      return false;
+    }
   }
+  
+  return true;
 }
 
 bool InitialisePostConfig()
@@ -73,16 +82,15 @@ bool InitialisePostConfig()
   const cfg::Config& config = cfg::Get();
   InitialiseLog(db, config.DatabaseLog());
 
-  try
-  {
-    InitialiseLog(events,config.EventLog()); 
-    InitialiseLog(security, config.SecurityLog());
-    InitialiseLog(siteop, config.SiteopLog());
-    InitialiseLog(error, config.ErrorLog());
-    InitialiseLog(debug, config.DebugLog());
-    InitialiseLog(transfer, config.TransferLog());
-  }
-  catch (const db::LogCreationError&)
+  bool okay = true;
+  okay = InitialiseLog(events,config.EventLog()) && okay;
+  okay = InitialiseLog(security, config.SecurityLog()) && okay;
+  okay = InitialiseLog(siteop, config.SiteopLog()) && okay;
+  okay = InitialiseLog(error, config.ErrorLog()) && okay;
+  okay = InitialiseLog(debug, config.DebugLog()) && okay;
+  okay = InitialiseLog(transfer, config.TransferLog()) && okay;
+
+  if (!okay)
   {
     Database("Creation of one or more database log collections failed.");
     return false;

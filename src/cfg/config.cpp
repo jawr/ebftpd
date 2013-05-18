@@ -91,7 +91,7 @@ Config::Config(const std::string& configPath, bool tool) :
   nukedirStyle(defaultNukeStyle),
   maxSitecmdLines(defaultMaxSitecmdLines),
   idleTimeout(defaultIdleTimeout),
-  database(defaultDatabase),
+  database(),
   epsvFxp(defaultEpsvFxp),
   maximumRatio(defaultMaximumRatio),
   dirSizeDepth(defaultDirSizeDepth),
@@ -162,10 +162,37 @@ void Config::ParseGlobal(const std::string& opt, std::vector<std::string>& toks)
     commandACLs.insert(std::make_pair(util::ToLowerCopy(opt), acl::ACL(util::Join(toks, " "))));
   }
   else
-  if (opt == "database")
+  if (opt == "db_name")
   {
-    ParameterCheck(opt, toks, 3, 5);
-    database = ::cfg::Database(toks);
+    ParameterCheck(opt, toks, 1, 1);
+    database.name = toks[0];
+  }
+  else
+  if (opt == "db_host")
+  {
+    ParameterCheck(opt, toks, 1, -1);
+    for (const std::string& tok : toks)
+    {
+      std::vector<std::string> hostPair;
+      util::Split(hostPair, tok, ":");
+      if (hostPair.size() != 2) throw std::bad_cast();
+      int port = util::StrToInt(hostPair[1]);
+      if (port < 0 || port > 65535) throw std::bad_cast();
+      database.hosts.emplace_back(hostPair[0], port);
+    }
+  }
+  else
+  if (opt == "db_auth")
+  {
+    ParameterCheck(opt, toks, 2);
+    database.login = toks[0];
+    database.password = toks[1];
+  }
+  else
+  if (opt == "db_replicaset")
+  {
+    ParameterCheck(opt, toks, 1);
+    database.replicaSet = toks[0];
   }
   else
   if (opt == "sitepath")
@@ -789,10 +816,24 @@ void Config::SanityCheck()
   }
   
   if (loginPrompt.empty())
+  {
     loginPrompt = sitenameLong + ": ebftpd connected.";
+  }
     
   if (allowFxp.empty()) allowFxp.emplace_back(defaultAllowFxp);
   if (pathFilter.empty()) pathFilter.emplace_back(defaultPathFilter);
+  
+  if (!CheckSetting("db_name")) database.name = defaultDatabaseName;
+  if (!CheckSetting("db_host"))
+  {
+    database.hosts.push_back(std::make_pair(std::string(defaultDatabaseAddress), 
+                                            defaultDatabasePort));
+  }
+  
+  if (database.hosts.size() > 1 && !CheckSetting("db_replicaset"))
+  {
+    throw RequiredSettingError("db_replicaset");
+  }
 }
 
 bool Config::IsBouncer(const std::string& ip) const

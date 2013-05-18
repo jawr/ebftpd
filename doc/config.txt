@@ -1,10 +1,25 @@
 description of all config options for ebftpd
 
 ------------------------------------------------------------------------------------------------------------------------
-usage:            database <name> <address> <port> [<login> <password>]
+usage:            db_name <name>
 required:         no
-default:          database ebftpd localhost 27017
-descrription:     details required to connect to mongodb -- optional authentication
+default:          ebftpd
+descrription:     database name
+------------------------------------------------------------------------------------------------------------------------
+usage:            db_host <address>:<port> [<address>:<port> ..]
+required:         no
+default:          localhost:27017
+descrription:     database host, multiple hosts must be in same replicaset
+------------------------------------------------------------------------------------------------------------------------
+usage:            db_auth <login> <password>
+required:         no
+default:          no authentication
+descrription:     database login and password
+------------------------------------------------------------------------------------------------------------------------
+usage:            db_replicaset <name>
+required:         no
+default:          none
+descrription:     replicaset name, only required when specifying more than one host
 ------------------------------------------------------------------------------------------------------------------------
 usage:            sitepath <path>
 required:         yes

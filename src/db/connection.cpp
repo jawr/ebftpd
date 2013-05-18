@@ -65,14 +65,17 @@ Connection::Connection(ConnectionMode mode) :
 
 void Connection::Create()
 {
-  boost::call_once(&CreateAuthenticateHook, once);  
+  boost::call_once(&InitialiseMongo, once);  
   boost::this_thread::disable_interruption noInterrupt;
   
   try
   {
     try
     {
-      scopedConn.reset(mongo::ScopedDbConnection::getScopedDbConnection(cfg::Get().Database().Host()));
+      std::string errmsg;
+      auto connStr = mongo::ConnectionString::parse(cfg::Get().Database().URL(), errmsg);
+      scopedConn.reset(mongo::ScopedDbConnection::getScopedDbConnection(connStr));
+      (void) errmsg;
     }
     catch (const mongo::DBException& e)
     {
@@ -92,8 +95,10 @@ void Connection::Create()
     scopedConn->conn().setWriteConcern(mongo::W_NONE);
 }
 
-void Connection::CreateAuthenticateHook()
+void Connection::InitialiseMongo()
 {
+  FILE* nullLog = fopen("/dev/null", "w");
+  if (nullLog != nullptr) mongo::Logstream::setLogFile(nullLog);
   mongo::pool.addHook(new AuthenticateHook());
 }
 
@@ -193,7 +198,7 @@ std::vector<mongo::BSONObj> Connection::Query(
     }
     catch (const mongo::DBException& e)
     {
-      LogException("Query", e, collection, query, nToReturn, nToSkip, *fieldsToReturn);
+      LogException("Query", e, collection, query, nToReturn, nToSkip, fieldsToReturn);
       if (mode == ConnectionMode::Safe) throw DBReadError();
     }
   }

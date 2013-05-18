@@ -147,113 +147,105 @@ bool Daemonise(bool foreground)
   return true;
 }
 
-int main(int argc, char** argv)
+int Main(int argc, char** argv)
 {
-  int exitStatus = 0;
   logs::SetThreadIDPrefix('P' /* parent */);
   
+  std::string configPath;
+  bool foreground; 
+
+  if (!ParseOptions(argc, argv, foreground, configPath)) return 1;
+
+  logs::InitialisePreConfig();
+  
+  logs::Debug("Starting %1%..", programFullname);
+  auto byeExit = util::MakeScopeExit([]() { logs::Debug("Bye!"); });
+  
+  cmd::rfc::Factory::Initialise();
+  cmd::site::Factory::Initialise();
+  cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
+  ftp::InitialisePortAllocators();
+  ftp::InitialiseAddrAllocators();
+  fs::InitialiseUmask();
+  
+  try
   {
-    std::string configPath;
-    bool foreground; 
+    logs::Debug("Loading config file..");
+    cfg::UpdateShared(cfg::Config::Load(configPath));
+  }
+  catch (const cfg::ConfigError& e)
+  {
+    logs::Error("Failed to load config: %1%", e.Message());
+    return 1;
+  }
+  
+  {
+    util::Error e = signals::Initialise(util::path::Join(cfg::Get().Datapath(), "logs"));
+    if (!e)
+    {
+      logs::Error("Failed to setup signal handlers: %1%", e.Message());
+      return 1;
+    }
+  }
 
-    if (!ParseOptions(argc, argv, foreground, configPath)) return 1;
-
-    logs::InitialisePreConfig();
-    
-    logs::Debug("Starting %1%..", programFullname);
-    auto byeExit = util::MakeScopeExit([]() { logs::Debug("Bye!"); });
-    
-    cmd::rfc::Factory::Initialise();
-    cmd::site::Factory::Initialise();
-    cfg::Config::PopulateACLKeywords(cmd::site::Factory::ACLKeywords());
-    ftp::InitialisePortAllocators();
-    ftp::InitialiseAddrAllocators();
-    fs::InitialiseUmask();
-    
+  if (!logs::InitialisePostConfig()) return 1;
+  
+  if (cfg::Get().TlsCertificate().empty())
+  {
+    logs::Debug("No TLS certificate set in config, TLS disabled.");
+  }
+  else
+  {
     try
     {
-      logs::Debug("Loading config file..");
-      cfg::UpdateShared(cfg::Config::Load(configPath));
+      const cfg::Config& config = cfg::Get();
+      logs::Debug("Initialising TLS context..");
+      util::net::TLSServerContext::Initialise(programName, config.TlsCertificate(), config.TlsCiphers());
+      util::net::TLSClientContext::Initialise(config.TlsCertificate(), config.TlsCiphers());
     }
-    catch (const cfg::ConfigError& e)
+    catch (const util::net::NetworkError& e)
     {
-      logs::Error("Failed to load config: %1%", e.Message());
+      logs::Error("TLS failed to initialise: %1%", e.Message());
+      return 1;
+    }
+  }
+
+  logs::Debug("Initialising Templates..");
+  try
+  {
+    text::Factory::Initialize();
+  }
+  catch (const text::TemplateError& e)
+  {
+    logs::Error("Templates failed to initialise: %1%", e.Message());
+    return 1;
+  }
+  
+  if (!db::Initialise([](acl::UserID uid)
+        { std::make_shared<ftp::task::UserUpdate>(uid)->Push(); }))
+  {
+    return 1;
+  }
+  
+  if (!acl::CreateDefaults())
+  {
+    logs::Error("Error while creating root user and group and default user template");
+    return 1;
+  }
+
+  if (!AlreadyRunning())
+  {
+    if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
+    {
+      logs::Error("Listener failed to initialise!");
       return 1;
     }
     
-    {
-      util::Error e = signals::Initialise(util::path::Join(cfg::Get().Datapath(), "logs"));
-      if (!e)
-      {
-        logs::Error("Failed to setup signal handlers: %1%", e.Message());
-        return 1;
-      }
-    }
-
-    if (!logs::InitialisePostConfig()) return 1;
-    
-    if (cfg::Get().TlsCertificate().empty())
-    {
-      logs::Debug("No TLS certificate set in config, TLS disabled.");
-    }
-    else
+    if (Daemonise(foreground))
     {
       try
       {
-        const cfg::Config& config = cfg::Get();
-        logs::Debug("Initialising TLS context..");
-        util::net::TLSServerContext::Initialise(programName, config.TlsCertificate(), config.TlsCiphers());
-        util::net::TLSClientContext::Initialise(config.TlsCertificate(), config.TlsCiphers());
-      }
-      catch (const util::net::NetworkError& e)
-      {
-        logs::Error("TLS failed to initialise: %1%", e.Message());
-        return 1;
-      }
-    }
-
-    logs::Debug("Initialising Templates..");
-    try
-    {
-      text::Factory::Initialize();
-    }
-    catch (const text::TemplateError& e)
-    {
-      logs::Error("Templates failed to initialise: %1%", e.Message());
-      return 1;
-    }
-    
-    if (!db::Initialise([](acl::UserID uid)
-          { std::make_shared<ftp::task::UserUpdate>(uid)->Push(); }))
-    {
-      return 1;
-    }
-    
-    if (!acl::CreateDefaults())
-    {
-      logs::Error("Error while creating root user and group and default user template");
-      return 1;
-    }
-
-    if (!AlreadyRunning())
-    {
-      if (!ftp::Server::Initialise(cfg::Get().ValidIp(), cfg::Get().Port()))
-      {
-        logs::Error("Listener failed to initialise!");
-        exitStatus = 1;
-      }
-      else if (Daemonise(foreground))
-      {
-        try
-        {
-          ftp::OnlineWriter::Initialise(ftp::SharedMemoryID(), cfg::Config::MaxOnline().Total());
-        }
-        catch (const util::SystemError& e)
-        {
-          logs::Error("Shared memory segment failed to initialise: %1%", e.Message());
-          return 1;
-        }
-    
+        ftp::OnlineWriter::Initialise(ftp::SharedMemoryID(), cfg::Config::MaxOnline().Total());
         signals::Handler::StartThread();
         db::Replicator::Get().Start();
         ftp::Server::Get().StartThread();
@@ -263,8 +255,18 @@ int main(int argc, char** argv)
         signals::Handler::StopThread();
         ftp::OnlineWriter::Cleanup();
       }
+      catch (const util::SystemError& e)
+      {
+        logs::Error("Shared memory segment failed to initialise: %1%", e.Message());
+        return 1;
+      }
     }
   }
+  
+  return 0;
+}
 
-  return exitStatus;
+int main(int argc, char** argv)
+{
+  _exit(Main(argc, argv)); // horrible work around for mongodb driver bug
 }
