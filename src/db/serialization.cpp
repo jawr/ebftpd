@@ -33,13 +33,14 @@ time_duration UTCOffset()
 mongo::Date_t ToDateT(const ptime& t)
 {
   struct tm tm(to_tm(t - UTCOffset()));
-  return mongo::Date_t(timegm(&tm) * 1000);
+  return mongo::Date_t(timegm(&tm) * 1000ULL);
 }
 
 ptime ToPosixTime(const mongo::Date_t& dt)
 {
+  mongo::Date_t temp(dt);
   struct tm tm;
-  const_cast<mongo::Date_t*>(&dt)->toTm(&tm);
+  temp.toTm(&tm);
   return local_adj::utc_to_local(from_time_t(timegm(&tm)));
 }
 

@@ -16,18 +16,18 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <mongo/client/dbclient.h>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/regex.hpp>
-#include "cfg/config.hpp"
+#include "cfg/get.hpp"
 #include "cfg/error.hpp"
 #include "fs/owner.hpp"
 #include "util/path/status.hpp"
 #include "util/path/diriterator.hpp"
 #include "version.hpp"
 #include "db/error.hpp"
+#include "db/connection.hpp"
 
 std::shared_ptr<cfg::Config> config;
 
@@ -140,21 +140,21 @@ void SetOwner(Iterator begin, Iterator end, const fs::Owner& owner, bool recursi
   }
 }
 
-acl::UserID LookupUID(mongo::DBClientConnection& conn, const std::string& user)
+acl::UserID LookupUID(db::SafeConnection& conn, const std::string& user)
 {
   auto query = QUERY("name" << user);
-  auto cursor = conn.query(config->Database().Name() + ".users", query, 1);
-  db::LastErrorToException(conn);
+  auto cursor = conn.BaseConn().query(config->Database().Name() + ".users", query, 1);
+  db::LastErrorToException(conn.BaseConn());
   if (!cursor.get()) throw mongo::DBException("Connection failure", 0);
   if (!cursor->more()) throw util::RuntimeError("User doesn't exist: " + user);
   return cursor->next()["uid"].Int();
 }
 
-acl::GroupID LookupGID(mongo::DBClientConnection& conn, const std::string& group)
+acl::GroupID LookupGID(db::SafeConnection& conn, const std::string& group)
 {
   auto query = QUERY("name" << group);
-  auto cursor = conn.query(config->Database().Name() + ".groups", query, 1);
-  db::LastErrorToException(conn);
+  auto cursor = conn.BaseConn().query(config->Database().Name() + ".groups", query, 1);
+  db::LastErrorToException(conn.BaseConn());
   if (!cursor.get()) throw mongo::DBException("Connection failure", 0);
   if (!cursor->more()) throw util::RuntimeError("Group doesn't exist: " + group);
   return cursor->next()["gid"].Int();
@@ -165,15 +165,7 @@ util::Error LookupOwner(const std::string& user, const std::string& group, fs::O
   auto dbConfig = config->Database();  
   try
   {
-    mongo::DBClientConnection conn;
-    conn.connect(dbConfig.URL());
-    if (!dbConfig.Login().empty())
-    {
-      std::string errmsg;
-      if (!conn.auth(dbConfig.Name(), dbConfig.Login(), dbConfig.Password(), errmsg))
-        throw mongo::DBException("Authentication failed", 0);
-    }
-    
+    db::SafeConnection conn;
     owner = fs::Owner(user.empty() ? -1 : LookupUID(conn, user),
                       group.empty() ? -1 : LookupGID(conn, group));
   }
@@ -202,6 +194,7 @@ int main(int argc, char** argv)
   try
   {
     config = cfg::Config::Load(configPath, true);
+    cfg::UpdateShared(config);
   }
   catch (const cfg::ConfigError& e)
   {

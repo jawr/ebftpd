@@ -91,7 +91,6 @@ Config::Config(const std::string& configPath, bool tool) :
   nukedirStyle(defaultNukeStyle),
   maxSitecmdLines(defaultMaxSitecmdLines),
   idleTimeout(defaultIdleTimeout),
-  database(),
   epsvFxp(defaultEpsvFxp),
   maximumRatio(defaultMaximumRatio),
   dirSizeDepth(defaultDirSizeDepth),
