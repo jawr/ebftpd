@@ -30,8 +30,7 @@ RecursiveDirIterator::RecursiveDirIterator() :
 }
 
 RecursiveDirIterator::RecursiveDirIterator(const std::string& path) :
-  path(path),
-  iter(new fs::recursive_directory_iterator(path))
+  path(path)
 {
   OpenDirectory();
 }

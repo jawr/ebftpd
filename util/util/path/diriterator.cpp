@@ -31,7 +31,6 @@ DirIterator::DirIterator() :
 
 DirIterator::DirIterator(const std::string& path, ValueType valueType) :
   path(path),
-  iter(new fs::directory_iterator(path)),
   valueType(valueType)
 {
   OpenDirectory();
