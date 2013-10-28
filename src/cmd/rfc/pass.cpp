@@ -66,7 +66,7 @@ void PASSCommand::Execute()
     return;
   }
   
-  util::Error e = fs::ChangeDirectory(client.User(), fs::VirtualPath(client.User().HomeDir()));
+  util::Error e = fs::ChangeDirectory(client.User(), fs::VirtualPath(client.User().StartUpDir()));
   if (!e) 
   {
     control.Reply(ftp::ServiceUnavailable, 

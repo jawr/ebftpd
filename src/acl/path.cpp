@@ -413,10 +413,18 @@ bool InsideHomeDir(const User& user, const fs::VirtualPath& path)
   else return util::StartsWith(path.ToString(), user.HomeDir() + '/');
 }
 
+bool InsideStartUpDir(const User& user, const fs::VirtualPath& path)
+{
+  if (user.StartUpDir().empty()) return false;
+  if (user.StartUpDir().back() == '/') return util::StartsWith(path.ToString(), user.StartUpDir());
+  else return util::StartsWith(path.ToString(), user.StartUpDir() + '/');
+}
+
 template <Type type>
 util::Error InnerAllowed(const User& user, const fs::VirtualPath& path)
 { 
   if (!InsideHomeDir(user, path)) return util::Error::Failure(EACCES);
+  if (!InsideHomeDir(user, path)) return util::Error::Failure(ENOENT);
   if (PrivatePath(path, user)) return util::Error::Failure(ENOENT);
   return Traits<type>::Allowed(user, path);
 }

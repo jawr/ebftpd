@@ -84,7 +84,7 @@ Factory::Factory()
                       "Syntax: SITE DELIP <user> <ident@ip> [<ident@ip>..]",
                       "Delete ident@ip from user" }, },
     { "CHANGE",     { 3,  -1,  
-                      "change|changeflags|changegadmin|changehomedir", 
+                      "change|changeflags|changegadmin|changehomedir|changestartupdir", 
                       std::make_shared<Creator<CHANGECommand>>(),  
                       CHANGECommand::Syntax(),
                       "Change settings for a user or users" }, },
