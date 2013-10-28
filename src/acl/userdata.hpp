@@ -58,7 +58,7 @@ struct UserData
     created(boost::gregorian::day_clock::local_day()),
     weeklyAllotment(0),
     homeDir("/"),
-    startUpDir("/")
+    startUpDir("/"),
     idleTime(-1),
     numLogins(1),
     maxDownSpeed(0),
