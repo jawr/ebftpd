@@ -35,6 +35,9 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
     
   { "homedir",        1,  "changehomedir",        &CHANGECommand::CheckHomeDir,
     "Home directory"                                                                    },
+
+  { "startupdir",        1,  "changestartupdir",        &CHANGECommand::CheckStartUpDir,
+    "Start Up directory"                                                                    },
     
   { "flags",          1,  "changeflags",          &CHANGECommand::CheckFlags,
     "Flags, prefixed with +|-|= to add/delete/set"                                      },

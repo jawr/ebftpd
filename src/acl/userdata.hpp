@@ -33,6 +33,7 @@ struct UserData
 
   std::unordered_map<std::string, long long> weeklyAllotment;
   std::string homeDir;
+  std::string startUpDir;
   int idleTime;
   boost::optional<boost::gregorian::date> expires;
   int numLogins;
@@ -57,6 +58,7 @@ struct UserData
     created(boost::gregorian::day_clock::local_day()),
     weeklyAllotment(0),
     homeDir("/"),
+    startUpDir("/")
     idleTime(-1),
     numLogins(1),
     maxDownSpeed(0),

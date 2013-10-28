@@ -103,6 +103,9 @@ public:
     
   const std::string& HomeDir() const;
   void SetHomeDir(const std::string& homeDir);
+
+  const std::string& StartUpDir() const;
+  void SetStartUpDir(const std::string& startUpDir);
   
   int IdleTime() const;
   void SetIdleTime(int idleTime);
