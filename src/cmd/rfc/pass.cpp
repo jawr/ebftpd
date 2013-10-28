@@ -69,7 +69,7 @@ void PASSCommand::Execute()
   util::Error e = fs::ChangeDirectory(client.User(), fs::VirtualPath(client.User().StartUpDir()));
   if (!e) 
   {
-    logs::Debug("StartUpDir for", "'%1%' does not exist", client.User().Name());
+    logs::Debug("StartUpDir for %1% does not exist", client.User().Name());
     util::Error e = fs::ChangeDirectory(client.User(), fs::VirtualPath(client.User().HomeDir()));
     if (!e)
     {
