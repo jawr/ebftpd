@@ -263,6 +263,13 @@ CHANGECommand::SetFunction CHANGECommand::CheckHomeDir()
   return [path](acl::User& user) -> bool { user.SetHomeDir(path); return true; };
 }
 
+CHANGECommand::SetFunction CHANGECommand::CheckStartUpDir()
+{
+  std::string path = fs::PathFromUser(argStr.substr(args[1].length() + args[2].length() + 2)).ToString();  
+  display = path;  
+  return [path](acl::User& user) -> bool { user.SetStartUpDir(path); return true; };
+}
+
 CHANGECommand::SetFunction CHANGECommand::CheckFlags()
 {
   char action = args[3][0];
