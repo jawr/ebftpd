@@ -69,10 +69,15 @@ void PASSCommand::Execute()
   util::Error e = fs::ChangeDirectory(client.User(), fs::VirtualPath(client.User().StartUpDir()));
   if (!e) 
   {
-    control.Reply(ftp::ServiceUnavailable, 
-      "Unable to change to site root directory: " + e.Message());
-    client.SetState(ftp::ClientState::Finished);
-    return;
+    logs::Debug("StartUpDir for", "'%1%' does not exist", client.User().Name());
+    util::Error e = fs::ChangeDirectory(client.User(), fs::VirtualPath(client.User().HomeDir()));
+    if (!e)
+    {
+       control.Reply(ftp::ServiceUnavailable, 
+       "Unable to change to site root directory: " + e.Message());
+       client.SetState(ftp::ClientState::Finished);
+       return;
+    }
   }
   
   if (client.User().Expired())
