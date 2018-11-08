@@ -39,5 +39,6 @@ Dependencies are:
 * gcc > 4.6 or clang++ 3.3
 * MongoDB 2.2+
 * OpenSSL 1.0.0+
+* bio
 
 
