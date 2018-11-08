@@ -89,6 +89,11 @@ void User::SaveHomeDir()
   SaveField("home dir");
 }
 
+void User::SaveStartUpDir()
+{
+  SaveField("startup dir");
+}
+
 void User::SaveIdleTime()
 {
   SaveField("idle time");
@@ -236,6 +241,7 @@ template <> mongo::BSONObj Serialize<acl::UserData>(const acl::UserData& user)
   bob.append("creator", user.creator);
   bob.append("created", ToDateT(user.created));
   bob.append("home dir", user.homeDir);
+  bob.append("startup dir", user.startUpDir);
   bob.append("idle time", user.idleTime);
   
   if (user.expires)
@@ -285,6 +291,7 @@ template <> acl::UserData Unserialize<acl::UserData>(const mongo::BSONObj& obj)
     user.created = ToGregDate(oid.OID().asDateT());
     
     user.homeDir = obj["home dir"].String();
+    user.startUpDir = obj["startup dir"].String();
     user.idleTime = obj["idle time"].Int();
     
     if (obj["expires"].type() != mongo::jstNULL)

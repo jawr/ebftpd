@@ -33,6 +33,7 @@ class CHANGECommand : public Command
   SetFunction CheckSectionRatio();
   SetFunction CheckWeeklyAllotment();
   SetFunction CheckHomeDir();
+  SetFunction CheckStartUpDir();
   SetFunction CheckFlags();
   SetFunction CheckIdleTime();
   SetFunction CheckExpires();

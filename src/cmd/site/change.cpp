@@ -35,6 +35,9 @@ const std::vector<CHANGECommand::SettingDef> CHANGECommand::settings =
     
   { "homedir",        1,  "changehomedir",        &CHANGECommand::CheckHomeDir,
     "Home directory"                                                                    },
+
+  { "startupdir",        1,  "changestartupdir",        &CHANGECommand::CheckStartUpDir,
+    "Start Up directory"                                                                    },
     
   { "flags",          1,  "changeflags",          &CHANGECommand::CheckFlags,
     "Flags, prefixed with +|-|= to add/delete/set"                                      },
@@ -258,6 +261,13 @@ CHANGECommand::SetFunction CHANGECommand::CheckHomeDir()
   std::string path = fs::PathFromUser(argStr.substr(args[1].length() + args[2].length() + 2)).ToString();  
   display = path;  
   return [path](acl::User& user) -> bool { user.SetHomeDir(path); return true; };
+}
+
+CHANGECommand::SetFunction CHANGECommand::CheckStartUpDir()
+{
+  std::string path = fs::PathFromUser(argStr.substr(args[1].length() + args[2].length() + 2)).ToString();  
+  display = path;  
+  return [path](acl::User& user) -> bool { user.SetStartUpDir(path); return true; };
 }
 
 CHANGECommand::SetFunction CHANGECommand::CheckFlags()

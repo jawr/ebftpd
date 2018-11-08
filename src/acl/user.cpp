@@ -122,6 +122,11 @@ const std::string& User::HomeDir() const
   return data->homeDir;
 }
 
+const std::string& User::StartUpDir() const
+{
+  return data->startUpDir;
+}
+
 int User::IdleTime() const
 {
   return data->idleTime;
@@ -516,6 +521,12 @@ void User::SetHomeDir(const std::string& homeDir)
 {
   auto trans = util::MakeTransaction(data->homeDir, homeDir);
   db->SaveHomeDir();
+}
+
+void User::SetStartUpDir(const std::string& startUpDir)
+{
+  auto trans = util::MakeTransaction(data->startUpDir, startUpDir);
+  db->SaveStartUpDir();
 }
 
 void User::SetIdleTime(int idleTime)

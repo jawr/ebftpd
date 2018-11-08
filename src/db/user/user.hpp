@@ -42,6 +42,7 @@ public:
   void SaveGadminGIDs();
   void SaveWeeklyAllotment();
   void SaveHomeDir();
+  void SaveStartUpDir();
   void SaveIdleTime();
   void SaveExpires();
   void SaveNumLogins();
